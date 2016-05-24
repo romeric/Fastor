@@ -1,0 +1,16 @@
+# binaries
+*.dll
+*.exe
+*.o
+*.so
+
+# dev
+Fastor
+Fastor.cpp
+Fastor.pro.user
+Fastor.pro
+
+# dotfiles
+.*
+!.gitignore
+!.travis.yml
