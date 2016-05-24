@@ -62,10 +62,12 @@ enum {I,J,K,L};
 Tensor<double,6,6> D = einsum<Index<I,K>,Index<J,L>,Voigt>(A,B);
 ~~~
 
-As you notice, all indices are resolved and the Voigt transformation is performed at compile time, keeping only the cost of computation at runtime. Equivalent implementation of this in C/Fortran requires either low-level for loop style programming that has an O(n^4) computational complexity and non-contiguous memory access, or if a function like einsum is desired the indices will need to be passed requiring potentially extra register allocation. Here is performance benchmark between Ctran (C/Fortran) for loop code and the equivalent Fastor implementation all normalised by performance of `Fastor GCC 5.3.0`, for the above example, run over a million times (both compiled using `-O3 -mavx`, on `Intel(R) Xeon(R) CPU E5-2650 v2 @2.60GHz` running `Ubuntu 14.04`):       
+As you notice, all indices are resolved and the Voigt transformation is performed at compile time, keeping only the cost of computation at runtime. Equivalent implementation of this in C/Fortran requires either low-level for loop style programming that has an O(n^4) computational complexity and non-contiguous memory access, or if a function like einsum is desired the indices will need to be passed requiring potentially extra register allocation. Here is performance benchmark between Ctran (C/Fortran) for loop code and the equivalent Fastor implementation for the above example, run over a million times (both compiled using `-O3 -mavx`, on `Intel(R) Xeon(R) CPU E5-2650 v2 @2.60GHz` running `Ubuntu 14.04`):       
 
 
-<img src="docs/imgs/cyclic_bench.png" width="600" align="middle">
+<p align="center">
+  <img src="docs/imgs/cyclic_bench.png" width="600" align="middle">
+</p>
 
 
 Notice that by compiling with the same flags, it is meant that the compiler is permitted to auto-vectorise the C/tran code as well.
@@ -79,10 +81,12 @@ Tensor<double,3,3> E = einsum<Index<i,j,k>,Index<I,J,K>,Index<j,J>,Index<k,K>>
 // or simply
 Tensor<double,3,3> F = cross(A,B);
 ~~~
-Here is performance benchmark between Ctran (C/Fortran) for loop code and the equivalent Fastor implementation all normalised by performance of `Fastor GCC 5.3.0`, for the above example, run over a million times (both compiled using `-O3 -mavx`, on `Intel(R) Xeon(R) CPU E5-2650 v2 @2.60GHz` running `Ubuntu 14.04`):
+Here is performance benchmark between Ctran (C/Fortran) for loop code and the equivalent Fastor implementation for the above example, run over a million times (both compiled using `-O3 -mavx`, on `Intel(R) Xeon(R) CPU E5-2650 v2 @2.60GHz` running `Ubuntu 14.04`):
 
 
-<img src="docs/imgs/tensor_cross_bench.png" width="600" align="middle">
+<p align="center">
+  <img src="docs/imgs/tensor_cross_bench.png" width="600" align="middle">
+</p>
 
 
 Notice over two orders of magnitude performance gain using Fastor!
