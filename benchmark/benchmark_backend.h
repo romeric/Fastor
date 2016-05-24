@@ -93,7 +93,7 @@ void tensor_cross_scalar(const real *__restrict__ a, const real *__restrict__ b,
 }
 
 template<size_t N>
-void AilBjk(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
+void AilBjk(const real *__restrict__ a, const real *__restrict__ b, real *__restrict__ c) {
     constexpr size_t size = N;
     for (size_t i=0; i<size; ++i)
         for (size_t j=0; j<size; ++j)
@@ -124,6 +124,18 @@ void AikBjl(const real *__restrict__ a, const real *__restrict__ b, real *__rest
                 for (size_t l=0; l<size; ++l) {
                     c[i*size*size*size+j*size*size+k*size+l] += a[i*size+k]*b[j*size+l];
                 }
+            }
+        }
+    }
+}
+
+template<size_t N>
+void matmul_scalar(const real *__restrict__ a, const real *__restrict__ b, real *__restrict__ c) {
+    constexpr size_t size = N;
+    for (size_t i=0; i<size; ++i) {
+        for (size_t j=0; j<size; ++j) {
+            for (size_t k=0; k<size; ++k) {
+                c[i*size*size+j*size+k] += a[i*size+j]*b[j*size+k];
             }
         }
     }
@@ -228,11 +240,12 @@ void iterate_over(const real* a, const real* b, real* out) {
     for (volatile size_t i=0; i<NITER; i++){
 //        auto z = einsum<Index<I,J,K,L>,Index<L,M,O,P>>(x,y);
 //        cyclic_0<real,N,N,N,N>(a,b,out);
-//        unused(out);
-//        outer<real,N,N,N,N>(a,b,out);
+        outer<real,N,N,N,N>(a,b,out);
 //        Tensor<double,200,200> x;
 //        x.iota(0.);
-        _crossproduct<real,N,N>(a,b,out);
+//        _crossproduct<real,N,N>(a,b,out);
+//        _matmul<real,N,N,N>(a,b,out);
+        unused(out);
     }
 }
 
@@ -240,14 +253,15 @@ template<size_t N>
 void iterate_over_scalar(const real* a, const real* b, real* out) {
     real a_data[81];
     for (volatile size_t i=0; i<NITER; i++){
-        tensor_cross_scalar<N>(a,b,out);
+//        tensor_cross_scalar<N>(a,b,out);
+        matmul_scalar<N>(a,b,out);
 //        outer_4_and_4<N>(a,b,out);
 
-//        AijBkl<N>(a,b,out);   _voigt(a_data,out);
 
 
+        AijBkl<N>(a,b,a_data);   _voigt(a_data,out);
 //        AikBjl<N>(a,b,a_data);   _voigt(a_data,out);
-//        unused(out);
+        unused(out);
     }
 }
 // ---------------------------------------- END RUN-----------------------------------------------------------
