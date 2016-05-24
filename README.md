@@ -64,11 +64,9 @@ Tensor<double,6,6> D = einsum<Index<I,K>,Index<J,L>,Voigt>(A,B);
 
 As you notice, all indices are resolved and the Voigt transformation is performed at compile time, keeping only the cost of computation at runtime. Equivalent implementation of this in C/Fortran requires either low-level for loop style programming that has an O(n^4) computational complexity and non-contiguous memory access, or if a function like einsum is desired the indices will need to be passed requiring potentially extra register allocation. Here is performance benchmark between Ctran (C/Fortran) for loop code and the equivalent Fastor implementation all normalised by performance of `Fastor GCC 5.3.0`, for the above example, run over a million times (both compiled using `-O3 -mavx`, on `Intel(R) Xeon(R) CPU E5-2650 v2 @2.60GHz` running `Ubuntu 14.04`):       
 
-|  Ctran GCC 5.3.0        | Fastor GCC 5.3.0    |  Ctran Clang 3.8.0       | Fastor Clang 3.8.0 | 
-| ----------------------- |:-------------------:| ------------------------:| ------------------ |
-| 6.163                   | 1                   | 4.461                    | 1.080              |
+<img src="docs/imgs/cyclic_bench.png" width="900">
 
-Notice that by compiling with the same flags, it is meant that the compiler is permitted to auto-vectorise the C/tran code as well, hence the 2-3 times speed-up should be considered a reasonally good speed-up over what the compiler can offer.
+Notice that by compiling with the same flags, it is meant that the compiler is permitted to auto-vectorise the C/tran code as well.
 ### The tensor cross product and its associated algebra
 If not the main, one of the main motivations behind developing Fastor has been the recently introduced tensor cross product by [Bonet et. al.](http://dx.doi.org/10.1016/j.ijsolstr.2015.12.030) in the context of nonlinear solid mechanics which can significantly reduce the amount algebra involved in consistent linearisation of functionals which are forbiddingly complex to derive using the classical approach. The tensor cross product of two second order tensors is defined as `C_iI = e_ijk*e_IJK*A_jJ*b_kK` where `e` is the third order permutation tensor. As can be seen this product is O(n^6) in computational complexity (furthermore a cross product is essentially defined in 3-dimensional space i.e. perfectly suitable for stack allocation). Using Fastor the equivalent code is only 81 SSE intrinsics
 ~~~c++
@@ -80,10 +78,7 @@ Tensor<double,3,3> E = einsum<Index<i,j,k>,Index<I,J,K>,Index<j,J>,Index<k,K>>
 Tensor<double,3,3> F = cross(A,B);
 ~~~
 Here is performance benchmark between Ctran (C/Fortran) for loop code and the equivalent Fastor implementation all normalised by performance of `Fastor GCC 5.3.0`, for the above example, run over a million times (both compiled using `-O3 -mavx`, on `Intel(R) Xeon(R) CPU E5-2650 v2 @2.60GHz` running `Ubuntu 14.04`):       
-
-|  Ctran Gcc 5.3.0        | Fastor GCC 5.3.0    |  Ctran Clang 3.8.0       | Fastor Clang 3.8.0 | 
-| ----------------------- |:-------------------:| ------------------------:| ------------------ |
-| 119.327                 | 1                   | 246.859                  | 1.002              |
+<img src="docs/imgs/tensor_cross_bench.png" width="900">
 
 Notice over two orders of magnitude performance gain using Fastor!
 

@@ -9,6 +9,10 @@ Fastor
 Fastor.cpp
 Fastor.pro.user
 Fastor.pro
+benchmark/bench_results.py
+
+# careful
+Makefile 
 
 # dotfiles
 .*

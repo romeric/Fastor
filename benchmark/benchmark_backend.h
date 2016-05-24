@@ -219,17 +219,16 @@ template <typename T> void unused(T &&x) { asm("" ::"m"(x)); }
 // iterate the same benchmark one million times
 template<size_t N>
 void iterate_over(const real* a, const real* b, real* out) {
-    Tensor<real,N,N,N,N> x; x.random();
-    Tensor<real,N,N,N,N> y; y.random();
-    unused(b);    unused(a);     unused(out);
+//    Tensor<real,N,N,N,N> x; x.random();
+//    Tensor<real,N,N,N,N> y; y.random();
+//    unused(b);    unused(a);     unused(out);
 
 //    auto z = einsum<Index<I,J,K,L>,Index<L,M,O,P>>(x,y);
 //    print(type_name<decltype(z)>());
     for (volatile size_t i=0; i<NITER; i++){
 //        auto z = einsum<Index<I,J,K,L>,Index<L,M,O,P>>(x,y);
-//        unused(z);
-//        x*y+y+y+y+y+y+y+y+y+y+x/2/3/3/5;
 //        cyclic_0<real,N,N,N,N>(a,b,out);
+//        unused(out);
 //        outer<real,N,N,N,N>(a,b,out);
 //        Tensor<double,200,200> x;
 //        x.iota(0.);
@@ -239,26 +238,16 @@ void iterate_over(const real* a, const real* b, real* out) {
 
 template<size_t N>
 void iterate_over_scalar(const real* a, const real* b, real* out) {
-//    real a_data[36];
+    real a_data[81];
     for (volatile size_t i=0; i<NITER; i++){
         tensor_cross_scalar<N>(a,b,out);
 //        outer_4_and_4<N>(a,b,out);
-//        unused(out);
-
-        // twice to get the symmetry
-//        AikBjl<N>(a,b,out); AikBjl<N>(a,b,out);
-//        AijBkl<N>(a,b,out); AijBkl<N>(a,b,out); _voigt(out,out);
 
 //        AijBkl<N>(a,b,out);   _voigt(a_data,out);
-//        AikBjl<N>(a,b,out);   _voigt(a_data,out);
-//        Tensor<double,200,200> x;
-//        for (size_t i=0; i<200; ++i)
-//            for (size_t j=0; j<200; ++j)
-//                x(j,i) = 0.;
-//        Tensor<double,200,200> x;
-//        real *_data = x.data();
-//        for (size_t i=0; i<200*200; ++i)
-//                _data[i] = i*i;
+
+
+//        AikBjl<N>(a,b,a_data);   _voigt(a_data,out);
+//        unused(out);
     }
 }
 // ---------------------------------------- END RUN-----------------------------------------------------------
