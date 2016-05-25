@@ -38,9 +38,12 @@ FASTOR_INLINE float _norm<float,4>(const float * __restrict__ a) {
 
 template<>
 FASTOR_INLINE float _norm<float,9>(const float * __restrict__ a) {
-    // IVY & HW 45 OPS
+    // IVY & HW 61 OPS
     __m256 a_reg = _mm256_load_ps(a);
-    return _mm_cvtss_f32(_mm_sqrt_ps(_add_ps(_mm256_mul_ps(a_reg,a_reg))));
+    __m128 a_end = _mm_load_ss(a+8);
+    __m128 a0 = _add_ps(_mm256_mul_ps(a_reg,a_reg));
+    __m128 a1 = _add_ps(_mm_mul_ps(a_end,a_end));
+    return _mm_cvtss_f32(_mm_sqrt_ps(_mm_add_ss(a0,a1)));
 }
 
 
@@ -53,14 +56,14 @@ FASTOR_INLINE double _norm<double,4>(const double * __restrict__ a) {
 
 template<>
 FASTOR_INLINE double _norm<double,9>(const double * __restrict__ a) {
-    // IVY 103 OPS / HW 107 OPS
+    // IVY 63 OPS / HW 67 OPS
     __m256d a_low = _mm256_load_pd(a);
     __m256d a_high = _mm256_load_pd(a+4);
     __m128d a_end = _mm_load_sd(a+8);
-    __m128d a0 = _mm_sqrt_pd(_add_pd(_mm256_mul_pd(a_low,a_low)));
-    __m128d a1 = _mm_sqrt_pd(_add_pd(_mm256_mul_pd(a_high,a_high)));
-    __m128d a2 = _mm_sqrt_pd(_add_pd(_mm_mul_pd(a_end,a_end)));
-    return _mm_cvtsd_f64(_mm_add_sd(a2,(_mm_add_sd(a0,a1))));
+    __m128d a0 = _add_pd(_mm256_mul_pd(a_low,a_low));
+    __m128d a1 = _add_pd(_mm256_mul_pd(a_high,a_high));
+    __m128d a2 = _add_pd(_mm_mul_pd(a_end,a_end));
+    return _mm_cvtsd_f64(_mm_sqrt_pd(_mm_add_sd(a2,(_mm_add_sd(a0,a1)))));
 }
 
 

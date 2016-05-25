@@ -5,7 +5,7 @@ template<typename T, size_t M, size_t N>
 void _transpose(const T * __restrict__ a, T * __restrict__ out) {
     for (size_t i=0; i< M; ++i)
         for (size_t j=0; j<N; ++j)
-            a[i*N+j] = a[j*N+i];
+            out[i*N+j] = a[j*N+i];
 }
 
 template<>

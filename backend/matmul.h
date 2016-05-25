@@ -205,28 +205,27 @@ void _matmul<float,3,3,3>(const float * __restrict__ a, const float * __restrict
     out_22 = _mm_add_ss(sums, shuf);
 #endif
 
-    __m128 twos0 = _mm_blend_ps(out_00,out_01,0x2);
-    __m128 twos1 = _mm_blend_ps(out_02,out_10,0x2);
-    __m128 fours0 = _mm_shuffle_ps(twos0,twos1,_MM_SHUFFLE(1,0,1,0));
-    _mm_store_ps(out,fours0);
-    __m128 twos2 = _mm_blend_ps(out_11,out_12,0x2);
-    __m128 twos3 = _mm_blend_ps(out_20,out_21,0x2);
-    __m128 fours1 = _mm_shuffle_ps(twos2,twos3,_MM_SHUFFLE(1,0,1,0));
-    _mm_store_ps(out+4,fours1);
-    _mm_store_ss(out+8,out_22);
+    // blend is not correct check
+//    __m128 twos0 = _mm_blend_ps(out_00,out_01,0x2);
+//    __m128 twos1 = _mm_blend_ps(out_02,out_10,0x2);
+//    __m128 fours0 = _mm_shuffle_ps(twos0,twos1,_MM_SHUFFLE(1,0,1,0));
+//    _mm_store_ps(out,fours0);
+//    __m128 twos2 = _mm_blend_ps(out_11,out_12,0x2);
+//    __m128 twos3 = _mm_blend_ps(out_20,out_21,0x2);
+//    __m128 fours1 = _mm_shuffle_ps(twos2,twos3,_MM_SHUFFLE(1,0,1,0));
+//    _mm_store_ps(out+4,fours1);
+//    _mm_store_ss(out+8,out_22);
 
     // This is equally fast
-//    _mm_store_ps(out,dd1);
-//    _mm_store_ps(out,dd2);
-//    _mm_store_ss(out,out_00);
-//    _mm_store_ss(out+1,out_01);
-//    _mm_store_ss(out+2,out_02);
-//    _mm_store_ss(out+3,out_10);
-//    _mm_store_ss(out+4,out_11);
-//    _mm_store_ss(out+5,out_12);
-//    _mm_store_ss(out+6,out_20);
-//    _mm_store_ss(out+7,out_21);
-//    _mm_store_ss(out+8,out_22);
+    _mm_store_ss(out,out_00);
+    _mm_store_ss(out+1,out_01);
+    _mm_store_ss(out+2,out_02);
+    _mm_store_ss(out+3,out_10);
+    _mm_store_ss(out+4,out_11);
+    _mm_store_ss(out+5,out_12);
+    _mm_store_ss(out+6,out_20);
+    _mm_store_ss(out+7,out_21);
+    _mm_store_ss(out+8,out_22);
 }
 
 
