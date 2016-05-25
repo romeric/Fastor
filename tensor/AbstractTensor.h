@@ -25,6 +25,7 @@ public:
 //    static const FASTOR_INDEX Size = Derived::Size;
 //    static constexpr FASTOR_INDEX Size = Derived::Size;
     FASTOR_INLINE const Derived& self() const {return *static_cast<const Derived*>(this);}
+//    FASTOR_INLINE Derived self() const {return static_cast<Derived&>(*this);}
     constexpr FASTOR_INDEX size() const {return Derived::Size;}
 //    constexpr FASTOR_INDEX size() const {return Derived::size();}
 

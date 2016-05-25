@@ -85,13 +85,13 @@ FASTOR_INLINE BinarySubOp<TLhs, TRhs, DIM0> operator-(const AbstractTensor<TLhs,
 template<typename TLhs, typename TRhs, size_t DIM0,
          typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
                                  std::is_arithmetic<TRhs>::value,bool>::type = 0 >
-FASTOR_INLINE BinarySubOp<TLhs, TRhs, DIM0> operator-(const AbstractTensor<TLhs,DIM0> &lhs, TRhs bb) {
+FASTOR_INLINE BinarySubOp<TLhs, TRhs, DIM0> operator-(const AbstractTensor<TLhs,DIM0> &lhs, const TRhs &bb) {
   return BinarySubOp<TLhs, TRhs, DIM0>(lhs.self(), bb);
 }
 template<typename TLhs, typename TRhs, size_t DIM0,
          typename std::enable_if<std::is_arithmetic<TLhs>::value &&
                                  !std::is_arithmetic<TRhs>::value,bool>::type = 0 >
-FASTOR_INLINE BinarySubOp<TLhs, TRhs, DIM0> operator-(TLhs bb, const AbstractTensor<TRhs,DIM0> &rhs) {
+FASTOR_INLINE BinarySubOp<TLhs, TRhs, DIM0> operator-(const TLhs &bb, const AbstractTensor<TRhs,DIM0> &rhs) {
   return BinarySubOp<TLhs, TRhs, DIM0>(bb,rhs.self());
 }
 

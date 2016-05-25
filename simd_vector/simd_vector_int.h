@@ -12,7 +12,7 @@ template <>
 struct SIMDVector<int> {
     static constexpr FASTOR_INDEX Size = get_vector_size<int>::size;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return get_vector_size<int>::size;}
-    static constexpr FASTOR_INDEX unroll_size(FASTOR_INDEX size) {return size - Size;}
+    static constexpr int unroll_size(FASTOR_INDEX size) {return (static_cast<int>(size) - static_cast<int>(Size));}
 
     FASTOR_INLINE SIMDVector() : value(_mm_setzero_si128()) {}
     FASTOR_INLINE SIMDVector(int num) : value(_mm_set1_epi32(num)) {}

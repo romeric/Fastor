@@ -12,7 +12,7 @@ struct BinaryAddOp: public AbstractTensor<BinaryAddOp<TLhs, TRhs, DIM0>,DIM0> {
 //    static constexpr FASTOR_INDEX Size = TLhs::Size;
 
     BinaryAddOp(const TLhs& lhs, const TRhs& rhs) : lhs(lhs), rhs(rhs) {
-//        static_assert(lhs.Dimension==rhs.Dimension,"DIMENSIONS OF MATRICES SHOULD BE THE SAME");
+//        print(lhs,rhs);
     }
 
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return helper_size<TLhs,TRhs>();}
@@ -44,8 +44,9 @@ struct BinaryAddOp: public AbstractTensor<BinaryAddOp<TLhs, TRhs, DIM0>,DIM0> {
     // The eval function evaluates the expression at position i
     template<typename U>
     FASTOR_INLINE SIMDVector<U> eval(U i) const {
+//        print(rhs);
         // Delay evaluation using a helper function to fully inform BinaryOp about lhs and rhs
-    return helper<TLhs,TRhs>(i);
+        return helper<TLhs,TRhs>(i);
     }
 
     template<typename LExpr, typename RExpr, typename U,
@@ -71,11 +72,14 @@ struct BinaryAddOp: public AbstractTensor<BinaryAddOp<TLhs, TRhs, DIM0>,DIM0> {
                                    std::is_arithmetic<RExpr>::value,bool>::type = 0>
     FASTOR_INLINE SIMDVector<U> helper(U i) const {
         SIMDVector<U> result;
-        result = lhs.eval(static_cast<U>(i)) + rhs;
+//        print(lhs.eval(static_cast<U>(i)) , rhs);
+//        print(rhs);
+        result = lhs.eval(static_cast<U>(i)) + (U)rhs;
+//        result = lhs.eval(static_cast<U>(i)) + SIMDVector<U>(rhs);
         return result;
     }
 
-private:
+//private:
     const TLhs &lhs;
     const TRhs &rhs;
 };
@@ -89,13 +93,13 @@ FASTOR_INLINE BinaryAddOp<TLhs, TRhs, DIM0> operator+(const AbstractTensor<TLhs,
 template<typename TLhs, typename TRhs, size_t DIM0,
          typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
                                  std::is_arithmetic<TRhs>::value,bool>::type = 0 >
-FASTOR_INLINE BinaryAddOp<TLhs, TRhs, DIM0> operator+(const AbstractTensor<TLhs,DIM0> &lhs, TRhs bb) {
+FASTOR_INLINE BinaryAddOp<TLhs, TRhs, DIM0> operator+(const AbstractTensor<TLhs,DIM0> &lhs, const TRhs &bb) {
   return BinaryAddOp<TLhs, TRhs, DIM0>(lhs.self(), bb);
 }
 template<typename TLhs, typename TRhs, size_t DIM0,
          typename std::enable_if<std::is_arithmetic<TLhs>::value &&
                                  !std::is_arithmetic<TRhs>::value,bool>::type = 0 >
-FASTOR_INLINE BinaryAddOp<TLhs, TRhs, DIM0> operator+(TLhs bb, const AbstractTensor<TRhs,DIM0> &rhs) {
+FASTOR_INLINE BinaryAddOp<TLhs, TRhs, DIM0> operator+(const TLhs &bb, const AbstractTensor<TRhs,DIM0> &rhs) {
   return BinaryAddOp<TLhs, TRhs, DIM0>(bb,rhs.self());
 }
 

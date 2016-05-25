@@ -41,7 +41,7 @@ struct BinaryDivOp: public AbstractTensor<BinaryDivOp<TLhs, TRhs, DIM0>,DIM0> {
     template<typename U>
     FASTOR_INLINE SIMDVector<U> eval(U i) const {
         // Delay evaluation using a helper function to fully inform BinaryOp about lhs and rhs
-    return helper<TLhs,TRhs>(i);
+        return helper<TLhs,TRhs>(i);
     }
 
     template<typename LExpr, typename RExpr, typename U,
@@ -58,7 +58,8 @@ struct BinaryDivOp: public AbstractTensor<BinaryDivOp<TLhs, TRhs, DIM0>,DIM0> {
                                    !std::is_arithmetic<RExpr>::value,bool>::type = 0>
     FASTOR_INLINE SIMDVector<U> helper(U i) const {
         SIMDVector<U> result;
-        result = lhs / rhs.eval(static_cast<U>(i));
+//        result = lhs / rhs.eval(static_cast<U>(i));
+        result = SIMDVector<U>(lhs) / rhs.eval(static_cast<U>(i));
         return result;
     }
 
@@ -67,7 +68,7 @@ struct BinaryDivOp: public AbstractTensor<BinaryDivOp<TLhs, TRhs, DIM0>,DIM0> {
                                    std::is_arithmetic<RExpr>::value,bool>::type = 0>
     FASTOR_INLINE SIMDVector<U> helper(U i) const {
         SIMDVector<U> result;
-        result = lhs.eval(static_cast<U>(i)) / rhs;
+        result = lhs.eval(static_cast<U>(i)) / SIMDVector<U>(rhs);
         return result;
     }
 private:
@@ -84,13 +85,13 @@ FASTOR_INLINE BinaryDivOp<TLhs, TRhs, DIM0> operator/(const AbstractTensor<TLhs,
 template<typename TLhs, typename TRhs, size_t DIM0,
          typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
                                  std::is_arithmetic<TRhs>::value,bool>::type = 0 >
-FASTOR_INLINE BinaryDivOp<TLhs, TRhs, DIM0> operator/(const AbstractTensor<TLhs,DIM0> &lhs, TRhs bb) {
+FASTOR_INLINE BinaryDivOp<TLhs, TRhs, DIM0> operator/(const AbstractTensor<TLhs,DIM0> &lhs, const TRhs &bb) {
   return BinaryDivOp<TLhs, TRhs, DIM0>(lhs.self(), bb);
 }
 template<typename TLhs, typename TRhs, size_t DIM0,
          typename std::enable_if<std::is_arithmetic<TLhs>::value &&
                                  !std::is_arithmetic<TRhs>::value,bool>::type = 0 >
-FASTOR_INLINE BinaryDivOp<TLhs, TRhs, DIM0> operator/(TLhs bb, const AbstractTensor<TRhs,DIM0> &rhs) {
+FASTOR_INLINE BinaryDivOp<TLhs, TRhs, DIM0> operator/(const TLhs &bb, const AbstractTensor<TRhs,DIM0> &rhs) {
   return BinaryDivOp<TLhs, TRhs, DIM0>(bb,rhs.self());
 }
 

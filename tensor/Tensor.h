@@ -117,6 +117,11 @@ public:
     template<typename Derived, size_t DIMS>
     FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
         const Derived &src = src_.self();
+//        Derived &src = src_.self();
+//        print(src.rhs,src.lhs);
+//        print(type_name<decltype(src_)>());
+//        print(type_name<Derived>());
+//        print
         static_assert(DIMS==Dimension, "TENSOR RANK MISMATCH");
         FASTOR_ASSERT(src.size()==Size, "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -942,6 +947,8 @@ FASTOR_INLINE Tensor<T,I,I> inverse(const Tensor<T,I,I> &a) {
 
 template<typename T, size_t ... Rest>
 FASTOR_INLINE T norm(const Tensor<T,Rest...> &a) {
+    if (sizeof...(Rest) == 0)
+        return *a.data();
     return _norm<T,prod<Rest...>::value>(a.data());
 }
 
