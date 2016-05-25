@@ -221,6 +221,18 @@ public:
 //        return *this;
 //    }
 
+    template<size_t I>
+    FASTOR_INLINE Tensor(const UnaryTraceOp<UnaryTransposeOp<Tensor<T,I,I>>> &a) {
+        static_assert(sizeof...(Rest)==0, "TRACE OPERATOR WORKS ON SECOND ORDER TENSORS AND RETURNS A SCALAR");
+        _data[0] = _trace<T,I,I>(a.expr.expr.data());
+    }
+
+    template<size_t I>
+    FASTOR_INLINE Tensor(const UnaryDetOp<UnaryTransposeOp<Tensor<T,I,I>>> &a) {
+        static_assert(sizeof...(Rest)==0, "DETERMINANT OPERATOR WORKS ON SECOND ORDER TENSORS AND RETURNS A SCALAR");
+        _data[0] = _det<T,I,I>(a.expr.expr.data());
+    }
+
     template<size_t I, size_t J, size_t K>
     FASTOR_INLINE Tensor(const UnaryTraceOp<BinaryMatMulOp<UnaryTransposeOp<Tensor<T,I,J>>,Tensor<T,J,K>>> &a) {
         static_assert(I==K, "SECOND ORDER TENSOR MUST BE SQUARE");

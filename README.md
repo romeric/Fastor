@@ -105,14 +105,16 @@ for (size_t i=0; i<tn4.Size; i+=tn4.Stride)
     _mm256_store_ps(tn4._data+i,_mm256_set1_ps(static_cast<float>(2))*_mm256_load_ps(tn1._data+i)+
     _mm256_sqrt_ps(_mm256_sub_ps(_mm256_load_ps(tn2._data+i),_mm256_load_ps(tn3._data+i)));
 ~~~
-avoiding any need for temporary memory allocation. Importantly, Fastor goes deeper into the realm of *smart* expression templates to find optimal networks of tensor contraction, for instance an expression like `trace(transpose(A),B)` which is `O(n^3)` in computational complexity is determined to be inefficient and Fastor statically dispatches the call to an equivalent but much more efficient routine, in this case `A_ijB_ij` or `doublecontract(A,B)` which is `O(n^2)`. Furthermore, Fastor is all about small stack-allocated on cache tensors, and the overhead of calling vendor/optimised `BLAS` is not worth it. Further examples include
+avoiding any need for temporary memory allocation. Importantly, Fastor goes deeper into the realm of *smart* expression templates to find optimal networks of tensor contraction, for instance an expression like `trace(matmul(transpose(A),B))` which is `O(n^3)` in computational complexity is determined to be inefficient and Fastor statically dispatches the call to an equivalent but much more efficient routine, in this case `A_ijB_ij` or `doublecontract(A,B)` which is `O(n^2)`. Furthermore, Fastor is all about small stack-allocated on cache tensors, and the overhead of calling vendor/optimised `BLAS` is not worth it. Further examples include
 ~~~c++
 // the l in-front of the names stands for 'lazy'
 ldeterminant(linverse(A)); // transformed to 1/ldeterminant(A), O(n^3) reduction in computation
 ltranspose(lcofactor(A));  // transformed to ladjoint(A), O(n^2) reduction in memory access
 ltranspose(ladjoint(A));   // transformed to lcofactor(A), O(n^2) reduction in memory access
+lmatmul(lmatmul(A,B),b);   // transformed to lmatmul(A,lmatmul(A,b)), O(n) reduction in computation
+// and many more
 ~~~
-Note that there are situations that the user may write a complex chain of operations in the most verbose way, perhaps for readibility purposes, but Fastor delays the evaluation of the expression and checks if an equivalent but efficient expression can be computed. The computed expression always binds back to the base tensor overhead free, without a runtime virtual table/pointer penalty.  
+Note that there are situations that the user may write a complex chain of operations in the most verbose way, perhaps for readibility purposes, but Fastor delays the evaluation of the expression and checks if an equivalent but efficient expression can be computed. The computed expression always binds back to the base tensor, overhead free without a runtime virtual table/pointer penalty.  
 
 ### Boolean tensor algebra
 A set of boolean tensor routines are available in Fastor. Note that, whenever possible most of these operations are performed at compile time 
@@ -137,9 +139,9 @@ A*B;                            // element-wise multiplication A and B
 A/B;                            // element-wise division A and B                   
 auto ab = matmul(A,B);          // matrix matrix multiplication of A*B
 auto a_norm = norm(A);          // Frobenious norm of A
-auto a_det = determinant(B);    // determinant of B
+auto b_det = determinant(B);    // determinant of B
 auto a_inv = inverse(A);        // inverse of A
-auto a_cof = cofactor(B);       // cofactor of A
+auto b_cof = cofactor(B);       // cofactor of B
 ~~~
 
 ### Template meta-programming for powerful tensor contraction/permutation
@@ -161,13 +163,13 @@ As you can observe with combination of `permutation`, `contraction`, `reduction`
 
 ### Similar Projects:
 Similar projects exist in particular
-- [FTensor](http://www.wlandry.net/Projects/FTensor): Up to rank 4 dense tensor framework
-- [LTensor](https://code.google.com/archive/p/ltensor/): Up to rank 4 dense tensor framework
-- [libtensor](https://github.com/juanjosegarciaripoll/tensor): Up to rank 6 dense tensor framework
-- [Eigen's unsupported tensor algebra package](http://eigen.tuxfamily.org/index.php?title=Tensor_support): Arbitrary rank dense tensor module
-- [Blitz++'s tensor module](http://blitz.sourceforge.net/): Up to rank 11, dense tensor algebra 
-- [TiledArray](https://github.com/ValeevGroup/tiledarray): Massively parallel arbitrary rank block sparse tensor framework based on Eigen
-- [Cyclops Tensor Framework](https://github.com/solomonik/ctf): Distributed memory arbitrary rank sparse tensor algebra
+- [FTensor](http://www.wlandry.net/Projects/FTensor): Dense tensor algebra framework for up to rank 4 tensors
+- [LTensor](https://code.google.com/archive/p/ltensor/): Dense tensor algebra framework for up to rank 4 tensors
+- [libtensor](https://github.com/juanjosegarciaripoll/tensor): Dense tensor algebra framework for up to rank 6 tensors
+- [Eigen's unsupported tensor algebra package](http://eigen.tuxfamily.org/index.php?title=Tensor_support): Arbitrary rank dense tensor algebra module
+- [Blitz++'s tensor module](http://blitz.sourceforge.net/): Dense linear algebra framework for up to rank 11 tensors 
+- [TiledArray](https://github.com/ValeevGroup/tiledarray): Massively parallel arbitrary rank block sparse tensor algebra framework based on Eigen
+- [Cyclops Tensor Framework](https://github.com/solomonik/ctf): Distributed memory arbitrary rank sparse tensor algebra framework
 
 It should be noted, that compared to the above projects Fastor is *minimal* in terms of function overloads as well as design and does not try to be a full-fledged tensor algebra framework, like Eigen. It is designed with specific needs in mind. Some noteworthy differences are
 
