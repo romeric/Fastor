@@ -112,82 +112,85 @@ struct SIMDVector<double> {
         out.value = _mm256_reverse_pd(value);
         return out;
     }
+    FASTOR_INLINE double minimum() {return _mm256_hmin_pd(value);}
+    FASTOR_INLINE double maximum() {return _mm256_hmax_pd(value);}
 
     __m256d value;
 };
 
 
 std::ostream& operator<<(std::ostream &os, SIMDVector<double> a) {
-    os << "[" << a.value[0] <<  " " << a.value[1] << " " << a.value[2] << " " << a.value[3] << "]\n";
+    // ICC crashes without a copy
+    const __m256d value = a.value;
+    os << "[" << value[0] <<  " " << value[1] << " " << value[2] << " " << value[3] << "]\n";
     return os;
 }
 
-SIMDVector<double> operator+(const SIMDVector<double> &a, const SIMDVector<double> &b) {
+FASTOR_INLINE SIMDVector<double> operator+(const SIMDVector<double> &a, const SIMDVector<double> &b) {
     SIMDVector<double> out;
     out.value = _mm256_add_pd(a.value,b.value);
     return out;
 }
-SIMDVector<double> operator+(const SIMDVector<double> &a, double b) {
+FASTOR_INLINE SIMDVector<double> operator+(const SIMDVector<double> &a, double b) {
     SIMDVector<double> out;
     out.value = _mm256_add_pd(a.value,_mm256_set1_pd(b));
     return out;
 }
-SIMDVector<double> operator+(double a, const SIMDVector<double> &b) {
+FASTOR_INLINE SIMDVector<double> operator+(double a, const SIMDVector<double> &b) {
     SIMDVector<double> out;
     out.value = _mm256_add_pd(_mm256_set1_pd(a),b.value);
     return out;
 }
 
-SIMDVector<double> operator-(const SIMDVector<double> &a, const SIMDVector<double> &b) {
+FASTOR_INLINE SIMDVector<double> operator-(const SIMDVector<double> &a, const SIMDVector<double> &b) {
     SIMDVector<double> out;
     out.value = _mm256_sub_pd(a.value,b.value);
     return out;
 }
-SIMDVector<double> operator-(const SIMDVector<double> &a, double b) {
+FASTOR_INLINE SIMDVector<double> operator-(const SIMDVector<double> &a, double b) {
     SIMDVector<double> out;
     out.value = _mm256_sub_pd(a.value,_mm256_set1_pd(b));
     return out;
 }
-SIMDVector<double> operator-(double a, const SIMDVector<double> &b) {
+FASTOR_INLINE SIMDVector<double> operator-(double a, const SIMDVector<double> &b) {
     SIMDVector<double> out;
     out.value = _mm256_sub_pd(_mm256_set1_pd(a),b.value);
     return out;
 }
 
-SIMDVector<double> operator*(const SIMDVector<double> &a, const SIMDVector<double> &b) {
+FASTOR_INLINE SIMDVector<double> operator*(const SIMDVector<double> &a, const SIMDVector<double> &b) {
     SIMDVector<double> out;
     out.value = _mm256_mul_pd(a.value,b.value);
     return out;
 }
-SIMDVector<double> operator*(const SIMDVector<double> &a, double b) {
+FASTOR_INLINE SIMDVector<double> operator*(const SIMDVector<double> &a, double b) {
     SIMDVector<double> out;
     out.value = _mm256_mul_pd(a.value,_mm256_set1_pd(b));
     return out;
 }
-SIMDVector<double> operator*(double a, const SIMDVector<double> &b) {
+FASTOR_INLINE SIMDVector<double> operator*(double a, const SIMDVector<double> &b) {
     SIMDVector<double> out;
     out.value = _mm256_mul_pd(_mm256_set1_pd(a),b.value);
     return out;
 }
 
-SIMDVector<double> operator/(const SIMDVector<double> &a, const SIMDVector<double> &b) {
+FASTOR_INLINE SIMDVector<double> operator/(const SIMDVector<double> &a, const SIMDVector<double> &b) {
     SIMDVector<double> out;
     out.value = _mm256_div_pd(a.value,b.value);
     return out;
 }
-SIMDVector<double> operator/(const SIMDVector<double> &a, double b) {
+FASTOR_INLINE SIMDVector<double> operator/(const SIMDVector<double> &a, double b) {
     SIMDVector<double> out;
     out.value = _mm256_div_pd(a.value,_mm256_set1_pd(b));
     return out;
 }
-SIMDVector<double> operator/(double a, const SIMDVector<double> &b) {
+FASTOR_INLINE SIMDVector<double> operator/(double a, const SIMDVector<double> &b) {
     SIMDVector<double> out;
     out.value = _mm256_div_pd(_mm256_set1_pd(a),b.value);
     return out;
 }
 
-
-SIMDVector<double> sqrt(const SIMDVector<double> &a) {
+FASTOR_INLINE SIMDVector<double> sqrt(const SIMDVector<double> &a) {
     SIMDVector<double> out;
     out.value = _mm256_sqrt_pd(a.value);
     return out;

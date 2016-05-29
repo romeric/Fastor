@@ -1,21 +1,78 @@
 #ifndef TRANSPOSE_H
 #define TRANSPOSE_H
 
+
+#include "commons/commons.h"
+#include "extended_intrinsics/extintrin.h"
+
+namespace Fastor {
+
 template<typename T, size_t M, size_t N>
-void _transpose(const T * __restrict__ a, T * __restrict__ out) {
+FASTOR_INLINE void _transpose(const T * __restrict__ a, T * __restrict__ out) {
     for (size_t i=0; i< M; ++i)
         for (size_t j=0; j<N; ++j)
-            out[i*N+j] = a[j*N+i];
+            out[i*N+j] = a[j*M+i];
 }
 
 template<>
-void _transpose<float,2,2>(const float * __restrict__ a, float * __restrict__ out) {
+FASTOR_INLINE void _transpose<float,2,2>(const float * __restrict__ a, float * __restrict__ out) {
     __m128 a_reg = _mm_load_ps(a);
     _mm_store_ps(out,_mm_shuffle_ps(a_reg,a_reg,_MM_SHUFFLE(3,1,2,0)));
 }
 
 template<>
-void _transpose<double,2,2>(const double* __restrict__ a, double* __restrict__ out) {
+FASTOR_INLINE void _transpose<float,3,3>(const float * __restrict__ a, float * __restrict__ out) {
+    __m128 a_low = _mm_load_ps(a);
+    __m128 a_high = _mm_load_ps(a+4);
+    __m128 a_end = _mm_load_ss(a+8);
+
+    __m128 col0 = _mm_shuffle_ps(a_low,a_high,_MM_SHUFFLE(0,2,3,0));
+    __m128 col1 = _mm_shuffle_ps(a_high,a_low,_MM_SHUFFLE(2,2,0,3));
+
+    _mm_store_ps(out,col0);
+    _mm_store_ss(out+3,_mm_shuffle_ps(a_low,a_low,_MM_SHUFFLE(1,1,1,1)));
+    _mm_store_ps(out+4,col1);
+    _mm_store_ss(out+7,_mm_shuffle_ps(a_high,a_high,_MM_SHUFFLE(1,1,1,1)));
+    _mm_store_ss(out+8,a_end);
+}
+
+template<>
+FASTOR_INLINE void _transpose<float,4,4>(const float * __restrict__ a, float * __restrict__ out) {
+    __m128 row1 = _mm_load_ps(a);
+    __m128 row2 = _mm_load_ps(a+4);
+    __m128 row3 = _mm_load_ps(a+8);
+    __m128 row4 = _mm_load_ps(a+12);
+     _MM_TRANSPOSE4_PS(row1, row2, row3, row4);
+     _mm_store_ps(out, row1);
+     _mm_store_ps(out+4, row2);
+     _mm_store_ps(out+8, row3);
+     _mm_store_ps(out+12, row4);
+}
+
+template<>
+FASTOR_INLINE void _transpose<float,8,8>(const float * __restrict__ a, float * __restrict__ out) {
+    __m256 row1 = _mm256_load_ps(a);
+    __m256 row2 = _mm256_load_ps(a+8);
+    __m256 row3 = _mm256_load_ps(a+16);
+    __m256 row4 = _mm256_load_ps(a+24);
+    __m256 row5 = _mm256_load_ps(a+32);
+    __m256 row6 = _mm256_load_ps(a+40);
+    __m256 row7 = _mm256_load_ps(a+48);
+    __m256 row8 = _mm256_load_ps(a+56);
+     _MM_TRANSPOSE8_PS(row1, row2, row3, row4, row5, row6, row7, row8);
+     _mm256_store_ps(out, row1);
+     _mm256_store_ps(out+8, row2);
+     _mm256_store_ps(out+16, row3);
+     _mm256_store_ps(out+24, row4);
+     _mm256_store_ps(out+32, row5);
+     _mm256_store_ps(out+40, row6);
+     _mm256_store_ps(out+48, row7);
+     _mm256_store_ps(out+56, row8);
+}
+
+
+template<>
+FASTOR_INLINE void _transpose<double,2,2>(const double* __restrict__ a, double* __restrict__ out) {
     // IVY 4 OPS / HW 8 OPS
     __m256d a1 =  _mm256_load_pd(a);
     __m128d a2 =  _mm256_castpd256_pd128(a1);
@@ -28,11 +85,7 @@ void _transpose<double,2,2>(const double* __restrict__ a, double* __restrict__ o
 }
 
 template<>
-void _transpose<double,3,3>(const double* __restrict__ a, double* __restrict__ out) {
-    // Note that for single precision there is a direct way of doing this
-    // by using _MM_TRANSPOSE4_PS
-
-
+FASTOR_INLINE void _transpose<double,3,3>(const double* __restrict__ a, double* __restrict__ out) {
     /*-------------------------------------------------------*/
     // SSE VERSION - Requires 32byte alignment
     // all loads are 16 byte aligned if a is 32byte aligned
@@ -70,6 +123,21 @@ void _transpose<double,3,3>(const double* __restrict__ a, double* __restrict__ o
 //    _mm256_store_pd(out+4,row2);
 //    _mm_store_sd(out+8,_mm_load_sd(a+8));
 //    /*-------------------------------------------------------*/
+}
+
+template<>
+FASTOR_INLINE void _transpose<double,4,4>(const double * __restrict__ a, double * __restrict__ out) {
+    __m256d row1 = _mm256_load_pd(a);
+    __m256d row2 = _mm256_load_pd(a+4);
+    __m256d row3 = _mm256_load_pd(a+8);
+    __m256d row4 = _mm256_load_pd(a+12);
+     _MM_TRANSPOSE4_PD(row1, row2, row3, row4);
+     _mm256_store_pd(out, row1);
+     _mm256_store_pd(out+4, row2);
+     _mm256_store_pd(out+8, row3);
+     _mm256_store_pd(out+12, row4);
+}
+
 }
 
 #endif // TRANSPOSE_H

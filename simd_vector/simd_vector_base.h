@@ -26,21 +26,10 @@ struct get_vector_size<int> {
     // were introduced only under AVX2
     static const FASTOR_INDEX size = 4;
 };
-//#else
-//template<>
-//struct get_vector_size<double> {
-//    static const FASTOR_INDEX size = 2;
-//};
-//template<>
-//struct get_vector_size<float> {
-//    static const FASTOR_INDEX size = 4;
-//};
-//#endif
 
 
 template <typename T>
 struct SIMDVector;
-
 
 }
 

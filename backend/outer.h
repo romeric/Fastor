@@ -7,7 +7,7 @@ namespace Fastor {
 
 
 template<typename T, size_t M0, size_t N0, size_t M1, size_t N1>
-void outer(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+void _outer(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
     for (size_t i=0; i<M0; ++i) {
         for (size_t j=0; j<N0; ++j) {
             for (size_t k=0; k<M1; ++k) {
@@ -20,10 +20,10 @@ void outer(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ 
 }
 
 template<>
-void outer<float,2,2,2,2>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
+void _outer<float,2,2,2,2>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
     // 31 OPS
     // Fetch a to L1-cache
-    _mm_prefetch(a,_MM_HINT_T0);
+//    _mm_prefetch(a,_MM_HINT_T0);
     __m128 a0 = _mm_set1_ps(a[0]);
     __m128 a1 = _mm_set1_ps(a[1]);
 //    __m128 a2 = _mm_set1_ps(a[2]);
@@ -55,7 +55,7 @@ void outer<float,2,2,2,2>(const float * __restrict__ a, const float * __restrict
 }
 
 template<>
-void outer<float,3,3,3,3>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
+void _outer<float,3,3,3,3>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
     // 81 OPS
     // Fetch a to L1-cache
 //    _mm_prefetch(a,_MM_HINT_T0);
@@ -191,7 +191,7 @@ void outer<float,3,3,3,3>(const float * __restrict__ a, const float * __restrict
 }
 
 template<>
-void outer<double,2,2,2,2>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
+void _outer<double,2,2,2,2>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
     // Fetch a to L1-cache
 //    _mm_prefetch(a,_MM_HINT_T0);
     __m256d a0 = _mm256_set1_pd(a[0]);
@@ -219,7 +219,7 @@ void outer<double,2,2,2,2>(const double * __restrict__ a, const double * __restr
 }
 
 template<>
-void outer<double,3,3,3,3>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
+void _outer<double,3,3,3,3>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
     //  OPS
 //    _mm_prefetch(a,_MM_HINT_T0);
 

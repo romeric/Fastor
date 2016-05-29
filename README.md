@@ -89,7 +89,7 @@ Here is performance benchmark between Ctran (C/Fortran) code and the equivalent 
 </p>
 
 
-Notice over two orders of magnitude performance gain using Fastor. Again the real performance gain comes from the fact that Fastor eliminates zeros from the computation.
+Notice the almost two orders of magnitude performance gain using Fastor. Again the real performance gain comes from the fact that Fastor eliminates zeros from the computation.
 
 ### Smart expression templates
 A must have feature of every numerical linear algebra and even more so tensor contraction frameworks is lazy evaluation of arbitrary chained operations. Consider the following expression

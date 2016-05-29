@@ -240,7 +240,7 @@ void iterate_over(const real* a, const real* b, real* out) {
     for (volatile size_t i=0; i<NITER; i++){
 //        auto z = einsum<Index<I,J,K,L>,Index<L,M,O,P>>(x,y);
 //        cyclic_0<real,N,N,N,N>(a,b,out);
-        outer<real,N,N,N,N>(a,b,out);
+        _outer<real,N,N,N,N>(a,b,out);
 //        Tensor<double,200,200> x;
 //        x.iota(0.);
 //        _crossproduct<real,N,N>(a,b,out);

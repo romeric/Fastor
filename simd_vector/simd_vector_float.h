@@ -124,88 +124,94 @@ struct SIMDVector<float> {
         out.value = _mm256_reverse_ps(value);
         return out;
     }
+    FASTOR_INLINE float minimum() {return _mm256_hmin_ps(value);}
+    FASTOR_INLINE float maximum() {return _mm256_hmax_ps(value);}
 
     __m256 value;
 };
 
 
 std::ostream& operator<<(std::ostream &os, SIMDVector<float> a) {
-    os << "[" << a.value[0] <<  " " << a.value[1] << " "
-       << a.value[2] << " " << a.value[3] << " "
-       << a.value[4] << " " << a.value[5] << " "
-       << a.value[6] << " " << a.value[7] << "]\n";
+    // ICC crashes without a copy
+    const __m256 value = a.value;
+    os << "[" << value[0] <<  " " << value[1] << " "
+       << value[2] << " " << value[3] << " "
+       << value[4] << " " << value[5] << " "
+       << value[6] << " " << value[7] << "]\n";
     return os;
 }
 
-SIMDVector<float> operator+(const SIMDVector<float> &a, const SIMDVector<float> &b) {
+FASTOR_INLINE SIMDVector<float> operator+(const SIMDVector<float> &a, const SIMDVector<float> &b) {
     SIMDVector<float> out;
     out.value = _mm256_add_ps(a.value,b.value);
     return out;
 }
-SIMDVector<float> operator+(const SIMDVector<float> &a, float b) {
+FASTOR_INLINE SIMDVector<float> operator+(const SIMDVector<float> &a, float b) {
     SIMDVector<float> out;
     out.value = _mm256_add_ps(a.value,_mm256_set1_ps(b));
     return out;
 }
-SIMDVector<float> operator+(float a, const SIMDVector<float> &b) {
+FASTOR_INLINE SIMDVector<float> operator+(float a, const SIMDVector<float> &b) {
     SIMDVector<float> out;
     out.value = _mm256_add_ps(_mm256_set1_ps(a),b.value);
     return out;
 }
 
-SIMDVector<float> operator-(const SIMDVector<float> &a, const SIMDVector<float> &b) {
+FASTOR_INLINE SIMDVector<float> operator-(const SIMDVector<float> &a, const SIMDVector<float> &b) {
     SIMDVector<float> out;
     out.value = _mm256_sub_ps(a.value,b.value);
     return out;
 }
-SIMDVector<float> operator-(const SIMDVector<float> &a, float b) {
+FASTOR_INLINE SIMDVector<float> operator-(const SIMDVector<float> &a, float b) {
     SIMDVector<float> out;
     out.value = _mm256_sub_ps(a.value,_mm256_set1_ps(b));
     return out;
 }
-SIMDVector<float> operator-(float a, const SIMDVector<float> &b) {
+FASTOR_INLINE SIMDVector<float> operator-(float a, const SIMDVector<float> &b) {
     SIMDVector<float> out;
     out.value = _mm256_sub_ps(_mm256_set1_ps(a),b.value);
     return out;
 }
 
-SIMDVector<float> operator*(const SIMDVector<float> &a, const SIMDVector<float> &b) {
+FASTOR_INLINE SIMDVector<float> operator*(const SIMDVector<float> &a, const SIMDVector<float> &b) {
     SIMDVector<float> out;
     out.value = _mm256_mul_ps(a.value,b.value);
     return out;
 }
-SIMDVector<float> operator*(const SIMDVector<float> &a, float b) {
+FASTOR_INLINE SIMDVector<float> operator*(const SIMDVector<float> &a, float b) {
     SIMDVector<float> out;
     out.value = _mm256_mul_ps(a.value,_mm256_set1_ps(b));
     return out;
 }
-SIMDVector<float> operator*(float a, const SIMDVector<float> &b) {
+FASTOR_INLINE SIMDVector<float> operator*(float a, const SIMDVector<float> &b) {
     SIMDVector<float> out;
     out.value = _mm256_mul_ps(_mm256_set1_ps(a),b.value);
     return out;
 }
 
-SIMDVector<float> operator/(const SIMDVector<float> &a, const SIMDVector<float> &b) {
+FASTOR_INLINE SIMDVector<float> operator/(const SIMDVector<float> &a, const SIMDVector<float> &b) {
     SIMDVector<float> out;
     out.value = _mm256_div_ps(a.value,b.value);
     return out;
 }
-SIMDVector<float> operator/(const SIMDVector<float> &a, float b) {
+FASTOR_INLINE SIMDVector<float> operator/(const SIMDVector<float> &a, float b) {
     SIMDVector<float> out;
     out.value = _mm256_div_ps(a.value,_mm256_set1_ps(b));
     return out;
 }
-SIMDVector<float> operator/(float a, const SIMDVector<float> &b) {
+FASTOR_INLINE SIMDVector<float> operator/(float a, const SIMDVector<float> &b) {
     SIMDVector<float> out;
     out.value = _mm256_div_ps(_mm256_set1_ps(a),b.value);
     return out;
 }
 
-SIMDVector<float> sqrt(const SIMDVector<float> &a) {
+FASTOR_INLINE SIMDVector<float> sqrt(const SIMDVector<float> &a) {
     SIMDVector<float> out;
     out.value = _mm256_sqrt_ps(a.value);
     return out;
 }
+
+
 
 }
 #endif

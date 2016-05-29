@@ -5,14 +5,30 @@
 
 namespace Fastor {
 
-template<typename T, size_t I, size_t J, size_t K, size_t L,
-         typename std::enable_if<(I==2 && J==2 && K==2 && L==2)
-                                 ,bool>::type=0>
-FASTOR_INLINE Tensor<T,3,3> voigt(const Tensor<T,I,J,K,L> &a) {
-    T *a_data = a.data();
-    Tensor<T,3,3> voigt_a;
-    T *VoigtA = voigt_a.data();
+template<typename T, size_t ... Rest>
+struct VoigtType;
+template<typename T>
+struct VoigtType<T,2,2,2,2> {
+    using return_type = Tensor<T,3,3>;
+};
+template<typename T>
+struct VoigtType<T,3,3,3,3> {
+    using return_type = Tensor<T,6,6>;
+};
+template<typename T>
+struct VoigtType<T,2,2,2> {
+    using return_type = Tensor<T,3,2>;
+};
+template<typename T>
+struct VoigtType<T,3,3,3> {
+    using return_type = Tensor<T,6,3>;
+};
 
+
+template<typename T, size_t ... Rest,
+         typename std::enable_if<sizeof...(Rest)==4 && prod<Rest...>::value == 16
+                                 ,bool>::type=0>
+FASTOR_INLINE void _voigt(const T * __restrict__ a_data, T * __restrict__ VoigtA) {
     VoigtA[0] = a_data[0];
     VoigtA[1] = a_data[3];
     VoigtA[2] = 0.5*(a_data[1]+a_data[2]);
@@ -22,17 +38,13 @@ FASTOR_INLINE Tensor<T,3,3> voigt(const Tensor<T,I,J,K,L> &a) {
     VoigtA[6] = VoigtA[2];
     VoigtA[7] = VoigtA[5];
     VoigtA[8] = 0.5*(a_data[5]+a_data[6]);
-
-    return voigt_a;
 }
 
-template<typename T, size_t I, size_t J, size_t K, size_t L,
-         typename std::enable_if<(I==3 && J==3 && K==3 && L==3)
+
+template<typename T, size_t ... Rest,
+         typename std::enable_if<sizeof...(Rest)==4 && prod<Rest...>::value == 81
                                  ,bool>::type=0>
-FASTOR_INLINE Tensor<T,6,6> voigt(const Tensor<T,I,J,K,L> &a) {
-    T *a_data = a.data();
-    Tensor<T,6,6> voigt_a;
-    T *VoigtA = voigt_a.data();
+FASTOR_INLINE void _voigt(const T * __restrict__ a_data, T * __restrict__ VoigtA) {
 
     VoigtA[0] = a_data[0];
     VoigtA[1] = a_data[4];
@@ -70,22 +82,37 @@ FASTOR_INLINE Tensor<T,6,6> voigt(const Tensor<T,I,J,K,L> &a) {
     VoigtA[33] = VoigtA[23];
     VoigtA[34] = VoigtA[29];
     VoigtA[35] = 0.5*(a_data[50]+a_data[52]);
-
-    return voigt_a;
 }
 
-template<typename T, size_t I, size_t J, size_t K,
-         typename std::enable_if<(I==3 && J==3 && K==3)
-                                 ,bool>::type=0>
-FASTOR_INLINE Tensor<T,6,3> voigt(const Tensor<T,I,J,K> &a) {
-    T *a_data = a.data();
-    Tensor<T,3,3> voigt_a;
-    T *VoigtA = voigt_a.data();
 
+template<typename T, size_t ... Rest,
+         typename std::enable_if<sizeof...(Rest)==3 && prod<Rest...>::value == 8
+                                 ,bool>::type=0>
+FASTOR_INLINE void _voigt(const T * __restrict__ a_data, T * __restrict__ VoigtA) {
     // TODO
     VoigtA[0] = a_data[0];
+}
 
-    return VoigtA;
+
+template<typename T, size_t ... Rest,
+         typename std::enable_if<sizeof...(Rest)==3 && prod<Rest...>::value == 27
+                                 ,bool>::type=0>
+FASTOR_INLINE void _voigt(const T * __restrict__ a_data, T * __restrict__ VoigtA) {
+    // TODO
+    VoigtA[0] = a_data[0];
+}
+
+
+template<typename T, size_t ... Rest>
+FASTOR_INLINE auto voigt(const Tensor<T,Rest...> &a)
+-> typename VoigtType<T,Rest...>::return_type {
+    T *a_data = a.data();
+    using ret_type = typename VoigtType<T,Rest...>::return_type;
+    ret_type voigt_a;
+    T *VoigtA = voigt_a.data();
+    _voigt<T,Rest...>(a_data,VoigtA);
+
+    return voigt_a;
 }
 
 }

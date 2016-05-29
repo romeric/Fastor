@@ -178,7 +178,7 @@ template<typename Index_I, typename Index_J, int VoigtNotation,
                                  ,bool>::type=0 >
 FASTOR_INLINE Tensor<T,6,6> einsum(const Tensor<T,Rest...> &a, const Tensor<T,Rest...> &b) {
     Tensor<T,6,6> c;
-    outer<T,Rest...,Rest...>(a.data(),b.data(),c.data());
+    _outer<T,Rest...,Rest...>(a.data(),b.data(),c.data());
     return c;
 }
 
@@ -301,14 +301,6 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> einsum(const Tensor0<T,Rest0...> &a, c
     T *b_data = b.data();
     T *out_data = out.data();
 
-//    constexpr FASTOR_INDEX a_dim = sizeof...(Rest0);
-//    constexpr FASTOR_INDEX b_dim = sizeof...(Rest1);
-//    constexpr FASTOR_INDEX out_dim = a_dim+b_dim;
-//    constexpr std::array<FASTOR_INDEX,a_dim> maxes_a = {Rest0...};
-//    constexpr std::array<FASTOR_INDEX,b_dim> maxes_b = {Rest1...};
-//    constexpr std::array<FASTOR_INDEX,out_dim> maxes_out = {Rest0...,Rest1...};
-
-
     constexpr int a_dim = sizeof...(Rest0);
     constexpr int b_dim = sizeof...(Rest1);
     constexpr int out_dim = a_dim+b_dim;
@@ -316,12 +308,7 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> einsum(const Tensor0<T,Rest0...> &a, c
     constexpr std::array<int,b_dim> maxes_b = {Rest1...};
     constexpr std::array<int,out_dim> maxes_out = {Rest0...,Rest1...};
 
-//    std::vector<int> maxes_a = {Rest0...};
-//    std::vector<int> maxes_b = {Rest1...};
-//    std::vector<int> maxes_out = {Rest0...,Rest1...};
-
-    std::array<int,a_dim> products_a;
-//    std::vector<int> products_a(a_dim);
+    std::array<int,a_dim> products_a; products_a[0]=0;
     for (int j=a_dim-1; j>0; --j) {
         int num = maxes_a[a_dim-1];
         for (int k=0; k<j-1; ++k) {
@@ -329,8 +316,7 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> einsum(const Tensor0<T,Rest0...> &a, c
         }
         products_a[j] = num;
     }
-    std::array<int,b_dim> products_b;
-//    std::vector<int> products_b(b_dim);
+    std::array<int,b_dim> products_b; products_b[0]=0;
     for (int j=b_dim-1; j>0; --j) {
         int num = maxes_b[b_dim-1];
         for (int k=0; k<j-1; ++k) {
@@ -338,8 +324,7 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> einsum(const Tensor0<T,Rest0...> &a, c
         }
         products_b[j] = num;
     }
-    std::array<int,out_dim> products_out;
-//    std::vector<int> products_out(out_dim);
+    std::array<int,out_dim> products_out; products_out[0]=0;
     for (int j=out_dim-1; j>0; --j) {
         int num = maxes_out[out_dim-1];
         for (int k=0; k<j-1; ++k) {
@@ -351,26 +336,11 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> einsum(const Tensor0<T,Rest0...> &a, c
     std::reverse(products_a.begin(),products_a.end());
     std::reverse(products_b.begin(),products_b.end());
     std::reverse(products_out.begin(),products_out.end());
-//    print(products_a,products_b,products_out);
 
-//    std::array<FASTOR_INDEX,a_dim> largs_a;
-//    std::array<FASTOR_INDEX,a_dim> largs_b;
-//    std::array<FASTOR_INDEX,a_dim+b_dim> largs_out;
-//    std::fill(largs_a.begin(),largs_a.end(),0);
-//    std::fill(largs_b.begin(),largs_b.end(),0);
-//    std::fill(largs_out.begin(),largs_out.end(),0);
-
-
-//    std::array<int,out_dim> as;
-//    std::fill(as.begin(),as.end(),0);
-//    std::vector<int> as(out_dim); as.resize(out_dim);
-//    std::fill(as.begin(),as.end(),0);
     int as[out_dim];
     std::fill(as,as+out_dim,0);
     int it,jt;
 
-//    out_data[2] = a_data[5]+b_data[3]+maxes_a[1]+maxes_b[1]+maxes_out[1]+products_a[1]+products_b[2];
-//    auto counter =0;
     while(true)
     {
         int index_a = as[a_dim-1];
@@ -385,17 +355,14 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> einsum(const Tensor0<T,Rest0...> &a, c
         for(it = 0; it< out_dim; it++) {
             index_out += products_out[it]*as[it];
         }
-        out_data[index_out] += a_data[index_a]*b_data[index_b];
-//        out_data[index_out] = a_data[index_a]*b_data[index_b];
+//        out_data[index_out] += a_data[index_a]*b_data[index_b];
+        out_data[index_out] = a_data[index_a]*b_data[index_b];
 //        if (as)
 //        auto dd = _mm_mul_sd(_mm_load_sd(a_data+index_a),_mm_load_sd(b_data+index_b));
 //        _mm_store_sd(out_data+index_out,dd);
 
 //        std::cout << a_data[index_a] << " " << b_data[index_b] << "  " << out_data[index_out] <<  "\n";
-//        out_data[728] += a_data[index_a]*b_data[index_b];
-//        out_data[it] += a_data[index_a]*b_data[index_b];
 //        std::cout << index_a << " " << index_b << "  " << index_out <<  "\n";
-//        print(index_a);
 
 //        for(it = 0; it< out_dim; it++) {
 //            std::cout << as[it] << " ";
