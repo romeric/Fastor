@@ -34,7 +34,7 @@ will output the following
 ~~~
 
 ### No heap allocation
-Fastor is essentially designed for small mutlidimensional tensors, that can appear in computing stresses, work conjugates, Hessian etc, during numerical integration in a finite element framework. As can be seen from the above examples, Fastor is based on fixed size static arrays (entirely stack allocation). The dimensions of the tensors must be known at compile time, which is typically the case for the use-cases it is designed for. 
+Fastor is essentially designed for small mutlidimensional tensors, that can appear in computing stresses, work conjugates, Hessian etc, during numerical integration in a finite element framework. As can be seen from the above examples, Fastor is based on fixed size static arrays (entirely stack allocation). The dimensions of the tensors must be known at compile time, which is typically the case for the use-cases it is designed for. However one of the strongest features of Fastor is in its in-built template meta-programming engine, in that it can automatically compute *at compile time*, the dimensions of the tensors resulting from a complex operation yet to be performed, (i.e. *before* the actual computation is performed), hence Fastor allocates the right amount of stack memory before hand.   
 ### Static disptaching for absolute branchless code
 This is a strong statement to make, but Fastor strives to generate optimised SIMD code by utilising the static nature of tensors and the `SFINAE` (Substitution Failure Is Not an Error) feature of `C++11` to statically dispatch calls to bespoke kernels, which completely avoids the need for runtime branching. For example the double contraction of two second order double precision tensors  `A` and `B`, `A_ij*B_ij` with dimensions `2x2`, is statically dispatched to 
 ~~~c++
@@ -161,7 +161,10 @@ einsum<Index<I,J>,Index<I,J>>(G,H); // double contraction of G and H
 ~~~
 As you can observe with combination of `permutation`, `contraction`, `reduction` and `einsum` (which itself is a glorified wrapper over the first three) any type of tensor contraction, and permutation that you can percieve of, is possible, and using meta-programming the right amount of stack memory to be allocated is deduced at compile time.
 
-### Similar Projects:
+### A minimal framework
+Fastor is extremely light weight, its a *header-only* library, requires no build or compilation process and has no external dependencies. It is written in pure C++11 from the foundation.  
+
+### Similar Projects
 Similar projects exist in particular
 - [FTensor](http://www.wlandry.net/Projects/FTensor): Dense tensor algebra framework for up to rank 4 tensors
 - [LTensor](https://code.google.com/archive/p/ltensor/): Dense tensor algebra framework for up to rank 4 tensors
@@ -173,7 +176,7 @@ Similar projects exist in particular
 
 It should be noted, that compared to the above projects Fastor is *minimal* in terms of function overloads as well as design and does not try to be a full-fledged tensor algebra framework, like Eigen. It is designed with specific needs in mind. Some noteworthy differences are
 
-- Fastor does not fall back to scalar code on non-SIMD architectures. That has just not been the goal of Fastor.
+- Fastor does not fall back to scalar code on non-SIMD architectures. That has just not been the goal of Fastor. In particular you need to have an AVX enabled microprosser for it to run, i.e. starting from Intel Sandy-Bridge or AMD Bulldozer to newer versions. 
 - Fastor is for small tensors and stack allocated and the limit to the dimensions of the tensor is dictated by the compilers template instantiation depth which is by default 500 in `gcc` at which point you would certainly exceed stack-allocation limit anyway. Some of the above libraries are limited to a few dimensional tensors. 
 - Most of the points mentioned above, like resolving indices at compile time, Voigt transformation, the einsum feature is specific to and niceties of Fastor. Some of these design principles certainly make Fastor less flexible compared to the above mentioned projects.
 - While stable, Fastor is in its infancy, whereas most of the aforementioned projects have reached a certain level maturity. Unless you find some features of Fastor appealing and work in the areas that we do, there is no reason why you shouldn't be using one of the above projects. In particular, Eigen is a really powerful alternative. 
