@@ -127,6 +127,11 @@ struct SIMDVector<float> {
     FASTOR_INLINE float minimum() {return _mm256_hmin_ps(value);}
     FASTOR_INLINE float maximum() {return _mm256_hmax_ps(value);}
 
+    FASTOR_INLINE float dot(const SIMDVector<float> &other) {
+        __m256 tmp = _mm256_dp_ps(value,other.value,0xff);
+        return _mm256_get0_ps(tmp)+_mm256_get4_ps(tmp);
+    }
+
     __m256 value;
 };
 

@@ -115,6 +115,10 @@ struct SIMDVector<double> {
     FASTOR_INLINE double minimum() {return _mm256_hmin_pd(value);}
     FASTOR_INLINE double maximum() {return _mm256_hmax_pd(value);}
 
+    FASTOR_INLINE double dot(const SIMDVector<double> &other) {
+        return _mm_cvtsd_f64(_mm256_dp_pd(value,other.value));
+    }
+
     __m256d value;
 };
 
@@ -195,6 +199,7 @@ FASTOR_INLINE SIMDVector<double> sqrt(const SIMDVector<double> &a) {
     out.value = _mm256_sqrt_pd(a.value);
     return out;
 }
+
 
 }
 #endif

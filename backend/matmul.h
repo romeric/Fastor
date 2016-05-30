@@ -323,6 +323,105 @@ void _matmul<double,3,3,3>(const double * __restrict__ a, const double * __restr
 
 
 
+template<>
+FASTOR_INLINE void _matmul<float,4,4,4>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
+
+    __m128 a0 = _mm_load_ps(a);
+    __m128 a1 = _mm_load_ps(a+4);
+    __m128 a2 = _mm_load_ps(a+8);
+    __m128 a3 = _mm_load_ps(a+12);
+
+    __m128 b0 = _mm_load_ps(b);
+    __m128 b1 = _mm_load_ps(b+4);
+    __m128 b2 = _mm_load_ps(b+8);
+    __m128 b3 = _mm_load_ps(b+12);
+
+    {
+        __m128 e0 = _mm_shuffle_ps(b0, b0, _MM_SHUFFLE(0, 0, 0, 0));
+        __m128 e1 = _mm_shuffle_ps(b0, b0, _MM_SHUFFLE(1, 1, 1, 1));
+        __m128 e2 = _mm_shuffle_ps(b0, b0, _MM_SHUFFLE(2, 2, 2, 2));
+        __m128 e3 = _mm_shuffle_ps(b0, b0, _MM_SHUFFLE(3, 3, 3, 3));
+
+        __m128 m0 = _mm_mul_ps(a0, e0);
+        __m128 m1 = _mm_mul_ps(a1, e1);
+        __m128 m2 = _mm_mul_ps(a2, e2);
+        __m128 m3 = _mm_mul_ps(a3, e3);
+
+        __m128 c0 = _mm_add_ps(m0, m1);
+        __m128 c1 = _mm_add_ps(m2, m3);
+        __m128 c2 = _mm_add_ps(c0, c1);
+
+        _mm_store_ps(out,c2);
+    }
+
+    {
+        __m128 e0 = _mm_shuffle_ps(b1, b1, _MM_SHUFFLE(0, 0, 0, 0));
+        __m128 e1 = _mm_shuffle_ps(b1, b1, _MM_SHUFFLE(1, 1, 1, 1));
+        __m128 e2 = _mm_shuffle_ps(b1, b1, _MM_SHUFFLE(2, 2, 2, 2));
+        __m128 e3 = _mm_shuffle_ps(b1, b1, _MM_SHUFFLE(3, 3, 3, 3));
+
+        __m128 m0 = _mm_mul_ps(a0, e0);
+        __m128 m1 = _mm_mul_ps(a1, e1);
+        __m128 m2 = _mm_mul_ps(a2, e2);
+        __m128 m3 = _mm_mul_ps(a3, e3);
+
+        __m128 c0 = _mm_add_ps(m0, m1);
+        __m128 c1 = _mm_add_ps(m2, m3);
+        __m128 c2 = _mm_add_ps(c0, c1);
+
+        _mm_store_ps(out+4,c2);
+    }
+
+    {
+        __m128 e0 = _mm_shuffle_ps(b2, b2, _MM_SHUFFLE(0, 0, 0, 0));
+        __m128 e1 = _mm_shuffle_ps(b2, b2, _MM_SHUFFLE(1, 1, 1, 1));
+        __m128 e2 = _mm_shuffle_ps(b2, b2, _MM_SHUFFLE(2, 2, 2, 2));
+        __m128 e3 = _mm_shuffle_ps(b2, b2, _MM_SHUFFLE(3, 3, 3, 3));
+
+        __m128 m0 = _mm_mul_ps(a0, e0);
+        __m128 m1 = _mm_mul_ps(a1, e1);
+        __m128 m2 = _mm_mul_ps(a2, e2);
+        __m128 m3 = _mm_mul_ps(a3, e3);
+
+        __m128 c0 = _mm_add_ps(m0, m1);
+        __m128 c1 = _mm_add_ps(m2, m3);
+        __m128 c2 = _mm_add_ps(c0, c1);
+
+        _mm_store_ps(out+8,c2);
+    }
+
+    {
+        __m128 e0 = _mm_shuffle_ps(b3, b3, _MM_SHUFFLE(0, 0, 0, 0));
+        __m128 e1 = _mm_shuffle_ps(b3, b3, _MM_SHUFFLE(1, 1, 1, 1));
+        __m128 e2 = _mm_shuffle_ps(b3, b3, _MM_SHUFFLE(2, 2, 2, 2));
+        __m128 e3 = _mm_shuffle_ps(b3, b3, _MM_SHUFFLE(3, 3, 3, 3));
+
+        __m128 m0 = _mm_mul_ps(a0, e0);
+        __m128 m1 = _mm_mul_ps(a1, e1);
+        __m128 m2 = _mm_mul_ps(a2, e2);
+        __m128 m3 = _mm_mul_ps(a3, e3);
+
+        __m128 c0 = _mm_add_ps(m0, m1);
+        __m128 c1 = _mm_add_ps(m2, m3);
+        __m128 c2 = _mm_add_ps(c0, c1);
+
+        _mm_store_ps(out+12,c2);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //!----------------------------------------------------------------------
 //! Matrix-vector multiplication
@@ -407,6 +506,7 @@ void _matmul<double,3,3,1>(const double * __restrict__ a, const double * __restr
     _mm_store_sd(out+1,c1);
     _mm_store_sd(out+2,c2);
 }
+
 
 } // end of namespace
 

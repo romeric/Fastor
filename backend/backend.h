@@ -14,6 +14,7 @@
 #include "cyclic_0.h"
 #include "tensor_cross.h"
 #include "norm.h"
+#include "inverse.h"
 
 #endif // BACKEND_H
 
