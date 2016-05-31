@@ -34,7 +34,8 @@ will output the following
 ~~~
 
 ### No heap allocation
-Fastor is essentially designed for small mutlidimensional tensors, that can appear in computing stresses, work conjugates, Hessian etc, during numerical integration in a finite element framework. As can be seen from the above examples, Fastor is based on fixed size static arrays (entirely stack allocation). The dimensions of the tensors must be known at compile time, which is typically the case for the use-cases it is designed for. However one of the strongest features of Fastor is in its in-built template meta-programming engine, in that it can automatically compute *at compile time*, the dimensions of the tensors resulting from a complex operation yet to be performed, (i.e. *before* the actual computation is performed), hence Fastor allocates the right amount of stack memory before hand.   
+Fastor is essentially designed for small mutlidimensional tensors, that can appear in computing stresses, work conjugates, Hessian etc, during numerical integration in a finite element framework. As can be seen from the above examples, Fastor is based on fixed size static arrays (entirely stack allocation). The dimensions of the tensors must be known at compile time, which is typically the case for the use-cases it is designed for. However one of the strongest features of Fastor is in its in-built template meta-programming engine, in that, it can automatically determine at *compile time*, the dimensions of the tensors resulting from a complex operation yet to be performed, hence it can always allocate exactly the right amount of stack memory required. This is in contrast to static arrays in `C` or `Fortran` where one has to allocate a huge block of memory before hand to avoid stack overflow.   
+
 ### Static disptaching for absolute branchless code
 This is a strong statement to make, but Fastor strives to generate optimised SIMD code by utilising the static nature of tensors and the `SFINAE` (Substitution Failure Is Not an Error) feature of `C++11` to statically dispatch calls to bespoke kernels, which completely avoids the need for runtime branching. For example the double contraction of two second order double precision tensors  `A` and `B`, `A_ij*B_ij` with dimensions `2x2`, is statically dispatched to 
 ~~~c++
@@ -50,7 +51,7 @@ return _mm_cvtsd_f64(summ);
 ~~~
 without the need for a branch or a potential `jmp` instruction in assembly (again note that `9 multiplication + 8 addition` is reduced to `3 multiplication + 3 addition`). The main motivation behind customising/optimising these operations for such small tensors is that they are typically needed in the critical hotspots of finite element implementations (i.e. they almost always happen to appear at every quadrature point).  
 
-### Tensor contraction example and performance benchmark
+### Performance benchmark
 Consider the dyadic product `A_ik*B_jl`, that can be computed in Fastor like 
 ~~~c++
 Tensor<double,3,3> A,B;
@@ -72,7 +73,7 @@ As you notice, all indices are resolved and the Voigt transformation is performe
 
 Notice that by compiling with the same flags, it is meant that the compiler is permitted to auto-vectorise the C/tran code as well. The real performance of Fastor comes from the fact, that when a Voigt transformation is requested, Fastor does not compute the elements which are not needed.
 ### The tensor cross product and its associated algebra
-If not the main, one of the main motivations behind developing Fastor has been the recently introduced tensor cross product by [Bonet et. al.](http://dx.doi.org/10.1016/j.ijsolstr.2015.12.030) in the context of nonlinear solid mechanics which can significantly reduce the amount algebra involved in consistent linearisation of functionals which are forbiddingly complex to derive using the classical approach. The tensor cross product of two second order tensors is defined as `C_iI = e_ijk*e_IJK*A_jJ*b_kK` where `e` is the third order permutation tensor. As can be seen this product is O(n^6) in computational complexity (furthermore a cross product is essentially defined in 3-dimensional space i.e. perfectly suitable for stack allocation). Using Fastor the equivalent code is only 81 SSE intrinsics
+If not the main, one of the main motivations behind developing Fastor has been the recently introduced tensor cross product by [Bonet et. al.](http://dx.doi.org/10.1016/j.ijsolstr.2015.12.030) and its associated algebra, in the context of nonlinear solid mechanics which can significantly reduce the amount algebra involved in consistent linearisation of functionals which are forbiddingly complex to derive using the classical approach. The tensor cross product of two second order tensors is defined as `C_iI = e_ijk*e_IJK*A_jJ*b_kK` where `e` is the third order permutation tensor. As can be seen this product is O(n^6) in computational complexity (furthermore a cross product is essentially defined in 3-dimensional space i.e. perfectly suitable for stack allocation). Using Fastor the equivalent code is only 81 SSE intrinsics
 ~~~c++
 // A and B are second order tensors
 using Fastor::LeviCivita_pd;
@@ -162,7 +163,7 @@ einsum<Index<I,J>,Index<I,J>>(G,H); // double contraction of G and H
 As you can observe with combination of `permutation`, `contraction`, `reduction` and `einsum` (which itself is a glorified wrapper over the first three) any type of tensor contraction, and permutation that you can percieve of, is possible, and using meta-programming the right amount of stack memory to be allocated is deduced at compile time.
 
 ### A minimal framework
-Fastor is extremely light weight, its a *header-only* library, requires no build or compilation process and has no external dependencies. It is written in pure C++11 from the foundation.  
+Fastor is extremely light weight, it is a *header-only* library, requires no build or compilation process and has no external dependencies. It is written in pure C++11 from the foundation.  
 
 ### Similar Projects
 Similar projects exist in particular
@@ -176,7 +177,7 @@ Similar projects exist in particular
 
 It should be noted, that compared to the above projects Fastor is *minimal* in terms of function overloads as well as design and does not try to be a full-fledged tensor algebra framework, like Eigen. It is designed with specific needs in mind. Some noteworthy differences are
 
-- Fastor does not fall back to scalar code on non-SIMD architectures. That has just not been the goal of Fastor. In particular you need to have an AVX enabled microprosser for it to run, i.e. starting from Intel Sandy-Bridge or AMD Bulldozer to newer versions. 
+- Fastor does not fall back to scalar code on non-SIMD architectures. That has just not been the goal of Fastor. In particular you need to have an AVX enabled micro-architecture for it to run, i.e. starting from Intel Sandy-Bridge or AMD Bulldozer generation onwards. Extension to support more vector enabled archetictures such as AVX-512, MIC and GPUs is planned and should be in fact straight-forward to plug them in, by using the [Vc](https://github.com/VcDevel/Vc) library. Fastor's underlying vector type APIs are purposely kept very close to `Vc`, so that in eventual case of porting, a change of namespace would suffice.  
 - Fastor is for small tensors and stack allocated and the limit to the dimensions of the tensor is dictated by the compilers template instantiation depth which is by default 500 in `gcc` at which point you would certainly exceed stack-allocation limit anyway. Some of the above libraries are limited to a few dimensional tensors. 
 - Most of the points mentioned above, like resolving indices at compile time, Voigt transformation, the einsum feature is specific to and niceties of Fastor. Some of these design principles certainly make Fastor less flexible compared to the above mentioned projects.
 - While stable, Fastor is in its infancy, whereas most of the aforementioned projects have reached a certain level maturity. Unless you find some features of Fastor appealing and work in the areas that we do, there is no reason why you shouldn't be using one of the above projects. In particular, Eigen is a really powerful alternative. 
