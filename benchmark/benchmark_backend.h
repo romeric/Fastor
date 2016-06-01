@@ -23,7 +23,7 @@ using namespace Fastor;
 
 using std::size_t;
 //#define SIZE 3
-using real = double;
+using real = float;
 
 enum {
     I,
@@ -223,17 +223,17 @@ void _voigt(const real * __restrict__ a_data, real * __restrict__ VoigtA) {
 
 
 // ----------------------------------------RUN-----------------------------------------------------------
-static const size_t NITER = 1000000LL;
-//static const size_t NITER = 10000LL;
+//static const size_t NITER = 1000000LL;
+static const size_t NITER = 1000LL;
 // clobber
 template <typename T> void unused(T &&x) { asm("" ::"m"(x)); }
 
 // iterate the same benchmark one million times
 template<size_t N>
 void iterate_over(const real* a, const real* b, real* out) {
-//    Tensor<real,N,N,N,N> x; x.random();
-//    Tensor<real,N,N,N,N> y; y.random();
-//    unused(b);    unused(a);     unused(out);
+    Tensor<real,N,N,N,N> x; x.random();
+    Tensor<real,N,N,N,N> y; y.random();
+    unused(b);    unused(a);     unused(out);
 
 //    auto z = einsum<Index<I,J,K,L>,Index<L,M,O,P>>(x,y);
 //    print(type_name<decltype(z)>());
@@ -246,24 +246,56 @@ void iterate_over(const real* a, const real* b, real* out) {
 //        _crossproduct<real,N,N>(a,b,out);
 //        _matmul<real,N,N,N>(a,b,out);
         unused(out);
+//        auto z = outer(x,y);
+//        unused(z);
     }
 }
 
 template<size_t N>
-void iterate_over_scalar(const real* a, const real* b, real* out) {
+void iterate_over_scalar(const real* a, const real* b, real* out) {    
     real a_data[81];
     for (volatile size_t i=0; i<NITER; i++){
 //        tensor_cross_scalar<N>(a,b,out);
         matmul_scalar<N>(a,b,out);
 //        outer_4_and_4<N>(a,b,out);
-
-
-
         AijBkl<N>(a,b,a_data);   _voigt(a_data,out);
 //        AikBjl<N>(a,b,a_data);   _voigt(a_data,out);
         unused(out);
     }
 }
+
+
+
+
+
+// iterate the same benchmark one million times
+template<size_t N>
+void iterate_over() {
+    Tensor<real,N,N,N,N> x; x.random();
+    Tensor<real,N,N,N,N> y; y.random();
+
+    for (volatile size_t i=0; i<NITER; i++){
+        auto z = outer(x,y);
+        x = x+z(1,0,0,0,0,0,0,1);
+        unused(z);
+    }
+}
+
+template<size_t N>
+void iterate_over_scalar() {
+    Tensor<real,N,N,N,N> x; x.random();
+    Tensor<real,N,N,N,N> y; y.random();
+
+    real a_data[N*N*N*N*N*N*N*N];
+    for (volatile size_t i=0; i<NITER; i++){
+        outer_4_and_4<N>(x.data(),y.data(),a_data);
+        x = x+y; a_data[1] = a_data[2];
+        unused(a_data);
+    }
+}
+
+
+
 // ---------------------------------------- END RUN-----------------------------------------------------------
 
 

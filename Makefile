@@ -28,6 +28,12 @@ clang_380:
 	-I/home/roman/Dropbox/zdump/vdt \
 	-O3 -funroll-loops -march=native -DNDEBUG -I. # -fopenmp -pthread -lpthread 
 
+icc_1602:
+	/media/MATLAB/intel/bin/icpc Fastor.cpp -o Fastor -std=c++11 \
+	-I/home/roman/Dropbox/eigen-devel/ -I/home/roman/Dropbox/zdump/ \
+	-I/home/roman/Dropbox/zdump/vdt \
+	-O3 -funroll-loops -march=native -DNDEBUG -I. # -fopenmp -pthread -lpthread 
+
 gcc_484_a:
 	g++ -S Fastor.cpp -o Fastor.asm -std=c++11 -fabi-version=0 \
 	-I/home/roman/Dropbox/eigen-devel/ -I/home/roman/Dropbox/zdump/ \

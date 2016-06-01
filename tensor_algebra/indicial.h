@@ -31,11 +31,11 @@ enum {
 template <FASTOR_INDEX ... All>
 struct Index {
     static const FASTOR_INDEX NoIndices = sizeof...(All);
-    static constexpr FASTOR_INDEX _IndexHolder[NoIndices] = {All...};
-    std::array<FASTOR_INDEX,NoIndices> get_indices();
-//    using types = <std::integral_constant<FASTOR_INDEX,All>...>::type;
-//    using
+    static constexpr FASTOR_INDEX _IndexHolder[sizeof...(All)] = {All...};
 };
+
+template<FASTOR_INDEX ... All>
+constexpr FASTOR_INDEX Index<All...>::_IndexHolder[sizeof...(All)];
 
 }
 

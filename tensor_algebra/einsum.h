@@ -8,19 +8,10 @@
 
 #include "reshape.h"
 #include "permutation.h"
+#include "reduction.h"
+#include "outerproduct.h"
 
 namespace Fastor {
-
-
-
-//template<typename Index_I, typename Index_J,
-//         template<typename,size_t,size_t,size_t...Rest> class Tensor,
-//         typename T, size_t M, size_t N, size_t ... Rest,
-//         typename std::enable_if<prod<Rest...>::value==1 && Index_I::_IndexHolder[0]==Index_J::_IndexHolder[0]
-//                                 && Index_I::_IndexHolder[1]==Index_J::_IndexHolder[1]>::type=0 >
-//FASTOR_INLINE Tensor<T,M,N,Rest...> einsum(const Tensor<T,M,N,Rest...> &a, const Tensor<T,M,N,Rest...> &b) {
-//    return doublecontract<T,M,N>(a.data(),b.data());
-//}
 
 // trace
 template<typename Index_I,
@@ -48,123 +39,6 @@ FASTOR_INLINE Tensor<T,Rest...> einsum(const Tensor<T,Rest...> &a, const Tensor<
     matmul<T,M,N,N>(a.data(),b.data(),c.data());
     return c;
 }
-
-//// dyadic
-//template<typename Index_I, typename Index_J,
-//         template<typename,size_t...Rest> class Tensor, typename T, size_t ... Rest,
-//         typename std::enable_if<sizeof...(Rest)==2 && get_value<1,Rest...>::value==3 && get_value<2,Rest...>::value==3
-//                                 && Index_I::_IndexHolder[0]!=Index_J::_IndexHolder[0]
-//                                 && Index_I::_IndexHolder[0]!=Index_J::_IndexHolder[1]
-//                                 && Index_I::_IndexHolder[1]!=Index_J::_IndexHolder[0]
-//                                 && Index_I::_IndexHolder[1]!=Index_J::_IndexHolder[1]
-//                                 ,bool>::type=0 >
-//FASTOR_INLINE Tensor<T,Rest...,Rest...> einsum(const Tensor<T,Rest...> &a, const Tensor<T,Rest...> &b) {
-
-//    constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
-//    constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
-
-//    Tensor<T,Rest...,Rest...> c;
-//    c.zeros();
-
-//    // The branches are resolved at compile time
-//    if (Index_I::_IndexHolder[0]<Index_I::_IndexHolder[1] &&
-//            Index_J::_IndexHolder[0]<Index_J::_IndexHolder[1] &&
-//            Index_I::_IndexHolder[0]<Index_J::_IndexHolder[0] &&
-//            Index_I::_IndexHolder[1]<Index_J::_IndexHolder[1] &&
-//            Index_I::_IndexHolder[1]<Index_J::_IndexHolder[0] &&
-//            Index_I::_IndexHolder[0]<Index_J::_IndexHolder[1]) {
-//        for (FASTOR_INDEX i=0; i<M; ++i)
-//            for (FASTOR_INDEX j=0; j<N; ++j)
-//                for (FASTOR_INDEX k=0; k<M; ++k)
-//                    for (FASTOR_INDEX l=0; l<N; ++l)
-//                        c(i,j,k,l) += a(i,j)*b(k,l);
-//    }
-//    else if (Index_I::_IndexHolder[0]>Index_I::_IndexHolder[1] &&
-//             Index_J::_IndexHolder[0]<Index_J::_IndexHolder[1] &&
-//             Index_I::_IndexHolder[0]<Index_J::_IndexHolder[0] &&
-//             Index_I::_IndexHolder[1]<Index_J::_IndexHolder[1] &&
-//             Index_I::_IndexHolder[1]<Index_J::_IndexHolder[0] &&
-//             Index_I::_IndexHolder[0]<Index_J::_IndexHolder[1]) {
-//         for (FASTOR_INDEX i=0; i<M; ++i)
-//             for (FASTOR_INDEX j=0; j<N; ++j)
-//                 for (FASTOR_INDEX k=0; k<M; ++k)
-//                     for (FASTOR_INDEX l=0; l<N; ++l)
-//                         c(i,j,k,l) += a(j,i)*b(k,l);
-//         }
-//    else if (Index_I::_IndexHolder[0]<Index_I::_IndexHolder[1] &&
-//             Index_J::_IndexHolder[0]>Index_J::_IndexHolder[1] &&
-//             Index_I::_IndexHolder[0]<Index_J::_IndexHolder[0] &&
-//             Index_I::_IndexHolder[1]<Index_J::_IndexHolder[1] &&
-//             Index_I::_IndexHolder[1]<Index_J::_IndexHolder[0] &&
-//             Index_I::_IndexHolder[0]<Index_J::_IndexHolder[1]) {
-//         for (FASTOR_INDEX i=0; i<M; ++i)
-//             for (FASTOR_INDEX j=0; j<N; ++j)
-//                 for (FASTOR_INDEX k=0; k<M; ++k)
-//                     for (FASTOR_INDEX l=0; l<N; ++l)
-//                         c(i,j,k,l) += a(i,j)*b(l,k);
-//         }
-//    else if (Index_I::_IndexHolder[0]>Index_I::_IndexHolder[1] &&
-//             Index_J::_IndexHolder[0]>Index_J::_IndexHolder[1] &&
-//             Index_I::_IndexHolder[0]<Index_J::_IndexHolder[0] &&
-//             Index_I::_IndexHolder[1]<Index_J::_IndexHolder[1] &&
-//             Index_I::_IndexHolder[1]<Index_J::_IndexHolder[0] &&
-//             Index_I::_IndexHolder[0]<Index_J::_IndexHolder[1]) {
-//         for (FASTOR_INDEX i=0; i<M; ++i)
-//             for (FASTOR_INDEX j=0; j<N; ++j)
-//                 for (FASTOR_INDEX k=0; k<M; ++k)
-//                     for (FASTOR_INDEX l=0; l<N; ++l)
-//                         c(i,j,k,l) += a(j,i)*b(l,k);
-//         }
-//    else if(Index_I::_IndexHolder[0]<Index_I::_IndexHolder[1] &&
-//            Index_J::_IndexHolder[0]<Index_J::_IndexHolder[1] &&
-//            Index_I::_IndexHolder[0]<Index_J::_IndexHolder[0] &&
-//            Index_I::_IndexHolder[1]<Index_J::_IndexHolder[1] &&
-//            Index_I::_IndexHolder[1]>Index_J::_IndexHolder[0] &&
-//            Index_I::_IndexHolder[0]<Index_J::_IndexHolder[1]) {
-//        for (FASTOR_INDEX i=0; i<M; ++i)
-//            for (FASTOR_INDEX j=0; j<N; ++j)
-//                for (FASTOR_INDEX k=0; k<M; ++k)
-//                    for (FASTOR_INDEX l=0; l<N; ++l)
-//                        c(i,j,k,l) += a(i,k)*b(j,l);
-//    }
-//    else if(Index_I::_IndexHolder[0]<Index_I::_IndexHolder[1] &&
-//            Index_J::_IndexHolder[0]>Index_J::_IndexHolder[1] &&
-//            Index_I::_IndexHolder[0]<Index_J::_IndexHolder[0] &&
-//            Index_I::_IndexHolder[1]>Index_J::_IndexHolder[1] &&
-//            Index_I::_IndexHolder[1]<Index_J::_IndexHolder[0] &&
-//            Index_I::_IndexHolder[0]<Index_J::_IndexHolder[1]) {
-//        for (FASTOR_INDEX i=0; i<M; ++i)
-//            for (FASTOR_INDEX j=0; j<N; ++j)
-//                for (FASTOR_INDEX k=0; k<M; ++k)
-//                    for (FASTOR_INDEX l=0; l<N; ++l)
-//                        c(i,j,k,l) += a(i,k)*b(l,j);
-//    }
-//    else if(Index_I::_IndexHolder[0]<Index_I::_IndexHolder[1] &&
-//            Index_J::_IndexHolder[0]<Index_J::_IndexHolder[1] &&
-//            Index_I::_IndexHolder[0]<Index_J::_IndexHolder[0] &&
-//            Index_I::_IndexHolder[1]>Index_J::_IndexHolder[1] &&
-//            Index_I::_IndexHolder[1]>Index_J::_IndexHolder[0] &&
-//            Index_I::_IndexHolder[0]<Index_J::_IndexHolder[1]) {
-//        for (FASTOR_INDEX i=0; i<M; ++i)
-//            for (FASTOR_INDEX j=0; j<N; ++j)
-//                for (FASTOR_INDEX k=0; k<M; ++k)
-//                    for (FASTOR_INDEX l=0; l<N; ++l)
-//                        c(i,j,k,l) += a(i,l)*b(j,k);
-//    }
-//    else if(Index_I::_IndexHolder[0]<Index_I::_IndexHolder[1] &&
-//            Index_J::_IndexHolder[0]>Index_J::_IndexHolder[1] &&
-//            Index_I::_IndexHolder[0]<Index_J::_IndexHolder[0] &&
-//            Index_I::_IndexHolder[1]>Index_J::_IndexHolder[1] &&
-//            Index_I::_IndexHolder[1]>Index_J::_IndexHolder[0] &&
-//            Index_I::_IndexHolder[0]<Index_J::_IndexHolder[1]) {
-//        for (FASTOR_INDEX i=0; i<M; ++i)
-//            for (FASTOR_INDEX j=0; j<N; ++j)
-//                for (FASTOR_INDEX k=0; k<M; ++k)
-//                    for (FASTOR_INDEX l=0; l<N; ++l)
-//                        c(i,j,k,l) += a(i,l)*b(k,j);
-//    }
-//    return c;
-//}
 
 // dyadic voigt
 template<typename Index_I, typename Index_J, int VoigtNotation,
@@ -245,39 +119,6 @@ FASTOR_INLINE T einsum(const Tensor<T,M,N,Rest...> &a) {
         tc += a(i,i,i);
     return tc;
 }
-
-// four index reduction
-//template<typename Index_I,
-//         template<typename,size_t,size_t,size_t...Rest> class Tensor,
-//         typename T, size_t M, size_t N, size_t ... Rest,
-//         typename std::enable_if<
-//             prod<Rest...>::value != 1 && sizeof...(Rest)==2 && M==N && M==get_value<1,Rest...>::value //&& M==get_value<2,Rest...>::value
-//             && Index_I::_IndexHolder[0]==Index_I::_IndexHolder[1] && Index_I::_IndexHolder[0]==Index_I::_IndexHolder[2]
-//             && Index_I::_IndexHolder[0]==Index_I::_IndexHolder[3]
-//             && sizeof...(Rest)+2==Index_I::NoIndices,bool>::type=0 >
-//FASTOR_INLINE T einsum(const Tensor<T,M,N,Rest...> &a) {
-//    T tc = static_cast<T>(0);
-//    for (FASTOR_INDEX i=0; i<M; ++i)
-//        tc += a(i,i,i,i);
-//    return tc;
-//}
-
-
-
-//template<template<size_t...Idx0> class Index_I,
-//         template<size_t...Idx1> class Index_J,
-//         size_t ... Idx0, size_t ... Idx1,
-//         template<typename,size_t...Rest0> class Tensor0,
-//         template<typename,size_t...Rest1> class Tensor1,
-//         typename T, size_t ... Rest0, size_t ... Rest1,
-//         typename std::enable_if<sizeof...(Rest0)>=2 && sizeof...(Rest0)>=2 &&
-//                                 sizeof...(Rest0)==sizeof...(Idx0) &&
-//                                 sizeof...(Rest1)==sizeof...(Idx0),bool>::type=0 >
-//FASTOR_INLINE Tensor<T,Rest0...,Rest1...> einsum(const Tensor0<T,Rest0...> &a, const Tensor1<T,Rest1...> &b) {
-
-//    static_assert(sizeof...(Rest0)==sizeof...(Idx0), "CONTRACTION INDICES DO NOT MATCH WITH TENSOR RANK");
-//    static_assert(sizeof...(Rest1)==sizeof...(Idx1), "CONTRACTION INDICES DO NOT MATCH WITH TENSOR RANK");
-
 
 
 // Most generic overload  - place holder at the moment
@@ -395,79 +236,12 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> einsum(const Tensor0<T,Rest0...> &a, c
     return out;
 }
 
-
-
-
-
-
-//----------------------------------------------------------------------------------------------
-// reduction
-template<typename T, size_t ... Rest>
-T reduction(const Tensor<T,Rest...> &a) {
-    //! Reduces a multi-dimensional tensor to a scalar
-    //!
-    //! If a is scalar/Tensor<T> returns the value itself
-    //! If a is a vector Tensor<T,N> returns the sum of values
-    //! If a is a second order tensor Tensor<T,N,N> returns the trace
-    //! If a is a third order tensor Tensor<T,N,N,N> returns a_iii
-    //! ...
-    //!
-    //! The size of the tensor in all dimensions should be equal
-
-    static_assert(no_of_unique<Rest...>::value<=1, "REDUCTION IS ONLY POSSIBLE FOR TENSORS WITH EQUAL SIZES IN ALL DIMENSIONS");
-    constexpr int ndim = sizeof...(Rest);
-
-    T *a_data = a.data();
-    if (ndim==0) {
-        return a_data[0];
-    }
-    else if (ndim==1) {
-        return a.sum();
-    }
-    else {
-        constexpr std::array<int,ndim> maxes_a = {Rest...};
-        std::array<int,ndim> products;
-        std::fill(products.begin(),products.end(),0);
-
-        for (int j=ndim-1; j>0; --j) {
-            int num = maxes_a[ndim-1];
-            for (int k=0; k<j-1; ++k) {
-                num *= maxes_a[ndim-1-k-1];
-            }
-            products[j] = num;
-        }
-        std::reverse(products.begin(),products.end());
-
-        T reductor = static_cast<T>(0);
-        for (int i=0; i<a.dimension(0); ++i) {
-            int index_a = i;
-            for(int it = 0; it< ndim; it++) {
-                index_a += products[it]*i;
-            }
-            reductor += a_data[index_a];
-        }
-        return reductor;
-    }
-}
-
-
-
 //----------------------------------------------------------------------------------------------
 // summation
 template<typename T, size_t ... Rest>
 FASTOR_INLINE T summation(const Tensor<T,Rest...> &a) {
     return a.sum();
 }
-
-
-
-//----------------------------------------------------------------------------------------------
-//// permutation
-//template<typename Index_I, typename T, size_t ... Rest>
-//FASTOR_INLINE Tensor<T,Rest...> permutation(const Tensor<T,Rest...> &a) {
-//    // TODO
-//    return a;
-//}
 
 
 } // end of namespace
