@@ -188,7 +188,7 @@ void _crossproduct<float,2,2>(const float *__restrict__ a, const float *__restri
     __m128 b1 = _mm_shuffle_ps(tmp1,b0,_MM_SHUFFLE(0,3,1,0));
     b1 = _mm_shuffle_ps(b1,b1,_MM_SHUFFLE(3,1,0,2));
 
-    // c_21
+    // c_22
     __m128 c_22 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a0,a1,_MM_SHUFFLE(1,0,0,1)),
                                         _mm_shuffle_ps(b1,b0,_MM_SHUFFLE(0,1,1,0))));
 
@@ -240,7 +240,7 @@ void _crossproduct<float,3,3>(const float *__restrict__ a, const float *__restri
     // c_21
     __m128 c_21 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a0,a1,_MM_SHUFFLE(0,2,2,0)),
                                         _mm_shuffle_ps(b1,b0,_MM_SHUFFLE(2,0,0,2))));
-    // c_21
+    // c_22
     __m128 c_22 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a0,a1,_MM_SHUFFLE(1,0,0,1)),
                                         _mm_shuffle_ps(b1,b0,_MM_SHUFFLE(0,1,1,0))));
 

@@ -112,7 +112,7 @@ avoiding any need for temporary memory allocation. Importantly, Fastor goes deep
 ldeterminant(linverse(A)); // transformed to 1/ldeterminant(A), O(n^3) reduction in computation
 ltranspose(lcofactor(A));  // transformed to ladjoint(A), O(n^2) reduction in memory access
 ltranspose(ladjoint(A));   // transformed to lcofactor(A), O(n^2) reduction in memory access
-lmatmul(lmatmul(A,B),b);   // transformed to lmatmul(A,lmatmul(A,b)), O(n) reduction in computation
+lmatmul(lmatmul(A,B),b);   // transformed to lmatmul(A,lmatmul(B,b)), O(n) reduction in computation
 // and many more
 ~~~
 Note that there are situations that the user may write a complex chain of operations in the most verbose way, perhaps for readibility purposes, but Fastor delays the evaluation of the expression and checks if an equivalent but efficient expression can be computed. The computed expression always binds back to the base tensor, overhead free without a runtime virtual table/pointer penalty.  

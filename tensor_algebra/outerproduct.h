@@ -240,18 +240,27 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
     std::fill(as,as+out_dim,0);
     int it;
 
+    constexpr int total = prod<Rest0...,Rest1...>::value;
+    int tmp[out_dim];
+    std::fill(tmp,tmp+out_dim,total);
+//    int remaining = total;
+    tmp[0]=total/maxes_out[0];
+    for (int n = 1; n < out_dim; ++n) {
+        tmp[n] = tmp[n-1]/maxes_out[n];
+//        remaining /= maxes_out[n];
+    }
+
     using V = SIMDVector<T,128>;
     V _vec_a;
 
 //    constexpr int stride = 1;
     constexpr int stride = get_value<sizeof...(Rest1),Rest1...>::value;
-    constexpr int total = prod<Rest0...,Rest1...>::value;
     for (int i = 0; i < total; i+=stride) {
-        int remaining = total;
+//        int remaining = total;
         for (int n = 0; n < out_dim; ++n) {
-            remaining /= maxes_out[n];
-            as[n] = ( i / remaining ) % maxes_out[n];
-//            as[n] = 0;
+//            remaining /= maxes_out[n];
+//            as[n] = ( i / remaining ) % maxes_out[n];
+            as[n] = ( i / tmp[n] ) % maxes_out[n];
         }
 
         int index_a = as[a_dim-1];
