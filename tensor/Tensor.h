@@ -117,11 +117,6 @@ public:
     template<typename Derived, size_t DIMS>
     FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
         const Derived &src = src_.self();
-//        Derived &src = src_.self();
-//        print(src.rhs,src.lhs);
-//        print(type_name<decltype(src_)>());
-//        print(type_name<Derived>());
-//        print
         static_assert(DIMS==Dimension, "TENSOR RANK MISMATCH");
         FASTOR_ASSERT(src.size()==Size, "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -139,13 +134,26 @@ public:
         const Derived &src = src_.self();
         static_assert(DIMS==Dimension, "TENSOR RANK MISMATCH");
         FASTOR_ASSERT(src.size()==Size, "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
         for (FASTOR_INDEX i=0; i<Dimension; ++i) {
             FASTOR_ASSERT(src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 
         for (FASTOR_INDEX i = 0; i < Size; i+=Stride) {
-//            store(_data+i,src.eval(static_cast<T>(i)));
+            src.eval(static_cast<T>(i)).store(_data+i);
+        }
+        return *this;
+    }
+
+    template<typename Derived, size_t DIMS>
+    FASTOR_INLINE Tensor<T,Rest...>& operator=(AbstractTensor<Derived,DIMS>&& src_) {
+        const Derived &src = src_.self();
+        static_assert(DIMS==Dimension, "TENSOR RANK MISMATCH");
+        FASTOR_ASSERT(src.size()==Size, "TENSOR SIZE MISMATCH");
+        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
+            FASTOR_ASSERT(src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
+        }
+
+        for (FASTOR_INDEX i = 0; i < Size; i+=Stride) {
             src.eval(static_cast<T>(i)).store(_data+i);
         }
         return *this;

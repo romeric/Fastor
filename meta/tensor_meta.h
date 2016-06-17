@@ -64,6 +64,68 @@ struct get_all {
     static const size_t indices[sizeof...(Rest)];
 };
 
+
+//-------
+template <int ... rest>
+struct meta_min;
+
+template <int m, int n, int ... rest>
+struct meta_min<m,n,rest...> {
+    static constexpr int pval = meta_min<m,n>::value;
+    static const int value = (pval <= meta_min<pval,rest...>::value) ?
+                pval : meta_min<pval,rest...>::value;
+};
+
+template <int m, int n>
+struct meta_min<m,n> {
+    static const int value = (m<=n) ? m : n;
+};
+
+
+template <int ... rest>
+struct meta_max;
+
+template <int m, int n, int ... rest>
+struct meta_max<m,n,rest...> {
+    static constexpr int pval = meta_max<m,n>::value;
+    static const int value = (pval >= meta_max<pval,rest...>::value) ?
+                pval : meta_max<pval,rest...>::value;
+};
+
+template <int m, int n>
+struct meta_max<m,n> {
+    static const int value = (m>=n) ? m : n;
+};
+//-------
+template<int ... size_t>
+struct meta_argmin;
+
+//template<int m, int n, int ... rest>
+//struct meta_argmin<m,n,rest...> {
+//    static constexpr int pval = meta_min<m,n>::value;
+//    static const int value = (pval <= meta_min<pval,rest...>::value) ?
+//                meta_argmin<pval,rest...>::value : meta_argmin<pval,rest...>::value+1;
+//};
+
+template<int m, int n, int p, int q>
+struct meta_argmin<m,n,p,q> {
+    static constexpr int pval = meta_min<m,n,p>::value;
+    static const int value = ( pval <= meta_min<pval,q>::value) ? meta_argmin<m,n,p>::value : 3;
+};
+
+template<int m, int n, int p>
+struct meta_argmin<m,n,p> {
+    static constexpr int pval = meta_min<m,n>::value;
+    static const int value = ( pval <= meta_min<pval,p>::value) ? meta_argmin<m,n>::value : 2;
+};
+
+template<int m, int n>
+struct meta_argmin<m,n> {
+    static const int value = (m<n) ? 0 : 1;
+};
+
+//-------
+
 //---------------
 //square root of integers at compile time, use like meta_sqrt<36>::ret
 template<int Y,
@@ -233,11 +295,13 @@ struct apply_typelist<MFC, typelist<Ts...>> {
     using type = typename MFC::template apply<Ts...>;
 };
 
+////////////////////////
+
 
 //template<size_t ...Rest>
 //struct my_struct {
 ////    static const size_t value = no_of_uniques2<Rest...>::value;
-//    static const size_t value = sizeof...(Rest);
+////    static const size_t value = sizeof...(Rest);
 //};
 
 

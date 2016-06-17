@@ -10,6 +10,7 @@
 #include "permutation.h"
 #include "reduction.h"
 #include "outerproduct.h"
+#include "contraction.h"
 
 namespace Fastor {
 
@@ -236,12 +237,44 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> einsum(const Tensor0<T,Rest0...> &a, c
     return out;
 }
 
+//---------------------------------------------------------------------------------------------
+//template<typename Index_I, typename Index_J, typename Index_K,
+//         template<typename,size_t...Rest0> class Tensor0,
+//         template<typename,size_t...Rest1> class Tensor1,
+//         template<typename,size_t...Rest2> class Tensor2,
+//         typename T, size_t, M, size_t N, size_t O, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2,
+//         typename std::enable_if<sizeof...(Rest0)==Index_I::NoIndices &&
+//                                 sizeof...(Rest1)==Index_J::NoIndices &&
+//                                 sizeof...(Rest2)==Index_K::NoIndices,bool>::type=0 >
+//typename apply_typelist_t<quote_c<size_t, Index>,
+//                        uniq_t<typelist_c<size_t, N, Rest...>>
+
+template<typename Index_I, typename Index_J, typename Index_K,
+         template<typename,size_t...Rest0> class Tensor0,
+         template<typename,size_t...Rest1> class Tensor1,
+         template<typename,size_t...Rest2> class Tensor2,
+         typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2,
+         typename std::enable_if<sizeof...(Rest0)==Index_I::NoIndices &&
+                                 sizeof...(Rest1)==Index_J::NoIndices &&
+                                 sizeof...(Rest2)==Index_K::NoIndices,bool>::type=0 >
+FASTOR_INLINE Tensor<T,Rest0...,Rest1...,Rest2...> einsum(const Tensor0<T,Rest0...> &a, const Tensor1<T,Rest1...> &b, const Tensor2<T,Rest2...> &c) {
+//einsum(const Tensor0<T,M,Rest0...> &a, const Tensor1<T,N,Rest1...> &b, const Tensor2<T,O,Rest2...> &c) {
+    print("wow");
+}
+
+
+
+
+
 //----------------------------------------------------------------------------------------------
 // summation
 template<typename T, size_t ... Rest>
 FASTOR_INLINE T summation(const Tensor<T,Rest...> &a) {
     return a.sum();
 }
+
+
+
 
 
 } // end of namespace

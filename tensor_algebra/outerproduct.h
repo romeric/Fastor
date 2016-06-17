@@ -235,6 +235,7 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
     std::reverse(products_a.begin(),products_a.end());
     std::reverse(products_b.begin(),products_b.end());
     std::reverse(products_out.begin(),products_out.end());
+    print(products_a);
 
     int as[out_dim];
     std::fill(as,as+out_dim,0);
