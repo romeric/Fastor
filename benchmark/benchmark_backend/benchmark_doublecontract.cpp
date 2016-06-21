@@ -4,8 +4,6 @@ using namespace Fastor;
 
 #define NITER 1000000UL
 
-template <typename T> void unused(T &&x) { asm("" ::"m"(x)); }
-
 template<typename T, size_t M, size_t N>
 inline T doublecontract_scalar(const T *__restrict__ in, T *__restrict__ out) {
     T sum = 0;

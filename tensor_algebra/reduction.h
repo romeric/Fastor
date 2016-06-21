@@ -20,7 +20,7 @@ T reduction(const Tensor<T,Rest...> &a) {
     //!
     //! The size of the tensor in all dimensions should be equal
 
-    static_assert(no_of_unique<Rest...>::value<=1, "REDUCTION IS ONLY POSSIBLE FOR TENSORS WITH EQUAL SIZES IN ALL DIMENSIONS");
+    static_assert(no_of_unique<Rest...>::value<=1, "REDUCTION IS ONLY POSSIBLE ON UNIFORM TENSORS");
     constexpr int ndim = sizeof...(Rest);
 
     T *a_data = a.data();
@@ -31,18 +31,21 @@ T reduction(const Tensor<T,Rest...> &a) {
         return a.sum();
     }
     else {
-        constexpr std::array<int,ndim> maxes_a = {Rest...};
-        std::array<int,ndim> products;
-        std::fill(products.begin(),products.end(),0);
+//        constexpr std::array<int,ndim> maxes_a = {Rest...};
+//        std::array<int,ndim> products;
+//        std::fill(products.begin(),products.end(),0);
 
-        for (int j=ndim-1; j>0; --j) {
-            int num = maxes_a[ndim-1];
-            for (int k=0; k<j-1; ++k) {
-                num *= maxes_a[ndim-1-k-1];
-            }
-            products[j] = num;
-        }
-        std::reverse(products.begin(),products.end());
+//        for (int j=ndim-1; j>0; --j) {
+//            int num = maxes_a[ndim-1];
+//            for (int k=0; k<j-1; ++k) {
+//                num *= maxes_a[ndim-1-k-1];
+//            }
+//            products[j] = num;
+//        }
+//        std::reverse(products.begin(),products.end());
+
+        constexpr std::array<size_t,ndim> products = nprods<Index<Rest...>,
+                typename std_ext::make_index_sequence<ndim>::type>::values;
 
         T reductor = static_cast<T>(0);
         for (int i=0; i<a.dimension(0); ++i) {

@@ -128,6 +128,60 @@ struct ContractionType<Index<indices...>, Tensor<T, values...>> {
 /////////////////////////////////////////////////////////////////
 
 
+
+
+
+
+
+
+////
+// products generator
+template<int N>
+constexpr int products(const size_t (&seq)[N], int i = N-1) {
+    return i == (N-1) ? seq[N-1] : products(seq, i+1)*seq[i];
+}
+
+template<int N>
+constexpr int shifter(const size_t (&seq)[N], int i) {
+    return i < N-1 ? seq[i+1] : shifter(seq, i-1);
+}
+
+template<int N>
+constexpr int zeroer(const size_t (&seq)[N], int i) {
+    return i == N-1 ? 0 : seq[i];
+}
+
+
+template<class Idx, class Seq>
+struct nprods;
+
+template<size_t ... Rest, size_t ... ss>
+struct nprods<Index<Rest...>,std_ext::index_sequence<ss...>> {
+//    using type = Index<products(vals,ss)...>;
+    constexpr static size_t vals[] = {Rest...};
+    static constexpr size_t pvals[sizeof...(Rest)] = {products(vals,ss)...};
+    static constexpr size_t svals[sizeof...(Rest)] = {shifter(pvals,ss)...};
+//    static constexpr size_t values[sizeof...(Rest)] = {zeroer(svals,ss)...};
+    static constexpr std::array<size_t,sizeof...(Rest)> values = {zeroer(svals,ss)...};
+
+//    static void generate() {
+////        constexpr size_t values[sizeof...(Rest)] = {products(vals,ss)...};
+//        constexpr size_t values[sizeof...(Rest)] = {products(vals,ss)...};
+//        constexpr size_t pvalues[sizeof...(Rest)] = {shifter(values,ss)...};
+//        constexpr size_t zvalues[sizeof...(Rest)] = {zeroer(pvalues,ss)...};
+////        print<size_t,sizeof...(Rest)>(values);
+////        print<size_t,sizeof...(Rest)>(pvalues);
+//        print<size_t,sizeof...(Rest)>(zvalues);
+//    }
+};
+
+//template<size_t ... Rest, size_t ... ss>
+//constexpr size_t nprods<Index<Rest...>,std_ext::index_sequence<ss...>>::values[sizeof...(Rest)];
+
+template<size_t ... Rest, size_t ... ss>
+constexpr std::array<size_t,sizeof...(Rest)> nprods<Index<Rest...>,std_ext::index_sequence<ss...>>::values;
+
+
 }
 
 #endif // EINSUM_META_H

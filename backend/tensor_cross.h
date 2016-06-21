@@ -4,11 +4,11 @@
 #include "commons/commons.h"
 #include "extended_intrinsics/extintrin.h"
 
-template<typename T, size_t M, size_t N>
+template<typename T, size_t M, size_t K, size_t N>
 void _crossproduct(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ c);
 
 template<>
-FASTOR_INLINE void _crossproduct<double, 2,2>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
+FASTOR_INLINE void _crossproduct<double,2,2,2>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
     // 25 OPS without HADD / 27 OPS with HADD
     // Load a data - c has to have 9 elements as
     __m128d a_00 = _mm_load_sd(a);
@@ -43,7 +43,7 @@ FASTOR_INLINE void _crossproduct<double, 2,2>(const double *__restrict__ a, cons
 }
 
 template<>
-FASTOR_INLINE void _crossproduct<double,3,3>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
+FASTOR_INLINE void _crossproduct<double,3,3,3>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
     // 225 OPS without HADD / 243 OPS with HADD
     // Load a data
     __m128d a_00 = _mm_load_sd(a);
@@ -176,7 +176,7 @@ FASTOR_INLINE void _crossproduct<double,3,3>(const double *__restrict__ a, const
 
 
 template<>
-void _crossproduct<float,2,2>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
+void _crossproduct<float,2,2,2>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
     // 15 OPS + 4 extra shuffle to make aligned loading = 19 OPS
     __m128 a0 = _mm_load_ps(a);
     __m128 tmp0 = _mm_load_ps(a+4);
@@ -198,7 +198,7 @@ void _crossproduct<float,2,2>(const float *__restrict__ a, const float *__restri
 }
 
 template<>
-void _crossproduct<float,3,3>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
+void _crossproduct<float,3,3,3>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
     // 135 OPS + 6 extra shuffle to make aligned loading = 141 OPS
     // Don't unalign load - Bad performance on IVY
 
@@ -254,6 +254,226 @@ void _crossproduct<float,3,3>(const float *__restrict__ a, const float *__restri
     _mm_store_ss(c+7,c_21);
     _mm_store_ss(c+8,c_22);
 }
+
+template<>
+void _crossproduct<float,3,1,3>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
+    // vector-tensor cross product - regitster based
+    float A1 = a[0];
+    float A2 = a[1];
+    float A3 = a[2];
+
+    float B1_1 = b[0];
+    float B1_2 = b[1];
+    float B1_3 = b[2];
+    float B2_1 = b[3];
+    float B2_2 = b[4];
+    float B2_3 = b[5];
+    float B3_1 = b[6];
+    float B3_2 = b[7];
+    float B3_3 = b[8];
+
+    c[0] = A2*B3_1 - A3*B2_1;
+    c[1] = A2*B3_2 - A3*B2_2;
+    c[2] = A2*B3_3 - A3*B2_3;
+    c[3] = A3*B1_1 - A1*B3_1;
+    c[4] = A3*B1_2 - A1*B3_2;
+    c[5] = A3*B1_3 - A1*B3_3;
+    c[6] = A1*B2_1 - A2*B1_1;
+    c[7] = A1*B2_2 - A2*B1_2;
+    c[8] = A1*B2_3 - A2*B1_3;
+
+//    [ A2*B3_1 - A3*B2_1, A2*B3_2 - A3*B2_2, A2*B3_3 - A3*B2_3]
+//    [ A3*B1_1 - A1*B3_1, A3*B1_2 - A1*B3_2, A3*B1_3 - A1*B3_3]
+//    [ A1*B2_1 - A2*B1_1, A1*B2_2 - A2*B1_2, A1*B2_3 - A2*B1_3]
+}
+
+template<>
+void _crossproduct<float,2,1,2>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
+    // vector-tensor cross product - regitster based
+    float A1 = a[0];
+    float A2 = a[1];
+
+    float B1_1 = b[0];
+    float B1_2 = b[1];
+    float B2_1 = b[3];
+    float B2_2 = b[4];
+
+    c[0] = 0;
+    c[1] = 0;
+    c[2] = 0;
+    c[3] = 0;
+    c[4] = 0;
+    c[5] = 0;
+    c[6] = A1*B2_1 - A2*B1_1;
+    c[7] = A1*B2_2 - A2*B1_2;
+    c[8] = 0;
+}
+
+template<>
+void _crossproduct<double,3,1,3>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
+    // vector-tensor cross product - regitster based
+    double A1 = a[0];
+    double A2 = a[1];
+    double A3 = a[2];
+
+    double B1_1 = b[0];
+    double B1_2 = b[1];
+    double B1_3 = b[2];
+    double B2_1 = b[3];
+    double B2_2 = b[4];
+    double B2_3 = b[5];
+    double B3_1 = b[6];
+    double B3_2 = b[7];
+    double B3_3 = b[8];
+
+    c[0] = A2*B3_1 - A3*B2_1;
+    c[1] = A2*B3_2 - A3*B2_2;
+    c[2] = A2*B3_3 - A3*B2_3;
+    c[3] = A3*B1_1 - A1*B3_1;
+    c[4] = A3*B1_2 - A1*B3_2;
+    c[5] = A3*B1_3 - A1*B3_3;
+    c[6] = A1*B2_1 - A2*B1_1;
+    c[7] = A1*B2_2 - A2*B1_2;
+    c[8] = A1*B2_3 - A2*B1_3;
+
+//    [ A2*B3_1 - A3*B2_1, A2*B3_2 - A3*B2_2, A2*B3_3 - A3*B2_3]
+//    [ A3*B1_1 - A1*B3_1, A3*B1_2 - A1*B3_2, A3*B1_3 - A1*B3_3]
+//    [ A1*B2_1 - A2*B1_1, A1*B2_2 - A2*B1_2, A1*B2_3 - A2*B1_3]
+}
+
+template<>
+void _crossproduct<double,2,1,2>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
+    // vector-tensor cross product - regitster based
+    double A1 = a[0];
+    double A2 = a[1];
+
+    double B1_1 = b[0];
+    double B1_2 = b[1];
+    double B2_1 = b[3];
+    double B2_2 = b[4];
+
+    c[0] = 0;
+    c[1] = 0;
+    c[2] = 0;
+    c[3] = 0;
+    c[4] = 0;
+    c[5] = 0;
+    c[6] = A1*B2_1 - A2*B1_1;
+    c[7] = A1*B2_2 - A2*B1_2;
+    c[8] = 0;
+}
+
+//
+template<>
+void _crossproduct<float,3,3,1>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
+    // tensor-vector cross product - regitster based
+    float B1 = b[0];
+    float B2 = b[1];
+    float B3 = b[2];
+
+    float A1_1 = a[0];
+    float A1_2 = a[1];
+    float A1_3 = a[2];
+    float A2_1 = a[3];
+    float A2_2 = a[4];
+    float A2_3 = a[5];
+    float A3_1 = a[6];
+    float A3_2 = a[7];
+    float A3_3 = a[8];
+
+    c[0] = A1_2*B3 - A1_3*B2;
+    c[1] = A1_3*B1 - A1_1*B3;
+    c[2] = A1_1*B2 - A1_2*B1;
+    c[3] = A2_2*B3 - A2_3*B2;
+    c[4] = A2_3*B1 - A2_1*B3;
+    c[5] = A2_1*B2 - A2_2*B1;
+    c[6] = A3_2*B3 - A3_3*B2;
+    c[7] = A3_3*B1 - A3_1*B3;
+    c[8] = A3_1*B2 - A3_2*B1;
+
+//    [ A1_2*B3 - A1_3*B2, A1_3*B1 - A1_1*B3, A1_1*B2 - A1_2*B1]
+//    [ A2_2*B3 - A2_3*B2, A2_3*B1 - A2_1*B3, A2_1*B2 - A2_2*B1]
+//    [ A3_2*B3 - A3_3*B2, A3_3*B1 - A3_1*B3, A3_1*B2 - A3_2*B1]
+}
+
+
+template<>
+void _crossproduct<float,2,2,1>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
+    // tensor-vector cross product - regitster based
+    float B1 = b[0];
+    float B2 = b[1];
+
+    float A1_1 = a[0];
+    float A1_2 = a[1];
+    float A2_1 = a[3];
+    float A2_2 = a[4];
+
+    c[0] = 0;
+    c[1] = 0;
+    c[2] = A1_1*B2 - A1_2*B1;
+    c[3] = 0;
+    c[4] = 0;
+    c[5] = A2_1*B2 - A2_2*B1;
+    c[6] = 0;
+    c[7] = 0;
+    c[8] = 0;
+}
+
+template<>
+void _crossproduct<double,3,3,1>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
+    // tensor-vector cross product - regitster based
+    double B1 = b[0];
+    double B2 = b[1];
+    double B3 = b[2];
+
+    double A1_1 = a[0];
+    double A1_2 = a[1];
+    double A1_3 = a[2];
+    double A2_1 = a[3];
+    double A2_2 = a[4];
+    double A2_3 = a[5];
+    double A3_1 = a[6];
+    double A3_2 = a[7];
+    double A3_3 = a[8];
+
+    c[0] = A1_2*B3 - A1_3*B2;
+    c[1] = A1_3*B1 - A1_1*B3;
+    c[2] = A1_1*B2 - A1_2*B1;
+    c[3] = A2_2*B3 - A2_3*B2;
+    c[4] = A2_3*B1 - A2_1*B3;
+    c[5] = A2_1*B2 - A2_2*B1;
+    c[6] = A3_2*B3 - A3_3*B2;
+    c[7] = A3_3*B1 - A3_1*B3;
+    c[8] = A3_1*B2 - A3_2*B1;
+
+//    [ A1_2*B3 - A1_3*B2, A1_3*B1 - A1_1*B3, A1_1*B2 - A1_2*B1]
+//    [ A2_2*B3 - A2_3*B2, A2_3*B1 - A2_1*B3, A2_1*B2 - A2_2*B1]
+//    [ A3_2*B3 - A3_3*B2, A3_3*B1 - A3_1*B3, A3_1*B2 - A3_2*B1]
+}
+
+template<>
+void _crossproduct<double,2,2,1>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
+    // tensor-vector cross product - regitster based
+    double B1 = b[0];
+    double B2 = b[1];
+
+    double A1_1 = a[0];
+    double A1_2 = a[1];
+    double A2_1 = a[3];
+    double A2_2 = a[4];
+
+    c[0] = 0;
+    c[1] = 0;
+    c[2] = A1_1*B2 - A1_2*B1;
+    c[3] = 0;
+    c[4] = 0;
+    c[5] = A2_1*B2 - A2_2*B1;
+    c[6] = 0;
+    c[7] = 0;
+    c[8] = 0;
+}
+
+
 
 
 #endif // TENSOR_CROSS_H

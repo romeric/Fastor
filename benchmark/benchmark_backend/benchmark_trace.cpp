@@ -4,7 +4,6 @@ using namespace Fastor;
 
 #define NITER 1000000UL
 
-template <typename T> void unused(T &&x) { asm("" ::"m"(x)); }
 
 template<typename T, size_t N>
 inline T trace_scalar(const T *__restrict__ in) {

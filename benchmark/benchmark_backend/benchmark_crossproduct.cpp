@@ -5,8 +5,6 @@ using namespace Fastor;
 #define NITER 1000000UL
 
 
-template <typename T> void unused(T &&x) { asm("" ::"m"(x)); }
-
 template<typename T, size_t N>
 inline void crossproduct_scalar(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
     constexpr T levi_civita[27] = { 0.,  0.,  0.,  0.,  0., -1.,  0.,  1.,  0.,  0.,  0.,  1.,  0.,  0.,
@@ -37,7 +35,7 @@ template<typename T, size_t N>
 void iterate_over_fastor(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
-        _crossproduct<T,N,N>(a,b,out);
+        _crossproduct<T,N,N,N>(a,b,out);
         unused(a); unused(b); unused(out);
 
         // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 

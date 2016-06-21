@@ -982,6 +982,51 @@ FASTOR_INLINE Tensor<T,I> matmul(const Tensor<T,J> &b, const Tensor<T,J,I> &a) {
     return out;
 }
 
+// Tensor cross product of two 2nd order tensors
+template<typename T, size_t I, size_t J, typename std::enable_if<I==3 && J==3,bool>::type=0>
+FASTOR_INLINE Tensor<T,I,J> cross(const Tensor<T,I,J> &b, const Tensor<T,I,J> &a) {
+    Tensor<T,I,J> out;
+    _crossproduct<T,I,I,J>(a.data(),b.data(),out.data());
+    return out;
+}
+
+template<typename T, size_t I, size_t J, typename std::enable_if<I==2 && J==2,bool>::type=0>
+FASTOR_INLINE Tensor<T,I+1,J+1> cross(const Tensor<T,I,J> &b, const Tensor<T,I,J> &a) {
+    Tensor<T,I+1,J+1> out;
+    _crossproduct<T,I,I,J>(a.data(),b.data(),out.data());
+    return out;
+}
+
+// Tensor cross product of a vector with 2nd order tensor
+template<typename T, size_t I, size_t J, typename std::enable_if<I==3 && J==3,bool>::type=0>
+FASTOR_INLINE Tensor<T,I,J> cross(const Tensor<T,I> &b, const Tensor<T,I,J> &a) {
+    Tensor<T,I,J> out;
+    _crossproduct<T,I,1,J>(a.data(),b.data(),out.data());
+    return out;
+}
+
+template<typename T, size_t I, size_t J, typename std::enable_if<I==2 && J==2,bool>::type=0>
+FASTOR_INLINE Tensor<T,I+1,J+1> cross(const Tensor<T,I> &b, const Tensor<T,I,J> &a) {
+    Tensor<T,I+1,J+1> out;
+    _crossproduct<T,I,1,J>(a.data(),b.data(),out.data());
+    return out;
+}
+
+// Tensor cross product of a 2nd order tensor with a vector
+template<typename T, size_t I, size_t J, typename std::enable_if<I==3 && J==3,bool>::type=0>
+FASTOR_INLINE Tensor<T,I,J> cross(const Tensor<T,I,J> &b, const Tensor<T,J> &a) {
+    Tensor<T,I,J> out;
+    _crossproduct<T,I,J,1>(a.data(),b.data(),out.data());
+    return out;
+}
+
+template<typename T, size_t I, size_t J, typename std::enable_if<I==2 && J==2,bool>::type=0>
+FASTOR_INLINE Tensor<T,I+1,J+1> cross(const Tensor<T,I,J> &b, const Tensor<T,J> &a) {
+    Tensor<T,I+1,J+1> out;
+    _crossproduct<T,I,J,1>(a.data(),b.data(),out.data());
+    return out;
+}
+
 
 // Constant tensors
 static FASTOR_INLINE

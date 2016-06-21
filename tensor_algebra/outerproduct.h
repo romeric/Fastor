@@ -203,53 +203,58 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
     constexpr int a_dim = sizeof...(Rest0);
     constexpr int b_dim = sizeof...(Rest1);
     constexpr int out_dim = a_dim+b_dim;
-    constexpr std::array<int,a_dim> maxes_a = {Rest0...};
-    constexpr std::array<int,b_dim> maxes_b = {Rest1...};
+//    constexpr std::array<int,a_dim> maxes_a = {Rest0...};
+//    constexpr std::array<int,b_dim> maxes_b = {Rest1...};
     constexpr std::array<int,out_dim> maxes_out = {Rest0...,Rest1...};
 
-    std::array<int,a_dim> products_a; products_a[0]=0;
-    for (int j=a_dim-1; j>0; --j) {
-        int num = maxes_a[a_dim-1];
-        for (int k=0; k<j-1; ++k) {
-            num *= maxes_a[a_dim-1-k-1];
-        }
-        products_a[j] = num;
-    }
-    std::array<int,b_dim> products_b; products_b[0]=0;
-    for (int j=b_dim-1; j>0; --j) {
-        int num = maxes_b[b_dim-1];
-        for (int k=0; k<j-1; ++k) {
-            num *= maxes_b[b_dim-1-k-1];
-        }
-        products_b[j] = num;
-    }
-    std::array<int,out_dim> products_out; products_out[0]=0;
-    for (int j=out_dim-1; j>0; --j) {
-        int num = maxes_out[out_dim-1];
-        for (int k=0; k<j-1; ++k) {
-            num *= maxes_out[out_dim-1-k-1];
-        }
-        products_out[j] = num;
-    }
+//    std::array<int,a_dim> products_a; products_a[0]=0;
+//    for (int j=a_dim-1; j>0; --j) {
+//        int num = maxes_a[a_dim-1];
+//        for (int k=0; k<j-1; ++k) {
+//            num *= maxes_a[a_dim-1-k-1];
+//        }
+//        products_a[j] = num;
+//    }
+//    std::array<int,b_dim> products_b; products_b[0]=0;
+//    for (int j=b_dim-1; j>0; --j) {
+//        int num = maxes_b[b_dim-1];
+//        for (int k=0; k<j-1; ++k) {
+//            num *= maxes_b[b_dim-1-k-1];
+//        }
+//        products_b[j] = num;
+//    }
+//    std::array<int,out_dim> products_out; products_out[0]=0;
+//    for (int j=out_dim-1; j>0; --j) {
+//        int num = maxes_out[out_dim-1];
+//        for (int k=0; k<j-1; ++k) {
+//            num *= maxes_out[out_dim-1-k-1];
+//        }
+//        products_out[j] = num;
+//    }
 
-    std::reverse(products_a.begin(),products_a.end());
-    std::reverse(products_b.begin(),products_b.end());
-    std::reverse(products_out.begin(),products_out.end());
-    print(products_a);
+//    std::reverse(products_a.begin(),products_a.end());
+//    std::reverse(products_b.begin(),products_b.end());
+//    std::reverse(products_out.begin(),products_out.end());
+
+    constexpr std::array<size_t,a_dim> products_a = nprods<Index<Rest0...>,typename std_ext::make_index_sequence<a_dim>::type>::values;
+    constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
+    constexpr std::array<size_t,out_dim> products_out = nprods<Index<Rest0...,Rest1...>,typename std_ext::make_index_sequence<out_dim>::type>::values;
+//    print(products_a);
+
 
     int as[out_dim];
     std::fill(as,as+out_dim,0);
     int it;
 
     constexpr int total = prod<Rest0...,Rest1...>::value;
-    int tmp[out_dim];
-    std::fill(tmp,tmp+out_dim,total);
-//    int remaining = total;
-    tmp[0]=total/maxes_out[0];
-    for (int n = 1; n < out_dim; ++n) {
-        tmp[n] = tmp[n-1]/maxes_out[n];
-//        remaining /= maxes_out[n];
-    }
+//    int tmp[out_dim];
+//    std::fill(tmp,tmp+out_dim,total);
+////    int remaining = total;
+//    tmp[0]=total/maxes_out[0];
+//    for (int n = 1; n < out_dim; ++n) {
+//        tmp[n] = tmp[n-1]/maxes_out[n];
+////        remaining /= maxes_out[n];
+//    }
 
     using V = SIMDVector<T,128>;
     V _vec_a;
@@ -257,11 +262,11 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
 //    constexpr int stride = 1;
     constexpr int stride = get_value<sizeof...(Rest1),Rest1...>::value;
     for (int i = 0; i < total; i+=stride) {
-//        int remaining = total;
+        int remaining = total;
         for (int n = 0; n < out_dim; ++n) {
-//            remaining /= maxes_out[n];
-//            as[n] = ( i / remaining ) % maxes_out[n];
-            as[n] = ( i / tmp[n] ) % maxes_out[n];
+            remaining /= maxes_out[n];
+            as[n] = ( i / remaining ) % maxes_out[n];
+//            as[n] = ( i / tmp[n] ) % maxes_out[n];
         }
 
         int index_a = as[a_dim-1];
@@ -278,6 +283,7 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
         }
 
 //        out_data[index_out] = a_data[index_a]*b_data[index_b];
+//        unused(index_a); unused(index_b); unused(index_out);
 
         _vec_a.set(*(a_data+index_a));
         V _vec_out = _vec_a*V(b_data+index_b);
@@ -350,6 +356,7 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
         }
         products_a[j] = num;
     }
+
     std::array<int,b_dim> products_b; products_b[0]=0;
     for (int j=b_dim-1; j>0; --j) {
         int num = maxes_b[b_dim-1];
@@ -371,6 +378,11 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
     std::reverse(products_b.begin(),products_b.end());
     std::reverse(products_out.begin(),products_out.end());
 
+//    constexpr std::array<int,a_dim> products_a = {72,24,8,0};
+//    constexpr std::array<int,b_dim> products_b = {72,24,8,0};
+//    constexpr std::array<int,out_dim> products_out = {15552,5184,1728,216,72,24,8,0};
+//    print(products_out);
+
     int as[out_dim];
     std::fill(as,as+out_dim,0);
     int it;
@@ -378,6 +390,7 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
     using V = SIMDVector<T,256>;
     V _vec_a;
 
+//    constexpr int stride = 1;
     constexpr int stride = get_value<sizeof...(Rest1),Rest1...>::value;
     constexpr int total = prod<Rest0...,Rest1...>::value;
     for (int i = 0; i < total; i+=stride) {
@@ -399,6 +412,8 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
         for(it = 0; it< out_dim; it++) {
             index_out += products_out[it]*as[it];
         }
+
+//        out_data[index_out] = a_data[index_a]*b_data[index_b];
 
         _vec_a.set(*(a_data+index_a));
         V _vec_out = _vec_a*V(b_data+index_b);

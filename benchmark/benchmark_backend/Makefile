@@ -15,9 +15,9 @@ INCLUDES = -I../../
 # all: bench_trace
 # all: bench_doublecontract
 # all: bench_norm
-all: bench_crossproduct
+# all: bench_crossproduct
 # all: bench_outer
-# all: bench_cyclic
+all: bench_cyclic
 
 # ifeq ($(CXX),g++)
 # 	CXX = g++ -fabi-version=6 -finline-functions

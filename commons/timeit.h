@@ -128,3 +128,6 @@ inline double timeit(T (*func)(Params...), Args...args)
 
 // Define a no operation function
 void no_op(){}
+
+//clobber
+template <typename T> void unused(T &&x) { asm("" ::"m"(x)); }

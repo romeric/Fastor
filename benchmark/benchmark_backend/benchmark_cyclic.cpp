@@ -5,8 +5,6 @@ using namespace Fastor;
 #define NITER 1000000UL
 
 
-template <typename T> void unused(T &&x) { asm("" ::"m"(x)); }
-
 template<typename T, size_t N>
 inline void cyclic_scalar(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
     constexpr size_t size = N;

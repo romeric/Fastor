@@ -226,7 +226,7 @@ void _voigt(const real * __restrict__ a_data, real * __restrict__ VoigtA) {
 //static const size_t NITER = 1000000LL;
 static const size_t NITER = 1000LL;
 // clobber
-template <typename T> void unused(T &&x) { asm("" ::"m"(x)); }
+//template <typename T> void unused(T &&x) { asm("" ::"m"(x)); }
 
 // iterate the same benchmark one million times
 template<size_t N>
@@ -271,8 +271,10 @@ void iterate_over_scalar(const real* a, const real* b, real* out) {
 // iterate the same benchmark one million times
 template<size_t N>
 void iterate_over() {
-    Tensor<real,N,N,N,N> x; x.random();
-    Tensor<real,N,N,N,N> y; y.random();
+//    Tensor<real,N,N,N,N> x; x.random();
+//    Tensor<real,N,N,N,N> y; y.random();
+    Tensor<real,N,N,N,8> x; x.random();
+    Tensor<real,N,N,N,8> y; y.random();
 
     for (volatile size_t i=0; i<NITER; i++){
         auto z = outer(x,y);
@@ -291,6 +293,18 @@ void iterate_over_scalar() {
         outer_4_and_4<N>(x.data(),y.data(),a_data);
         x = x+y; a_data[1] = a_data[2];
         unused(a_data);
+    }
+}
+
+
+
+// iterate the same benchmark one million times
+template<size_t M,size_t N,size_t P,size_t Q>
+void iterate_over(const Tensor<real,M,N,P,Q>& x, const Tensor<real,M,N,P,Q>& y) {
+    for (volatile size_t i=0; i<NITER; i++){
+        auto z = outer(x,y);
+//        z = z+x(1,0,0,1);
+        unused(z);
     }
 }
 
