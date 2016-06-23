@@ -1,0 +1,829 @@
+#include <benchmark/benchmark_backend.h>
+//#include <vdt/vdtMath.h>
+//#include <Vc/Vc>
+//#include "/home/roman/Downloads/eschnett-vecmathlib-477f9c85cf11/vecmathlib.h"
+
+
+
+
+template <typename Derived, size_t Dim> class Base {};
+template<size_t ... Rest> class Der : public Base<Der<Rest...>,sizeof...(Rest)> {};
+template<size_t ... Rest> Base<Der<Rest...>,sizeof...(Rest)>  foo(const Base<Der<Rest...>,sizeof...(Rest)> &a) { return a;}
+
+
+template<size_t ... Rest>
+inline int index_generator1( ) {
+    constexpr int size = sizeof...( Rest );
+    std::array<int, size> maxes = { Rest... };
+    std::array<int, size> a;
+    int i, j;
+    std::fill( a.begin( ), a.end( ), 0 );
+
+    int x = 0;
+
+    while (1) {
+        for (i = 0; i < size; i++) {
+            x += a[i];
+        }
+
+        for (j = size - 1; j >= 0; j--) {
+            if (++a[j] < maxes[j])
+                break;
+            else
+                a[j] = 0;
+        }
+        if (j < 0)
+            break;
+    }
+    return x;
+}
+
+// Initial try
+template<size_t ... Rest>
+inline int index_generator2( ) {
+    constexpr int size = sizeof...( Rest );
+
+    int x = 0;
+
+    std::array<int, size> maxes = { Rest... };
+    int total = 1;
+    for (int i = 0; i < size; ++i) {
+        total *= maxes[i];
+    }
+
+    for (int i = 0; i < total; ++i) {
+        int remaining = total;
+        for (int n = 0; n < size; ++n) {
+            remaining /= maxes[n];
+            x += ( i / remaining ) % maxes[n];
+        }
+    }
+    return x;
+}
+
+namespace ct {
+
+  template <typename, typename>
+  struct pair {};
+
+  template <typename... a>
+  struct list {};
+
+  template <typename a, typename... b>
+  struct cons_t;
+
+  template <typename a>
+  struct cons_t<a, list<>>
+  {
+    using type = list<a>;
+  };
+
+  template <typename a, typename bh, typename... bt>
+  struct cons_t<a, list<bh, bt...>>
+  {
+    using type = list<a, bh, bt...>;
+  };
+
+  template <typename a, typename... b>
+  struct concat_t;
+
+  template <typename b>
+  struct concat_t<list<>, b>
+  {
+    using type = b;
+  };
+
+  template <typename b, typename ah, typename... at>
+  struct concat_t<list<ah, at...>, b>
+  {
+    using type = typename cons_t<ah, typename concat_t<list<at...>, b>::type>::type;
+  };
+
+  template <typename a, typename b>
+  using cons = typename cons_t<a,b>::type;
+  template <typename a, typename b>
+  using concat = typename concat_t<a,b>::type;
+
+  template <typename a, typename b>
+  struct cartesian1;
+
+  template <typename a>
+  struct cartesian1<a, list<>>
+  {
+    using type = list<>;
+  };
+
+  template <typename a, typename bh, typename... bt>
+  struct cartesian1<a, list<bh, bt...>>
+  {
+    using type = cons<pair<a, bh>, typename cartesian1<a, list<bt...>>::type>;
+  };
+
+  template <typename a, typename b>
+  struct cartesian_t;
+
+  template <typename a>
+  struct cartesian_t<list<>, a>
+  {
+    using type = list<>;
+  };
+
+  template <typename ah, typename b, typename... at>
+  struct cartesian_t<list<ah, at...>, b>
+  {
+    using type = concat<typename cartesian1<ah, b>::type,
+                        typename cartesian_t<list<at...>, b>::type>;
+  };
+
+  template <typename a, typename b>
+  using cartesian = typename cartesian_t<a,b>::type;
+
+//  template <typename a, typename b, typename ... rest>
+//  using cartesian = typename cartesian_t<a,b,rest...>::type;
+
+  template <size_t x>
+  struct val {};
+
+  template <size_t... a>
+  struct vlist {};
+
+  template <typename t>
+  struct vlist2list_t;
+
+  template <>
+  struct vlist2list_t<vlist<>>
+  {
+    using type = list<>;
+  };
+
+  template <size_t ah, size_t... at>
+  struct vlist2list_t<vlist<ah, at...>>
+  {
+    using type = cons<val<ah>, typename vlist2list_t<vlist<at...>>::type>;
+  };
+
+  template <typename a>
+  using vlist2list = typename vlist2list_t<a>::type;
+
+  template <size_t...a>
+  using vl = vlist2list<vlist<a...>>;
+
+  template<size_t x1, size_t x2>
+  std::ostream& operator<< (std::ostream& s,
+                            pair<val<x1>, val<x2>>)
+  {
+    s <<  x1 << " " << x2 << "\n";
+    return s;
+  }
+
+
+  std::ostream& operator<< (std::ostream& s,
+                            list<>)
+  {
+    return s;
+  }
+
+  template <typename ah, typename... at>
+  std::ostream& operator<< (std::ostream& s,
+                            list<ah, at...>)
+  {
+    s << ah() << list<at...>();
+    return s;
+  }
+
+}
+///////////////////////////
+
+
+//template<int first, int last>
+//struct cart {
+
+//    static void act(int *as) {
+//        for (int i=first; i<last; ++i) {
+//            as[i] = i;
+//            act(as);
+//        }
+//    }
+//};
+
+//template<size_t ... Rest>
+//struct cart {
+//    static constexpr int size = sizeof...( Rest );
+//    static constexpr std::array<int, size> maxes = { Rest... };
+//    static std::array<int, size> a;
+
+//    void act() {
+
+//    }
+//};
+
+//template<int N>
+//constexpr int products(const size_t (&seq)[N], int i = N-1) {
+//    return i == (N-1) ? seq[N-1] : products(seq, i+1)*seq[i];
+//}
+
+
+
+
+
+//fast simd optimised minimal tensor contraction library - fastor
+int main() {
+    
+
+
+//    Tensor<real,3,3> yy1,yy2;
+//    cross(yy1,yy2);
+
+//    nprods<Index<2,2,2,2,4>,typename std_ext::make_index_sequence<5>::type>::generate();
+//    print<size_t,5>(nprods<Index<5,2,2,3,4>,typename std_ext::make_index_sequence<5>::type>::values);
+
+//    Tensor<real,2,2> t3, t4;
+//    Tensor<real,5,2,2,3,4> t3, t4;
+//    t3.iota(0); t4.arange(0);
+////    print(t3,t4);
+//    outer(t3,t4);
+//    print(outer(t3,t4));
+//    auto t5 = einsum<Index<I,J>,Index<K,L>>(t3,t4);
+//    print(einsum<Index<I,J>,Index<K,L>>(t3,t4));
+
+
+    using aa3 = ct::cartesian<ct::vl<0,1,2>, ct::vl<0,1,2>>;
+    std::cout << aa3() << std::endl;
+    return 0;
+
+
+//    Tensor<double,2,3,4> qq1;
+//    Tensor<double,5,3,6,4> qq2;
+//    Tensor<double,8,9,5,6,7> qq3;
+//    auto qq5 = contraction<Index<0,1,2>,Index<3,1,4,2>,Index<6,7,3,4,5>>(qq1,qq2,qq3);
+
+//    print(type_name<decltype(qq5)>());
+//    print(type_name<decltype(permutation<Index<2,1,0>>(qq1))>());
+
+//    einsum<Index<0,1,2>,Index<3,0,4,2>,Index<6,7,3,4,5>>(qq1,qq2,qq3);
+
+//    return 0;
+
+//    using UU = typename nprods<Index<2,3,5,4>,typename std_ext::make_index_sequence<4>::type>::type;
+//    print<size_t, 4>(UU::_IndexHolder);
+//    size_t ss3[4] = {2,3,4,5};
+//    print(products(ss3,1));
+//    print(type_name<UU>());
+//    print(typename nprods<Index<2,3,4>,typename std_ext::make_index_sequence<3>::type>::values);
+//    print(type_name<concat<int,bool>>());
+
+//    print(prod<2,3>::value)
+//    print<int,3>(food<2,3,4>::arr);
+
+//    print(binomial<100>::value[95]);
+//    print(std_ext::make_index_sequence<10>());
+//    index_generator3<3,3>();
+//    timeit(static_cast<int (*)()>(&index_generator1<2,2,2,3,2,2,2,20>));
+//    timeit(static_cast<int (*)()>(&index_generator2<2,2,2,3,2,2,2,20>));
+//    timeit(static_cast<int (*)()>(&index_generator3<2,2,2,3,2,2,2,20>));
+
+//    print(type_name<std_ext::make_index_sequence<5>>());
+//    return 0;
+
+//    timeit(static_cast<void (*)()>(&iterate_over_scalar<4>));
+//    timeit(static_cast<void (*)()>(&iterate_over<3>));
+
+    constexpr size_t n1 = 3;
+    constexpr size_t n2 = 4;
+    Tensor<real,n1,n1,n1,n2> ts1; ts1.random();
+    Tensor<real,n1,n1,n1,n2> ts2; ts2.random();
+    timeit(static_cast<void (*)(const Tensor<real,n1,n1,n1,n2>&,const Tensor<real,n1,n1,n1,n2>&)>(&iterate_over<n1,n1,n1,n2>),ts1,ts2);
+    return 0;
+
+
+//    timeit(static_cast<void (*)()>(&while_variant<1,1,1>));
+//    timeit(static_cast<void (*)()>(&for_variant<1,1,1>));
+//    for_variant<2,3,3>();
+//    while_variant<2,3,3>();
+
+
+
+//    using REAL = float;
+//    Tensor<REAL,3,3> ggg; ggg.iota(0);
+//    print(matmul(ggg,ggg));
+//    print(static_cast<Tensor<REAL>>(ldeterminant(ggg)));
+//    print(norm(cofactor(ggg)));
+//    print(norm(transpose(adjoint(ggg))));
+//    print(t5);
+//    print(voigt(t5));
+//    return 0;
+
+//    constexpr auto ttt = 3;
+//    real *ass   = static_cast<real*>(_mm_malloc(sizeof(real) * ttt*ttt, 32));
+//    real *bss   = static_cast<real*>(_mm_malloc(sizeof(real) * ttt*1, 32));
+//    real *outss = static_cast<real*>(_mm_malloc(sizeof(real) * ttt*1, 32));
+//    std::iota(ass,ass+ttt*ttt,0);
+//    std::iota(bss,bss+ttt,4.5);
+
+//    print<real,ttt*ttt>(ass);
+//    print<real,ttt>(bss);
+
+//    print(foo<·>)
+//    _matmul<real,ttt,ttt,1>(ass,bss,outss);
+//    print<real,ttt>(outss);
+
+//    Tensor<double,1,2,3,1,5,2,2,4,3,2,3,7,6> tensor_11;
+//    tensor_11.iota(0);
+//    print(tensor_11);
+//    print(tensor_11.rank());
+
+//    Tensor<real,4,5> ass; ass.arange(0);
+//    Tensor<real,5,4> bss; bss.arange(0);
+
+//    Tensor<real,4,4> ass; ass.arange(0);
+//    Tensor<real,4,4> bss; bss.arange(0);
+//    Tensor<real,2,3> ass; ass.arange(0);
+//    Tensor<real,3,8> bss; bss.arange(0);
+//    print(ass,bss);
+//    print(matmul(ass,bss));
+
+
+//    return 0;
+
+
+    constexpr auto n=3;
+//    Tensor<real,n,n,n> x; x.random();
+//    Tensor<real,n,n,n> y; y.random();
+//    auto z = einsum<Index<I,J,K>,Index<L,M,O>>(x,y);
+//    print(z.data());
+
+//    return 0;
+
+//    constexpr auto tt0 = 2;
+//    constexpr auto tt = tt0*tt0;
+//    constexpr auto tt = 4;
+//    real *as = static_cast<real*>(_mm_malloc(sizeof(real) * tt*tt, 32));
+//    real *bs = static_cast<real*>(_mm_malloc(sizeof(real) * tt*tt, 32));
+//    real *outs = static_cast<real*>(_mm_malloc(sizeof(real) * tt*tt, 32));
+//    std::iota(as,as+tt*tt,0);
+//    std::iota(as,as+tt*tt,0);
+//    std::fill(bs,bs+tt*tt,3);
+
+//    timeit(static_cast<void (*)(const real*, const real*, real*)>(&iterate_over_scalar<tt>),as,bs,outs);
+//    timeit(static_cast<void (*)(const real*, const real*, real*)>(&iterate_over<tt>),as,bs,outs);
+
+    return 0;
+//    _adjoint<real,tt,tt>(as,outs);
+
+//    Tensor<real,tt,tt> jj;
+//    jj.iota(0);
+//    jj.random();
+//    print(jj);
+//    print(adjoint(jj));
+//    print(cofactor(jj));
+
+    Tensor<real,3,3> ss; ss.iota(0);
+//    ss(2,2) = 1;
+    print(ss);
+//    print(determinant(ss));
+//    Tensor<real> dd = ldeterminant(ss);
+//    Tensor<real,4,3> dd = ltranspose(ss);
+//    Tensor<real,3,3> dd = ladjoint(ss);
+//    Tensor<real,3,3> dd; dd = ltranspose(ladjoint(ss));
+    Tensor<real,3,3> dd; dd = linverse(ss);
+//    auto dd = ltranspose(lcofactor(ss));
+    print(type_name<decltype(dd)>());
+    print(dd);
+//    print(norm(dd));
+    Tensor<real,3,3> sdf = ss+ss/ss*ss-ss+sqrt(ss)+cosh(ss)/5+log(ss)+tanh(ss);
+    print(sdf);
+
+//    print(kronecker_delta<real,2,2>());
+
+//    Tensor<real,3,4,5,6,7> tmp; tmp.iota(0);
+////    Tensor<real,3,4,5,6,7> t2 = permutation<Index<M,L,K,J,I>>(tmp);
+//    Tensor<real,3,4,5,6,7> t2 = permutation<Index<M,L,K,I,J>>(tmp);
+//    print(t2);
+
+    Tensor<real,3,4,5> tmp; tmp.iota(0);
+//    Tensor<real,3,4,5,6,7> t2 = permutation<Index<M,L,K,J,I>>(tmp);
+    Tensor<real,3,4,5> t2 = permutation<Index<J,K,I>>(tmp);
+//    auto t2 = permutation<Index<J,K,I>>(tmp);
+    print(t2);
+
+//    using uu = typename permute_impl<real,Index<0,2,1>, Tensor<real,3,4,5>, typename std_ext::make_index_sequence<3>::type>::type;
+//    print(type_name<uu>());
+
+
+//    return 0;
+
+//    Tensor<real,3,3,3> jj; jj.eye();
+//    Tensor<real,2,3> jj = kronecker_delta<real,4,4>(); // runtime error
+//    Tensor<real,3,3> jj, pp;
+//    jj.iota(0); pp.iota(1);
+
+//    Tensor<real,3,3,3> jj;
+//    Tensor<real,3,3,3,3> jj;
+//    jj.iota(0);
+//    Tensor<real,2,3,4> jj;
+//    jj.iota(0);
+////    permutation<Index<I,K,J>>(jj);
+////    print(permutation<Index<K,J,I>>(jj));
+////    print(reshape<Index<K,J,I>>(jj));
+////    reshape<Index<K,J,I,M>>(jj);
+////    print(permutation<Index<I,K,J>>(jj));
+//    print(jj);
+//    pp.eye();
+//    Tensor<real,3,3> cof_jj = jj/2+jj*jj+jj/jj+cofactor(jj)+adjoint(jj);
+//    Tensor<real> gk = ltrace(lmatmul(ltranspose(jj),pp));
+//    print(gk);
+
+//    print(lmatmul(jj,pp).eval(1,2));
+//    print(type_name<decltype(lmatmul(jj,pp).eval(1,2))>());
+//    print(pp.is_orthogonal());
+//    print(jj,cof_jj);
+//    print(jj,transpose(jj));
+//    print(matmul(jj,pp));
+//    print(jj.is_equal(pp));
+//    print(reduction(jj));
+//    return 0;
+
+//    foo<4,5,6,7> qq;
+//    lists<0,2,3,1> ww;
+//    auto ee = bar(ww,qq);
+
+    Tensor<real,2,3,4,5> qq; qq.iota(0);
+    auto ee = permutation<Index<0,2,3,1>>(qq);
+    print(ee);
+//    Index<0,2,3,1> ww;
+//    auto ee = permutation(ww,qq);
+//    print(type_name<decltype(ee)>());
+//    using uu = typename meow<lists<0,2,1,3>, foo<4,5,6,7>,   typename std_ext::make_index_sequence<4>::type>::type;
+//    print(type_name<uu>());
+//    return 0;
+
+
+    Tensor<real,3,4> ff; ff.iota(0);
+    Tensor<real,4,3> kk; kk.iota(9);
+    Tensor<real,4,4> ll; ll.fill(2);
+    print(ff,kk);
+//    Tensor<real,4,4> fh = matmul(kk,ff);
+//    Tensor<real,4,4> fh = matmul(matmul(kk,ff),kk);
+//    print(fh);
+//    Tensor<real> fh = trace(matmul(transpose(ff),kk));
+//    Tensor<real,3,3> fh = times(ff,kk);
+//    print(fh);
+//    print(type_name<decltype(fh)>());
+
+
+//    constexpr int dims[7] = {0,1,2,3,4,1,0};
+//    print(TC::is_uniq<7>(dims,2));
+
+//    using uu = typename TC::contraction_impl<Index<0,0,1,1>, Tensor<double,2,2,3,3>, std::make_index_sequence<4> >::type;
+//    print(type_name<uu>());
+//    print(2);
+//    constexpr int dd[] = TONY::make_index_sequence<4>();
+//    Array<double,3,3,4,5> of;
+//    Indices<I,I,K,L> fo;
+//    TC::contraction(fo,of);
+    return 0;
+
+//    using uu = typename ContractionType<Index<0, 0>, Tensor<double, 3, 3>>::type;
+//    using uu = typename ContractionType<Index<0, 0, 1>, Tensor<double, 3, 3, 3>>::type;
+//    using uu = typename ContractionType<Index<0, 1, 0, 1>, Tensor<double, 3, 4, 3, 4>>::type;
+//    print(type_name<uu>());
+
+//    return 0;
+
+//    print(no_of_uniques2<0,1,2,3,4,5,6>::value);
+//    my_struct<0,5,2,3,5,0,3,2> ff;
+//    print(ff.value);
+//    auto fg = foos(ff);
+//    print(fg.value);
+//    return 0;
+
+//    Tensor<real,3,3,5,6,3,3,3> ff; ff.iota(0);
+//    Tensor<real,3> ff_out;
+//    Index<I,I,J,K,L,L,L> indices;
+//    einsum(indices, ff,ff_out);
+
+
+//    Tensor<real,2,2> ff; ff.random();
+//    print(ff);
+//    print(reduction(ff));
+
+//    return 0;
+
+
+//    Tensor<real,3,3,4,3> oo;
+//    Index<I,I,K,I> idx;
+//    einsum(idx,oo);
+//    einsum<Index<I,I,K,I>>(oo);
+//    return 0;
+
+
+//    print(no_of_uniques2<0,1,2,1,2,2>::value);
+
+
+//    Tensor<real,2,3,2,3,4,2,3> gg; gg.iota(1.f);
+    Tensor<real,n,n> gg; gg.iota(0.1);
+//    Tensor<real,n,n> hh; hh.iota(4);
+    Tensor<real,n,n> hh; hh.iota(1.5);
+
+//    Tensor<real,n,n> ghh;
+//    matmul<real,n,n,n>(gg.data(),hh.data(),ghh.data());
+//    print(ghh);
+
+//    print(Index<0,1,2>::Dimension);
+//    auto gh = einsum<Index<0,1>,Index<1,2>>(gg,hh);
+//    auto gh = einsum<Index<I,J>,Index<K,L>>(gg,hh);
+//    Tensor<real,n,n> gh = sqrt(gg/2.) + einsum<Index<0,1>,Index<1,2>>(gg,hh) + log(gg*hh);
+//    print(type_name<decltype(sqrt(gg/2.) + einsum<Index<I,J>,Index<J,K>>(gg,hh) + log(gg*hh))>());
+//    Tensor<real,n,n> gh =times(gg,hh); //times(gg,hh);
+//    Tensor<real,n,n> gh = trans(gg);
+//    Tensor<real,n,n> gh = tr(gg);
+//    Tensor<real,1,1> gh = tr(gg);
+//    Tensor<real,n,n> gh = tr(times(trans(gg),hh));
+//    Tensor<real,1,1> gh = tr(times(hh,hh));
+//    Tensor<real,n,n> gh = times(hh,hh);
+//    Tensor<real,n,n> gh = times(times(hh,gg),hh);
+//    Tensor<real,n,n> gh = tr(times(gg,hh));
+//    Tensor<real,n+1,n+5> gh = times(hh,gg);
+//    Tensor<real,n+1,n+5> gh = tr(times(hh,gg));
+//    Tensor<real,1,1> gh = tr(times(hh,gg));
+//    Tensor<real,n+1,n+1> gh = times(hh,gg);
+//    Tensor<real,1,1> gh = tr(times(hh,gg));
+//    print(type_name<decltype(tr(times(gg,hh)))>());
+//    print(gg,hh,gh);
+//    print(type_name<decltype(tr(times(trans(gg),hh)))>());
+//    Tensor<real,2,2> gh = 2+gg+2+hh;
+//    Tensor<real,2,2> gh = sqrt(2-gg+hh/5+gg*2);
+//    Tensor<real,2,2> gh = 2-gg-2+6;
+//    Tensor<real,2,2> gh = multiply(2,multiply(gg,2)); //-2+6;
+//    Tensor<real,2,2> gh = gg/2+2*2; //-2+6;
+//    print(type_name<decltype(multiply(2,multiply(gg,2)))>());
+//    print(type_name<decltype(gg/2+2*3-hh)>());
+//    Tensor<real,2,2> gh = multiply(gg,hh);
+//    print(type_name<decltype(sqrt(2-gg+hh/5-gg*2)+log(gg)+sin(sinh(hh)))>());
+//    print(gg,hh,gh);
+
+//    print(is_arithmatic<AbstractTensor<Tensor<real,2,2>,2>>::value);
+//    print(is_arithmatic<std::remove_reference<const float&>::type>::value);
+//    print(is_arithmatic<const float&>::value);
+//    return 0;
+//    Tensor<real,2,2> ff;
+//    ff.fill((real)2);
+////    print(ff);
+////    auto gg = foo(ff);
+//    Tensor<real,2,2> gg = foo(ff);
+////    foo(ff);
+////    gg.eval(0);
+//    print(ff,gg);
+
+//    return 0;
+
+//    Tensor<real,2,3,2,3,2> xx;
+//    Tensor<real,2,3,2,3,2,4> xx;
+//    Tensor<real,2,3,4,5,6> xx;
+//    Tensor<real,2,2,1> xx;
+//    Tensor<real,2,3,4,5,6> xx;
+//    print(prod<2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2>::value);
+//    Tensor<real,3,3> xx, yy;
+    Tensor<real,3,3> xx, yy;
+//    Tensor<real,3,3,3> xx, yy;
+//    Tensor<real,2,2,2> xx, yy;
+//    Tensor<real,3,3,3,3> xx, yy;
+    xx.iota((real)0);
+    yy.iota((real)n*n);
+//    xx(0,1,0,1,0);
+//    print(xx(0,1,0,1,0,2));
+//    print(xx(1,2,1,1,1,3));
+//    print(xx,yy);
+
+//    auto zz = einsum<Index<I,J>,Index<I,J>>(xx,yy);
+//    auto zz = einsum<Index<I,J,K>,Index<I,J,K>>(xx,yy);
+//    auto zz = einsum<Index<I,J,K,L>,Index<I,J,K,L>>(xx,yy);
+//    auto zz = einsum<Index<K,K>>(xx);
+//    auto zz = einsum<Index<M,N>,Index<N,K>>(xx,yy);
+//    auto zz = einsum<Index<K,L>,Index<M,N>,Voigt>(xx,yy);
+//    auto zz = einsum<Index<0,1>,Index<1,2>>(xx,yy);
+//    auto zz = einsum<Index<I,J,K,L>,Index<L,M,N,O>>(xx,yy);
+
+//    auto zz = einsum<Index<K,L>,Index<M,N>>(xx,yy);
+//    auto zz = einsum<Index<I,K>,Index<J,L>>(xx,yy);
+//    auto zz = einsum<Index<I,L>,Index<J,K>>(xx,yy);
+//    auto zz = einsum<Index<J,I>,Index<L,K>>(xx,yy);
+//    auto zz = einsum<Index<I,J>,Index<K,L>>(xx,yy);
+//    auto zz = einsum<Index<I,J>,Index<K,L>,I,J>(xx,yy);
+    auto zz = einsum<Index<I,J>,Index<K,L>>(xx,yy);
+//    Tensor<real,n,n> zz = xx+yy;
+//    Tensor<real,3,3,3,3> zz; zz.zeros();
+    print(zz);
+
+//    auto zz = einsum<Index<I,J,K>,Index<L,M,N>>(xx,yy);
+//    auto zz = einsum<Index<J,I,K>,Index<M,L,N>>(xx,yy);
+//    auto zz = einsum<Index<I,J,K>,Index<L,M,N>>(xx,yy);
+//    Tensor<real,n,n,n,n,n,n> zz = einsum<Index<I,J,K>,Index<L,M,N>>(xx,yy);
+//    print(zz(0,0,0));
+//    print(zz(0,0,0,0,0,0));
+//    print(zz);
+//    Tensor<real,n,n,n,n,n,n> zz; zz.iota(0);
+//    Tensor<real,1,1,1,1,4,5> zz; zz.iota(0);
+//    print(zz);
+//    print<real,729>(zz.data());
+
+////    for (auto i=0; i<100; ++i)
+////        for (auto j=0; j<1; ++j)
+////            print(i);
+    return 0;
+    //---------------------------------------------------------------------
+
+
+
+
+
+    //---------------------------------------------------------------------
+    // Allocate
+    real *aa = static_cast<real*>(_mm_malloc(sizeof(real) * n*n, 32));
+    real *bb = static_cast<real*>(_mm_malloc(sizeof(real) * n*n, 32));
+//    real *out = static_cast<real*>(_mm_malloc(sizeof(real) * n*n, 32));
+//    real *cc = static_cast<real*>(_mm_malloc(sizeof(real) * 4, 32));
+//    real *dd = static_cast<real*>(_mm_malloc(sizeof(real) * 4, 32));
+    real *out = static_cast<real*>(_mm_malloc(sizeof(real) * n*n*n*n, 32));
+
+//    assert(((size_t)(&out[3]) & 0xF) == 0);
+
+    std::iota(aa,aa+n*n,static_cast<real>(0));
+    std::iota(bb,bb+n*n,static_cast<real>(n*n));
+//    std::iota(cc,cc+4,0.);
+//    std::iota(dd,dd+4,4.);
+//    std::fill(out,out+9,0.);
+//    _mm_prefetch();
+//    outer<real,n,n,n,n>(aa,bb,out);
+//    crossproduct<n*n>(aa,bb,out);
+//    runner_scalar(aa,bb,out);
+//    runner(aa,bb,out);
+//    tcross(aa,bb,out);
+//    print<real,36>(out);
+//    timeit(no_op);
+//    timeit(static_cast<void (*)(const real*,const real*,real*)>(&tcross),aa,bb,out);
+//    timeit(static_cast<void (*)(const real*,const real*,real*)>(&matmul<n,n>),aa,bb,out);
+//    timeit(static_cast<void (*)(const real*,const real*,real*)>(&crossproduct<3,3>),aa,bb,out);
+//    matmul<9>(aa,bb,out);
+//    print<real,9>(out);
+//    auto da = doublecontract<9>(aa,bb);
+//    crossproduct<n,n>(aa,bb,out);
+//    print(da);
+//    print<double,SIZE*SIZE>(dd);
+
+//    cyclic_0<real,n,n,n,n>(aa,bb,out);
+//    runner(aa,bb,out);
+    timeit(no_op);
+//    timeit(static_cast<double (*)(const double*)>(&det<4>),cc);
+//    timeit(static_cast<void (*)(const double*, double*)>(&transpose<SCALAR>),a,out);
+    timeit(static_cast<real (*)(const real*, const real*)>(&_doublecontract<real,n,n>),aa,bb);
+//    timeit(static_cast<void (*)(const double*, const double*, double*)>(&matmul<4>),cc,dd,out);
+//    timeit(static_cast<void (*)(const real*, const real*, real*)>(&iterate_over_scalar<n>),aa,bb,out);
+//    timeit(static_cast<void (*)(const real*, const real*, real*)>(&iterate_over<n>),aa,bb,out);
+
+//    print<real,n*n>(out);
+//    timeit(static_cast<void (*)(const real*, const real*, real*)>(&runner),aa,bb,out);
+//    timeit(static_cast<void (*)(const real*, const real*, real*)>(&AijBkl),aa,bb,out);
+
+//    Eigen::Matrix<double,SIZE,SIZE> b; b.setRandom(SIZE,SIZE);
+//    Eigen::Matrix<double,SIZE,SIZE> c; c.setRandom(SIZE,SIZE);
+//    timeit(static_cast<double (*)(const Eigen::Matrix<double,SIZE,SIZE>&)>(&det),b);
+//    timeit(static_cast<Eigen::Matrix<double,3,3> (*)(const Eigen::Matrix<double,3,3>&)>(&transpose),b);
+//    timeit(static_cast<double (*)(const Eigen::Matrix<double,SIZE,SIZE>&,const Eigen::Matrix<double,SIZE,SIZE>&)>(&doublecontract),b,c);
+//    timeit(static_cast<Eigen::Matrix<double,SIZE,SIZE> (*)(const Eigen::Matrix<double,SIZE,SIZE>&,const Eigen::Matrix<double,SIZE,SIZE>&)>(&matmul),b,c);
+//    timeit(static_cast<Eigen::Matrix<double,SIZE,SIZE> (*)(const Eigen::Matrix<double,SIZE,SIZE>&,const Eigen::Matrix<double,SIZE,SIZE>&)>(&runner),b,c);
+
+//    Eigen::Matrix3Xd cc; cc.setRandom(3,3);
+//    timeit(static_cast<double (*)(const Eigen::Matrix3Xd&)>(&det),cc);
+
+    _mm_free(aa);
+    _mm_free(bb);
+//    _mm_free(cc);
+//    _mm_free(dd);
+    _mm_free(out);
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////
+
+
+
+
+//namespace stdl  // WARNING: at own risk, otherwise use own namespace
+//{
+//    template <size_t... Ints>
+//    struct index_sequence
+//    {
+//        using type = index_sequence;
+//        using value_type = size_t;
+//        static constexpr std::size_t size() { return sizeof...(Ints); }
+//    };
+
+//    // --------------------------------------------------------------
+
+//    template <class Sequence1, class Sequence2>
+//    struct _merge_and_renumber;
+
+//    template <size_t... I1, size_t... I2>
+//    struct _merge_and_renumber<index_sequence<I1...>, index_sequence<I2...>>
+//      : index_sequence<I1..., (sizeof...(I1)+I2)...>
+//    { };
+
+//    // --------------------------------------------------------------
+
+//    template <size_t N>
+//    struct make_index_sequence
+//      : _merge_and_renumber<typename make_index_sequence<N/2>::type,
+//                            typename make_index_sequence<N - N/2>::type>
+//    { };
+
+//    template<> struct make_index_sequence<0> : index_sequence<> { };
+//    template<> struct make_index_sequence<1> : index_sequence<0> { };
+//}
+//////////////////////////////
+
+
+
+//template <int...>
+//struct Indices {};
+
+//template <typename, int...>
+//struct Array {};
+
+
+//namespace TC {
+//// is ind[i] unique in ind?
+//template<size_t N>
+//constexpr bool is_uniq(const int (&ind)[N], size_t i, size_t cur = 0){
+//    return cur == N ? true :
+//           (cur == i || ind[cur] != ind[i]) ? is_uniq(ind, i, cur + 1) : false;
+//}
+
+//// For every i where ind[i] == index, is dim[i] == dimension?
+//template<size_t N>
+//constexpr bool check_all_eq(int index, int dimension,
+//                            const int (&ind)[N], const int (&dim)[N], size_t cur = 0) {
+//    return cur == N ? true :
+//           (ind[cur] != index || dim[cur] == dimension) ?
+//                check_all_eq(index, dimension, ind, dim, cur + 1) : false;
+//}
+
+//// if position i should be contracted away, return -1, otherwise return dim[i].
+//// triggers a compile-time error when used in a constant expression on mismatch.
+//template<size_t N>
+//constexpr int calc(size_t i, const int (&ind)[N], const int (&dim)[N]){
+//    return is_uniq(ind, i) ? dim[i] :
+//           check_all_eq(ind[i], dim[i], ind, dim) ? -1 : throw "dimension mismatch";
+//}
+////Now we need a way to get rid of the -1s:
+//template<class Ind, class... Inds>
+//struct concat { using type = Ind; };
+//template<int... I1, int... I2, class... Inds>
+//struct concat<Indices<I1...>, Indices<I2...>, Inds...>
+//    :  concat<Indices<I1..., I2...>, Inds...> {};
+
+//// filter out all instances of I from Is...,
+//// return the rest as an Indices
+//template<int I, int... Is>
+//struct filter
+//    :  concat<typename std::conditional<Is == I, Indices<>, Indices<Is>>::type...> {};
+////Use them:
+//template<class Ind, class Arr, class Seq>
+//struct contraction_impl;
+
+//template<class T, int... Ind, int... Dim, size_t... Seq>
+//struct contraction_impl<Indices<Ind...>, Array<T, Dim...>, stdl::index_sequence<Seq...>>{
+//    static constexpr int ind[] = { Ind... };
+//    static constexpr int dim[] = { Dim... };
+//    static constexpr int result[] = {calc(Seq, ind, dim)...};
+
+//    template<int... Dims>
+//    static auto unpack_helper(Indices<Dims...>) -> Array<T, Dims...>;
+
+//    using type = decltype(unpack_helper(typename filter<-1,  result[Seq]...>::type{}));
+//};
+
+//template<class T, int ... Dims, int ... Idx,
+//typename std::enable_if<sizeof...(Dims)==sizeof...(Idx),bool>::type=0>
+//typename contraction_impl<Indices<Idx...>, Array<T,Dims...>,
+//                          typename stdl::make_index_sequence<sizeof...(Dims)>::type>::type
+//contraction(const Indices<Idx...> &idx, const Array<T,Dims...> &a) {
+//    print("wow");
+//}
+
+//}
