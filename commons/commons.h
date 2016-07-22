@@ -48,6 +48,16 @@
 #include <immintrin.h>
 
 
+// FASTOR CONSTRUCTS
+#define Symmetric -100
+#define NonSymmetric -101
+#define AntiSymmetric -102
+#define Identity -103
+#define One -104
+#define Zero -105
+#define Voigt -106
+
+
 
 #define ZEROPS (_mm_set1_ps(0.f))
 #define ZEROPD (_mm_set1_pd(0.0))
@@ -68,17 +78,6 @@
 #define HALFPD (_mm_set1_pd(0.5))
 #define VHALFPS (_mm256_set1_ps(0.5f))
 #define VHALFPD (_mm256_set1_pd(0.5))
-
-
-// Build a set of generic functions
-//FASTOR_INLINE __m256 load(const float * data) {return _mm256_load_ps(data);}
-//FASTOR_INLINE __m256d load(const double * data) {return _mm256_load_pd(data);}
-
-//FASTOR_INLINE void store(float * data, __m128 reg) {_mm_store_ps(data,reg);}
-//FASTOR_INLINE void store(float * data, __m256 reg) {_mm256_store_ps(data,reg);}
-//FASTOR_INLINE void store(double * data, __m128d reg) {_mm_store_pd(data,reg);}
-//FASTOR_INLINE void store(double * data, __m256d reg) {_mm256_store_pd(data,reg);}
-
 
 using FASTOR_INDEX = size_t;
 

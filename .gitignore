@@ -9,7 +9,17 @@ Fastor
 Fastor.cpp
 Fastor.pro.user
 Fastor.pro
+
+# python plotting files
 benchmark/bench_results.py
+benchmark/benchmark_academic/contraction/plot_results.py
+benchmark/benchmark_academic/crossproduct/plot_results.py
+benchmark/benchmark_academic/crossproduct_backend/plot_results.py
+benchmark/benchmark_academic/outerproduct/plot_results.py
+benchmark/benchmark_academic/permutation/plot_results.py
+benchmark/benchmark_academic/kernel_quadrature/plot_results.py
+
+
 
 # careful
 Makefile 

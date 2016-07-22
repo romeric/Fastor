@@ -6,15 +6,6 @@
 
 namespace Fastor {
 
-#define Symmetric -1
-#define AntiSymmetric -2
-#define Identity -3
-#define Voigt -4
-
-}
-
-namespace Fastor {
-
 
 template<class Derived, size_t Rank>
 class AbstractTensor {

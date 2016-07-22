@@ -37,6 +37,15 @@ struct Index {
 template<FASTOR_INDEX ... All>
 constexpr FASTOR_INDEX Index<All...>::_IndexHolder[sizeof...(All)];
 
+//template <int ... All>
+//struct Index {
+//    static const int NoIndices = sizeof...(All);
+//    static constexpr int _IndexHolder[sizeof...(All)] = {All...};
+//};
+
+//template<int ... All>
+//constexpr int Index<All...>::_IndexHolder[sizeof...(All)];
+
 }
 
 #endif // INDICIAL_H

@@ -46,9 +46,9 @@ struct SIMDVector<double, 256> {
             _mm256_storeu_pd(data,value);
     }
 
-//    FASTOR_INLINE double operator[](FASTOR_INDEX i) {return value[i];}
-    FASTOR_INLINE double& operator[](FASTOR_INDEX i) {return value[i];}
-    FASTOR_INLINE const double& operator[](FASTOR_INDEX i) const {return value[i];}
+    FASTOR_INLINE double operator[](FASTOR_INDEX i) {return value[i];}
+//    FASTOR_INLINE double& operator[](FASTOR_INDEX i) {return value[i];}
+//    FASTOR_INLINE const double& operator[](FASTOR_INDEX i) const {return value[i];}
     FASTOR_INLINE double operator()(FASTOR_INDEX i) {return value[i];}
 
     FASTOR_INLINE void set(double num) {

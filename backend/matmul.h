@@ -14,7 +14,7 @@ FASTOR_INLINE
 void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
     // Fully relies on the compiler
     for (size_t i=0; i<M; ++i) {
-        for (size_t k=0; k<K; ++k ) {
+        for (size_t k=0; k<N; ++k ) {
             out[i*N+k] = a[i*K]*b[k];
         }
         for (size_t j=1; j<K; ++j) {

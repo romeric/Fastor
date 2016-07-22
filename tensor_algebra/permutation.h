@@ -19,8 +19,8 @@ struct permute_impl;
 
 template<typename T, size_t ... ls, size_t ... fs, size_t... ss>
 struct permute_impl<T,Index<ls...>, Tensor<T, fs...>, std_ext::index_sequence<ss...>>{
-    constexpr static size_t lst[] = { ls... };
-    constexpr static size_t fvals[] = {fs...};
+    constexpr static size_t lst[sizeof...(ls)] = { ls... };
+    constexpr static size_t fvals[sizeof...(ls)] = {fs...};
     using type = Tensor<T,fvals[count_less(lst, lst[ss])]...>;
 };
 
@@ -33,7 +33,8 @@ struct extractor_perm {};
 
 template<size_t ... Idx>
 struct extractor_perm<Index<Idx...> > {
-  template<typename T, size_t ... Rest> static
+  template<typename T, size_t ... Rest>
+    static
     typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
         typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type
     permutation_impl(const Tensor<T,Rest...> &a) {

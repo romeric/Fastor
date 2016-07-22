@@ -158,7 +158,7 @@ struct nprods;
 template<size_t ... Rest, size_t ... ss>
 struct nprods<Index<Rest...>,std_ext::index_sequence<ss...>> {
 //    using type = Index<products(vals,ss)...>;
-    constexpr static size_t vals[] = {Rest...};
+    constexpr static size_t vals[sizeof...(Rest)] = {Rest...};
     static constexpr size_t pvals[sizeof...(Rest)] = {products(vals,ss)...};
     static constexpr size_t svals[sizeof...(Rest)] = {shifter(pvals,ss)...};
 //    static constexpr size_t values[sizeof...(Rest)] = {zeroer(svals,ss)...};

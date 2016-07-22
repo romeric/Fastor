@@ -2,7 +2,7 @@
 
 using namespace Fastor;
 
-#define NITER 1000000UL
+#define NITER 10000UL
 
 
 template<typename T, size_t N>
@@ -16,7 +16,11 @@ inline void crossproduct_scalar(const T *__restrict__ a, const T *__restrict__ b
                 for (size_t I=0; I<N; ++I)
                     for (size_t J=0; J<N; ++J)
                         for (size_t K=0; K<N; ++K)
-                            out[i*size+I] += levi_civita[i*size*size+j*size+k]*levi_civita[I*size*size+J*size+K]*a[j*size+J]*b[k*size+K];
+                            for (size_t P=0; P<N; ++P)
+                                for (size_t Q=0; Q<N; ++Q)
+                                    out[P*size*size*size+i*size*size+I*size+Q] += \
+                                        levi_civita[i*size*size+j*size+k]*levi_civita[I*size*size+J*size+K]*\
+                                        a[P*size*size+j*size+J]*b[k*size*size+K*size+Q];
 }
 
 template<typename T, size_t N>
@@ -35,27 +39,30 @@ template<typename T, size_t N>
 void iterate_over_fastor(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
-        _crossproduct<T,N,N,N>(a,b,out);
+        _crossproduct<T,N,N,N,N,N,N>(a,b,out);
         unused(a); unused(b); unused(out);
 
-        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
+        // // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
         out[1] += out[2]; 
     }    
 }
 
 
-template<typename T, size_t M, size_t N>
+template<typename T, size_t M, size_t N, size_t P>
 void run() {
 
-    T *a  = static_cast<T*>(_mm_malloc(sizeof(T) * M*N, 32));
-    T *b  = static_cast<T*>(_mm_malloc(sizeof(T) * M*N, 32));
-    T *out = static_cast<T*>(_mm_malloc(sizeof(T) * (M+1)*(N+1), 32)); // take care of 2D to 3D case
+    T *a  = static_cast<T*>(_mm_malloc(sizeof(T) * M*N*P, 32));
+    T *b  = static_cast<T*>(_mm_malloc(sizeof(T) * M*N*P, 32));
+    T *out = static_cast<T*>(_mm_malloc(sizeof(T) * M*N*P * 3, 32));
 
-    std::iota(a,a+M*N,0);
-    std::iota(b,b+M*N,0);
+    std::iota(a,a+M*N*P,0);
+    std::iota(b,b+M*N*P,0);
 
-    timeit(static_cast<void (*)(const T*, const T*, T*)>(&iterate_over_scalar<T,N>),a,b,out);
-    timeit(static_cast<void (*)(const T*, const T*, T*)>(&iterate_over_fastor<T,N>),a,b,out);
+    double time0, time1;
+    std::tie(time0,std::ignore) = rtimeit(static_cast<void (*)(const T*, const T*, T*)>(&iterate_over_scalar<T,N>),a,b,out);
+    std::tie(time1,std::ignore) = rtimeit(static_cast<void (*)(const T*, const T*, T*)>(&iterate_over_fastor<T,N>),a,b,out);
+    print(time0,time1);
+    print("\n");
 
     _mm_free(a);
     _mm_free(b);
@@ -66,11 +73,9 @@ void run() {
 int main() {
 
     print("Single precision benchmark");
-    run<float,2,2>();
-    run<float,3,3>();
+    run<float,3,3,3>();
     print("Double precision benchmark");
-    run<double,2,2>();
-    run<double,3,3>();
+    run<double,3,3,3>();
 
     return 0;
 }

@@ -126,6 +126,68 @@ inline double timeit(T (*func)(Params...), Args...args)
 }
 
 
+
+// timeit with return values
+#include <tuple>
+template<typename T, typename ... Params, typename ... Args>
+inline std::tuple<double,uint64_t> rtimeit(T (*func)(Params...), Args...args)
+{
+    double counter = 1.0;
+    double mean_time = 0.0;
+    double best_time = 1.0e20;
+    uint64_t cycles = 0;
+#ifndef CYCLES
+    uint64_t cycle=0;
+#endif
+
+    for (auto iter=0; iter<1e09; ++iter)
+    {
+        std::chrono::time_point<std::chrono::system_clock> start, end;
+        start = std::chrono::system_clock::now();
+#ifdef CYCLES
+        auto cycle = rdtsc();
+#endif
+
+        // Run the function
+        func(std::forward<Params>(args)...);
+
+#ifdef CYCLES
+        cycle = rdtsc() - cycle;
+#endif
+        end = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end-start;
+
+        mean_time += elapsed_seconds.count();
+#ifdef CYCLES
+        cycles += cycle;
+#endif
+
+        if (elapsed_seconds.count() < best_time) {
+            best_time = elapsed_seconds.count();
+        };
+
+        counter++;
+
+        if (mean_time > RUNTIME)
+        {
+            mean_time /= counter;
+            // if (mean_time >= 1.0e-3 && mean_time < 1.)
+            //     mean_time /= 1.0e-03;
+            // else if (mean_time >= 1.0e-6 && mean_time < 1.0e-3)
+            //     mean_time /= 1.0e-06;
+            // else if (mean_time < 1.0e-6)
+            //     mean_time /= 1.0e-09;
+            // else
+            //     mean_time = mean_time;
+
+            break;
+        }
+    }
+
+    return std::make_tuple(mean_time,uint64_t(cycles/(1.0*counter)));
+}
+
+
 // Define a no operation function
 void no_op(){}
 
