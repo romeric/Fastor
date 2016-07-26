@@ -255,6 +255,118 @@ void _crossproduct<float,3,3,3>(const float *__restrict__ a, const float *__rest
     _mm_store_ss(c+8,c_22);
 }
 
+//-----------------------------------------------------------------------------------------------
+// for plane strain problems
+template<typename T, int ProblemType>
+void _crossproduct(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ c);
+
+template<>
+FASTOR_INLINE void _crossproduct<double,PlaneStrain>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
+    // For plane strain problems a and b need to be 3D with last element a[8]=b[8]=1
+    // This is a cross product implementation not a cofactor so the result needs to multiplied by 0.5 explicitly
+    // if the cofactor is desired
+    // Note that in ultimate case you might not need the last row/column of the output matrix hence computing c22
+    // and storing it is un-necessary, hence the (c) array should really be 2x2=4 in length
+    // Load a data
+    __m128d a_00 = _mm_load_sd(a);
+    __m128d a_01 = _mm_load_sd(a+1);
+    __m128d a_10 = _mm_load_sd(a+3);
+    __m128d a_11 = _mm_load_sd(a+4);
+    __m128d a_22 = _mm_load_sd(a+8);
+    // Load b data
+    __m128d b_00 = _mm_load_sd(b);
+    __m128d b_01 = _mm_load_sd(b+1);
+    __m128d b_10 = _mm_load_sd(b+3);
+    __m128d b_11 = _mm_load_sd(b+4);
+    __m128d b_22 = _mm_load_sd(b+8);
+
+    // c_00
+    __m128d tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_11,a_22,0x0),_mm_shuffle_pd(b_22,b_11,0x0));
+    __m128d c_00 = _add_pd(tmp0);
+    // c_01
+    __m128d tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_10,a_22,0x0),_mm_shuffle_pd(b_22,b_10,0x0));
+    __m128d c_01 = _mm_neg_pd(_add_pd(tmp1));
+    // c_10
+    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_01,a_22,0x0),_mm_shuffle_pd(b_22,b_01,0x0));
+    __m128d c_10 = _mm_neg_pd(_add_pd(tmp1));
+    // c_11
+    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_22,0x0),_mm_shuffle_pd(b_22,b_00,0x0));
+    __m128d c_11 = _add_pd(tmp0);
+    // c_22
+    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_11,0x0),_mm_shuffle_pd(b_11,b_00,0x0));
+    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_01,a_10,0x0),_mm_shuffle_pd(b_10,b_01,0x0));
+    __m128d c_22 = _mm_sub_pd(_add_pd(tmp0),_add_pd(tmp1));
+
+    // zero first
+    _mm256_store_pd(c,VZEROPD);
+    _mm256_store_pd(c+4,VZEROPD);
+    // store
+    _mm_store_sd(c,c_00);
+    _mm_store_sd(c+1,c_01);
+    _mm_store_sd(c+3,c_10);
+    _mm_store_sd(c+4,c_11);
+
+    _mm_store_sd(c,c_00);
+    _mm_store_sd(c+1,c_01);
+    _mm_store_sd(c+2,c_10);
+    _mm_store_sd(c+3,c_11);
+    _mm_store_sd(c+8,c_22);
+}
+
+
+template<>
+void _crossproduct<float,PlaneStrain>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
+    // For plane strain problems a and b need to be 3D with last element a[8]=b[8]=1
+    // This is a cross product implementation not a cofactor so the result needs to multiplied by 0.5 explicitly
+    // if the cofactor is desired
+    // Note that in ultimate case you might not need the last row/column of the output matrix hence computing c22
+    // and storing it is un-necessary, hence the (c) array should really be 2x2=4 in length
+
+    __m128 a0 = _mm_load_ps(a);
+    __m128 tmp0 = _mm_load_ps(a+4);
+    __m128 a_end = _mm_load_ss(a+8);
+    __m128 a1 = _mm_shuffle_ps(tmp0,a0,_MM_SHUFFLE(0,3,1,0));
+    a1 = _mm_shuffle_ps(a1,a1,_MM_SHUFFLE(3,1,0,2));
+    __m128 a2 = _mm_shuffle_ps(tmp0,a_end,_MM_SHUFFLE(1,0,3,2));
+    // Load b data
+    __m128 b0 = _mm_load_ps(b);
+    __m128 tmp1 = _mm_load_ps(b+4);
+    __m128 b_end = _mm_load_ss(b+8);
+    __m128 b1 = _mm_shuffle_ps(tmp1,b0,_MM_SHUFFLE(0,3,1,0));
+    b1 = _mm_shuffle_ps(b1,b1,_MM_SHUFFLE(3,1,0,2));
+    __m128 b2 = _mm_shuffle_ps(tmp1,b_end,_MM_SHUFFLE(1,0,3,2));
+
+    // c_00
+    __m128 c_00 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a1,a2,_MM_SHUFFLE(2,1,1,2)),
+                                        _mm_shuffle_ps(b2,b1,_MM_SHUFFLE(1,2,2,1))));
+    // c_01
+    __m128 c_01 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a1,a2,_MM_SHUFFLE(0,2,2,0)),
+                                        _mm_shuffle_ps(b2,b1,_MM_SHUFFLE(2,0,0,2))));
+    // c_10
+    __m128 c_10 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a0,a2,_MM_SHUFFLE(1,2,2,1)),
+                                        _mm_shuffle_ps(b2,b0,_MM_SHUFFLE(2,1,1,2))));
+    // c_11
+    __m128 c_11 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a0,a2,_MM_SHUFFLE(2,0,0,2)),
+                                        _mm_shuffle_ps(b2,b0,_MM_SHUFFLE(0,2,2,0))));
+    // c_22
+    __m128 c_22 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a0,a1,_MM_SHUFFLE(1,0,0,1)),
+                                        _mm_shuffle_ps(b1,b0,_MM_SHUFFLE(0,1,1,0))));
+
+    // zero first
+    _mm256_store_ps(c,VZEROPS);
+    // store
+    _mm_store_ss(c,c_00);
+    _mm_store_ss(c+1,c_01);
+    _mm_store_ss(c+3,c_10);
+    _mm_store_ss(c+4,c_11);
+    _mm_store_ss(c+8,c_22);
+}
+
+//------------------------------------------------------------------------------------
+
+
+
+// vectors and 2nd order tensors
 template<>
 inline void _crossproduct<float,3,1,3>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
     // vector-tensor cross product - regitster based

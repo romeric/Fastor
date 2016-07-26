@@ -57,6 +57,11 @@
 #define Zero -105
 #define Voigt -106
 
+#define ThreeD -150
+#define TwoD -151
+#define PlaneStrain -152
+#define PlaneStress -153
+
 
 
 #define ZEROPS (_mm_set1_ps(0.f))

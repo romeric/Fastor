@@ -36,6 +36,15 @@ typename permute_impl<T,Index_I, Tensor<T,Rest...>,
     return extractor_reshape<Index_I>::reshape_impl(a);
 }
 
+
+// flatten
+template<typename T, size_t ... Rest>
+FASTOR_INLINE Tensor<T,prod<Rest...>::value> flatten(const Tensor<T,Rest...> &a) {
+    Tensor<T,prod<Rest...>::value> out;
+    std::copy(a.data(),a.data()+a.Size,out.data());
+    return out;
+}
+
 }
 #endif // RESHAPE_H
 

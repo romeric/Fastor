@@ -110,13 +110,13 @@ struct meta_argmin;
 template<int m, int n, int p, int q>
 struct meta_argmin<m,n,p,q> {
     static constexpr int pval = meta_min<m,n,p>::value;
-    static const int value = ( pval <= meta_min<pval,q>::value) ? meta_argmin<m,n,p>::value : 3;
+    static constexpr int value = ( pval <= meta_min<pval,q>::value) ? meta_argmin<m,n,p>::value : 3;
 };
 
 template<int m, int n, int p>
 struct meta_argmin<m,n,p> {
     static constexpr int pval = meta_min<m,n>::value;
-    static const int value = ( pval <= meta_min<pval,p>::value) ? meta_argmin<m,n>::value : 2;
+    static constexpr int value = ( pval <= meta_min<pval,p>::value) ? meta_argmin<m,n>::value : 2;
 };
 
 template<int m, int n>

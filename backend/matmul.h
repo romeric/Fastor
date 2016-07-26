@@ -7,27 +7,11 @@
 
 namespace Fastor {
 
-template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<(M==K && K!=N) || (M!=K && K==N) || (M!=K && K!=N)
-                                 || ((M==N && M==K) && M % SIMDVector<T>::Size !=0),bool>::type = 0>
-FASTOR_INLINE
-void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
-    // Fully relies on the compiler
-    for (size_t i=0; i<M; ++i) {
-        for (size_t k=0; k<N; ++k ) {
-            out[i*N+k] = a[i*K]*b[k];
-        }
-        for (size_t j=1; j<K; ++j) {
-            for (size_t k=0; k<N; ++k ) {
-                out[i*N+k] += a[i*K+j]*b[j*N+k];
-            }
-        }
-    }
-}
 
 
+// For square matrices
 template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<M==N && M==K && M % SIMDVector<T>::Size ==0,bool>::type = 0>
+         typename std::enable_if<M==N && M==K && N % SIMDVector<T>::Size ==0,bool>::type = 0>
 FASTOR_INLINE
 void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ c) {
 
@@ -81,6 +65,95 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
         }
     }
 }
+
+// Non-sqaure matrices
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<(M==K && K!=N) || (M!=K && K==N) || (M!=K && K!=N)
+                                 || ((M==N && M==K) && N % SIMDVector<T>::Size !=0),bool>::type = 0>
+FASTOR_INLINE
+void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+
+    // The branches are optimised away
+    constexpr size_t stride_sse = N % SIMDVector<T,128>::Size;
+    constexpr size_t stride_avx = N % SIMDVector<T>::Size;
+
+    if (stride_sse == 0 && stride_avx != 0) {
+        // SSE
+        using V = SIMDVector<T,128>;
+        constexpr size_t stride = V::Size;
+
+        V _vec_a;
+        for (size_t i=0; i<M*N; i+=stride) {
+            _vec_a.store(&out[i+stride]);
+        }
+
+        for (size_t i=0; i<M; ++i) {
+            for (size_t j=0; j<K; ++j) {
+                _vec_a.set(a[i*K+j]);
+                for (size_t k=0; k<N; k+=stride) {
+                    V _vec_out = _vec_a*V(&b[j*N+k]) +  V(&out[i*N+k]);
+                    _vec_out.store(&out[i*N+k]);
+                }
+            }
+        }
+//        print("sse");
+    }
+
+    else if (stride_sse == 0 && stride_avx == 0) {
+        // AVX
+        using V = SIMDVector<T>;
+//        using V = SIMDVector<T,128>;
+        constexpr size_t stride = V::Size;
+//        print(stride);
+
+        V _vec_a;
+        for (size_t i=0; i<M*N; i+=stride) {
+            _vec_a.store(&out[i+stride]);
+        }
+
+        for (size_t i=0; i<M; ++i) {
+            for (size_t j=0; j<K; ++j) {
+                _vec_a.set(a[i*K+j]);
+                for (size_t k=0; k<N; k+=stride) {
+                    V _vec_out = _vec_a*V(&b[j*N+k]) +  V(&out[i*N+k]);
+//                    V _vec_out;
+//                    if (j*N+k==0)
+//                        _vec_out = _vec_a*V(_mm256_set_pd(3,2,1,0)) +  V(&out[i*N+k]);
+//                    else
+//                        _vec_out = _vec_a*V(&b[j*N+k]) +  V(&out[i*N+k]);
+//                    print(_vec_a, V(&b[j*N+k]), _vec_a*V(&b[j*N+k]));
+//                    std::cout << i+j+k << " " << _vec_a << " " << V(&b[j*N+k]) << " " << _vec_a*V(&b[j*N+k]) << "\n";
+                    _vec_out.store(&out[i*N+k]);
+                }
+            }
+        }
+//        print("avx");
+    }
+    else {
+        // Scalar
+        for (size_t i=0; i<M; ++i) {
+            for (size_t k=0; k<N; ++k ) {
+                out[i*N+k] = a[i*K]*b[k];
+            }
+            for (size_t j=1; j<K; ++j) {
+                for (size_t k=0; k<N; ++k ) {
+                    out[i*N+k] += a[i*K+j]*b[j*N+k];
+                }
+            }
+        }
+//        print("scalar");
+    }
+}
+
+
+
+
+
+
+
+
+
+
 
 template<>
 FASTOR_INLINE

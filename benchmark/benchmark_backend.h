@@ -25,7 +25,7 @@ using namespace Fastor;
 
 using std::size_t;
 //#define SIZE 3
-using real = float;
+using real = double;
 
 enum {
     I,

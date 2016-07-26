@@ -28,6 +28,16 @@ enum {
 };
 
 
+//template <size_t ... All>
+//struct Index {
+//    static const size_t NoIndices = sizeof...(All);
+//    static constexpr size_t _IndexHolder[sizeof...(All)] = {All...};
+//};
+
+//template<size_t ... All>
+//constexpr size_t Index<All...>::_IndexHolder[sizeof...(All)];
+
+
 template <FASTOR_INDEX ... All>
 struct Index {
     static const FASTOR_INDEX NoIndices = sizeof...(All);

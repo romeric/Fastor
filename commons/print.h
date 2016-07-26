@@ -40,6 +40,17 @@ void print(const std::array<T,N> &arr) {
     std::cout << std::endl;
 }
 
+template<typename T, std::size_t M, std::size_t N>
+void print(const std::array<std::array<T,M>,N> &arr) {
+    for (std::size_t i=0; i<N; i++) {
+        for (std::size_t j=0; j<M; j++) {
+            std::cout << arr[i][j] << " ";
+        }
+        std::cout << "\n";
+    }
+    std::cout << std::endl;
+}
+
 template<typename T,std::size_t N>
 void print(const T *arr) {
     for (std::size_t i=0; i<N; i++) {
@@ -63,6 +74,56 @@ void print(const T &first, const Rest& ... rest) {
 void print() {
     std::cout << "\n";
 }
+/*--------------------------------------*/
+
+
+
+
+// Print horizontally
+/*--------------------------------------*/
+template<typename T>
+void println(const std::vector<T> &v) {
+    for (auto &k: v) {
+        std::cout << k << " ";
+    }
+    std::cout << std::endl;
+}
+
+template<typename T, std::size_t N>
+void println(const std::array<T,N> &arr) {
+    for (std::size_t i=0; i<N; i++) {
+        std::cout << arr[i] << " ";
+    }
+    std::cout << std::endl;
+}
+
+template<typename T,std::size_t N>
+void println(const T *arr) {
+    for (std::size_t i=0; i<N; i++) {
+        std::cout << arr[i] << " ";
+    }
+    std::cout << std::endl;
+}
+
+
+template<typename T>
+void println(const T &a) {
+    std::cout << a << " ";
+}
+
+template<typename T, typename ... Rest>
+void println(const T &first, const Rest& ... rest) {
+    println(first);
+    println(rest...);
+}
+
+void println() {
+    std::cout << " ";
+}
+/*--------------------------------------*/
+
+
+
 
 
 
