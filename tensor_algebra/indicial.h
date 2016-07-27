@@ -2,6 +2,7 @@
 #define INDICIAL_H
 
 #include "commons/commons.h"
+#include "meta/einsum_meta.h"
 
 namespace Fastor {
 
@@ -28,16 +29,6 @@ enum {
 };
 
 
-//template <size_t ... All>
-//struct Index {
-//    static const size_t NoIndices = sizeof...(All);
-//    static constexpr size_t _IndexHolder[sizeof...(All)] = {All...};
-//};
-
-//template<size_t ... All>
-//constexpr size_t Index<All...>::_IndexHolder[sizeof...(All)];
-
-
 template <FASTOR_INDEX ... All>
 struct Index {
     static const FASTOR_INDEX NoIndices = sizeof...(All);
@@ -46,15 +37,6 @@ struct Index {
 
 template<FASTOR_INDEX ... All>
 constexpr FASTOR_INDEX Index<All...>::_IndexHolder[sizeof...(All)];
-
-//template <int ... All>
-//struct Index {
-//    static const int NoIndices = sizeof...(All);
-//    static constexpr int _IndexHolder[sizeof...(All)] = {All...};
-//};
-
-//template<int ... All>
-//constexpr int Index<All...>::_IndexHolder[sizeof...(All)];
 
 }
 

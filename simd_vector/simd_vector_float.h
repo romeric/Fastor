@@ -1,9 +1,6 @@
 #ifndef SIMD_VECTOR_FLOAT_H
 #define SIMD_VECTOR_FLOAT_H
 
-#ifndef SIMD_VECTOR_float_H
-#define SIMD_VECTOR_float_H
-
 #include "simd_vector_base.h"
 
 namespace Fastor {
@@ -427,8 +424,163 @@ FASTOR_INLINE SIMDVector<float,128> sqrt(const SIMDVector<float,128> &a) {
     out.value = _mm_sqrt_ps(a.value);
     return out;
 }
+
+
+
+// SCALAR VERSION
+//------------------------------------------------------------------------------------------------------------
+template <>
+struct SIMDVector<float, 32> {
+    static constexpr FASTOR_INDEX Size = 1;
+    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return 1;}
+    static constexpr int unroll_size(FASTOR_INDEX size) {return (static_cast<int>(size) - 1);}
+
+    FASTOR_INLINE SIMDVector() : value(0) {}
+    FASTOR_INLINE SIMDVector(float num) : value(num) {}
+    FASTOR_INLINE SIMDVector(const SIMDVector<float,32> &a) : value(a.value) {}
+    FASTOR_INLINE SIMDVector(const float *data) : value(*data) {}
+    FASTOR_INLINE SIMDVector(float *data) : value(*data) {}
+
+    FASTOR_INLINE SIMDVector<float,32> operator=(float num) {
+        value = num;
+        return *this;
+    }
+    FASTOR_INLINE SIMDVector<float,32> operator=(const SIMDVector<float,32> &a) {
+        value = a.value;
+        return *this;
+    }
+
+    FASTOR_INLINE void load(const float *data, bool ) {
+        value = *data;
+    }
+    FASTOR_INLINE void store(float *data, bool ) {
+        data[0] = value;
+    }
+
+    FASTOR_INLINE void load(const float *data) {
+        value = *data;
+    }
+    FASTOR_INLINE void store(float *data) {
+        data[0] = value;
+    }
+
+    FASTOR_INLINE float operator[](FASTOR_INDEX) {return value;}
+    FASTOR_INLINE float operator()(FASTOR_INDEX) {return value;}
+
+    FASTOR_INLINE void set(float num) {
+        value = num;
+    }
+
+    // In-place operators
+    FASTOR_INLINE void operator+=(float num) {
+        value += num;
+    }
+    FASTOR_INLINE void operator+=(const SIMDVector<float,32> &a) {
+        value += a.value;
+    }
+
+    FASTOR_INLINE void operator-=(float num) {
+        value -= num;
+    }
+    FASTOR_INLINE void operator-=(const SIMDVector<float,32> &a) {
+        value -= a.value;
+    }
+
+    FASTOR_INLINE void operator*=(float num) {
+        value *= num;
+    }
+    FASTOR_INLINE void operator*=(const SIMDVector<float,32> &a) {
+        value *= a.value;
+    }
+
+    FASTOR_INLINE void operator/=(float num) {
+        value /= num;
+    }
+    FASTOR_INLINE void operator/=(const SIMDVector<float,32> &a) {
+        value /= a.value;
+    }
+    // end of in-place operators
+
+    float value;
+};
+
+
+std::ostream& operator<<(std::ostream &os, SIMDVector<float,32> a) {
+    os << "[" << a.value << "]\n";
+    return os;
 }
-#endif
+
+FASTOR_INLINE SIMDVector<float,32> operator+(const SIMDVector<float,32> &a, const SIMDVector<float,32> &b) {
+    SIMDVector<float,32> out;
+    out.value = a.value+b.value;
+    return out;
+}
+FASTOR_INLINE SIMDVector<float,32> operator+(const SIMDVector<float,32> &a, float b) {
+    SIMDVector<float,32> out;
+    out.value = a.value+b;
+    return out;
+}
+FASTOR_INLINE SIMDVector<float,32> operator+(float a, const SIMDVector<float,32> &b) {
+    SIMDVector<float,32> out;
+    out.value = a+b.value;
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<float,32> operator-(const SIMDVector<float,32> &a, const SIMDVector<float,32> &b) {
+    SIMDVector<float,32> out;
+    out.value = a.value-b.value;
+    return out;
+}
+FASTOR_INLINE SIMDVector<float,32> operator-(const SIMDVector<float,32> &a, float b) {
+    SIMDVector<float,32> out;
+    out.value = a.value-b;
+    return out;
+}
+FASTOR_INLINE SIMDVector<float,32> operator-(float a, const SIMDVector<float,32> &b) {
+    SIMDVector<float,32> out;
+    out.value = a-b.value;
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<float,32> operator*(const SIMDVector<float,32> &a, const SIMDVector<float,32> &b) {
+    SIMDVector<float,32> out;
+    out.value = a.value*b.value;
+    return out;
+}
+FASTOR_INLINE SIMDVector<float,32> operator*(const SIMDVector<float,32> &a, float b) {
+    SIMDVector<float,32> out;
+    out.value = a.value*b;
+    return out;
+}
+FASTOR_INLINE SIMDVector<float,32> operator*(float a, const SIMDVector<float,32> &b) {
+    SIMDVector<float,32> out;
+    out.value = a*b.value;
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<float,32> operator/(const SIMDVector<float,32> &a, const SIMDVector<float,32> &b) {
+    SIMDVector<float,32> out;
+    out.value = a.value/b.value;
+    return out;
+}
+FASTOR_INLINE SIMDVector<float,32> operator/(const SIMDVector<float,32> &a, float b) {
+    SIMDVector<float,32> out;
+    out.value = a.value/b;
+    return out;
+}
+FASTOR_INLINE SIMDVector<float,32> operator/(float a, const SIMDVector<float,32> &b) {
+    SIMDVector<float,32> out;
+    out.value = a/b.value;
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<float,32> sqrt(const SIMDVector<float,32> &a) {
+    return std::sqrt(a.value);
+}
+
+}
+
+
 
 
 #endif // SIMD_VECTOR_FLOAT_H

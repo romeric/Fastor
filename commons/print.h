@@ -40,6 +40,17 @@ void print(const std::array<T,N> &arr) {
     std::cout << std::endl;
 }
 
+template<typename T>
+void print(const std::vector<std::vector<T>> &arr) {
+    for (std::size_t i=0; i<arr.size(); i++) {
+        for (std::size_t j=0; j<arr[i].size(); j++) {
+            std::cout << arr[i][j] << " ";
+        }
+        std::cout << "\n";
+    }
+    std::cout << std::endl;
+}
+
 template<typename T, std::size_t M, std::size_t N>
 void print(const std::array<std::array<T,M>,N> &arr) {
     for (std::size_t i=0; i<N; i++) {

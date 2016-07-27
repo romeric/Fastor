@@ -6,8 +6,9 @@
 
 namespace Fastor {
 
-//----------------------------------------------------------------------------------------------
+
 // reduction
+//----------------------------------------------------------------------------------------------
 template<typename T, size_t ... Rest>
 T reduction(const Tensor<T,Rest...> &a) {
     //! Reduces a multi-dimensional tensor to a scalar
@@ -31,19 +32,7 @@ T reduction(const Tensor<T,Rest...> &a) {
         return a.sum();
     }
     else {
-//        constexpr std::array<int,ndim> maxes_a = {Rest...};
-//        std::array<int,ndim> products;
-//        std::fill(products.begin(),products.end(),0);
-
-//        for (int j=ndim-1; j>0; --j) {
-//            int num = maxes_a[ndim-1];
-//            for (int k=0; k<j-1; ++k) {
-//                num *= maxes_a[ndim-1-k-1];
-//            }
-//            products[j] = num;
-//        }
-//        std::reverse(products.begin(),products.end());
-
+//        using detail::nprods;
         constexpr std::array<size_t,ndim> products = nprods<Index<Rest...>,
                 typename std_ext::make_index_sequence<ndim>::type>::values;
 

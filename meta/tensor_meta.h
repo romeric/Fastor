@@ -273,7 +273,7 @@ struct length<typelist<Ts...>>
 { };
 
 template <size_t... Ns>
-using no_of_uniques2 = length_t<uniq_t<typelist<size_t_<Ns>...>>>;
+using no_of_uniques = length_t<uniq_t<typelist<size_t_<Ns>...>>>;
 
 
 ////////////////
