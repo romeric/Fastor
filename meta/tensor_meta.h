@@ -5,10 +5,10 @@ namespace Fastor {
 
 template<typename> struct stride_finder;
 template<> struct stride_finder<double> {
-    static const size_t Stride = 4;
+    static const size_t value = 4;
 };
 template<> struct stride_finder<float> {
-    static const size_t Stride = 8;
+    static const size_t value = 8;
 };
 
 template<size_t Idx, size_t ... Rest>

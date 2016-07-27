@@ -38,7 +38,7 @@ public:
     typedef T scalar_type;
     static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
     static constexpr FASTOR_INDEX Size = prod<Rest...>::value;
-    static constexpr FASTOR_INDEX Stride = stride_finder<T>::Stride;
+    static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX Remainder = prod<Rest...>::value % sizeof(T);
 
 

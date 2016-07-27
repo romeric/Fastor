@@ -378,6 +378,19 @@ constexpr std::array<size_t,sizeof...(ss)>
 IndexResultingTensor<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,std_ext::index_sequence<ss...>>::indices;
 //------------------------------------------------------------------------------------------------------------//
 
+
+
+//------------------------------------------------------------------------------------------------------------//
+template<class Idx0, class Idx1>
+struct is_reduction;
+
+template<size_t ... Idx0, size_t ... Idx1>
+struct is_reduction<Index<Idx0...>,Index<Idx1...>> {
+    static constexpr bool size_check = sizeof...(Idx0)==sizeof...(Idx1);
+    static constexpr bool index_check = no_of_unique<Idx0...,Idx1...>::value==no_of_unique<Idx1...>::value;
+    static constexpr bool value = size_check && index_check;
+};
+
 //}
 
 }

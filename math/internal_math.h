@@ -153,7 +153,7 @@ template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
                                              std::is_same<T,__m256d>::value ,bool>::type=0>
 T internal_exp(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
        out[i] = std::exp(a[i]);
    }
    return out;
@@ -163,7 +163,7 @@ template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
                                              std::is_same<T,__m256d>::value ,bool>::type=0>
 T internal_log(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
        out[i] = std::log(a[i]);
    }
    return out;
@@ -173,7 +173,7 @@ template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
                                              std::is_same<T,__m256d>::value ,bool>::type=0>
 T internal_sin(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
        out[i] = std::sin(a[i]);
    }
    return out;
@@ -183,7 +183,7 @@ template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
                                              std::is_same<T,__m256d>::value ,bool>::type=0>
 T internal_cos(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
        out[i] = std::cos(a[i]);
    }
    return out;
@@ -193,7 +193,7 @@ template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
                                              std::is_same<T,__m256d>::value ,bool>::type=0>
 T internal_tan(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
        out[i] = std::tan(a[i]);
    }
    return out;
@@ -202,7 +202,7 @@ T internal_tan(T a) {
 template<typename T>
 T internal_asin(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
        out[i] = std::asin(a[i]);
    }
    return out;
@@ -212,7 +212,7 @@ template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
                                              std::is_same<T,__m256d>::value ,bool>::type=0>
 T internal_acos(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
        out[i] = std::acos(a[i]);
    }
    return out;
@@ -222,7 +222,7 @@ template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
                                              std::is_same<T,__m256d>::value ,bool>::type=0>
 T internal_atan(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
        out[i] = std::atan(a[i]);
    }
    return out;
@@ -236,7 +236,7 @@ template<typename T, typename U, typename std::enable_if<std::is_same<T,__m256>:
                                              std::is_same<T,__m256d>::value ,bool>::type=0>
 T internal_pow(T a, U b) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
        out[i] = std::pow(a[i],b[i]);
    }
    return out;
@@ -246,7 +246,7 @@ template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
                                              std::is_same<T,__m256d>::value ,bool>::type=0>
 T internal_sinh(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
        out[i] = std::sinh(a[i]);
    }
    return out;
@@ -256,7 +256,7 @@ template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
                                              std::is_same<T,__m256d>::value ,bool>::type=0>
 T internal_cosh(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
        out[i] = std::cosh(a[i]);
    }
    return out;
@@ -266,7 +266,7 @@ template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
                                              std::is_same<T,__m256d>::value ,bool>::type=0>
 T internal_tanh(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
        out[i] = std::tanh(a[i]);
    }
    return out;

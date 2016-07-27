@@ -71,24 +71,12 @@ constexpr int get_indices(const std::array<size_t,N> &products,
 }
 
 
-//using detail::contraction_impl;
-//using detail::IndexFirstTensor;
-//using detail::IndexSecondTensor;
-//using detail::IndexResultingTensor;
-//using detail::no_of_loops_to_set;
-//using detail::nprods;
-//using detail::put_dims_in_Index;
-//using detail::is_vectorisable;
-
 // Blowing compilation time and memory usage 101
 template<class Idx0, class Idx1, class Tens0, class Tens1, class Seq>
 struct contract_meta_engine;
 
 template<size_t ... Idx0, size_t ... Idx1, size_t ... Rest0, size_t ... Rest1, size_t ... ss, typename T>
 struct contract_meta_engine<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,std_ext::index_sequence<ss...>> {
-
-//    using namespace details;
-
 
     using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
                               typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
@@ -150,7 +138,9 @@ contract_meta_engine<Index<Idx0...>,Index<Idx1...>,
 Tensor<T,Rest0...>,Tensor<T,Rest1...>,
 std_ext::index_sequence<ss...>>::index_out;
 //--------------------------------------------------------------------------------------------------------------//
-//} // end of namespace meta
+
+
+
 
 template<class T, class U>
 struct extractor_contract_2 {};
@@ -165,6 +155,8 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>> {
       typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
                typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type
       contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
+
+          static_assert(!is_reduction<Index<Idx0...>,Index<Idx1...>>::value,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
 
           constexpr int total = no_of_loops_to_set<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,
                   typename std_ext::make_index_sequence<no_of_unique<Idx0...,Idx1...>::value>::type>::value;
@@ -208,7 +200,7 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>> {
                  typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type
         contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
 
-//          static_assert((sizeof...(Idx0)==sizeof...(Idx1) && no_of_unique<Idx0...,Idx1...>::value!=sizeof...(Idx0)),"USE REDUCTION INSTEAD");
+          static_assert(!is_reduction<Index<Idx0...>,Index<Idx1...>>::value,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
 
           using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
             typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
@@ -304,7 +296,6 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>> {
 
 
 
-//} // end of namespace meta
 
 template<class Index_I, class Index_J,
          typename T, size_t ... Rest0, size_t ... Rest1>
@@ -312,19 +303,7 @@ auto contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
 -> decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
     return extractor_contract_2<Index_I,Index_J>::contract_impl(a,b);
 }
-
-//template<class Index_I, class Index_J,
-//         typename T, size_t ... Rest0, size_t ... Rest1>
-//FASTOR_INLINE auto contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
-//-> decltype(details::extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
-//    return details::extractor_contract_2<Index_I,Index_J>::contract_impl(a,b);
-//}
-
-
-//Fastor::meta::extractor_contract_2<Index_I,Index_J>::contract_impl
-
-
-//} // end of namespace meta
+//---------------------------------------------------------------------------------------------------------------------//
 
 
 
@@ -338,108 +317,270 @@ auto contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
 
 
 
+// Three tensor network
+//---------------------------------------------------------------------------------------------------------------------//
+template<class T, class U, class V>
+struct extractor_contract {};
+
+template<size_t ... Idx0, size_t ... Idx1, size_t ... Idx2>
+struct extractor_contract<Index<Idx0...>, Index<Idx1...>, Index<Idx2...> > {
+  template<typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2>
+    static
+    typename contraction_impl<Index<Idx0...,Idx1...,Idx2...>, Tensor<T,Rest0...,Rest1...,Rest2...>,
+                              typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)+sizeof...(Rest2)>::type>::type
+    contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b, const Tensor<T,Rest2...> &c) {
+
+        // Perform depth-first search
+        //---------------------------------------------------------------------
+        // first two tensors contracted first
+        using resulting_tensor_0 =  typename get_resuling_tensor<Index<Idx0...>,Index<Idx1...>,
+                                        Tensor<T,Rest0...>,Tensor<T,Rest1...>>::type;
+        using resulting_index_0 =  typename get_resuling_index<Index<Idx0...>,Index<Idx1...>,
+                                        Tensor<T,Rest0...>,Tensor<T,Rest1...>>::type;
+
+        constexpr int flop_count_01_0 = pair_flop_cost<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,
+                typename std_ext::make_index_sequence<sizeof...(Rest1)>::type>::value;
+
+        constexpr int flop_count_01_1 = pair_flop_cost<resulting_index_0,Index<Idx2...>,resulting_tensor_0,Tensor<T,Rest2...>,
+                typename std_ext::make_index_sequence<sizeof...(Rest2)>::type>::value;
+
+        constexpr int flop_count_01 = flop_count_01_0 + flop_count_01_1;
 
 
-//namespace meta {
+        // first and last tensors contracted first
+        using resulting_tensor_1 =  typename get_resuling_tensor<Index<Idx0...>,Index<Idx2...>,
+                                        Tensor<T,Rest0...>,Tensor<T,Rest2...>>::type;
+        using resulting_index_1 =  typename get_resuling_index<Index<Idx0...>,Index<Idx2...>,
+                                        Tensor<T,Rest0...>,Tensor<T,Rest2...>>::type;
+
+        constexpr int flop_count_02_0 = pair_flop_cost<Index<Idx0...>,Index<Idx2...>,Tensor<T,Rest0...>,Tensor<T,Rest2...>,
+                typename std_ext::make_index_sequence<sizeof...(Rest2)>::type>::value;
+
+        constexpr int flop_count_02_1 = pair_flop_cost<resulting_index_1,Index<Idx1...>,resulting_tensor_1,Tensor<T,Rest1...>,
+                typename std_ext::make_index_sequence<sizeof...(Rest1)>::type>::value;
+
+        constexpr int flop_count_02 = flop_count_02_0 + flop_count_02_1;
 
 
-//template<class T, class U, class V>
-//struct extractor_contract {};
+        // second and last tensors contracted first
+        using resulting_tensor_2 =  typename get_resuling_tensor<Index<Idx1...>,Index<Idx2...>,
+                                        Tensor<T,Rest1...>,Tensor<T,Rest2...>>::type;
+        using resulting_index_2 =  typename get_resuling_index<Index<Idx1...>,Index<Idx2...>,
+                                        Tensor<T,Rest1...>,Tensor<T,Rest2...>>::type;
 
-//template<size_t ... Idx0, size_t ... Idx1, size_t ... Idx2>
-//struct extractor_contract<Index<Idx0...>, Index<Idx1...>, Index<Idx2...> > {
-//  template<typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2>
-//    static
-//    typename contraction_impl<Index<Idx0...,Idx1...,Idx2...>, Tensor<T,Rest0...,Rest1...,Rest2...>,
-//                              typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)+sizeof...(Rest2)>::type>::type
-//    contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b, const Tensor<T,Rest2...> &c) {
+        constexpr int flop_count_12_0 = pair_flop_cost<Index<Idx1...>,Index<Idx2...>,Tensor<T,Rest1...>,Tensor<T,Rest2...>,
+                typename std_ext::make_index_sequence<sizeof...(Rest2)>::type>::value;
 
-//        // Perform depth-first search
-//        //---------------------------------------------------------------------
-//        // first two tensors contracted first
-//        using resulting_tensor_0 =  typename get_resuling_tensor<Index<Idx0...>,Index<Idx1...>,
-//                                        Tensor<T,Rest0...>,Tensor<T,Rest1...>>::type;
-//        using resulting_index_0 =  typename get_resuling_index<Index<Idx0...>,Index<Idx1...>,
-//                                        Tensor<T,Rest0...>,Tensor<T,Rest1...>>::type;
+        constexpr int flop_count_12_1 = pair_flop_cost<resulting_index_2,Index<Idx0...>,resulting_tensor_2,Tensor<T,Rest0...>,
+                typename std_ext::make_index_sequence<sizeof...(Rest0)>::type>::value;
 
-//        constexpr int flop_count_01_0 = pair_flop_cost<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,
-//                typename std_ext::make_index_sequence<sizeof...(Rest1)>::type>::value;
+        constexpr int flop_count_12 = flop_count_12_0 + flop_count_12_1;
 
-//        constexpr int flop_count_01_1 = pair_flop_cost<resulting_index_0,Index<Idx2...>,resulting_tensor_0,Tensor<T,Rest2...>,
-//                typename std_ext::make_index_sequence<sizeof...(Rest2)>::type>::value;
+        constexpr int flop_count_012 = triplet_flop_cost<Index<Idx0...>,Index<Idx1...>,Index<Idx2...>,
+                Tensor<T,Rest0...>,Tensor<T,Rest1...>,Tensor<T,Rest2...>>::value;
 
-//        constexpr int flop_count_01 = flop_count_01_0 + flop_count_01_1;
+        constexpr int which_variant = meta_argmin<flop_count_01,flop_count_02,flop_count_12,flop_count_012>::value;
 
-
-//        // first and last tensors contracted first
-//        using resulting_tensor_1 =  typename get_resuling_tensor<Index<Idx0...>,Index<Idx2...>,
-//                                        Tensor<T,Rest0...>,Tensor<T,Rest2...>>::type;
-//        using resulting_index_1 =  typename get_resuling_index<Index<Idx0...>,Index<Idx2...>,
-//                                        Tensor<T,Rest0...>,Tensor<T,Rest2...>>::type;
-
-//        constexpr int flop_count_02_0 = pair_flop_cost<Index<Idx0...>,Index<Idx2...>,Tensor<T,Rest0...>,Tensor<T,Rest2...>,
-//                typename std_ext::make_index_sequence<sizeof...(Rest2)>::type>::value;
-
-//        constexpr int flop_count_02_1 = pair_flop_cost<resulting_index_1,Index<Idx1...>,resulting_tensor_1,Tensor<T,Rest1...>,
-//                typename std_ext::make_index_sequence<sizeof...(Rest1)>::type>::value;
-
-//        constexpr int flop_count_02 = flop_count_02_0 + flop_count_02_1;
-
-
-//        // second and last tensors contracted first
-//        using resulting_tensor_2 =  typename get_resuling_tensor<Index<Idx1...>,Index<Idx2...>,
-//                                        Tensor<T,Rest1...>,Tensor<T,Rest2...>>::type;
-//        using resulting_index_2 =  typename get_resuling_index<Index<Idx1...>,Index<Idx2...>,
-//                                        Tensor<T,Rest1...>,Tensor<T,Rest2...>>::type;
-
-//        constexpr int flop_count_12_0 = pair_flop_cost<Index<Idx1...>,Index<Idx2...>,Tensor<T,Rest1...>,Tensor<T,Rest2...>,
-//                typename std_ext::make_index_sequence<sizeof...(Rest2)>::type>::value;
-
-//        constexpr int flop_count_12_1 = pair_flop_cost<resulting_index_2,Index<Idx0...>,resulting_tensor_2,Tensor<T,Rest0...>,
-//                typename std_ext::make_index_sequence<sizeof...(Rest0)>::type>::value;
-
-//        constexpr int flop_count_12 = flop_count_12_0 + flop_count_12_1;
-
-//        constexpr int flop_count_012 = triplet_flop_cost<Index<Idx0...>,Index<Idx1...>,Index<Idx2...>,
-//                Tensor<T,Rest0...>,Tensor<T,Rest1...>,Tensor<T,Rest2...>>::value;
-
-//        constexpr int which_variant = meta_argmin<flop_count_01,flop_count_02,flop_count_12,flop_count_012>::value;
-
-//        if (which_variant == 0) {
-//            auto tmp = contraction<Index<Idx0...>,Index<Idx1...>>(a,b);
-//            return contraction<resulting_index_0,Index<Idx2...>>(tmp,c);
-//        }
-//        else if (which_variant == 1) {
-//            auto tmp = contraction<Index<Idx0...>,Index<Idx2...>>(a,c);
-//            return contraction<resulting_index_1,Index<Idx1...>>(tmp,b);
-//        }
-//        else if (which_variant == 2) {
-//            auto tmp = contraction<Index<Idx1...>,Index<Idx2...>>(b,c);
-//            return contraction<Index<Idx0...>,resulting_index_2>(a,tmp);
-//        }
-//        else {
-//            // actual implementation goes here
-//            auto tmp = contraction<Index<Idx0...>,Index<Idx1...>>(a,b);
-//            return contraction<resulting_index_0,Index<Idx2...>>(tmp,c);
-//        }
+        if (which_variant == 0) {
+            auto tmp = contraction<Index<Idx0...>,Index<Idx1...>>(a,b);
+            return contraction<resulting_index_0,Index<Idx2...>>(tmp,c);
+        }
+        else if (which_variant == 1) {
+            auto tmp = contraction<Index<Idx0...>,Index<Idx2...>>(a,c);
+            return contraction<resulting_index_1,Index<Idx1...>>(tmp,b);
+        }
+        else if (which_variant == 2) {
+            auto tmp = contraction<Index<Idx1...>,Index<Idx2...>>(b,c);
+            return contraction<Index<Idx0...>,resulting_index_2>(a,tmp);
+        }
+        else {
+            // actual implementation goes here
+            auto tmp = contraction<Index<Idx0...>,Index<Idx1...>>(a,b);
+            return contraction<resulting_index_0,Index<Idx2...>>(tmp,c);
+        }
 
 
 
-//    }
+    }
 
-//};
-
-
-//} // end of namespace meta
+};
 
 
 
-//template<class Index_I, class Index_J, class Index_K,
-//         typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2>
-//auto contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b, const Tensor<T,Rest2...> &c)
-//-> decltype(meta::extractor_contract<Index_I,Index_J,Index_K>::contract_impl(a,b,c)) {
-//    return meta::extractor_contract<Index_I,Index_J,Index_K>::contract_impl(a,b,c);
-//}
+
+template<class Index_I, class Index_J, class Index_K,
+         typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2>
+auto contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b, const Tensor<T,Rest2...> &c)
+-> decltype(extractor_contract<Index_I,Index_J,Index_K>::contract_impl(a,b,c)) {
+    return extractor_contract<Index_I,Index_J,Index_K>::contract_impl(a,b,c);
+}
+
+
+
+
+
+
+// Four tensor network
+//---------------------------------------------------------------------------------------------------------------------//
+template<class T, class U, class V, class W>
+struct extractor_contract_4 {};
+
+template<size_t ... Idx0, size_t ... Idx1, size_t ... Idx2, size_t ... Idx3>
+struct extractor_contract_4<Index<Idx0...>, Index<Idx1...>, Index<Idx2...>, Index<Idx3...> > {
+  template<typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2, size_t ... Rest3>
+    static
+    typename contraction_impl<Index<Idx0...,Idx1...,Idx2...,Idx3...>, Tensor<T,Rest0...,Rest1...,Rest2...,Rest3...>,
+                              typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)+sizeof...(Rest2)+sizeof...(Rest3)>::type>::type
+    contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b, const Tensor<T,Rest2...> &c, const Tensor<T,Rest3...> &d) {
+
+
+        using resulting_tensor_0 =  typename get_resuling_tensor<Index<Idx0...>,Index<Idx1...>,
+                                        Tensor<T,Rest0...>,Tensor<T,Rest1...>>::type;
+        using resulting_index_0 =  typename get_resuling_index<Index<Idx0...>,Index<Idx1...>,
+                                        Tensor<T,Rest0...>,Tensor<T,Rest1...>>::type;
+        using resulting_tensor_1 =  typename get_resuling_tensor<resulting_index_0,Index<Idx2...>,
+                                        resulting_tensor_0,Tensor<T,Rest2...>>::type;
+        using resulting_index_1 =  typename get_resuling_index<resulting_index_0,Index<Idx2...>,
+                                        resulting_tensor_0,Tensor<T,Rest2...>>::type;
+//        using resulting_tensor_2 =  typename get_resuling_tensor<resulting_index_1,Index<Idx3...>,
+//                                        resulting_tensor_1,Tensor<T,Rest3...>>::type;
+//        using resulting_index_2 =  typename get_resuling_index<resulting_index_1,Index<Idx3...>,
+//                                        resulting_tensor_1,Tensor<T,Rest3...>>::type;
+
+
+        resulting_tensor_0 tmp0 = contraction<Index<Idx0...>,Index<Idx1...>>(a,b);
+        resulting_tensor_1 tmp1 = contraction<resulting_index_0,Index<Idx2...>>(tmp0,c);
+        auto tmp2 = contraction<resulting_index_1,Index<Idx3...>>(tmp1,d);
+
+        return tmp2;
+
+    }
+};
+
+
+
+
+template<class Index_I, class Index_J, class Index_K, class Index_L,
+         typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2, size_t ... Rest3>
+auto contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b, const Tensor<T,Rest2...> &c, const Tensor<T,Rest3...> &d)
+-> decltype(extractor_contract_4<Index_I,Index_J,Index_K,Index_L>::contract_impl(a,b,c,d)) {
+    return extractor_contract_4<Index_I,Index_J,Index_K,Index_L>::contract_impl(a,b,c,d);
+}
+
+
+
+// Five tensor network
+//---------------------------------------------------------------------------------------------------------------------//
+template<class T, class U, class V, class W, class X>
+struct extractor_contract_5 {};
+
+template<size_t ... Idx0, size_t ... Idx1, size_t ... Idx2, size_t ... Idx3, size_t ... Idx4>
+struct extractor_contract_5<Index<Idx0...>, Index<Idx1...>, Index<Idx2...>, Index<Idx3...>, Index<Idx4...> > {
+  template<typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2, size_t ... Rest3, size_t ... Rest4>
+    static
+    typename contraction_impl<Index<Idx0...,Idx1...,Idx2...,Idx3...,Idx4...>, Tensor<T,Rest0...,Rest1...,Rest2...,Rest3...,Rest4...>,
+                              typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)+\
+                                sizeof...(Rest2)+sizeof...(Rest3)+sizeof...(Rest4)>::type>::type
+    contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b,
+                  const Tensor<T,Rest2...> &c, const Tensor<T,Rest3...> &d,
+                  const Tensor<T,Rest4...> &e) {
+
+
+        using resulting_tensor_0 =  typename get_resuling_tensor<Index<Idx0...>,Index<Idx1...>,
+                                        Tensor<T,Rest0...>,Tensor<T,Rest1...>>::type;
+        using resulting_index_0 =  typename get_resuling_index<Index<Idx0...>,Index<Idx1...>,
+                                        Tensor<T,Rest0...>,Tensor<T,Rest1...>>::type;
+        using resulting_tensor_1 =  typename get_resuling_tensor<resulting_index_0,Index<Idx2...>,
+                                        resulting_tensor_0,Tensor<T,Rest2...>>::type;
+        using resulting_index_1 =  typename get_resuling_index<resulting_index_0,Index<Idx2...>,
+                                        resulting_tensor_0,Tensor<T,Rest2...>>::type;
+        using resulting_tensor_2 =  typename get_resuling_tensor<resulting_index_1,Index<Idx3...>,
+                                        resulting_tensor_1,Tensor<T,Rest3...>>::type;
+        using resulting_index_2 =  typename get_resuling_index<resulting_index_1,Index<Idx3...>,
+                                        resulting_tensor_1,Tensor<T,Rest3...>>::type;
+
+
+        resulting_tensor_0 tmp0 = contraction<Index<Idx0...>,Index<Idx1...>>(a,b);
+        resulting_tensor_1 tmp1 = contraction<resulting_index_0,Index<Idx2...>>(tmp0,c);
+        resulting_tensor_2 tmp2 = contraction<resulting_index_1,Index<Idx3...>>(tmp1,d);
+        auto tmp3 = contraction<resulting_index_2,Index<Idx4...>>(tmp2,e);
+
+        return tmp3;
+
+    }
+};
+
+
+
+
+template<class Index_I, class Index_J, class Index_K, class Index_L, class Index_M,
+         typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2, size_t ... Rest3, size_t ... Rest4>
+auto contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b,
+                 const Tensor<T,Rest2...> &c, const Tensor<T,Rest3...> &d,
+                 const Tensor<T,Rest4...> &e)
+-> decltype(extractor_contract_5<Index_I,Index_J,Index_K,Index_L,Index_M>::contract_impl(a,b,c,d,e)) {
+    return extractor_contract_5<Index_I,Index_J,Index_K,Index_L,Index_M>::contract_impl(a,b,c,d,e);
+}
+
+
+
+// Six tensor network
+//---------------------------------------------------------------------------------------------------------------------//
+template<class T, class U, class V, class W, class X, class Y>
+struct extractor_contract_6 {};
+
+template<size_t ... Idx0, size_t ... Idx1, size_t ... Idx2, size_t ... Idx3, size_t ... Idx4, size_t ... Idx5>
+struct extractor_contract_6<Index<Idx0...>, Index<Idx1...>, Index<Idx2...>, Index<Idx3...>, Index<Idx4...>, Index<Idx5...> > {
+  template<typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2, size_t ... Rest3, size_t ... Rest4, size_t ... Rest5>
+    static
+    typename contraction_impl<Index<Idx0...,Idx1...,Idx2...,Idx3...,Idx4...,Idx5...>, Tensor<T,Rest0...,Rest1...,Rest2...,Rest3...,Rest4...,Rest5...>,
+                              typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)+\
+                                sizeof...(Rest2)+sizeof...(Rest3)+sizeof...(Rest4)+sizeof...(Rest5)>::type>::type
+    contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b,
+                  const Tensor<T,Rest2...> &c, const Tensor<T,Rest3...> &d,
+                  const Tensor<T,Rest4...> &e, const Tensor<T,Rest5...> &f) {
+
+
+        using resulting_tensor_0 =  typename get_resuling_tensor<Index<Idx0...>,Index<Idx1...>,
+                                        Tensor<T,Rest0...>,Tensor<T,Rest1...>>::type;
+        using resulting_index_0 =  typename get_resuling_index<Index<Idx0...>,Index<Idx1...>,
+                                        Tensor<T,Rest0...>,Tensor<T,Rest1...>>::type;
+        using resulting_tensor_1 =  typename get_resuling_tensor<resulting_index_0,Index<Idx2...>,
+                                        resulting_tensor_0,Tensor<T,Rest2...>>::type;
+        using resulting_index_1 =  typename get_resuling_index<resulting_index_0,Index<Idx2...>,
+                                        resulting_tensor_0,Tensor<T,Rest2...>>::type;
+        using resulting_tensor_2 =  typename get_resuling_tensor<resulting_index_1,Index<Idx3...>,
+                                        resulting_tensor_1,Tensor<T,Rest3...>>::type;
+        using resulting_index_2 =  typename get_resuling_index<resulting_index_1,Index<Idx3...>,
+                                        resulting_tensor_1,Tensor<T,Rest3...>>::type;
+        using resulting_tensor_3 =  typename get_resuling_tensor<resulting_index_2,Index<Idx4...>,
+                                        resulting_tensor_2,Tensor<T,Rest4...>>::type;
+        using resulting_index_3 =  typename get_resuling_index<resulting_index_2,Index<Idx4...>,
+                                        resulting_tensor_2,Tensor<T,Rest4...>>::type;
+
+
+        resulting_tensor_0 tmp0 = contraction<Index<Idx0...>,Index<Idx1...>>(a,b);
+        resulting_tensor_1 tmp1 = contraction<resulting_index_0,Index<Idx2...>>(tmp0,c);
+        resulting_tensor_2 tmp2 = contraction<resulting_index_1,Index<Idx3...>>(tmp1,d);
+        resulting_tensor_3 tmp3 = contraction<resulting_index_2,Index<Idx4...>>(tmp2,e);
+        auto tmp4 = contraction<resulting_index_3,Index<Idx5...>>(tmp3,f);
+
+        return tmp4;
+
+    }
+};
+
+
+
+
+template<class Index_I, class Index_J, class Index_K, class Index_L, class Index_M, class Index_N,
+         typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2, size_t ... Rest3, size_t ... Rest4, size_t ... Rest5>
+auto contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b,
+                 const Tensor<T,Rest2...> &c, const Tensor<T,Rest3...> &d,
+                 const Tensor<T,Rest4...> &e, const Tensor<T,Rest5...> &f)
+-> decltype(extractor_contract_6<Index_I,Index_J,Index_K,Index_L,Index_M,Index_N>::contract_impl(a,b,c,d,e,f)) {
+    return extractor_contract_6<Index_I,Index_J,Index_K,Index_L,Index_M,Index_N>::contract_impl(a,b,c,d,e,f);
+}
 
 
 }

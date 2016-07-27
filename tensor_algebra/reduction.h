@@ -3,6 +3,7 @@
 
 #include "tensor/Tensor.h"
 #include "indicial.h"
+#include "contraction.h"
 
 namespace Fastor {
 
@@ -19,7 +20,7 @@ T reduction(const Tensor<T,Rest...> &a) {
     //! If a is a third order tensor Tensor<T,N,N,N> returns a_iii
     //! ...
     //!
-    //! The size of the tensor in all dimensions should be equal
+    //! The size of the tensor in all dimensions should be equal (uniform)
 
     static_assert(no_of_unique<Rest...>::value<=1, "REDUCTION IS ONLY POSSIBLE ON UNIFORM TENSORS");
     constexpr int ndim = sizeof...(Rest);
@@ -47,6 +48,28 @@ T reduction(const Tensor<T,Rest...> &a) {
         return reductor;
     }
 }
+
+
+template<typename T, size_t ... Rest>
+T reduction(const Tensor<T,Rest...> &a, const Tensor<T,Rest...> &b) {
+    //! Reduction of a tensor pair to a scalar, for instance A_ijklm * B_ijklm
+    //! If a and b are scalars/vectors, returns dot product
+    //! If a and b are matrices, returns double contraction
+    //! For third order tensors returns a_ijk*b_ijk
+    //! ...
+
+    const T *a_data = a.data();
+    const T *b_data = b.data();
+
+    constexpr int ndim = sizeof...(Rest);
+    if (ndim>0) {
+        return _doublecontract<T,prod<Rest...>::value,1>(a_data,b_data);
+    }
+    else {
+        return a_data[0]*b_data[0];
+    }
+}
+
 
 }
 
