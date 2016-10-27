@@ -23,7 +23,7 @@ benchmark/benchmark_academic/permutation/plot_results.py
 
 
 # careful
-Makefile 
+!Makefile 
 
 # dotfiles
 .*
