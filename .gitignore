@@ -27,5 +27,5 @@ Makefile
 
 # dotfiles
 .*
-!.gitignore
+.gitignore
 !.travis.yml
