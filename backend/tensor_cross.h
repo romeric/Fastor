@@ -292,14 +292,14 @@ FASTOR_INLINE void _crossproduct<double,PlaneStrain>(const double *__restrict__ 
     // c_11
     tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_22,0x0),_mm_shuffle_pd(b_22,b_00,0x0));
     __m128d c_11 = _add_pd(tmp0);
-    // c_22
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_11,0x0),_mm_shuffle_pd(b_11,b_00,0x0));
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_01,a_10,0x0),_mm_shuffle_pd(b_10,b_01,0x0));
-    __m128d c_22 = _mm_sub_pd(_add_pd(tmp0),_add_pd(tmp1));
+//    // c_22
+//    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_11,0x0),_mm_shuffle_pd(b_11,b_00,0x0));
+//    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_01,a_10,0x0),_mm_shuffle_pd(b_10,b_01,0x0));
+//    __m128d c_22 = _mm_sub_pd(_add_pd(tmp0),_add_pd(tmp1));
 
     // zero first
     _mm256_store_pd(c,VZEROPD);
-    _mm256_store_pd(c+4,VZEROPD);
+//    _mm256_store_pd(c+4,VZEROPD);
     // store
     _mm_store_sd(c,c_00);
     _mm_store_sd(c+1,c_01);
@@ -310,7 +310,7 @@ FASTOR_INLINE void _crossproduct<double,PlaneStrain>(const double *__restrict__ 
     _mm_store_sd(c+1,c_01);
     _mm_store_sd(c+2,c_10);
     _mm_store_sd(c+3,c_11);
-    _mm_store_sd(c+8,c_22);
+//    _mm_store_sd(c+8,c_22);
 }
 
 

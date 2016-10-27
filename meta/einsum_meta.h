@@ -391,6 +391,83 @@ struct is_reduction<Index<Idx0...>,Index<Idx1...>> {
     static constexpr bool value = size_check && index_check;
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// The followings are generic implemenations that work for any type of complex tensor network
+//------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------------------//
+
+
+// Find how many loops needs to be set. Works for any complex tensor network
+//------------------------------------------------------------------------------------------------------------//
+// This is equivalent to no_of_loops_to_set_up but more generic (works for arbitrary tensor networks)
+template<class TotalIdx, class TotalDims, class Seq>
+struct loop_setter;
+
+template<size_t ... Idx, size_t ... Rest, size_t ... ss, typename T>
+struct loop_setter<Index<Idx...>,Tensor<T,Rest...>,std_ext::index_sequence<ss...>> {
+
+    using index_temp = apply_typelist_t<quote_c<size_t, Index>,
+                    uniq_t<typelist_c<size_t, Idx...>>>;
+
+    static constexpr size_t concat_idx[sizeof...(Idx)] = {Idx...};
+    static constexpr size_t concat_nums[sizeof...(Rest)] = {Rest...};
+    static constexpr std::array<size_t,sizeof...(ss)> idx_in_concat = {find_index(concat_idx,index_temp::_IndexHolder[ss])...};
+    static constexpr std::array<size_t,sizeof...(ss)> dims = {concat_nums[idx_in_concat[ss]]...};
+    static constexpr int value = prod<dims[ss]...>::value;
+
+    using type = Tensor<T,dims[ss]...>;
+    using indices = Index<index_temp::_IndexHolder[ss]...>;
+
+    using dims_type = Index<dims[ss]...>;
+};
+
+template<size_t ... Idx, size_t ... Rest, size_t ... ss, typename T>
+constexpr std::array<size_t,sizeof...(ss)>
+loop_setter<Index<Idx...>,Tensor<T,Rest...>,std_ext::index_sequence<ss...>>::dims;
+//------------------------------------------------------------------------------------------------------------//
+
+
+// Get indices of every individual tensor in the network. Works for any complex tensor network
+//------------------------------------------------------------------------------------------------------------//
+template<class Ind, class Tens, class Ind_t, class Tens_t, class Seq>
+struct IndexTensors;
+
+template<class T, size_t... Idx, size_t... Idx_t, size_t ...Rest, size_t ...Rest_t, size_t ... ss>
+struct IndexTensors<Index<Idx...>,Tensor<T,Rest...>,Index<Idx_t...>,Tensor<T,Rest_t...>,std_ext::index_sequence<ss...>> {
+
+    using index_temp = typename loop_setter<Index<Idx...>,Tensor<T,Rest...>,
+            typename std_ext::make_index_sequence<no_of_unique<Idx...>::value>::type>::indices;
+
+    static constexpr size_t idx[sizeof...(Idx_t)] = {Idx_t...};
+    static constexpr std::array<size_t,sizeof...(Idx_t)>
+    indices = {find_index(index_temp::_IndexHolder, idx[ss])...};
+
+    using type = Tensor<T,indices[ss]...>;
+
+};
+
+template<class T, size_t... Idx, size_t... Idx_t, size_t ...Rest, size_t ...Rest_t, size_t ... ss>
+constexpr std::array<size_t,sizeof...(Idx_t)>
+IndexTensors<Index<Idx...>,Tensor<T,Rest...>,Index<Idx_t...>,Tensor<T,Rest_t...>,std_ext::index_sequence<ss...>>::indices;
+//------------------------------------------------------------------------------------------------------------//
+
+
 //}
 
 }

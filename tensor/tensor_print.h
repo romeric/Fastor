@@ -21,9 +21,10 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,M> &a) {
     for (size_t i = 1; i + 1 < M; ++i) {
         os << "⎢" << w << a(i) << " ⎥\n";
     }
-    os << "⎣" << w << a(M - 1);
+    if (M > 1)
+        os << "⎣" << w << a(M - 1) << " ⎦\n";
 
-    return os << " ⎦\n";
+    return os;
 }
 
 template<typename T, size_t M, size_t N>

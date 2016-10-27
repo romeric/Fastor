@@ -70,6 +70,11 @@ FASTOR_INLINE Tensor<T,I> matmul(const Tensor<T,J> &b, const Tensor<T,J,I> &a) {
     return out;
 }
 
+template<typename T, size_t ... Rest>
+FASTOR_INLINE T dot(const Tensor<T,Rest...> &b, const Tensor<T,Rest...> &a) {
+    return _doublecontract<T,sizeof...(Rest),1>(a.data(),b.data());
+}
+
 // Tensor cross product of two 2nd order tensors
 template<typename T, size_t I, size_t J, typename std::enable_if<I==3 && J==3,bool>::type=0>
 FASTOR_INLINE Tensor<T,I,J> cross(const Tensor<T,I,J> &b, const Tensor<T,I,J> &a) {
@@ -82,6 +87,25 @@ template<typename T, size_t I, size_t J, typename std::enable_if<I==2 && J==2,bo
 FASTOR_INLINE Tensor<T,I+1,J+1> cross(const Tensor<T,I,J> &b, const Tensor<T,I,J> &a) {
     Tensor<T,I+1,J+1> out;
     _crossproduct<T,I,I,J>(a.data(),b.data(),out.data());
+    return out;
+}
+
+template<int Plane, typename T, size_t I, size_t J, typename std::enable_if<I==2 && J==2 && Plane==PlaneStrain,bool>::type=0>
+FASTOR_INLINE Tensor<T,I,J> cross(const Tensor<T,I,J> &b, const Tensor<T,I,J> &a) {
+    // Plane strain case
+    Tensor<T,I,J> out;
+    Tensor<T,I+1,J+1> a3, b3;
+    a3(0,0) = a(0,0);
+    a3(0,1) = a(0,1);
+    a3(1,0) = a(1,0);
+    a3(1,1) = a(1,1);
+    a3(2,2) = 1;
+    b3(0,0) = b(0,0);
+    b3(0,1) = b(0,1);
+    b3(1,0) = b(1,0);
+    b3(1,1) = b(1,1);
+    b3(2,2) = 1;
+    _crossproduct<T,PlaneStrain>(a.data(),b.data(),out.data());
     return out;
 }
 

@@ -5,6 +5,8 @@
 #include "backend/backend.h"
 #include "simd_vector/SIMDVector.h"
 #include "AbstractTensor.h"
+#include "Range.h"
+
 
 namespace Fastor {
 
@@ -42,6 +44,8 @@ public:
     static constexpr FASTOR_INDEX Remainder = prod<Rest...>::value % sizeof(T);
 
 
+    // Classic constructors
+    //----------------------------------------------------------------------------------------------------------//
     FASTOR_INLINE Tensor(){}
 
     FASTOR_INLINE Tensor(T i) {
@@ -51,51 +55,6 @@ public:
         }
     }
 
-//    FASTOR_INLINE T* operator ()() {return data();}
-
-//    template<typename Derived, size_t DIMS>
-//    FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
-//        const Derived &src = src_.self();
-//        for (FASTOR_INDEX i = 0; i < Size; ++i) {
-//          _data[i] = src.eval(i);
-//        }
-//      }
-
-//    template<typename EType, size_t DIMS>
-//    FASTOR_INLINE Tensor<T,M,N,Rest...>& operator=(const AbstractTensor<EType,DIMS>& src_) {
-//        const EType &src = src_.self();
-//        for (FASTOR_INDEX i = 0; i < Size; ++i) {
-//          _data[i] = src.eval(i);
-//        }
-//        return *this;
-//    }
-
-    // evaluation function, evaluate this expression at position i
-//      FASTOR_INLINE T eval(FASTOR_INDEX i) const {
-//        return _data[i];
-//      }
-
-    //-----------------------------------------------------------------------------
-    //-----------------------------------------------------------------------------
-//    template<typename Derived, size_t DIMS>
-//    FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
-//        const Derived &src = src_.self();
-//        for (FASTOR_INDEX i = 0; i < Size; i+=Stride) {
-//            store(_data+i,src.eval(static_cast<T>(i)));
-////            store(_data+i,src.eval<Derived,T>(static_cast<T>(i)));
-//        }
-//    }
-
-//    template<typename Derived, size_t DIMS>
-//    FASTOR_INLINE Tensor<T,M,N,Rest...>& operator=(const AbstractTensor<Derived,DIMS>& src_) {
-//        const Derived &src = src_.self();
-//        for (FASTOR_INDEX i = 0; i < Size; i+=Stride) {
-//            store(_data+i,src.eval(static_cast<T>(i)));
-////            store(_data+i,src.eval<Derived,T>(static_cast<T>(i)));
-//        }
-//        return *this;
-//    }
-    //-----------------------------------------------------------------------------
     FASTOR_INLINE Tensor(const Tensor<T,Rest...> &other) {
         FASTOR_ASSERT(other.Dimension==Dimension, "TENSOR RANK MISMATCH");
         FASTOR_ASSERT(other.size()==Size, "TENSOR SIZE MISMATCH");
@@ -104,7 +63,6 @@ public:
     FASTOR_INLINE Tensor(Tensor<T,Rest...> &&other) {
         FASTOR_ASSERT(other.Dimension==Dimension, "TENSOR RANK MISMATCH");
         FASTOR_ASSERT(other.size()==Size, "TENSOR SIZE MISMATCH");
-//        _data = other.data();
         std::copy(other.data(),other.data()+other.size(),_data);
     }
     FASTOR_INLINE Tensor<T,Rest...> operator=(const Tensor<T,Rest...> &other) {
@@ -113,7 +71,10 @@ public:
         std::copy(other.data(),other.data()+other.Size,_data);
         return *this;
     }
+    //----------------------------------------------------------------------------------------------------------//
 
+    // CRTP constructors
+    //----------------------------------------------------------------------------------------------------------//
     template<typename Derived, size_t DIMS>
     FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
         const Derived &src = src_.self();
@@ -158,7 +119,10 @@ public:
         }
         return *this;
     }
+    //----------------------------------------------------------------------------------------------------------//
 
+    // Expression templates evaluators
+    //----------------------------------------------------------------------------------------------------------//
     FASTOR_INLINE SIMDVector<T> eval(T i) const {
         SIMDVector<T> out;
         out.load(_data+static_cast<FASTOR_INDEX>(i));
@@ -169,7 +133,10 @@ public:
     FASTOR_INLINE T eval(T i, T j) const {
         return _data[static_cast<FASTOR_INDEX>(i)*get_value<2,Rest...>::value+static_cast<FASTOR_INDEX>(j)];
     }
+    //----------------------------------------------------------------------------------------------------------//
 
+    // Smart binders
+    //----------------------------------------------------------------------------------------------------------//
     template<size_t I, size_t J, size_t K>
     FASTOR_INLINE Tensor(const BinaryMatMulOp<Tensor<T,I,J>,Tensor<T,J,K>>& src_) {
         constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
@@ -179,19 +146,6 @@ public:
             }
         }
     }
-
-//    template<typename DerivedL, typename DerivedR>
-//    FASTOR_INLINE Tensor(const BinaryMatMulOp<DerivedL,DerivedR>& src_) {
-////        FASTOR_ASSERT(src_.lhs.dimension(1)==src_.rhs.dimension(0), "DIMENSION MISMATCH IN MATMUL");
-////        FASTOR_ASSERT(src_.lhs.dimension(0)==dimension(0) && src_.rhs.dimension(1)==dimension(1), "DIMENSION MISMATCH IN MATMUL");
-////        print(src_.lhs.dimension(0),src_.lhs.dimension(1),src_.rhs.dimension(0),src_.rhs.dimension(1));
-//        constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
-//        for (FASTOR_INDEX i = 0; i < dimension(0); i++) {
-//            for (FASTOR_INDEX j = 0; j < dimension(1); j++) {
-//                _data[i*N+j] = src_.eval(static_cast<T>(i),static_cast<T>(j));
-//            }
-//        }
-//    }
 
     template<size_t I, size_t J, size_t K>
     FASTOR_INLINE Tensor(const BinaryMatMulOp<Tensor<T,I,J>,BinaryMatMulOp<Tensor<T,J,K>,Tensor<T,K>>>& src_) {
@@ -212,27 +166,11 @@ public:
         }
     }
 
-//    template<typename Derived>
-//    FASTOR_INLINE Tensor(const UnaryTransposeOp<Derived>& src_) {
-//        constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
-//        for (FASTOR_INDEX i = 0; i < dimension(0); i++) {
-//            for (FASTOR_INDEX j = 0; j < dimension(1); j++) {
-//                _data[i*N+j] = src_.eval(static_cast<T>(i),static_cast<T>(j));
-//            }
-//        }
-//    }
-
     template<size_t I, size_t J>
     FASTOR_INLINE Tensor(const UnaryTraceOp<Tensor<T,I,J>>& src_) {
         static_assert(sizeof...(Rest)==0, "TRACE OPERATOR WORKS ON SECOND ORDER TENSORS AND RETURNS A SCALAR");
         _data[0] = src_.eval(static_cast<T>(0));
     }
-//    template<size_t I, size_t J>
-//    FASTOR_INLINE Tensor<T,Rest...> operator=(const UnaryTraceOp<Tensor<T,I,J>>& src_) {
-//        static_assert(sizeof...(Rest)==0, "TRACE OPERATOR WORKS ON SECOND ORDER TENSORS AND RETURNS A SCALAR");
-//        _data[0] = src_.eval(static_cast<T>(0));
-//        return *this;
-//    }
 
     template<size_t I>
     FASTOR_INLINE Tensor(const UnaryTraceOp<UnaryTransposeOp<Tensor<T,I,I>>> &a) {
@@ -301,63 +239,31 @@ public:
         static_assert(sizeof...(Rest)==0, "DETERMINANT OPERATOR WORKS ON SECOND ORDER TENSORS AND RETURNS A SCALAR");
         _data[0] = static_cast<T>(1)/_det<T,I,I>(src_.expr.expr.data());
     }
-    // compiler typically builds copy assignment operators
-//    template<size_t I>
-//    FASTOR_INLINE Tensor<T,I,I> operator=(const UnaryTransposeOp<UnaryCofOp<Tensor<T,I,I>>> &src_) {
-//        Tensor<T,I,I> out;
-//        static_assert(I==get_value<1,Rest...>::value, "DIMENSION MISMATCH");
-//        _adjoint<T,I,I>(src_.expr.expr.data(),out.data());
-//        return out;
-//    }
-
 
     template<size_t I>
     FASTOR_INLINE Tensor(const UnaryTransposeOp<UnaryAdjOp<Tensor<T,I,I>>> &src_) {
         static_assert(I==get_value<1,Rest...>::value, "DIMENSION MISMATCH");
         _cofactor<T,I,I>(src_.expr.expr.data(),_data);
     }
+    //----------------------------------------------------------------------------------------------------------//
 
-
-
-//    FASTOR_INLINE T& eval_el(T i) const {
-//        return _data[i];
-//    }
-    ////////////////////////////
-//    template<typename U=T, typename std::enable_if<std::is_same<U,float>::value && std::is_same<T,float>::value,bool>::type=0>
-//      FASTOR_INLINE __m256 eval(U i) const {
-//          return load(_data+static_cast<int>(i));
-//    }
-
-//    template<typename U=T, typename std::enable_if<std::is_same<U,double>::value && std::is_same<T,double>::value,bool>::type=0>
-//    FASTOR_INLINE __m256d eval(U i) const {
-//        return load(_data+static_cast<int>(i));
-//    }
-    //////////////////////////
-    //-----------------------------------------------------------------------------
-
-      // evaluation function, evaluate this expression at position i
-  //    template<typename std::enable_if<std::is_same<T,float>::value,bool>::type=0>
-  //      FASTOR_INLINE __m256 eval(FASTOR_INDEX i) const {
-  //          return load(_data+i);
-  //      }
-
-//      FASTOR_INLINE __m256d eval(FASTOR_INDEX i) const {
-////          return _mm256_load_pd(_data+i);
-//          return load(_data+i);
-//      }
-
-
+    // Return raw pointer
+    //----------------------------------------------------------------------------------------------------------//
     FASTOR_INLINE T* data() const {
         return const_cast<T*>(this->_data);
     }
     FASTOR_INLINE T* data() {
         return this->_data;
     }
+    //----------------------------------------------------------------------------------------------------------//
 
-    template<typename... Args, typename std::enable_if<sizeof...(Args)==1 && sizeof...(Args)==Dimension,bool>::type =0>
+    // Scalar indexing
+    //----------------------------------------------------------------------------------------------------------//
+    template<typename... Args, typename std::enable_if<sizeof...(Args)==1
+                            && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
     FASTOR_INLINE T& operator()(Args ... args) {
         constexpr FASTOR_INDEX indices = sizeof...(Args);
-        static_assert(indices==Dimension, "INDEXING TENSOR WITH WRONG NUMBER OF ARGUMENTS");
+        static_assert(indices==Dimension, "INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
         constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
         const FASTOR_INDEX i = get_index<0>(args...);
 #ifdef BOUNDSCHECK
@@ -366,7 +272,8 @@ public:
         return _data[i];
     }
 
-    template<typename... Args, typename std::enable_if<sizeof...(Args)==1 && sizeof...(Args)==Dimension,bool>::type =0>
+    template<typename... Args, typename std::enable_if<sizeof...(Args)==1
+                            && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
     FASTOR_INLINE const T& operator()(Args ... args) const {
         constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
         const FASTOR_INDEX i = get_index<0>(args...);
@@ -376,7 +283,8 @@ public:
         return _data[i];
     }
 
-    template<typename... Args, typename std::enable_if<sizeof...(Args)==2 && sizeof...(Args)==Dimension,bool>::type =0>
+    template<typename... Args, typename std::enable_if<sizeof...(Args)==2
+                            && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
     FASTOR_INLINE T& operator()(Args ... args) {
         constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
         constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
@@ -388,7 +296,8 @@ public:
         return _data[i*N+j];
     }
 
-    template<typename... Args, typename std::enable_if<sizeof...(Args)==2 && sizeof...(Args)==Dimension,bool>::type =0>
+    template<typename... Args, typename std::enable_if<sizeof...(Args)==2
+                            && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
     FASTOR_INLINE const T& operator()(Args ... args) const {
         constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
         constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
@@ -400,7 +309,8 @@ public:
         return _data[i*N+j];
     }
 
-    template<typename... Args, typename std::enable_if<sizeof...(Args)==3 && sizeof...(Args)==Dimension,bool>::type =0>
+    template<typename... Args, typename std::enable_if<sizeof...(Args)==3
+                            && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
     FASTOR_INLINE T& operator()(Args ... args) {
         constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
         constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
@@ -414,7 +324,8 @@ public:
         return _data[i*N*P+j*P+k];
     }
 
-    template<typename... Args, typename std::enable_if<sizeof...(Args)==3 && sizeof...(Args)==Dimension,bool>::type =0>
+    template<typename... Args, typename std::enable_if<sizeof...(Args)==3
+                            && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
     FASTOR_INLINE const T&  operator()(Args ... args) const {
         constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
         constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
@@ -428,7 +339,8 @@ public:
         return _data[i*N*P+j*P+k];
     }
 
-    template<typename... Args, typename std::enable_if<sizeof...(Args)==4 && sizeof...(Args)==Dimension,bool>::type =0>
+    template<typename... Args, typename std::enable_if<sizeof...(Args)==4
+                            && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
     FASTOR_INLINE T& operator()(Args ... args) {
         constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
         constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
@@ -445,7 +357,8 @@ public:
         return _data[i*N*P*Q+j*P*Q+k*Q+l];
     }
 
-    template<typename... Args, typename std::enable_if<sizeof...(Args)==4 && sizeof...(Args)==Dimension,bool>::type =0>
+    template<typename... Args, typename std::enable_if<sizeof...(Args)==4
+                            && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
     FASTOR_INLINE const T& operator()(Args ... args) const {
         constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
         constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
@@ -462,7 +375,8 @@ public:
         return _data[i*N*P*Q+j*P*Q+k*Q+l];
     }
 
-    template<typename... Args, typename std::enable_if<sizeof...(Args)>=5 && sizeof...(Args)==Dimension,bool>::type =0>
+    template<typename... Args, typename std::enable_if<sizeof...(Args)>=5
+                            && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
     FASTOR_INLINE T& operator()(Args ... args) {
         const int largs[sizeof...(Args)] = {args...};
         constexpr int DimensionHolder[Dimension] = {Rest...};
@@ -487,7 +401,8 @@ public:
         return _data[index];
     }
 
-    template<typename... Args, typename std::enable_if<sizeof...(Args)>=5 && sizeof...(Args)==Dimension,bool>::type =0>
+    template<typename... Args, typename std::enable_if<sizeof...(Args)>=5
+                            && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
     FASTOR_INLINE const T& operator()(Args ... args) const {
         const int largs[sizeof...(Args)] = {args...};
         constexpr int DimensionHolder[Dimension] = {Rest...};
@@ -511,8 +426,110 @@ public:
         }
         return _data[index];
     }
+    //----------------------------------------------------------------------------------------------------------//
+
+    // Block indexing
+    //----------------------------------------------------------------------------------------------------------//
+    // Calls scalar indexing so they are fully bounds checked.
+    template<size_t F, size_t L, size_t S>
+    FASTOR_INLINE Tensor<T,range_detector<F,L,S>::value> operator()(const Range<F,L,S>& idx) {
+
+        static_assert(1==Dimension, "INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+        unused(idx);
+        Tensor<T,range_detector<F,L,S>::value> out;
+        FASTOR_INDEX counter = 0;
+        for (FASTOR_INDEX i=F; i<L; i+=S) {
+            out(counter) = this->operator()(i);
+            counter++;
+        }
+        return out;
+    }
+
+    template<size_t F0, size_t L0, size_t S0, size_t F1, size_t L1, size_t S1>
+    FASTOR_INLINE Tensor<T,range_detector<F0,L0,S0>::value,range_detector<F1,L1,S1>::value>
+            operator()(const Range<F0,L0,S0>& idx0, const Range<F1,L1,S1>& idx1) {
+
+        static_assert(2==Dimension, "INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+        unused(idx0); unused(idx1);
+        Tensor<T,range_detector<F0,L0,S0>::value,range_detector<F1,L1,S1>::value> out;
+        FASTOR_INDEX counter_i = 0;
+        for (FASTOR_INDEX i=F0; i<L0; i+=S0) {
+            FASTOR_INDEX counter_j = 0;
+            for (FASTOR_INDEX j=F1; j<L1; j+=S1) {
+                out(counter_i,counter_j) = this->operator()(i,j);
+                counter_j++;
+            }
+            counter_i++;
+        }
+        return out;
+    }
+
+    template<size_t F0, size_t L0, size_t S0, size_t F1, size_t L1, size_t S1, size_t F2, size_t L2, size_t S2>
+    FASTOR_INLINE Tensor<T,range_detector<F0,L0,S0>::value,range_detector<F1,L1,S1>::value,range_detector<F2,L2,S2>::value>
+            operator()(const Range<F0,L0,S0>& idx0, const Range<F1,L1,S1>& idx1,
+                                                        const Range<F2,L2,S2>& idx2) const {
+        static_assert(3==Dimension, "INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+        unused(idx0); unused(idx1); unused(idx2);
+        Tensor<T,range_detector<F0,L0,S0>::value,
+                range_detector<F1,L1,S1>::value,
+                range_detector<F2,L2,S2>::value> out;
+        FASTOR_INDEX counter_i = 0;
+        for (FASTOR_INDEX i=F0; i<L0; i+=S0) {
+            FASTOR_INDEX counter_j = 0;
+            for (FASTOR_INDEX j=F1; j<L1; j+=S1) {
+                FASTOR_INDEX counter_k = 0;
+                for (FASTOR_INDEX k=F2; k<L2; k+=S2) {
+                    out(counter_i,counter_j,counter_k) = this->operator()(i,j,k);
+                    counter_k++;
+                }
+                counter_j++;
+            }
+            counter_i++;
+        }
+        return out;
+    }
+
+    template<size_t F0, size_t L0, size_t S0,
+             size_t F1, size_t L1, size_t S1,
+             size_t F2, size_t L2, size_t S2,
+             size_t F3, size_t L3, size_t S3>
+    FASTOR_INLINE Tensor<T,range_detector<F0,L0,S0>::value,
+            range_detector<F1,L1,S1>::value,
+            range_detector<F2,L2,S2>::value,
+            range_detector<F3,L3,S3>::value>
+            operator ()(const Range<F0,L0,S0>& idx0, const Range<F1,L1,S1>& idx1,
+                  const Range<F2,L2,S2>& idx2, const Range<F3,L3,S3>& idx3) {
+
+        static_assert(4==Dimension, "INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+        unused(idx0); unused(idx1); unused(idx2); unused(idx3);
+        Tensor<T,range_detector<F0,L0,S0>::value,
+                    range_detector<F1,L1,S1>::value,
+                    range_detector<F2,L2,S2>::value,
+                    range_detector<F3,L3,S3>::value> out;
+        FASTOR_INDEX counter_i = 0;
+        for (FASTOR_INDEX i=F0; i<L0; i+=S0) {
+            FASTOR_INDEX counter_j = 0;
+            for (FASTOR_INDEX j=F1; j<L1; j+=S1) {
+                FASTOR_INDEX counter_k = 0;
+                for (FASTOR_INDEX k=F2; k<L2; k+=S2) {
+                    FASTOR_INDEX counter_l = 0;
+                    for (FASTOR_INDEX l=F3; l<L3; l+=S3) {
+                        out(counter_i,counter_j,counter_k) = this->operator()(i,j,k,l);
+                        counter_l++;
+                    }
+                    counter_k++;
+                }
+                counter_j++;
+            }
+            counter_i++;
+        }
+        return out;
+    }
+    //----------------------------------------------------------------------------------------------------------//
+
 
     // In-place operators
+    //----------------------------------------------------------------------------------------------------------//
     FASTOR_INLINE void operator +=(const Tensor<T,Rest...> &a) {
         using V = SIMDVector<T>;
         T* a_data = a.data();
@@ -552,10 +569,11 @@ public:
             _vec.store(_data+i);
         }
     }
-    //
+    //----------------------------------------------------------------------------------------------------------//
 
+    // Further member functions
+    //----------------------------------------------------------------------------------------------------------//
     FASTOR_INLINE FASTOR_INDEX rank() {return Dimension;}
-
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX dim) const {
 //        constexpr FASTOR_INDEX DimensionHolder[Dimension] = {Rest...}; // c++14
         FASTOR_INDEX DimensionHolder[Dimension] = {Rest...};
@@ -734,6 +752,8 @@ public:
         else
             return false;
     }
+    //----------------------------------------------------------------------------------------------------------//
+
 };
 
 

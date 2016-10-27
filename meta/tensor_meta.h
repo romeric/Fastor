@@ -1,9 +1,14 @@
 #ifndef TENSOR_META_H
 #define TENSOR_META_H
 
+#include "commons/commons.h"
+
 namespace Fastor {
 
-template<typename> struct stride_finder;
+template<typename T> struct stride_finder {
+    static const size_t value = 32  / sizeof(T);
+};
+
 template<> struct stride_finder<double> {
     static const size_t value = 4;
 };
@@ -28,7 +33,7 @@ auto get_index(Args&&... as) -> decltype(std::get<N>(std::forward_as_tuple(std::
     return std::get<N>(std::forward_as_tuple(std::forward<Args>(as)...));
 }
 
-template<size_t...> struct add;
+template<size_t...Rest> struct add;
 template<size_t Head, size_t ...Rest>
 struct add<Head, Rest...> {
     static const size_t value = Head+add<Rest...>::value;
@@ -63,6 +68,15 @@ template<size_t Idx, size_t ... Rest>
 struct get_all {
     static const size_t indices[sizeof...(Rest)];
 };
+
+
+//-----------
+template<size_t first, size_t last, size_t step>
+struct range_detector {
+    static constexpr size_t range = last - first;
+    static constexpr size_t value = range % step==0 ? range/step : range/step+1;
+};
+//-----------
 
 
 //-------
@@ -152,14 +166,31 @@ class meta_sqrt<Y, InfX, SupX, true>
 };
 //---------------
 
+
+// Checks if all parameters in a variadic parameter pack are arithmetic
+//-------------------------------------------------------------------------------------------------//
+template<class ... T>
+struct is_arithmetic_pack;
+
+template<class T, class ... U>
+struct is_arithmetic_pack<T,U...> {
+    static constexpr bool value = std::is_arithmetic<T>::value && is_arithmetic_pack<U...>::value;
+};
+
+template<class T>
+struct is_arithmetic_pack<T> {
+    static constexpr bool value = std::is_arithmetic<T>::value;
+};
+//-------------------------------------------------------------------------------------------------//
+
 //
-template <size_t...>
+template <size_t...T>
 struct is_unique : std::integral_constant<bool, true> {};
 
 template <size_t T, size_t U, size_t... VV>
 struct is_unique<T, U, VV...> : std::integral_constant<bool, T != U && is_unique<T, VV...>::value> {};
 
-template <size_t...>
+template <size_t...T>
 struct no_of_unique : std::integral_constant<size_t, 0> {};
 
 template <size_t T, size_t... UU>

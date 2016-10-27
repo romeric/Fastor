@@ -11,10 +11,15 @@ namespace Fastor {
 //namespace details {
 
 
-// Define this if faster (complete meta-engine based) tensor contraction is required.
-// Note that it blows up memory consumption and compilation time
+// Define this if fastest (complete meta-engine based) tensor contraction is required.
+// Note that this blows up memory consumption and compilation time exponentially
 
-//#define Opt
+//#define Opt 2
+
+// Define this if faster (partial meta-engine based) tensor contraction is required.
+// Note that this blows up memory consumption and compilation time but not as much
+
+//#define Opt 1
 
 // A complete tensor contraction meta-engine
 //--------------------------------------------------------------------------------------------------------------//
@@ -148,7 +153,7 @@ struct extractor_contract_2 {};
 template<size_t ... Idx0, size_t ... Idx1>
 struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>> {
 
-#ifdef Opt
+#if Opt==2
 
     template<typename T, size_t ... Rest0, size_t ... Rest1>
       static
@@ -192,7 +197,7 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>> {
     }
 };
 
-#else
+#elif Opt==1
 
       template<typename T, size_t ... Rest0, size_t ... Rest1>
         static
@@ -265,31 +270,109 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>> {
               _vec_out.store(out_data+index_out);
           }
 
-
-//          constexpr int stride = 1;
-//          for (int i = 0; i < total; i+=stride) {
-
-//              int index_a = as_all[i][idx_a[a_dim-1]];
-//              for(it = 0; it< a_dim; it++) {
-//                  index_a += products_a[it]*as_all[i][idx_a[it]];
-//              }
-
-//              int index_b = as_all[i][idx_b[b_dim-1]];
-//              for(it = 0; it< b_dim; it++) {
-//                  index_b += products_b[it]*as_all[i][idx_b[it]];
-//              }
-//              int index_out = as_all[i][idx_out[idx_out.size()-1]];
-//              for(it = 0; it< idx_out.size(); it++) {
-//                  index_out += products_out[it]*as_all[i][idx_out[it]];
-//              }
-
-//              // std::cout << index_a << " " << index_b << " " << index_out << "\n";
-//              out_data[index_out] += a_data[index_a]*b_data[index_b];
-//          }
-
           return out;
       }
 };
+
+#else
+
+
+          template<typename T, size_t ... Rest0, size_t ... Rest1>
+            static
+            typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
+                     typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type
+            contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
+
+              static_assert(!is_reduction<Index<Idx0...>,Index<Idx1...>>::value,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
+
+              using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
+                typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
+              using OutIndice = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
+                typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::indices;
+
+              OutTensor out;
+              out.zeros();
+              const T *a_data = a.data();
+              const T *b_data = b.data();
+              T *out_data = out.data();
+
+              constexpr int a_dim = sizeof...(Rest0);
+              constexpr int b_dim = sizeof...(Rest1);
+              constexpr int out_dim =  no_of_unique<Idx0...,Idx1...>::value;
+
+              constexpr auto& idx_a = IndexTensors<
+                      Index<Idx0..., Idx1...>,
+                      Tensor<T,Rest0...,Rest1...>,
+                      Index<Idx0...>,Tensor<T,Rest0...>,
+                      typename std_ext::make_index_sequence<sizeof...(Rest0)>::type>::indices;
+
+              constexpr auto& idx_b = IndexTensors<
+                      Index<Idx0..., Idx1...>,
+                      Tensor<T,Rest0...,Rest1...>,
+                      Index<Idx1...>,Tensor<T,Rest1...>,
+                      typename std_ext::make_index_sequence<sizeof...(Rest1)>::type>::indices;
+
+              constexpr auto& idx_out = IndexTensors<
+                      Index<Idx0..., Idx1...>,
+                      Tensor<T,Rest0...,Rest1...>,
+                      OutIndice,OutTensor,
+                      typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::indices;
+
+              using nloops = loop_setter<
+                        Index<Idx0...,Idx1...>,
+                        Tensor<T,Rest0...,Rest1...>,
+                        typename std_ext::make_index_sequence<out_dim>::type>;
+              constexpr auto& maxes_out = nloops::dims;
+              constexpr int total = nloops::value;
+
+              constexpr std::array<size_t,a_dim> products_a = nprods<Index<Rest0...>,typename std_ext::make_index_sequence<a_dim>::type>::values;
+              constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
+
+              using Index_with_dims = typename put_dims_in_Index<OutTensor>::type;
+              constexpr std::array<size_t,OutTensor::Dimension> products_out = \
+                      nprods<Index_with_dims,typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::values;
+
+              using vectorisability = is_vectorisable<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest1...>>;
+              constexpr int stride = vectorisability::stride;
+              using V = typename vectorisability::type;
+
+//              // for benchmarks
+//              constexpr int stride = 1;
+//              using V = SIMDVector<T,64>;
+
+              int as[out_dim];
+              std::fill(as,as+out_dim,0);
+
+              int it;
+              V _vec_a;
+
+              for (int i = 0; i < total; i+=stride) {
+                  int remaining = total;
+                  for (int n = 0; n < out_dim; ++n) {
+                      remaining /= maxes_out[n];
+                      as[n] = ( i / remaining ) % maxes_out[n];
+                  }
+
+                  int index_a = as[idx_a[a_dim-1]];
+                  for(it = 0; it< a_dim; it++) {
+                      index_a += products_a[it]*as[idx_a[it]];
+                  }
+                  int index_b = as[idx_b[b_dim-1]];
+                  for(it = 0; it< b_dim; it++) {
+                      index_b += products_b[it]*as[idx_b[it]];
+                  }
+                  int index_out = as[idx_out[OutTensor::Dimension-1]];
+                  for(it = 0; it< OutTensor::Dimension; it++) {
+                      index_out += products_out[it]*as[idx_out[it]];
+                  }
+                  _vec_a.set(*(a_data+index_a));
+                  V _vec_out = _vec_a*V(b_data+index_b) +  V(out_data+index_out);
+                  _vec_out.store(out_data+index_out);
+              }
+
+              return out;
+          }
+    };
 
 
 #endif
@@ -399,7 +482,10 @@ struct extractor_contract<Index<Idx0...>, Index<Idx1...>, Index<Idx2...> > {
             return contraction<resulting_index_0,Index<Idx2...>>(tmp,c);
         }
 
-
+//        // for benchmarks
+//        unused(which_variant);
+//        auto tmp = contraction<Index<Idx1...>,Index<Idx2...>>(b,c);
+//        return contraction<Index<Idx0...>,resulting_index_2>(a,tmp);
 
     }
 
@@ -442,17 +528,30 @@ struct extractor_contract_4<Index<Idx0...>, Index<Idx1...>, Index<Idx2...>, Inde
                                         resulting_tensor_0,Tensor<T,Rest2...>>::type;
         using resulting_index_1 =  typename get_resuling_index<resulting_index_0,Index<Idx2...>,
                                         resulting_tensor_0,Tensor<T,Rest2...>>::type;
-//        using resulting_tensor_2 =  typename get_resuling_tensor<resulting_index_1,Index<Idx3...>,
-//                                        resulting_tensor_1,Tensor<T,Rest3...>>::type;
-//        using resulting_index_2 =  typename get_resuling_index<resulting_index_1,Index<Idx3...>,
-//                                        resulting_tensor_1,Tensor<T,Rest3...>>::type;
-
 
         resulting_tensor_0 tmp0 = contraction<Index<Idx0...>,Index<Idx1...>>(a,b);
         resulting_tensor_1 tmp1 = contraction<resulting_index_0,Index<Idx2...>>(tmp0,c);
-        auto tmp2 = contraction<resulting_index_1,Index<Idx3...>>(tmp1,d);
+        auto res = contraction<resulting_index_1,Index<Idx3...>>(tmp1,d);
 
-        return tmp2;
+        return res;
+
+
+//        // for benchmarks
+//        using resulting_tensor_0 =  typename get_resuling_tensor<Index<Idx0...>,Index<Idx1...>,
+//                                        Tensor<T,Rest0...>,Tensor<T,Rest1...>>::type;
+//        using resulting_index_0 =  typename get_resuling_index<Index<Idx0...>,Index<Idx1...>,
+//                                        Tensor<T,Rest0...>,Tensor<T,Rest1...>>::type;
+
+//        using resulting_tensor_1 =  typename get_resuling_tensor<Index<Idx2...>,Index<Idx3...>,
+//                                        Tensor<T,Rest2...>,Tensor<T,Rest3...>>::type;
+//        using resulting_index_1 =  typename get_resuling_index<Index<Idx2...>,Index<Idx3...>,
+//                                        Tensor<T,Rest2...>,Tensor<T,Rest3...>>::type;
+
+//        resulting_tensor_0 tmp0 = contraction<Index<Idx0...>,Index<Idx1...>>(a,b);
+//        resulting_tensor_1 tmp1 = contraction<Index<Idx2...>,Index<Idx3...>>(c,d);
+//        auto res = contraction<resulting_index_0,resulting_index_1>(tmp0,tmp1);
+
+        return res;
 
     }
 };

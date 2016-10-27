@@ -76,6 +76,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
     // The branches are optimised away
     constexpr size_t stride_sse = N % SIMDVector<T,128>::Size;
     constexpr size_t stride_avx = N % SIMDVector<T>::Size;
+    constexpr size_t stride_3 = N % 3;
 
     if (stride_sse == 0 && stride_avx != 0) {
         // SSE
@@ -129,6 +130,43 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
         }
 //        print("avx");
     }
+
+    else if (stride_sse != 0 && stride_avx != 0 && stride_3==0) {
+        // For 3!
+        using V = SIMDVector<T,SSE>;
+        constexpr size_t stride = 3;
+
+        V _vec_a;
+        for (size_t i=0; i<M*N; i+=stride) {
+            _vec_a.store(&out[i+stride]);
+        }
+
+        // requires unaligned load/store
+//        for (size_t i=0; i<M; ++i) {
+//            for (size_t j=0; j<K; ++j) {
+//                _vec_a.set(a[i*K+j]);
+//                const T tmp = a[i*K+j];
+//                for (size_t k=0; k<N; k+=stride) {
+//                    V _vec_out = _vec_a*V(&b[j*N+k]) +  V(&out[i*N+k]);
+//                    _vec_out.store(&out[i*N+k]);
+//                    out[i*N+k+2] += tmp*b[j*N+k+2];
+//                }
+//            }
+//        }
+
+        for (size_t i=0; i<M; ++i) {
+            for (size_t j=0; j<K; ++j) {
+                const T tmp = a[i*K+j];
+                for (size_t k=0; k<N; k+=stride) {
+                    out[i*N+k] += tmp*b[j*N+k];
+                    out[i*N+k+1] += tmp*b[j*N+k+1];
+                    out[i*N+k+2] += tmp*b[j*N+k+2];
+                }
+            }
+        }
+//        print("3");
+    }
+
     else {
         // Scalar
         for (size_t i=0; i<M; ++i) {

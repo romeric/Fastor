@@ -12,6 +12,7 @@
 #include "summation.h"
 #include "outerproduct.h"
 #include "contraction.h"
+#include "contraction_no_opt.h"
 
 namespace Fastor {
 

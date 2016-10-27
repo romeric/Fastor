@@ -1,0 +1,305 @@
+cd 2d_benchmark_mooney_rivlin;      make run; cd ..
+make[1]: Entering directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/2d_benchmark_mooney_rivlin'
+./out_scalar_p1.exe
+1917[32m[1m runs, average elapsed time is [0m[0m521.801 µs. [32m[1mNo of CPU cycles [0m[0m1354823
+./out_p1.exe
+2506[32m[1m runs, average elapsed time is [0m[0m399.176 µs. [32m[1mNo of CPU cycles [0m[0m1036769
+./out_scalar_p2.exe
+1089[32m[1m runs, average elapsed time is [0m[0m918.375 µs. [32m[1mNo of CPU cycles [0m[0m2383394
+./out_p2.exe
+1752[32m[1m runs, average elapsed time is [0m[0m570.921 µs. [32m[1mNo of CPU cycles [0m[0m1480765
+./out_scalar_p3.exe
+611[32m[1m runs, average elapsed time is [0m[0m1.63759 ms. [32m[1mNo of CPU cycles [0m[0m4248751
+./out_p3.exe
+1197[32m[1m runs, average elapsed time is [0m[0m835.497 µs. [32m[1mNo of CPU cycles [0m[0m2168324
+./out_scalar_p4.exe
+243[32m[1m runs, average elapsed time is [0m[0m4.12876 ms. [32m[1mNo of CPU cycles [0m[0m10709957
+./out_p4.exe
+594[32m[1m runs, average elapsed time is [0m[0m1.68471 ms. [32m[1mNo of CPU cycles [0m[0m4370981
+./out_scalar_p5.exe
+143[32m[1m runs, average elapsed time is [0m[0m7.03709 ms. [32m[1mNo of CPU cycles [0m[0m18253452
+./out_p5.exe
+346[32m[1m runs, average elapsed time is [0m[0m2.89096 ms. [32m[1mNo of CPU cycles [0m[0m7499513
+./out_scalar_p6.exe
+76[32m[1m runs, average elapsed time is [0m[0m13.1996 ms. [32m[1mNo of CPU cycles [0m[0m34237010
+./out_p6.exe
+258[32m[1m runs, average elapsed time is [0m[0m3.88622 ms. [32m[1mNo of CPU cycles [0m[0m10080871
+make[1]: Leaving directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/2d_benchmark_mooney_rivlin'
+cd 2d_benchmark_mooney_rivlin_ds;   make run; cd ..
+make[1]: Entering directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/2d_benchmark_mooney_rivlin_ds'
+./out_scalar_p1.exe
+1750[32m[1m runs, average elapsed time is [0m[0m571.655 µs. [32m[1mNo of CPU cycles [0m[0m1484085
+./out_p1.exe
+3066[32m[1m runs, average elapsed time is [0m[0m326.211 µs. [32m[1mNo of CPU cycles [0m[0m847509
+./out_scalar_p2.exe
+1101[32m[1m runs, average elapsed time is [0m[0m908.295 µs. [32m[1mNo of CPU cycles [0m[0m2357230
+./out_p2.exe
+1957[32m[1m runs, average elapsed time is [0m[0m511.133 µs. [32m[1mNo of CPU cycles [0m[0m1327030
+./out_scalar_p3.exe
+528[32m[1m runs, average elapsed time is [0m[0m1.89644 ms. [32m[1mNo of CPU cycles [0m[0m4920082
+./out_p3.exe
+1213[32m[1m runs, average elapsed time is [0m[0m824.418 µs. [32m[1mNo of CPU cycles [0m[0m2139584
+./out_scalar_p4.exe
+221[32m[1m runs, average elapsed time is [0m[0m4.54129 ms. [32m[1mNo of CPU cycles [0m[0m11779740
+./out_p4.exe
+586[32m[1m runs, average elapsed time is [0m[0m1.70738 ms. [32m[1mNo of CPU cycles [0m[0m4429642
+./out_scalar_p5.exe
+123[32m[1m runs, average elapsed time is [0m[0m8.13176 ms. [32m[1mNo of CPU cycles [0m[0m21092419
+./out_p5.exe
+338[32m[1m runs, average elapsed time is [0m[0m2.96679 ms. [32m[1mNo of CPU cycles [0m[0m7694863
+./out_scalar_p6.exe
+72[32m[1m runs, average elapsed time is [0m[0m13.9489 ms. [32m[1mNo of CPU cycles [0m[0m36180297
+./out_p6.exe
+251[32m[1m runs, average elapsed time is [0m[0m3.99571 ms. [32m[1mNo of CPU cycles [0m[0m10364831
+make[1]: Leaving directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/2d_benchmark_mooney_rivlin_ds'
+cd 2d_benchmark_electro1;           make run; cd ..
+make[1]: Entering directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/2d_benchmark_electro1'
+./out_scalar_p1.exe
+2395[32m[1m runs, average elapsed time is [0m[0m417.537 µs. [32m[1mNo of CPU cycles [0m[0m1084321
+./out_p1.exe
+2331[32m[1m runs, average elapsed time is [0m[0m429.058 µs. [32m[1mNo of CPU cycles [0m[0m1114223
+./out_scalar_p2.exe
+1325[32m[1m runs, average elapsed time is [0m[0m755.174 µs. [32m[1mNo of CPU cycles [0m[0m1960038
+./out_p2.exe
+1589[32m[1m runs, average elapsed time is [0m[0m629.54 µs. [32m[1mNo of CPU cycles [0m[0m1634191
+./out_scalar_p3.exe
+623[32m[1m runs, average elapsed time is [0m[0m1.60744 ms. [32m[1mNo of CPU cycles [0m[0m4170414
+./out_p3.exe
+896[32m[1m runs, average elapsed time is [0m[0m1.11695 ms. [32m[1mNo of CPU cycles [0m[0m2897692
+./out_scalar_p4.exe
+247[32m[1m runs, average elapsed time is [0m[0m4.06306 ms. [32m[1mNo of CPU cycles [0m[0m10539401
+./out_p4.exe
+444[32m[1m runs, average elapsed time is [0m[0m2.25417 ms. [32m[1mNo of CPU cycles [0m[0m5847837
+./out_scalar_p5.exe
+142[32m[1m runs, average elapsed time is [0m[0m7.05385 ms. [32m[1mNo of CPU cycles [0m[0m18296708
+./out_p5.exe
+279[32m[1m runs, average elapsed time is [0m[0m3.5892 ms. [32m[1mNo of CPU cycles [0m[0m9310359
+./out_scalar_p6.exe
+77[32m[1m runs, average elapsed time is [0m[0m13.111 ms. [32m[1mNo of CPU cycles [0m[0m34006965
+./out_p6.exe
+196[32m[1m runs, average elapsed time is [0m[0m5.10224 ms. [32m[1mNo of CPU cycles [0m[0m13233526
+make[1]: Leaving directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/2d_benchmark_electro1'
+cd 2d_benchmark_electro1_ds;        make run; cd ..
+make[1]: Entering directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/2d_benchmark_electro1_ds'
+./out_scalar_p1.exe
+1758[32m[1m runs, average elapsed time is [0m[0m569.128 µs. [32m[1mNo of CPU cycles [0m[0m1477508
+./out_p1.exe
+2263[32m[1m runs, average elapsed time is [0m[0m441.919 µs. [32m[1mNo of CPU cycles [0m[0m1147594
+./out_scalar_p2.exe
+1043[32m[1m runs, average elapsed time is [0m[0m958.932 µs. [32m[1mNo of CPU cycles [0m[0m2488534
+./out_p2.exe
+1602[32m[1m runs, average elapsed time is [0m[0m624.449 µs. [32m[1mNo of CPU cycles [0m[0m1621023
+./out_scalar_p3.exe
+506[32m[1m runs, average elapsed time is [0m[0m1.97633 ms. [32m[1mNo of CPU cycles [0m[0m5125962
+./out_p3.exe
+903[32m[1m runs, average elapsed time is [0m[0m1.10776 ms. [32m[1mNo of CPU cycles [0m[0m2874532
+./out_scalar_p4.exe
+214[32m[1m runs, average elapsed time is [0m[0m4.68984 ms. [32m[1mNo of CPU cycles [0m[0m12165296
+./out_p4.exe
+457[32m[1m runs, average elapsed time is [0m[0m2.19176 ms. [32m[1mNo of CPU cycles [0m[0m5685959
+./out_scalar_p5.exe
+122[32m[1m runs, average elapsed time is [0m[0m8.23324 ms. [32m[1mNo of CPU cycles [0m[0m21355741
+./out_p5.exe
+278[32m[1m runs, average elapsed time is [0m[0m3.6002 ms. [32m[1mNo of CPU cycles [0m[0m9338972
+./out_scalar_p6.exe
+69[32m[1m runs, average elapsed time is [0m[0m14.6109 ms. [32m[1mNo of CPU cycles [0m[0m37897583
+./out_p6.exe
+203[32m[1m runs, average elapsed time is [0m[0m4.93025 ms. [32m[1mNo of CPU cycles [0m[0m12788662
+make[1]: Leaving directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/2d_benchmark_electro1_ds'
+cd 2d_benchmark_electro2;           make run; cd ..
+make[1]: Entering directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/2d_benchmark_electro2'
+./out_scalar_p1.exe
+1399[32m[1m runs, average elapsed time is [0m[0m714.876 µs. [32m[1mNo of CPU cycles [0m[0m1854164
+./out_p1.exe
+1908[32m[1m runs, average elapsed time is [0m[0m524.23 µs. [32m[1mNo of CPU cycles [0m[0m1361052
+./out_scalar_p2.exe
+882[32m[1m runs, average elapsed time is [0m[0m1.13385 ms. [32m[1mNo of CPU cycles [0m[0m2942199
+./out_p2.exe
+1359[32m[1m runs, average elapsed time is [0m[0m736.145 µs. [32m[1mNo of CPU cycles [0m[0m1910709
+./out_scalar_p3.exe
+426[32m[1m runs, average elapsed time is [0m[0m2.34981 ms. [32m[1mNo of CPU cycles [0m[0m6095894
+./out_p3.exe
+761[32m[1m runs, average elapsed time is [0m[0m1.31545 ms. [32m[1mNo of CPU cycles [0m[0m3413149
+./out_scalar_p4.exe
+180[32m[1m runs, average elapsed time is [0m[0m5.55729 ms. [32m[1mNo of CPU cycles [0m[0m14415107
+./out_p4.exe
+396[32m[1m runs, average elapsed time is [0m[0m2.52565 ms. [32m[1mNo of CPU cycles [0m[0m6552048
+./out_scalar_p5.exe
+108[32m[1m runs, average elapsed time is [0m[0m9.27227 ms. [32m[1mNo of CPU cycles [0m[0m24050710
+./out_p5.exe
+252[32m[1m runs, average elapsed time is [0m[0m3.98108 ms. [32m[1mNo of CPU cycles [0m[0m10326728
+./out_scalar_p6.exe
+61[32m[1m runs, average elapsed time is [0m[0m16.5766 ms. [32m[1mNo of CPU cycles [0m[0m42995996
+./out_p6.exe
+175[32m[1m runs, average elapsed time is [0m[0m5.7416 ms. [32m[1mNo of CPU cycles [0m[0m14893082
+make[1]: Leaving directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/2d_benchmark_electro2'
+cd 2d_benchmark_electro2_ds;        make run; cd ..
+make[1]: Entering directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/2d_benchmark_electro2_ds'
+./out_scalar_p1.exe
+1103[32m[1m runs, average elapsed time is [0m[0m907.189 µs. [32m[1mNo of CPU cycles [0m[0m2354284
+./out_p1.exe
+1905[32m[1m runs, average elapsed time is [0m[0m525.052 µs. [32m[1mNo of CPU cycles [0m[0m1361772
+./out_scalar_p2.exe
+724[32m[1m runs, average elapsed time is [0m[0m1.38255 ms. [32m[1mNo of CPU cycles [0m[0m3587250
+./out_p2.exe
+1361[32m[1m runs, average elapsed time is [0m[0m734.828 µs. [32m[1mNo of CPU cycles [0m[0m1907205
+./out_scalar_p3.exe
+358[32m[1m runs, average elapsed time is [0m[0m2.79475 ms. [32m[1mNo of CPU cycles [0m[0m7250003
+./out_p3.exe
+766[32m[1m runs, average elapsed time is [0m[0m1.30692 ms. [32m[1mNo of CPU cycles [0m[0m3390879
+./out_scalar_p4.exe
+164[32m[1m runs, average elapsed time is [0m[0m6.13289 ms. [32m[1mNo of CPU cycles [0m[0m15907909
+./out_p4.exe
+410[32m[1m runs, average elapsed time is [0m[0m2.44297 ms. [32m[1mNo of CPU cycles [0m[0m6337591
+./out_scalar_p5.exe
+99[32m[1m runs, average elapsed time is [0m[0m10.1062 ms. [32m[1mNo of CPU cycles [0m[0m26213310
+./out_p5.exe
+244[32m[1m runs, average elapsed time is [0m[0m4.11265 ms. [32m[1mNo of CPU cycles [0m[0m10668256
+./out_scalar_p6.exe
+56[32m[1m runs, average elapsed time is [0m[0m17.9133 ms. [32m[1mNo of CPU cycles [0m[0m46462095
+./out_p6.exe
+176[32m[1m runs, average elapsed time is [0m[0m5.69603 ms. [32m[1mNo of CPU cycles [0m[0m14774831
+make[1]: Leaving directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/2d_benchmark_electro2_ds'
+cd 3d_benchmark_mooney_rivlin;      make run; cd ..
+make[1]: Entering directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/3d_benchmark_mooney_rivlin'
+./out_scalar_p1.exe
+13[32m[1m runs, average elapsed time is [0m[0m80.2645 ms. [32m[1mNo of CPU cycles [0m[0m208185886
+./out_p1.exe
+21[32m[1m runs, average elapsed time is [0m[0m48.3736 ms. [32m[1mNo of CPU cycles [0m[0m125468808
+./out_scalar_p2.exe
+7[32m[1m runs, average elapsed time is [0m[0m167.658 ms. [32m[1mNo of CPU cycles [0m[0m434861710
+./out_p2.exe
+14[32m[1m runs, average elapsed time is [0m[0m74.483 ms. [32m[1mNo of CPU cycles [0m[0m193189681
+./out_scalar_p3.exe
+3[32m[1m runs, average elapsed time is [0m[0m635.23 ms. [32m[1mNo of CPU cycles [0m[0m1647625138
+./out_p3.exe
+6[32m[1m runs, average elapsed time is [0m[0m189.68 ms. [32m[1mNo of CPU cycles [0m[0m491980478
+./out_scalar_p4.exe
+2[32m[1m runs, average elapsed time is [0m[0m1.64457 s. [32m[1mNo of CPU cycles [0m[0m4265597232
+./out_p4.exe
+3[32m[1m runs, average elapsed time is [0m[0m437.598 ms. [32m[1mNo of CPU cycles [0m[0m1135016762
+./out_scalar_p5.exe
+2[32m[1m runs, average elapsed time is [0m[0m4.43705 s. [32m[1mNo of CPU cycles [0m[0m11508594975
+./out_p5.exe
+2[32m[1m runs, average elapsed time is [0m[0m658.925 ms. [32m[1mNo of CPU cycles [0m[0m1709083403
+./out_scalar_p6.exe
+2[32m[1m runs, average elapsed time is [0m[0m14.8838 s. [32m[1mNo of CPU cycles [0m[0m38604946980
+./out_p6.exe
+2[32m[1m runs, average elapsed time is [0m[0m1.92765 s. [32m[1mNo of CPU cycles [0m[0m4999845805
+make[1]: Leaving directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/3d_benchmark_mooney_rivlin'
+cd 3d_benchmark_mooney_rivlin_ds;   make run; cd ..
+make[1]: Entering directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/3d_benchmark_mooney_rivlin_ds'
+./out_scalar_p1.exe
+4[32m[1m runs, average elapsed time is [0m[0m271.881 ms. [32m[1mNo of CPU cycles [0m[0m705189265
+./out_p1.exe
+21[32m[1m runs, average elapsed time is [0m[0m49.9071 ms. [32m[1mNo of CPU cycles [0m[0m129445664
+./out_scalar_p2.exe
+make[1]: Leaving directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/3d_benchmark_mooney_rivlin_ds'
+cd 3d_benchmark_electro1;           make run; cd ..
+make[1]: Entering directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/3d_benchmark_electro1'
+./out_scalar_p1.exe
+12[32m[1m runs, average elapsed time is [0m[0m89.6782 ms. [32m[1mNo of CPU cycles [0m[0m232601755
+./out_p1.exe
+16[32m[1m runs, average elapsed time is [0m[0m66.0118 ms. [32m[1mNo of CPU cycles [0m[0m171217081
+./out_scalar_p2.exe
+6[32m[1m runs, average elapsed time is [0m[0m182.112 ms. [32m[1mNo of CPU cycles [0m[0m472351413
+./out_p2.exe
+11[32m[1m runs, average elapsed time is [0m[0m92.2991 ms. [32m[1mNo of CPU cycles [0m[0m239399611
+./out_scalar_p3.exe
+2[32m[1m runs, average elapsed time is [0m[0m517.863 ms. [32m[1mNo of CPU cycles [0m[0m1343204946
+./out_p3.exe
+5[32m[1m runs, average elapsed time is [0m[0m246.535 ms. [32m[1mNo of CPU cycles [0m[0m639450032
+./out_scalar_p4.exe
+2[32m[1m runs, average elapsed time is [0m[0m1.77882 s. [32m[1mNo of CPU cycles [0m[0m4613820283
+./out_p4.exe
+3[32m[1m runs, average elapsed time is [0m[0m546.77 ms. [32m[1mNo of CPU cycles [0m[0m1418182780
+./out_scalar_p5.exe
+2[32m[1m runs, average elapsed time is [0m[0m4.85896 s. [32m[1mNo of CPU cycles [0m[0m12602923038
+./out_p5.exe
+2[32m[1m runs, average elapsed time is [0m[0m782.204 ms. [32m[1mNo of CPU cycles [0m[0m2028838940
+./out_scalar_p6.exe
+2[32m[1m runs, average elapsed time is [0m[0m15.9867 s. [32m[1mNo of CPU cycles [0m[0m41465532759
+./out_p6.exe
+2[32m[1m runs, average elapsed time is [0m[0m2.26288 s. [32m[1mNo of CPU cycles [0m[0m5869347004
+make[1]: Leaving directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/3d_benchmark_electro1'
+cd 3d_benchmark_electro1_ds;        make run; cd ..
+make[1]: Entering directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/3d_benchmark_electro1_ds'
+./out_scalar_p1.exe
+4[32m[1m runs, average elapsed time is [0m[0m286.354 ms. [32m[1mNo of CPU cycles [0m[0m742727813
+./out_p1.exe
+16[32m[1m runs, average elapsed time is [0m[0m64.8176 ms. [32m[1mNo of CPU cycles [0m[0m168120527
+./out_scalar_p2.exe
+3[32m[1m runs, average elapsed time is [0m[0m391.076 ms. [32m[1mNo of CPU cycles [0m[0m1014351534
+./out_p2.exe
+11[32m[1m runs, average elapsed time is [0m[0m91.8663 ms. [32m[1mNo of CPU cycles [0m[0m238277677
+./out_scalar_p3.exe
+2[32m[1m runs, average elapsed time is [0m[0m1.01966 s. [32m[1mNo of CPU cycles [0m[0m2644739611
+./out_p3.exe
+5[32m[1m runs, average elapsed time is [0m[0m238.837 ms. [32m[1mNo of CPU cycles [0m[0m619480615
+./out_scalar_p4.exe
+2[32m[1m runs, average elapsed time is [0m[0m2.89558 s. [32m[1mNo of CPU cycles [0m[0m7510418581
+./out_p4.exe
+3[32m[1m runs, average elapsed time is [0m[0m522.734 ms. [32m[1mNo of CPU cycles [0m[0m1355838226
+./out_scalar_p5.exe
+2[32m[1m runs, average elapsed time is [0m[0m6.75932 s. [32m[1mNo of CPU cycles [0m[0m17531975687
+./out_p5.exe
+2[32m[1m runs, average elapsed time is [0m[0m773.212 ms. [32m[1mNo of CPU cycles [0m[0m2005516303
+./out_scalar_p6.exe
+2[32m[1m runs, average elapsed time is [0m[0m21.114 s. [32m[1mNo of CPU cycles [0m[0m54764339845
+./out_p6.exe
+2[32m[1m runs, average elapsed time is [0m[0m2.23648 s. [32m[1mNo of CPU cycles [0m[0m5800873754
+make[1]: Leaving directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/3d_benchmark_electro1_ds'
+cd 3d_benchmark_electro2;           make run; cd ..
+make[1]: Entering directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/3d_benchmark_electro2'
+./out_scalar_p1.exe
+6[32m[1m runs, average elapsed time is [0m[0m167.467 ms. [32m[1mNo of CPU cycles [0m[0m434367072
+./out_p1.exe
+10[32m[1m runs, average elapsed time is [0m[0m111.998 ms. [32m[1mNo of CPU cycles [0m[0m290494768
+./out_scalar_p2.exe
+4[32m[1m runs, average elapsed time is [0m[0m264.687 ms. [32m[1mNo of CPU cycles [0m[0m686530605
+./out_p2.exe
+7[32m[1m runs, average elapsed time is [0m[0m152.513 ms. [32m[1mNo of CPU cycles [0m[0m395580791
+./out_scalar_p3.exe
+2[32m[1m runs, average elapsed time is [0m[0m708.727 ms. [32m[1mNo of CPU cycles [0m[0m1838259458
+./out_p3.exe
+3[32m[1m runs, average elapsed time is [0m[0m338.635 ms. [32m[1mNo of CPU cycles [0m[0m878331484
+./out_scalar_p4.exe
+2[32m[1m runs, average elapsed time is [0m[0m2.24011 s. [32m[1mNo of CPU cycles [0m[0m5810282031
+./out_p4.exe
+2[32m[1m runs, average elapsed time is [0m[0m638.948 ms. [32m[1mNo of CPU cycles [0m[0m1657269128
+./out_scalar_p5.exe
+2[32m[1m runs, average elapsed time is [0m[0m5.65625 s. [32m[1mNo of CPU cycles [0m[0m14670885865
+./out_p5.exe
+2[32m[1m runs, average elapsed time is [0m[0m1.15544 s. [32m[1mNo of CPU cycles [0m[0m2996914871
+./out_scalar_p6.exe
+2[32m[1m runs, average elapsed time is [0m[0m18.4525 s. [32m[1mNo of CPU cycles [0m[0m47861091517
+./out_p6.exe
+2[32m[1m runs, average elapsed time is [0m[0m3.19015 s. [32m[1mNo of CPU cycles [0m[0m8274436732
+make[1]: Leaving directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/3d_benchmark_electro2'
+cd 3d_benchmark_electro2_ds;        make run; cd ..
+make[1]: Entering directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/3d_benchmark_electro2_ds'
+./out_scalar_p1.exe
+4[32m[1m runs, average elapsed time is [0m[0m367.682 ms. [32m[1mNo of CPU cycles [0m[0m953673041
+./out_p1.exe
+9[32m[1m runs, average elapsed time is [0m[0m112.973 ms. [32m[1mNo of CPU cycles [0m[0m293021670
+./out_scalar_p2.exe
+3[32m[1m runs, average elapsed time is [0m[0m485.3 ms. [32m[1mNo of CPU cycles [0m[0m1258744288
+./out_p2.exe
+7[32m[1m runs, average elapsed time is [0m[0m151.043 ms. [32m[1mNo of CPU cycles [0m[0m391766271
+./out_scalar_p3.exe
+2[32m[1m runs, average elapsed time is [0m[0m1.22686 s. [32m[1mNo of CPU cycles [0m[0m3182163796
+./out_p3.exe
+3[32m[1m runs, average elapsed time is [0m[0m344.536 ms. [32m[1mNo of CPU cycles [0m[0m893639339
+./out_scalar_p4.exe
+2[32m[1m runs, average elapsed time is [0m[0m3.36484 s. [32m[1mNo of CPU cycles [0m[0m8727555057
+./out_p4.exe
+2[32m[1m runs, average elapsed time is [0m[0m636.289 ms. [32m[1mNo of CPU cycles [0m[0m1650371281
+./out_scalar_p5.exe
+2[32m[1m runs, average elapsed time is [0m[0m7.57871 s. [32m[1mNo of CPU cycles [0m[0m19657267910
+./out_p5.exe
+2[32m[1m runs, average elapsed time is [0m[0m1.16258 s. [32m[1mNo of CPU cycles [0m[0m3015429126
+./out_scalar_p6.exe
+2[32m[1m runs, average elapsed time is [0m[0m23.0844 s. [32m[1mNo of CPU cycles [0m[0m59875270441
+./out_p6.exe
+2[32m[1m runs, average elapsed time is [0m[0m3.18757 s. [32m[1mNo of CPU cycles [0m[0m8267743708
+make[1]: Leaving directory `/home/roman/Dropbox/Fastor/benchmark/benchmark_academic/kernel_quadrature/3d_benchmark_electro2_ds'

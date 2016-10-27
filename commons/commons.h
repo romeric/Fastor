@@ -62,6 +62,14 @@
 #define PlaneStrain -152
 #define PlaneStress -153
 
+#define DepthFirst -200
+#define NoDepthFirst -201
+
+
+#define SSE 128
+#define AVX 256
+#define Scalar 64
+
 
 
 #define ZEROPS (_mm_set1_ps(0.f))
