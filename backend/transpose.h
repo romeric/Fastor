@@ -77,9 +77,9 @@ FASTOR_INLINE void _transpose<double,2,2>(const double* __restrict__ a, double* 
     __m256d a1 =  _mm256_load_pd(a);
     __m128d a2 =  _mm256_castpd256_pd128(a1);
     __m128d a3 =  _mm256_extractf128_pd(a1,0x1);
-    a2 = _mm_shuffle_pd(a2,a3,0x1);
-    a3 = _mm_shuffle_pd(a2,a3,0x2);
-    a1 = _mm256_castpd128_pd256(a2);
+    __m128d a4 = _mm_shuffle_pd(a2,a3,0x0);
+    a3 = _mm_shuffle_pd(a2,a3,0x3);
+    a1 = _mm256_castpd128_pd256(a4);
     a1 = _mm256_insertf128_pd(a1,a3,0x1);
     _mm256_store_pd(out,a1);
 }
