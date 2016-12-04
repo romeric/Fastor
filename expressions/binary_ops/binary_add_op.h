@@ -44,7 +44,6 @@ struct BinaryAddOp: public AbstractTensor<BinaryAddOp<TLhs, TRhs, DIM0>,DIM0> {
     // The eval function evaluates the expression at position i
     template<typename U>
     FASTOR_INLINE SIMDVector<U> eval(U i) const {
-//        print(rhs);
         // Delay evaluation using a helper function to fully inform BinaryOp about lhs and rhs
         return helper<TLhs,TRhs>(i);
     }

@@ -69,6 +69,8 @@
 #define SSE 128
 #define AVX 256
 #define Scalar 64
+#define Double 64
+#define Single 32
 
 
 

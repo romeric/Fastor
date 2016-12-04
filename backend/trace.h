@@ -23,10 +23,10 @@ FASTOR_INLINE double _trace<double,2,2>(const double * __restrict__ a) {
 //    return _mm_cvtsd_f64(_mm_add_sd(_mm256_castpd256_pd128(a_reg),_mm_shuffle_pd(a_high,a_high,0x1)));
 
     // SSE VERSION
-    // 4 OPS
-    __m128d a0 = _mm_load_pd(a);
-    __m128d a1 = _mm_load_pd(a);
-    return _mm_cvtsd_f64(_mm_add_pd(a0,_mm_shuffle_pd(a1,a1,0x1)));
+    // 3 OPS
+    __m128d a0 = _mm_load_sd(a);
+    __m128d a1 = _mm_load_sd(a+3);
+    return _mm_cvtsd_f64(_mm_add_pd(a0,a1));
 }
 
 template<>

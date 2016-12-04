@@ -3,6 +3,8 @@
 
 #include "tensor/Tensor.h"
 
+// Conversion of tensors to symmetrised Voigt forms
+
 namespace Fastor {
 
 template<typename T, size_t ... Rest>
@@ -22,6 +24,14 @@ struct VoigtType<T,2,2,2> {
 template<typename T>
 struct VoigtType<T,3,3,3> {
     using return_type = Tensor<T,6,3>;
+};
+template<typename T>
+struct VoigtType<T,2,2> {
+    using return_type = Tensor<T,3>;
+};
+template<typename T>
+struct VoigtType<T,3,3> {
+    using return_type = Tensor<T,6>;
 };
 
 
@@ -88,18 +98,65 @@ FASTOR_INLINE void _voigt(const T * __restrict__ a_data, T * __restrict__ VoigtA
 template<typename T, size_t ... Rest,
          typename std::enable_if<sizeof...(Rest)==3 && prod<Rest...>::value == 8
                                  ,bool>::type=0>
-FASTOR_INLINE void _voigt(const T * __restrict__ a_data, T * __restrict__ VoigtA) {
-    // TODO
-    VoigtA[0] = a_data[0];
+FASTOR_INLINE void _voigt(const T * __restrict__ e, T * __restrict__ VoigtA) {
+
+    VoigtA[0] = e[0];
+    VoigtA[1] = e[4];
+    VoigtA[2] = e[3];
+    VoigtA[3] = e[7];
+    VoigtA[4] = 0.5*(e[1]+e[2]);
+    VoigtA[5] = 0.5*(e[5]+e[6]);
 }
 
 
 template<typename T, size_t ... Rest,
          typename std::enable_if<sizeof...(Rest)==3 && prod<Rest...>::value == 27
                                  ,bool>::type=0>
-FASTOR_INLINE void _voigt(const T * __restrict__ a_data, T * __restrict__ VoigtA) {
-    // TODO
-    VoigtA[0] = a_data[0];
+FASTOR_INLINE void _voigt(const T * __restrict__ e, T * __restrict__ VoigtA) {
+
+    VoigtA[0] = e[0];
+    VoigtA[1] = e[9];
+    VoigtA[2] = e[18];
+    VoigtA[3] = e[4];
+    VoigtA[4] = e[13];
+    VoigtA[5] = e[22];
+    VoigtA[6] = e[8];
+    VoigtA[7] = e[17];
+    VoigtA[8] = e[26];
+    VoigtA[9] = 0.5*(e[1]+e[3]);
+    VoigtA[10] = 0.5*(e[10]+e[12]);
+    VoigtA[11] = 0.5*(e[19]+e[21]);
+    VoigtA[12] = 0.5*(e[2]+e[6]);
+    VoigtA[13] = 0.5*(e[11]+e[15]);
+    VoigtA[14] = 0.5*(e[20]+e[24]);
+    VoigtA[15] = 0.5*(e[5]+e[7]);
+    VoigtA[16] = 0.5*(e[14]+e[16]);
+    VoigtA[17] = 0.5*(e[23]+e[25]);
+}
+
+
+template<typename T, size_t ... Rest,
+         typename std::enable_if<sizeof...(Rest)==2 && prod<Rest...>::value == 4
+                                 ,bool>::type=0>
+FASTOR_INLINE void _voigt(const T * __restrict__ e, T * __restrict__ VoigtA) {
+
+    VoigtA[0] = e[0];
+    VoigtA[1] = e[3];
+    VoigtA[2] = 0.5*(e[1]+e[2]);
+}
+
+
+template<typename T, size_t ... Rest,
+         typename std::enable_if<sizeof...(Rest)==2 && prod<Rest...>::value == 9
+                                 ,bool>::type=0>
+FASTOR_INLINE void _voigt(const T * __restrict__ e, T * __restrict__ VoigtA) {
+
+    VoigtA[0] = e[0];
+    VoigtA[1] = e[4];
+    VoigtA[2] = e[8];
+    VoigtA[3] = 0.5*(e[1]+e[3]);
+    VoigtA[4] = 0.5*(e[2]+e[6]);
+    VoigtA[5] = 0.5*(e[5]+e[7]);
 }
 
 

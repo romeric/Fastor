@@ -6,6 +6,58 @@
 
 namespace Fastor {
 
+// addition
+template<typename Expr, size_t DIM0>
+struct UnaryAddOp: public AbstractTensor<UnaryAddOp<Expr, DIM0>,DIM0> {
+private:
+    const Expr &expr;
+public:
+    static constexpr FASTOR_INDEX Size = Expr::Size;
+    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Expr::Size;}
+    FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
+
+    UnaryAddOp(const Expr& expr) : expr(expr) {}
+
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U> eval(U i) const {
+    return expr.eval(static_cast<U>(i));
+    }
+};
+
+template<typename Expr, size_t DIM0,
+         typename std::enable_if<!std::is_arithmetic<Expr>::value,bool>::type = 0 >
+FASTOR_INLINE UnaryAddOp<Expr, DIM0> operator+(const AbstractTensor<Expr,DIM0> &expr) {
+  return UnaryAddOp<Expr, DIM0>(expr.self());
+}
+
+
+// subtraction
+template<typename Expr, size_t DIM0>
+struct UnarySubOp: public AbstractTensor<UnarySubOp<Expr, DIM0>,DIM0> {
+private:
+    const Expr &expr;
+public:
+    static constexpr FASTOR_INDEX Size = Expr::Size;
+    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Expr::Size;}
+    FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
+
+    UnarySubOp(const Expr& expr) : expr(expr) {}
+
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U> eval(U i) const {
+    return -expr.eval(static_cast<U>(i));
+    }
+};
+
+template<typename Expr, size_t DIM0,
+         typename std::enable_if<!std::is_arithmetic<Expr>::value,bool>::type = 0 >
+FASTOR_INLINE UnarySubOp<Expr, DIM0> operator-(const AbstractTensor<Expr,DIM0> &expr) {
+  return UnarySubOp<Expr, DIM0>(expr.self());
+}
+
+
+// Mathematical functions
+
 // sqrt
 template<typename Expr, size_t DIM0>
 struct UnarySqrtOp: public AbstractTensor<UnarySqrtOp<Expr, DIM0>,DIM0> {

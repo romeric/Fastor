@@ -619,6 +619,7 @@ void _matmul<double,3,3,1>(const double * __restrict__ a, const double * __restr
 }
 
 
+
 } // end of namespace
 
 #endif // MATMUL_H

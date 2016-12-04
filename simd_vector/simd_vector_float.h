@@ -164,6 +164,9 @@ FASTOR_INLINE SIMDVector<float> operator+(float a, const SIMDVector<float> &b) {
     out.value = _mm256_add_ps(_mm256_set1_ps(a),b.value);
     return out;
 }
+FASTOR_INLINE SIMDVector<float> operator+(const SIMDVector<float> &b) {
+    return b;
+}
 
 FASTOR_INLINE SIMDVector<float> operator-(const SIMDVector<float> &a, const SIMDVector<float> &b) {
     SIMDVector<float> out;
@@ -178,6 +181,11 @@ FASTOR_INLINE SIMDVector<float> operator-(const SIMDVector<float> &a, float b) {
 FASTOR_INLINE SIMDVector<float> operator-(float a, const SIMDVector<float> &b) {
     SIMDVector<float> out;
     out.value = _mm256_sub_ps(_mm256_set1_ps(a),b.value);
+    return out;
+}
+FASTOR_INLINE SIMDVector<float> operator-(const SIMDVector<float> &b) {
+    SIMDVector<float> out;
+    out.value = _mm256_neg_ps(b.value);
     return out;
 }
 
@@ -370,6 +378,9 @@ FASTOR_INLINE SIMDVector<float,128> operator+(float a, const SIMDVector<float,12
     out.value = _mm_add_ps(_mm_set1_ps(a),b.value);
     return out;
 }
+FASTOR_INLINE SIMDVector<float,128> operator+(const SIMDVector<float,128> &b) {
+    return b;
+}
 
 FASTOR_INLINE SIMDVector<float,128> operator-(const SIMDVector<float,128> &a, const SIMDVector<float,128> &b) {
     SIMDVector<float,128> out;
@@ -384,6 +395,11 @@ FASTOR_INLINE SIMDVector<float,128> operator-(const SIMDVector<float,128> &a, fl
 FASTOR_INLINE SIMDVector<float,128> operator-(float a, const SIMDVector<float,128> &b) {
     SIMDVector<float,128> out;
     out.value = _mm_sub_ps(_mm_set1_ps(a),b.value);
+    return out;
+}
+FASTOR_INLINE SIMDVector<float,128> operator-(const SIMDVector<float,128> &b) {
+    SIMDVector<float,128> out;
+    out.value = _mm_neg_ps(b.value);
     return out;
 }
 
@@ -525,6 +541,9 @@ FASTOR_INLINE SIMDVector<float,32> operator+(float a, const SIMDVector<float,32>
     out.value = a+b.value;
     return out;
 }
+FASTOR_INLINE SIMDVector<float,32> operator+(const SIMDVector<float,32> &b) {
+    return b;
+}
 
 FASTOR_INLINE SIMDVector<float,32> operator-(const SIMDVector<float,32> &a, const SIMDVector<float,32> &b) {
     SIMDVector<float,32> out;
@@ -539,6 +558,11 @@ FASTOR_INLINE SIMDVector<float,32> operator-(const SIMDVector<float,32> &a, floa
 FASTOR_INLINE SIMDVector<float,32> operator-(float a, const SIMDVector<float,32> &b) {
     SIMDVector<float,32> out;
     out.value = a-b.value;
+    return out;
+}
+FASTOR_INLINE SIMDVector<float,32> operator-(const SIMDVector<float,32> &b) {
+    SIMDVector<float,32> out;
+    out.value = -b.value;
     return out;
 }
 

@@ -247,7 +247,7 @@ public:
     }
     //----------------------------------------------------------------------------------------------------------//
 
-    // Return raw pointer
+    // Raw pointer providers
     //----------------------------------------------------------------------------------------------------------//
     FASTOR_INLINE T* data() const {
         return const_cast<T*>(this->_data);
@@ -530,6 +530,7 @@ public:
 
     // In-place operators
     //----------------------------------------------------------------------------------------------------------//
+
     FASTOR_INLINE void operator +=(const Tensor<T,Rest...> &a) {
         using V = SIMDVector<T>;
         T* a_data = a.data();
@@ -634,7 +635,7 @@ public:
         }
         std::reverse(products.begin(),products.end());
 
-        for (int i=0; i<dimension(0); ++i) {
+        for (FASTOR_INDEX i=0; i<dimension(0); ++i) {
             int index_a = i;
             for(int it = 0; it< ndim; it++) {
                 index_a += products[it]*i;
@@ -660,7 +661,7 @@ public:
     // Special function
     constexpr FASTOR_INLINE bool is_uniform() const {
         //! A tensor is uniform if it spans equally in all dimensions,
-        //! i.e. generalisation square matrix to n dimension
+        //! i.e. generalisation of square matrix to n dimension
         return no_of_unique<Rest...>::value==1 ? true : false;
     }
 
@@ -684,7 +685,7 @@ public:
     }
 
     FASTOR_INLINE bool is_orthogonal() const {
-        // A second order tensor A is orthogonal if A*A'=I
+        //! A second order tensor A is orthogonal if A*A'= I
         if (!is_uniform())
             return false;
         else {
@@ -755,6 +756,7 @@ public:
     //----------------------------------------------------------------------------------------------------------//
 
 };
+
 
 
 }

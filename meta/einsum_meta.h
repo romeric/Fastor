@@ -128,7 +128,7 @@ constexpr std::array<size_t,sizeof...(Rest)> nprods<Index<Rest...>,std_ext::inde
 // this is a meta-function equivalent to numpy's "where"
 template<size_t N>
 constexpr int find_index(const size_t (&ind)[N], int num, size_t i=0){
-    return (i==N) ? N : (ind[i]==num ? i : find_index(ind,num,i+1));
+    return (i==N) ? N : (static_cast<int>(ind[i])==num ? i : find_index(ind,num,i+1));
 }
 
 // check if a given value is ind1 and not ind0

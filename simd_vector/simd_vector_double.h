@@ -152,6 +152,9 @@ FASTOR_INLINE SIMDVector<double> operator+(double a, const SIMDVector<double> &b
     out.value = _mm256_add_pd(_mm256_set1_pd(a),b.value);
     return out;
 }
+FASTOR_INLINE SIMDVector<double> operator+(const SIMDVector<double> &b) {
+    return b;
+}
 
 FASTOR_INLINE SIMDVector<double> operator-(const SIMDVector<double> &a, const SIMDVector<double> &b) {
     SIMDVector<double> out;
@@ -166,6 +169,11 @@ FASTOR_INLINE SIMDVector<double> operator-(const SIMDVector<double> &a, double b
 FASTOR_INLINE SIMDVector<double> operator-(double a, const SIMDVector<double> &b) {
     SIMDVector<double> out;
     out.value = _mm256_sub_pd(_mm256_set1_pd(a),b.value);
+    return out;
+}
+FASTOR_INLINE SIMDVector<double> operator-(const SIMDVector<double> &b) {
+    SIMDVector<double> out;
+    out.value = _mm256_neg_pd(b.value);
     return out;
 }
 
@@ -356,6 +364,9 @@ FASTOR_INLINE SIMDVector<double,128> operator+(double a, const SIMDVector<double
     out.value = _mm_add_pd(_mm_set1_pd(a),b.value);
     return out;
 }
+FASTOR_INLINE SIMDVector<double,128> operator+(const SIMDVector<double,128> &b) {
+    return b;
+}
 
 FASTOR_INLINE SIMDVector<double,128> operator-(const SIMDVector<double,128> &a, const SIMDVector<double,128> &b) {
     SIMDVector<double,128> out;
@@ -370,6 +381,11 @@ FASTOR_INLINE SIMDVector<double,128> operator-(const SIMDVector<double,128> &a, 
 FASTOR_INLINE SIMDVector<double,128> operator-(double a, const SIMDVector<double,128> &b) {
     SIMDVector<double,128> out;
     out.value = _mm_sub_pd(_mm_set1_pd(a),b.value);
+    return out;
+}
+FASTOR_INLINE SIMDVector<double,128> operator-(const SIMDVector<double,128> &b) {
+    SIMDVector<double,128> out;
+    out.value = _mm_neg_pd(b.value);
     return out;
 }
 
@@ -511,6 +527,9 @@ FASTOR_INLINE SIMDVector<double,64> operator+(double a, const SIMDVector<double,
     out.value = a+b.value;
     return out;
 }
+FASTOR_INLINE SIMDVector<double,64> operator+(const SIMDVector<double,64> &b) {
+    return b;
+}
 
 FASTOR_INLINE SIMDVector<double,64> operator-(const SIMDVector<double,64> &a, const SIMDVector<double,64> &b) {
     SIMDVector<double,64> out;
@@ -525,6 +544,11 @@ FASTOR_INLINE SIMDVector<double,64> operator-(const SIMDVector<double,64> &a, do
 FASTOR_INLINE SIMDVector<double,64> operator-(double a, const SIMDVector<double,64> &b) {
     SIMDVector<double,64> out;
     out.value = a-b.value;
+    return out;
+}
+FASTOR_INLINE SIMDVector<double,64> operator-(const SIMDVector<double,64> &b) {
+    SIMDVector<double,64> out;
+    out.value = -b.value;
     return out;
 }
 

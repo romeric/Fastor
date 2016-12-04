@@ -33,7 +33,6 @@ T reduction(const Tensor<T,Rest...> &a) {
         return a.sum();
     }
     else {
-//        using detail::nprods;
         constexpr std::array<size_t,ndim> products = nprods<Index<Rest...>,
                 typename std_ext::make_index_sequence<ndim>::type>::values;
 

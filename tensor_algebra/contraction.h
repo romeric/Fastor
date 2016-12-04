@@ -362,7 +362,7 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>> {
                       index_b += products_b[it]*as[idx_b[it]];
                   }
                   int index_out = as[idx_out[OutTensor::Dimension-1]];
-                  for(it = 0; it< OutTensor::Dimension; it++) {
+                  for(it = 0; it< static_cast<int>(OutTensor::Dimension); it++) {
                       index_out += products_out[it]*as[idx_out[it]];
                   }
                   _vec_a.set(*(a_data+index_a));
