@@ -2,15 +2,18 @@
 #define BINARY_MUL_OP_H
 
 #include "tensor/Tensor.h"
+#include "meta/tensor_post_meta.h"
 
 namespace Fastor {
 
 template<typename TLhs, typename TRhs, size_t DIM0>
 struct BinaryMulOp: public AbstractTensor<BinaryMulOp<TLhs, TRhs, DIM0>,DIM0> {
-//    static constexpr FASTOR_INDEX Size = std::conditional<std::is_arithmetic<TLhs>::value,
-//        std::integral_constant<FASTOR_INDEX,TRhs::Size>,std::integral_constant<FASTOR_INDEX,TLhs::Size>>::value;
 
     BinaryMulOp(const TLhs& lhs, const TRhs& rhs) : lhs(lhs), rhs(rhs) {}
+
+    static constexpr FASTOR_INDEX Dimension = DIM0;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
+    using scalar_type = typename scalar_type_finder<TLhs,TRhs>::type;
 
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return helper_size<TLhs,TRhs>();}
     template<class LExpr, class RExpr,

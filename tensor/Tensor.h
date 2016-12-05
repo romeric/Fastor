@@ -133,6 +133,22 @@ public:
     FASTOR_INLINE T eval(T i, T j) const {
         return _data[static_cast<FASTOR_INDEX>(i)*get_value<2,Rest...>::value+static_cast<FASTOR_INDEX>(j)];
     }
+
+    template<typename Derived, size_t DIMS>
+    static FASTOR_INLINE Tensor<T,Rest...> evaluate(const AbstractTensor<Derived,DIMS>& src_) {
+        Tensor<T,Rest...> out;
+        const Derived &src = src_.self();
+        static_assert(DIMS==Tensor<T,Rest...>::Dimension, "TENSOR RANK MISMATCH");
+        FASTOR_ASSERT(src.size()==Tensor<T,Rest...>::Size, "TENSOR SIZE MISMATCH");
+        for (FASTOR_INDEX i=0; i<Tensor<T,Rest...>::Dimension; ++i) {
+            FASTOR_ASSERT(src.dimension(i)==out.dimension(i), "TENSOR SHAPE MISMATCH");
+        }
+
+        for (FASTOR_INDEX i = 0; i <Tensor<T,Rest...>::Size; i+=Tensor<T,Rest...>::Stride) {
+            src.eval(static_cast<T>(i)).store(out.data()+i);
+        }
+        return out;
+    }
     //----------------------------------------------------------------------------------------------------------//
 
     // Smart binders
@@ -242,11 +258,13 @@ public:
 
     template<size_t I>
     FASTOR_INLINE Tensor(const BinaryMatMulOp<UnaryInvOp<Tensor<T,I,I>>,Tensor<T,I,I>> &src_) {
+        unused(src_);
         this->eye();
     }
 
     template<size_t I>
     FASTOR_INLINE Tensor(const BinaryMatMulOp<Tensor<T,I,I>,UnaryInvOp<Tensor<T,I,I>>> &src_) {
+        unused(src_);
         this->eye();
     }
 
@@ -584,7 +602,7 @@ public:
 
     // Further member functions
     //----------------------------------------------------------------------------------------------------------//
-    FASTOR_INLINE FASTOR_INDEX rank() {return Dimension;}
+    static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return Dimension;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX dim) const {
 //        constexpr FASTOR_INDEX DimensionHolder[Dimension] = {Rest...}; // c++14
         FASTOR_INDEX DimensionHolder[Dimension] = {Rest...};
@@ -766,6 +784,35 @@ public:
     //----------------------------------------------------------------------------------------------------------//
 
 };
+
+
+
+
+// Indexing specific to vectors and matrices
+//----------------------------------------------------------------------------------------------------------//
+template<typename T, size_t I, size_t J>
+FASTOR_INLINE Tensor<T,I> column(const Tensor<T,I,J> &arr, int n) {
+    Tensor<T,I> out;
+    FASTOR_INDEX counter = 0;
+    for (FASTOR_INDEX i=0; i<I; ++i) {
+        out(counter) = arr(i,n);
+        counter++;
+    }
+    return out;
+}
+
+template<typename T, size_t I, size_t J>
+FASTOR_INLINE Tensor<T,J> row(const Tensor<T,I,J> &arr, int n) {
+    Tensor<T,J> out;
+    FASTOR_INDEX counter = 0;
+    for (FASTOR_INDEX i=0; i<J; ++i) {
+        out(counter) = arr(n,i);
+        counter++;
+    }
+    return out;
+}
+
+//----------------------------------------------------------------------------------------------------------//
 
 
 

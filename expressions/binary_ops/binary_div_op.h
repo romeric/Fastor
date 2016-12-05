@@ -2,14 +2,18 @@
 #define BINARY_DIV_OP_H
 
 #include "tensor/Tensor.h"
+#include "meta/tensor_post_meta.h"
 
 namespace Fastor {
 
 template<typename TLhs, typename TRhs, size_t DIM0>
 struct BinaryDivOp: public AbstractTensor<BinaryDivOp<TLhs, TRhs, DIM0>,DIM0> {
-//    static constexpr FASTOR_INDEX Size = TLhs::Size;
 
     BinaryDivOp(const TLhs& lhs, const TRhs& rhs) : lhs(lhs), rhs(rhs) {}
+
+    static constexpr FASTOR_INDEX Dimension = DIM0;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
+    using scalar_type = typename scalar_type_finder<TLhs,TRhs>::type;
 
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return helper_size<TLhs,TRhs>();}
     template<class LExpr, class RExpr,
@@ -58,7 +62,6 @@ struct BinaryDivOp: public AbstractTensor<BinaryDivOp<TLhs, TRhs, DIM0>,DIM0> {
                                    !std::is_arithmetic<RExpr>::value,bool>::type = 0>
     FASTOR_INLINE SIMDVector<U> helper(U i) const {
         SIMDVector<U> result;
-//        result = lhs / rhs.eval(static_cast<U>(i));
         result = SIMDVector<U>(lhs) / rhs.eval(static_cast<U>(i));
         return result;
     }
@@ -71,6 +74,7 @@ struct BinaryDivOp: public AbstractTensor<BinaryDivOp<TLhs, TRhs, DIM0>,DIM0> {
         result = lhs.eval(static_cast<U>(i)) / SIMDVector<U>(rhs);
         return result;
     }
+
 private:
     const TLhs &lhs;
     const TRhs &rhs;

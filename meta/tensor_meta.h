@@ -43,7 +43,7 @@ struct add<> {
     static const size_t value = 0;
 };
 
-template<size_t...> struct prod;
+template<size_t...Rest> struct prod;
 template<size_t Head, size_t ...Rest>
 struct prod<Head, Rest...> {
     static const size_t value = Head*prod<Rest...>::value;
@@ -349,6 +349,9 @@ struct apply_typelist<MFC, typelist<Ts...>> {
 //}
 
 ///////////////////////////////////////////////////////////////
+
+
+
 
 }
 

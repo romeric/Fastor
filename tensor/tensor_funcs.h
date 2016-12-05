@@ -5,7 +5,7 @@
 
 namespace Fastor {
 
-// BLAS/LAPCK/Tensor cross routines
+// BLAS/LAPACK/Tensor cross routines
 
 template<typename T, size_t I, size_t J>
 FASTOR_INLINE Tensor<T,J,I> transpose(const Tensor<T,I,J> &a) {

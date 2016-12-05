@@ -3,6 +3,7 @@
 
 
 #include "tensor/Tensor.h"
+#include "meta/tensor_post_meta.h"
 
 namespace Fastor {
 
@@ -12,7 +13,10 @@ struct UnaryAddOp: public AbstractTensor<UnaryAddOp<Expr, DIM0>,DIM0> {
 private:
     const Expr &expr;
 public:
+    using scalar_type = typename scalar_type_finder<Expr,bool>::type;
+    static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX Size = Expr::Size;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Expr::Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
@@ -37,7 +41,10 @@ struct UnarySubOp: public AbstractTensor<UnarySubOp<Expr, DIM0>,DIM0> {
 private:
     const Expr &expr;
 public:
+    using scalar_type = typename scalar_type_finder<Expr,bool>::type;
+    static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX Size = Expr::Size;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Expr::Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
@@ -64,7 +71,10 @@ struct UnarySqrtOp: public AbstractTensor<UnarySqrtOp<Expr, DIM0>,DIM0> {
 private:
     const Expr &expr;
 public:
+    using scalar_type = typename scalar_type_finder<Expr,bool>::type;
+    static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX Size = Expr::Size;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Expr::Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
@@ -91,7 +101,10 @@ struct UnaryExpOp: public AbstractTensor<UnaryExpOp<Expr, DIM0>,DIM0> {
 private:
     const Expr &expr;
 public:
+    using scalar_type = typename scalar_type_finder<Expr,bool>::type;
+    static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX Size = Expr::Size;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Expr::Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
@@ -115,7 +128,10 @@ struct UnaryLogOp: public AbstractTensor<UnaryLogOp<Expr, DIM0>,DIM0> {
 private:
     const Expr &expr;
 public:
+    using scalar_type = typename scalar_type_finder<Expr,bool>::type;
+    static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX Size = Expr::Size;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Expr::Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
@@ -141,7 +157,10 @@ struct UnarySinOp: public AbstractTensor<UnarySinOp<Expr, DIM0>,DIM0> {
 private:
     const Expr &expr;
 public:
+    using scalar_type = typename scalar_type_finder<Expr,bool>::type;
+    static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX Size = Expr::Size;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Expr::Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
@@ -167,7 +186,10 @@ struct UnaryCosOp: public AbstractTensor<UnaryCosOp<Expr, DIM0>,DIM0> {
 private:
     const Expr &expr;
 public:
+    using scalar_type = typename scalar_type_finder<Expr,bool>::type;
+    static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX Size = Expr::Size;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Expr::Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
@@ -193,7 +215,10 @@ struct UnaryTanOp: public AbstractTensor<UnaryTanOp<Expr, DIM0>,DIM0> {
 private:
     const Expr &expr;
 public:
+    using scalar_type = typename scalar_type_finder<Expr,bool>::type;
+    static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX Size = Expr::Size;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Expr::Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
@@ -219,7 +244,10 @@ struct UnaryAsinOp: public AbstractTensor<UnaryAsinOp<Expr, DIM0>,DIM0> {
 private:
     const Expr &expr;
 public:
+    using scalar_type = typename scalar_type_finder<Expr,bool>::type;
+    static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX Size = Expr::Size;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Expr::Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
@@ -245,7 +273,10 @@ struct UnaryAcosOp: public AbstractTensor<UnaryAcosOp<Expr, DIM0>,DIM0> {
 private:
     const Expr &expr;
 public:
+    using scalar_type = typename scalar_type_finder<Expr,bool>::type;
+    static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX Size = Expr::Size;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Expr::Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
@@ -271,7 +302,10 @@ struct UnaryAtanOp: public AbstractTensor<UnaryAtanOp<Expr, DIM0>,DIM0> {
 private:
     const Expr &expr;
 public:
+    using scalar_type = typename scalar_type_finder<Expr,bool>::type;
+    static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX Size = Expr::Size;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Expr::Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
@@ -297,7 +331,10 @@ struct UnarySinhOp: public AbstractTensor<UnarySinhOp<Expr, DIM0>,DIM0> {
 private:
     const Expr &expr;
 public:
+    using scalar_type = typename scalar_type_finder<Expr,bool>::type;
+    static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX Size = Expr::Size;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Expr::Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
@@ -323,7 +360,10 @@ struct UnaryCoshOp: public AbstractTensor<UnaryCoshOp<Expr, DIM0>,DIM0> {
 private:
     const Expr &expr;
 public:
+    using scalar_type = typename scalar_type_finder<Expr,bool>::type;
+    static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX Size = Expr::Size;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Expr::Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
@@ -349,7 +389,10 @@ struct UnaryTanhOp: public AbstractTensor<UnaryTanhOp<Expr, DIM0>,DIM0> {
 private:
     const Expr &expr;
 public:
+    using scalar_type = typename scalar_type_finder<Expr,bool>::type;
+    static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX Size = Expr::Size;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Expr::Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 

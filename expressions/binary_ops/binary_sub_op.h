@@ -3,14 +3,18 @@
 
 
 #include "tensor/Tensor.h"
+#include "meta/tensor_post_meta.h"
 
 namespace Fastor {
 
 template<typename TLhs, typename TRhs, size_t DIM0>
 struct BinarySubOp: public AbstractTensor<BinarySubOp<TLhs, TRhs, DIM0>,DIM0> {
-//    static constexpr FASTOR_INDEX Size = TLhs::Size;
 
     BinarySubOp(const TLhs& lhs, const TRhs& rhs) : lhs(lhs), rhs(rhs) {}
+
+    static constexpr FASTOR_INDEX Dimension = DIM0;
+    static constexpr FASTOR_INDEX rank() {return DIM0;}
+    using scalar_type = typename scalar_type_finder<TLhs,TRhs>::type;
 
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return helper_size<TLhs,TRhs>();}
     template<class LExpr, class RExpr,
@@ -25,6 +29,18 @@ struct BinarySubOp: public AbstractTensor<BinarySubOp<TLhs, TRhs, DIM0>,DIM0> {
     static constexpr FASTOR_INLINE FASTOR_INDEX helper_size() {return RExpr::Size;}
     static constexpr FASTOR_INDEX Size = size();
 
+//    static constexpr FASTOR_INLINE FASTOR_INDEX stride() {return helper_stride<TLhs,TRhs>();}
+//    template<class LExpr, class RExpr,
+//             typename std::enable_if<std::is_arithmetic<LExpr>::value,bool>::type =0 >
+//    static constexpr FASTOR_INLINE FASTOR_INDEX helper_stride() {return RExpr::Stride;}
+//    template<class LExpr, class RExpr,
+//             typename std::enable_if<std::is_arithmetic<RExpr>::value,bool>::type =0 >
+//    static constexpr FASTOR_INLINE FASTOR_INDEX helper_stride() {return LExpr::Stride;}
+//    template<class LExpr, class RExpr,
+//             typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
+//                                     !std::is_arithmetic<RExpr>::value,bool>::type =0 >
+//    static constexpr FASTOR_INLINE FASTOR_INDEX helper_stride() {return RExpr::Stride;}
+//    static constexpr FASTOR_INDEX Stride = stride();
 
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return helper_dimension<TLhs,TRhs>(i);}
     template<class LExpr, class RExpr,
@@ -71,6 +87,7 @@ struct BinarySubOp: public AbstractTensor<BinarySubOp<TLhs, TRhs, DIM0>,DIM0> {
         result = lhs.eval(static_cast<U>(i)) - rhs;
         return result;
     }
+
 private:
     const TLhs &lhs;
     const TRhs &rhs;
