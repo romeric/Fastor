@@ -241,6 +241,16 @@ public:
     }
 
     template<size_t I>
+    FASTOR_INLINE Tensor(const BinaryMatMulOp<UnaryInvOp<Tensor<T,I,I>>,Tensor<T,I,I>> &src_) {
+        this->eye();
+    }
+
+    template<size_t I>
+    FASTOR_INLINE Tensor(const BinaryMatMulOp<Tensor<T,I,I>,UnaryInvOp<Tensor<T,I,I>>> &src_) {
+        this->eye();
+    }
+
+    template<size_t I>
     FASTOR_INLINE Tensor(const UnaryTransposeOp<UnaryAdjOp<Tensor<T,I,I>>> &src_) {
         static_assert(I==get_value<1,Rest...>::value, "DIMENSION MISMATCH");
         _cofactor<T,I,I>(src_.expr.expr.data(),_data);

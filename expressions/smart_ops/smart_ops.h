@@ -45,7 +45,7 @@ struct UnaryTransposeOp {
 
     UnaryTransposeOp(const Expr& expr) : expr(expr) {}
 
-    // The eval function evaluates the expression at position i
+    // The eval function evaluates the expression at position (i,j)
     template<typename U>
     FASTOR_INLINE U eval(U i, U j) const {
         return expr(static_cast<U>(j),static_cast<U>(i));
@@ -84,7 +84,6 @@ struct UnaryTraceOp {
 template<typename Expr,
          typename std::enable_if<!std::is_arithmetic<Expr>::value,bool>::type = 0 >
 FASTOR_INLINE UnaryTraceOp<Expr> ltrace(const Expr &expr) {
-//  return UnaryTraceOp<Expr>(expr.self());
   return UnaryTraceOp<Expr>(expr);
 }
 //!--------------------------------------------------------------!//
