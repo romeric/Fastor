@@ -119,9 +119,9 @@ Note that there are situations that the user may write a complex chain of operat
 
 For higher rank tensor networks comprising of many tensors, a full generalisation of the above mathematical transformation can be performed through a graph search optimisation. This typically involves finding the most optimal pattern of tensor contraction by studying the indices of contraction wherein tensor pairs are multiplied, summed over and factorised out in all possible combinations in order to come up with a cost model. Once again, knowing the dimensions of the tensor and the contraction pattern, Fastor performs this operation minimisation step at *compile time* and further checks the SIMD vectorisability of the tensor contraction loop nest (i.e. full/partial/reducible vectorisation). In nutshell, it not only minimises the the number of floating point operations but also generates the most optimum vectorisable loop nest for computing those FLOPs. The following figures show the run time benefit of operation minimisation (FLOP optimal) over a single expression evaluation (Memory optimal) approach in contracting a three-tensor-network fitting in `L1`, `L2` and `L3` caches, respectively 
 <p align="left">
-  <img src="docs/imgs/05l1.png" width="300">
-  <img src="docs/imgs/05l2.png" width="300">
-  <img src="docs/imgs/05l3.png" width="300">
+  <img src="docs/imgs/05l1.png" width="280">
+  <img src="docs/imgs/05l2.png" width="280">
+  <img src="docs/imgs/05l3.png" width="280">
 </p>
 
 
