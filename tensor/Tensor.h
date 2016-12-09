@@ -647,7 +647,7 @@ public:
     }
 
     template<typename U=T>
-    FASTOR_INLINE void iota(U num0) {
+    FASTOR_INLINE void iota(U num0=static_cast<U>(0)) {
         T num = static_cast<T>(num0);
         SIMDVector<T> _vec;
         for (FASTOR_INDEX i=0; i<Size; i+=Stride) {
@@ -657,7 +657,7 @@ public:
     }
 
     template<typename U=T>
-    FASTOR_INLINE void arange(U num0) {
+    FASTOR_INLINE void arange(U num0=static_cast<U>(0)) {
         iota(num0);
     }
 
