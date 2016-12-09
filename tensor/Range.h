@@ -6,7 +6,7 @@
 namespace Fastor {
 
 template<size_t F, size_t L, size_t S=1>
-struct Range {
+struct range {
     static constexpr size_t first = F;
     static constexpr size_t last= L;
     static constexpr size_t step = S;

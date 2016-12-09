@@ -21,7 +21,7 @@ FASTOR_INLINE T _doublecontract(const T* __restrict__ a, const T* __restrict__ b
         vec_out += vec_a*vec_b;
     }
     T scalar = static_cast<T>(0);
-    for (FASTOR_INDEX j=i; j< size; j++) {
+    for (int j=i; j< size; j++) {
         scalar += a[j]*b[j];
     }
     return vec_out.sum() + scalar;

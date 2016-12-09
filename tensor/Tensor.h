@@ -460,7 +460,7 @@ public:
     //----------------------------------------------------------------------------------------------------------//
     // Calls scalar indexing so they are fully bounds checked.
     template<size_t F, size_t L, size_t S>
-    FASTOR_INLINE Tensor<T,range_detector<F,L,S>::value> operator()(const Range<F,L,S>& idx) {
+    FASTOR_INLINE Tensor<T,range_detector<F,L,S>::value> operator()(const range<F,L,S>& idx) {
 
         static_assert(1==Dimension, "INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
         unused(idx);
@@ -475,7 +475,7 @@ public:
 
     template<size_t F0, size_t L0, size_t S0, size_t F1, size_t L1, size_t S1>
     FASTOR_INLINE Tensor<T,range_detector<F0,L0,S0>::value,range_detector<F1,L1,S1>::value>
-            operator()(const Range<F0,L0,S0>& idx0, const Range<F1,L1,S1>& idx1) {
+            operator()(const range<F0,L0,S0>& idx0, const range<F1,L1,S1>& idx1) {
 
         static_assert(2==Dimension, "INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
         unused(idx0); unused(idx1);
@@ -494,8 +494,8 @@ public:
 
     template<size_t F0, size_t L0, size_t S0, size_t F1, size_t L1, size_t S1, size_t F2, size_t L2, size_t S2>
     FASTOR_INLINE Tensor<T,range_detector<F0,L0,S0>::value,range_detector<F1,L1,S1>::value,range_detector<F2,L2,S2>::value>
-            operator()(const Range<F0,L0,S0>& idx0, const Range<F1,L1,S1>& idx1,
-                                                        const Range<F2,L2,S2>& idx2) const {
+            operator()(const range<F0,L0,S0>& idx0, const range<F1,L1,S1>& idx1,
+                                                        const range<F2,L2,S2>& idx2) const {
         static_assert(3==Dimension, "INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
         unused(idx0); unused(idx1); unused(idx2);
         Tensor<T,range_detector<F0,L0,S0>::value,
@@ -525,8 +525,8 @@ public:
             range_detector<F1,L1,S1>::value,
             range_detector<F2,L2,S2>::value,
             range_detector<F3,L3,S3>::value>
-            operator ()(const Range<F0,L0,S0>& idx0, const Range<F1,L1,S1>& idx1,
-                  const Range<F2,L2,S2>& idx2, const Range<F3,L3,S3>& idx3) {
+            operator ()(const range<F0,L0,S0>& idx0, const range<F1,L1,S1>& idx1,
+                  const range<F2,L2,S2>& idx2, const range<F3,L3,S3>& idx3) {
 
         static_assert(4==Dimension, "INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
         unused(idx0); unused(idx1); unused(idx2); unused(idx3);
@@ -811,6 +811,7 @@ FASTOR_INLINE Tensor<T,J> row(const Tensor<T,I,J> &arr, int n) {
     }
     return out;
 }
+
 
 //----------------------------------------------------------------------------------------------------------//
 

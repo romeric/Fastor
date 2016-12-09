@@ -81,6 +81,16 @@ FASTOR_INLINE T dot(const Tensor<T,Rest...> &b, const Tensor<T,Rest...> &a) {
     return _doublecontract<T,sizeof...(Rest),1>(a.data(),b.data());
 }
 
+template<typename T, size_t I, size_t J>
+FASTOR_INLINE Tensor<T,J> solve(const Tensor<T,I,J> &A, const Tensor<T,J> &b) {
+    return matmul(inverse(A),b);
+}
+
+template<typename T, size_t I, size_t J>
+FASTOR_INLINE Tensor<T,J,1> solve(const Tensor<T,I,J> &A, const Tensor<T,J,1> &b) {
+    return matmul(inverse(A),b);
+}
+
 // Tensor cross product of two 2nd order tensors
 template<typename T, size_t I, size_t J, typename std::enable_if<I==3 && J==3,bool>::type=0>
 FASTOR_INLINE Tensor<T,I,J> cross(const Tensor<T,I,J> &b, const Tensor<T,I,J> &a) {
@@ -164,6 +174,81 @@ FASTOR_INLINE Tensor<T,I,J,3,3,O,P> cross(const Tensor<T,I,J,K,L> &A, const Tens
     _crossproduct<T,I,J,K,L,M,N,O,P>(A.data(),B.data(),C.data());
     return C;
 }
+
+
+
+
+
+// Overloads for third order tensors
+template<typename T, size_t I, size_t J>
+FASTOR_INLINE Tensor<T,I,J,J> adjoint(const Tensor<T,I,J,J> &a) {
+
+    Tensor<T,I,J,J> out;
+    T *a_data = a.data();
+    T *out_data = out.data();
+
+    for (size_t i=0; i<I; ++i) {
+        _adjoint<T,J,J>(a_data+i*J*J,out_data+i*J*J);
+    }
+
+    return out;
+}
+
+// Overloads for third order tensors
+// Only inverse, cofactor, adjoint and determinant are overloaded
+// at the moment. In the future a generice overloads allowing for
+// optional axis/axes (like numpy) need to be implemented for all high order
+// tensors. Other functions like norm don't make sense to be overloaded
+// unless allowing for axis since norm of high order tensors is already
+// taken care of with _norm function
+template<typename T, size_t I, size_t J>
+FASTOR_INLINE Tensor<T,I,J,J> cofactor(const Tensor<T,I,J,J> &a) {
+
+    Tensor<T,I,J,J> out;
+    T *a_data = a.data();
+    T *out_data = out.data();
+
+    for (size_t i=0; i<I; ++i) {
+        _cofactor<T,J,J>(a_data+i*J*J,out_data+i*J*J);
+    }
+
+    return out;
+}
+
+template<typename T, size_t I, size_t J>
+FASTOR_INLINE Tensor<T,I,J,J> inverse(const Tensor<T,I,J,J> &a) {
+
+    Tensor<T,I,J,J> out;
+    T *a_data = a.data();
+    T *out_data = out.data();
+
+    for (size_t i=0; i<I; ++i) {
+        T det = _det<T,J,J>(static_cast<const T *>(a_data+i*J*J));
+        _adjoint<T,J,J>(a_data+i*J*J,out_data+i*J*J);
+
+        for (size_t j=i*J*J; j<(i+1)*J*J; ++j) {
+            out_data[j] /= det;
+        }
+    }
+
+    return out;
+}
+
+
+template<typename T, size_t I, size_t J>
+FASTOR_INLINE Tensor<T,I> determinant(const Tensor<T,I,J,J> &a) {
+
+    Tensor<T,I> out;
+    T *a_data = a.data();
+    T *out_data = out.data();
+
+    for (size_t i=0; i<I; ++i) {
+        out_data[i] = _det<T,J,J>(static_cast<const T *>(a_data+i*J*J));
+    }
+
+    return out;
+}
+//
 
 
 // Constant tensors

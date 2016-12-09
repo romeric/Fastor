@@ -16,7 +16,8 @@ template<typename T, size_t M>
 std::ostream& operator<<(std::ostream &os, const Tensor<T,M> &a) {
 
     os.precision(9);
-    auto &&w = std::setw(7);
+//    auto &&w = std::setw(7);
+    auto &&w = std::fixed;
     os << "⎡" << w << a(0) << " ⎤\n";
     for (size_t i = 1; i + 1 < M; ++i) {
         os << "⎢" << w << a(i) << " ⎥\n";
@@ -31,7 +32,8 @@ template<typename T, size_t M, size_t N>
 std::ostream& operator<<(std::ostream &os, const Tensor<T,M,N> &a) {
 
     os.precision(9);
-    auto &&w = std::setw(7);
+//    auto &&w = std::setw(7);
+    auto &&w = std::fixed;
     if (M>1) {
         os << "⎡" << w << a(0,0);
         for (size_t j = 1; j < N; ++j) {
@@ -66,7 +68,7 @@ template<typename T, size_t P, size_t M, size_t ... Rest,
 std::ostream& operator<<(std::ostream &os, const Tensor<T,P,M,Rest...> &a) {
     constexpr size_t N = get_value<3,P,M,Rest...>::value;
     os.precision(9);
-    auto &&w = std::setw(7);
+    auto &&w = std::fixed;
     for (size_t k=0; k<P; ++k) {
         os << "["<< k << ",:,:]\n";
         if (M>1) {
@@ -105,7 +107,7 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,Q,P,Rest...> &a) {
     constexpr size_t M = get_value<3,P,Q,Rest...>::value;
     constexpr size_t N = get_value<4,P,Q,Rest...>::value;
     os.precision(9);
-    auto &&w = std::setw(7);
+    auto &&w = std::fixed;
     for (size_t l=0; l<Q; ++l) {
         for (size_t k=0; k<P; ++k) {
             os << "["<< l << "," << k << ",:,:]\n";
@@ -140,8 +142,6 @@ using std_matrix = typename std::vector<std::vector<T>>::type;
 template<size_t M, size_t N, size_t ... Rest>
 FASTOR_INLINE std::vector<std::vector<int>> index_generator() {
     // Do NOT change int to size_t, comparison overflows
-//    Tensor<float,prod<M,N,Rest...>::value,sizeof...(Rest)+2> idx;
-//    std::vector<std::vector<int>> idx(prod<M,N,Rest...>::value);
     std::vector<std::vector<int>> idx; idx.resize(prod<M,N,Rest...>::value);
     std::array<int,sizeof...(Rest)+2> maxes = {M,N,Rest...};
     std::array<int,sizeof...(Rest)+2> a;
@@ -189,7 +189,7 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,M,N,Rest...> &a) {
 
     std::vector<std::vector<int>> combs = index_generator<M,N,Rest...>();
     os.precision(9);
-    auto &&w = std::setw(7);
+    auto &&w = std::fixed;
     size_t dims_2d = DimensionHolder[a.Dimension-2]*DimensionHolder[a.Dimension-1];
     for (int dims=0; dims<prods; ++dims) {
         os << "[";
