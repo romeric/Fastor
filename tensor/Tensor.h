@@ -258,14 +258,42 @@ public:
 
     template<size_t I>
     FASTOR_INLINE Tensor(const BinaryMatMulOp<UnaryInvOp<Tensor<T,I,I>>,Tensor<T,I,I>> &src_) {
-        unused(src_);
-        this->eye();
+        if (src_.lhs.expr==src_.rhs) {
+            this->eye();
+        }
+        else {
+            using V = SIMDVector<T>; V vec;
+            Tensor<T,I,I> inverser;
+            T *inv_data = inverser.data();
+            _adjoint<T,I,I>(src_.lhs.expr.data(),inv_data);
+            T det = _det<T,I,I>(src_.lhs.expr.data());
+            for (FASTOR_INDEX i=0; i<I*I; ++i) {
+                vec.load(&inv_data[i]);
+                vec /= det;
+                vec.store(&inv_data[i]);
+            }
+            _matmul<T,I,I,I>(inv_data,src_.rhs.data(),_data);
+        }
     }
 
     template<size_t I>
     FASTOR_INLINE Tensor(const BinaryMatMulOp<Tensor<T,I,I>,UnaryInvOp<Tensor<T,I,I>>> &src_) {
-        unused(src_);
-        this->eye();
+        if (src_.lhs==src_.rhs.expr) {
+            this->eye();
+        }
+        else {
+            using V = SIMDVector<T>; V vec;
+            Tensor<T,I,I> inverser;
+            T *inv_data = inverser.data();
+            _adjoint<T,I,I>(src_.rhs.expr.data(),inv_data);
+            T det = _det<T,I,I>(src_.rhs.expr.data());
+            for (FASTOR_INDEX i=0; i<I*I; i+=V::Size) {
+                vec.load(&inv_data[i]);
+                vec /= det;
+                vec.store(&inv_data[i]);
+            }
+            _matmul<T,I,I,I>(src_.lhs.data(),inv_data,_data);
+        }
     }
 
     template<size_t I>
@@ -710,6 +738,18 @@ public:
             }
             return out;
         }
+    }
+
+    template<typename U, size_t ... RestOther>
+    FASTOR_INLINE bool operator ==(const Tensor<U,RestOther...> &other) const {
+        //! Two tensors are equal if they have the same type, rank, size and elements
+            return is_equal(other);
+    }
+
+    template<typename U, size_t ... RestOther>
+    FASTOR_INLINE bool operator !=(const Tensor<U,RestOther...> &other) const {
+        //! Two tensors are equal if they have the same type, rank, size and elements
+            return !is_equal(other);
     }
 
     FASTOR_INLINE bool is_orthogonal() const {
