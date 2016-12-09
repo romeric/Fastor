@@ -106,7 +106,7 @@ for (size_t i=0; i<tn4.Size; i+=tn4.Stride)
     _mm256_store_ps(tn4._data+i,_mm256_set1_ps(static_cast<float>(2))*_mm256_load_ps(tn1._data+i)+
     _mm256_sqrt_ps(_mm256_sub_ps(_mm256_load_ps(tn2._data+i),_mm256_load_ps(tn3._data+i)));
 ~~~
-avoiding any need for temporary memory allocation. Importantly, Fastor goes deeper into the realm of *smart* expression templates to find optimal networks of tensor contraction, for instance an expression like `trace(matmul(transpose(A),B))` which is `O(n^3)` in computational complexity is determined to be inefficient and Fastor statically dispatches the call to an equivalent but much more efficient routine, in this case `A_ijB_ij` or `doublecontract(A,B)` which is `O(n^2)`. Furthermore, Fastor is all about small stack-allocated (on cache tensors), where the overhead of calling vendor/optimised `BLAS` is typically not worth it. Further examples include
+avoiding any need for temporary memory allocation. Importantly, Fastor goes deeper into the realm of *smart* expression templates to find optimal contraction indices of complex tensor networks, for instance an expression like `trace(matmul(transpose(A),B))` which is `O(n^3)` in computational complexity is determined to be inefficient and Fastor statically dispatches the call to an equivalent but much more efficient routine, in this case `A_ijB_ij` or `doublecontract(A,B)` which is `O(n^2)`. Further examples include
 ~~~c++
 // the l in-front of the names stands for 'lazy'
 ldeterminant(linverse(A)); // transformed to 1/ldeterminant(A), O(n^3) reduction in computation
@@ -116,6 +116,14 @@ lmatmul(lmatmul(A,B),b);   // transformed to lmatmul(A,lmatmul(B,b)), O(n) reduc
 // and many more
 ~~~
 Note that there are situations that the user may write a complex chain of operations in the most verbose way, perhaps for readibility purposes, but Fastor delays the evaluation of the expression and checks if an equivalent but efficient expression can be computed. The computed expression always binds back to the base tensor, overhead free without a runtime (virtual table/pointer) penalty.  
+
+For higher rank tensor networks comprising of many tensors, a full generalisation of the above mathematical transformation can be performed through a graph search optimisation. This typically involves finding the most optimal pattern of tensor contraction by studying the indices of contraction wherein tensor pairs are multiplied, summed over and factorised out in all possible combinations in order to come up with a cost model. Once again, knowing the dimensions of the tensor and the contraction pattern, Fastor performs this operation minimisation step at *compile time* and further checks the SIMD vectorisability of the tensor contraction loop nest (i.e. full/partial/reducible vectorisation). In nutshell, it not only minimises the the number of floating point operations but also generates the most optimum vectorisable loop nest for computing those FLOPs. The following figures show the run time benefit of operation minimisation (FLOP optimal) over a single expression evaluation (Memory optimal) approach in contracting a three-tensor-network fitting in `L1`, `L2` and `L3` caches, respectively 
+<p align="left">
+  <img src="docs/imgs/05l1.png" width="200">
+  <img src="docs/imgs/05l2.png" width="200">
+  <img src="docs/imgs/05l3.png" width="200">
+</p>
+
 
 ### Boolean tensor algebra
 A set of boolean tensor routines are available in Fastor. Note that, whenever possible most of these operations are performed at compile time 
@@ -130,7 +138,7 @@ is_identity();
 ~~~
 
 ### Basic SIMD optimised linear algebra routines for small tensors
-All basic numerical linear algebra subroutines for small tensors are completely SIMD optimised 
+All basic numerical linear algebra subroutines for small tensors are completely SIMD optimised as Fastor is all about small stack-allocated (on cache tensors), where the overhead of calling vendor/optimised `BLAS` is typically not worth it 
 ~~~c++
 Tensor<double,3,3> A,B; 
 // fill A and B                 
