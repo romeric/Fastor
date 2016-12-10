@@ -378,7 +378,7 @@ FASTOR_INLINE void _MM_TRANSPOSE8_PS(__m256 &row0, __m256 &row1, __m256 &row2,
 
 
 
-
+#if defined(__cplusplus)
 
 //!-----------------------------------------------------------------
 //! Some further auxilary functions C++ only
@@ -458,6 +458,8 @@ FASTOR_INLINE __m128d _hsub_pd(__m128d a) {
 __m128d _mm256_dp_pd(__m256d __X, __m256d __Y) {
     return _add_pd(_mm256_mul_pd(__X, __Y));
 }
+
+#endif
 
 
 #endif // EXT_INTRIN_H
