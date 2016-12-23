@@ -158,7 +158,6 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
     constexpr int out_dim = a_dim+b_dim;
     constexpr std::array<int,out_dim> maxes_out = {Rest0...,Rest1...};
 
-//    using detail::nprods;
     constexpr std::array<size_t,a_dim> products_a = nprods<Index<Rest0...>,typename std_ext::make_index_sequence<a_dim>::type>::values;
     constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
     constexpr std::array<size_t,out_dim> products_out = nprods<Index<Rest0...,Rest1...>,typename std_ext::make_index_sequence<out_dim>::type>::values;
@@ -179,7 +178,6 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
         for (int n = 0; n < out_dim; ++n) {
             remaining /= maxes_out[n];
             as[n] = ( i / remaining ) % maxes_out[n];
-//            as[n] = ( i / tmp[n] ) % maxes_out[n];
         }
 
         int index_a = as[a_dim-1];
@@ -228,7 +226,6 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
     constexpr int out_dim = a_dim+b_dim;
     constexpr std::array<int,out_dim> maxes_out = {Rest0...,Rest1...};
 
-//    using detail::nprods;
     constexpr std::array<size_t,a_dim> products_a = nprods<Index<Rest0...>,typename std_ext::make_index_sequence<a_dim>::type>::values;
     constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
     constexpr std::array<size_t,out_dim> products_out = nprods<Index<Rest0...,Rest1...>,typename std_ext::make_index_sequence<out_dim>::type>::values;
@@ -296,7 +293,6 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
     constexpr int out_dim = a_dim+b_dim;
     constexpr std::array<int,out_dim> maxes_out = {Rest0...,Rest1...};
 
-//    using detail::nprods;
     constexpr std::array<size_t,a_dim> products_a = nprods<Index<Rest0...>,typename std_ext::make_index_sequence<a_dim>::type>::values;
     constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
     constexpr std::array<size_t,out_dim> products_out = nprods<Index<Rest0...,Rest1...>,typename std_ext::make_index_sequence<out_dim>::type>::values;

@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <array>
 #include <vector>
+#include <numeric>
 
 #ifndef _WIN32
 #include <sys/resource.h>
