@@ -44,8 +44,12 @@
 #include <cstdlib>
 #include <cassert>
 
+#ifdef __SSE2__
 #include <emmintrin.h>
+#endif
+#ifdef __AVX__
 #include <immintrin.h>
+#endif
 
 
 // FASTOR CONSTRUCTS
@@ -73,28 +77,31 @@
 #define Single 32
 
 
-
+#ifdef __SSE4_2__
 #define ZEROPS (_mm_set1_ps(0.f))
 #define ZEROPD (_mm_set1_pd(0.0))
-#define VZEROPS (_mm256_set1_ps(0.f))
-#define VZEROPD (_mm256_set1_pd(0.0))
 // minus/negative version
 #define MZEROPS (_mm_set1_ps(-0.f))
 #define MZEROPD (_mm_set1_pd(-0.0))
-#define MVZEROPS (_mm256_set1_ps(-0.f))
-#define MVZEROPD (_mm256_set1_pd(-0.0))
-
 #define ONEPS (_mm_set1_ps(1.f))
 #define ONEPD (_mm_set1_pd(1.0))
-#define VONEPS (_mm256_set1_ps(1.f))
-#define VONEPD (_mm256_set1_pd(1.0))
-
 #define HALFPS (_mm_set1_ps(0.5f))
 #define HALFPD (_mm_set1_pd(0.5))
+#endif
+#ifdef __AVX__
+#define VZEROPS (_mm256_set1_ps(0.f))
+#define VZEROPD (_mm256_set1_pd(0.0))
+// minus/negative version
+#define MVZEROPS (_mm256_set1_ps(-0.f))
+#define MVZEROPD (_mm256_set1_pd(-0.0))
+#define VONEPS (_mm256_set1_ps(1.f))
+#define VONEPD (_mm256_set1_pd(1.0))
 #define VHALFPS (_mm256_set1_ps(0.5f))
 #define VHALFPD (_mm256_set1_pd(0.5))
+#endif
 
 using FASTOR_INDEX = size_t;
+using Int64 = long long int;
 
 
 #define PRECI_TOL 1e-14
@@ -120,15 +127,6 @@ void FASTOR_WARN(bool cond, const std::string &x) {
 
 
 #include "extended_algorithms.h"
-
-
-//template<typename T>
-//struct is_arithmetic_ {
-////    using Tn = T;
-//    using Tn = typename std::remove_reference<T>::type;
-//    static const bool value = (std::is_integral<Tn>::value || std::is_floating_point<Tn>::value);
-//};
-
 
 
 #endif // COMMONS_H

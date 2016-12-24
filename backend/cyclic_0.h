@@ -22,6 +22,7 @@ void _cyclic(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
     }
 }
 
+#ifdef __AVX__
 template<>
 void _cyclic<double,2,2,2,2>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
     __m256d as = _mm256_load_pd(a);
@@ -162,6 +163,8 @@ void _cyclic<double,3,3,3,3>(const double * __restrict__ a, const double * __res
     __m128d c17 = _mm_mul_pd(HALFPD,_add_pd(_mm_mul_pd(a5,_mm_shuffle_pd(b8,b8,0x1))));
     _mm_store_sd(out+35,c17);
 }
+
+#endif
 
 }
 

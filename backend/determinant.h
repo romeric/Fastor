@@ -10,6 +10,7 @@ namespace Fastor {
 template<typename T, size_t M, size_t N>
 FASTOR_INLINE T _det(const T* __restrict__ a);
 
+#ifdef __AVX__
 template<>
 FASTOR_INLINE float _det<float,2,2>(const float* __restrict__ a) {
     // 10 OPS
@@ -61,6 +62,8 @@ FASTOR_INLINE double _det<double,3,3>(const double* __restrict__ a) {
 
     return _mm_cvtsd_f64(_mm_sub_sd(_add_pd(out0),_add_pd(out1)));
 }
+
+#endif
 
 }
 

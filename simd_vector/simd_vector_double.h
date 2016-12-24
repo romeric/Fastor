@@ -473,6 +473,10 @@ struct SIMDVector<double, 64> {
         value = num;
     }
 
+    FASTOR_INLINE void set_sequential(double num) {
+        value = num;
+    }
+
     // In-place operators
     FASTOR_INLINE void operator+=(double num) {
         value += num;
@@ -502,6 +506,20 @@ struct SIMDVector<double, 64> {
         value /= a.value;
     }
     // end of in-place operators
+
+    FASTOR_INLINE SIMDVector<double,64> shift(FASTOR_INDEX) {
+        return *this;
+    }
+    FASTOR_INLINE double sum() {return value;}
+    FASTOR_INLINE SIMDVector<double,64> reverse() {
+        return *this;
+    }
+    FASTOR_INLINE double minimum() {return value;}
+    FASTOR_INLINE double maximum() {return value;}
+
+    FASTOR_INLINE double dot(const SIMDVector<double,64> &other) {
+        return value*other.value;
+    }
 
     double value;
 };

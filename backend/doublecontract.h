@@ -27,6 +27,8 @@ FASTOR_INLINE T _doublecontract(const T* __restrict__ a, const T* __restrict__ b
     return vec_out.sum() + scalar;
 }
 
+#ifdef __AVX__
+
 template<>
 FASTOR_INLINE float _doublecontract<float,2,2>(const float* __restrict__ a, const float* __restrict__ b) {
     return _mm_sum_ps(_mm_mul_ps(_mm_load_ps(a),_mm_load_ps(b)));
@@ -64,6 +66,8 @@ FASTOR_INLINE T _doublecontract_transpose(const T* __restrict__ a, const T* __re
             dc += a[i*N+j]*b[j*M+i];
     return dc;
 }
+
+#endif
 
 
 }

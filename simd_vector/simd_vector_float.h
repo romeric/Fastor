@@ -9,7 +9,7 @@ namespace Fastor {
 // AVX VERSION
 //--------------------------------------------------------------------------------------------------
 template <>
-struct SIMDVector<float> {
+struct SIMDVector<float,256> {
     static constexpr FASTOR_INDEX Size = get_vector_size<float>::size;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return get_vector_size<float>::size;}
     static constexpr int unroll_size(FASTOR_INDEX size) {return (static_cast<int>(size) - static_cast<int>(Size));}
@@ -487,6 +487,10 @@ struct SIMDVector<float, 32> {
         value = num;
     }
 
+    FASTOR_INLINE void set_sequential(float num) {
+        value = num;
+    }
+
     // In-place operators
     FASTOR_INLINE void operator+=(float num) {
         value += num;
@@ -516,6 +520,20 @@ struct SIMDVector<float, 32> {
         value /= a.value;
     }
     // end of in-place operators
+
+    FASTOR_INLINE SIMDVector<float,32> shift(FASTOR_INDEX) {
+        return *this;
+    }
+    FASTOR_INLINE float sum() {return value;}
+    FASTOR_INLINE SIMDVector<float,32> reverse() {
+        return *this;
+    }
+    FASTOR_INLINE float minimum() {return value;}
+    FASTOR_INLINE float maximum() {return value;}
+
+    FASTOR_INLINE float dot(const SIMDVector<float,32> &other) {
+        return value*other.value;
+    }
 
     float value;
 };

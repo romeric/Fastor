@@ -6,6 +6,7 @@
 //!                HANDY EXTENSION TO INTRINSICS
 //!---------------------------------------------------------------//
 #ifdef USE_HADD
+#ifdef __SSE3__
 //! Horizontal summation of registers
 FASTOR_INLINE float _mm_sum_ps(__m128 a) {
     // 10 OPS
@@ -20,6 +21,7 @@ FASTOR_INLINE double _mm_sum_pd(__m128d a) {
     _mm_store_sd(&sum64,_mm_hadd_pd(a, a));
     return sum64;
 }
+#endif
 #else
 FASTOR_INLINE float _mm_sum_ps(__m128 a) {
     // 8 OPS
@@ -36,6 +38,8 @@ FASTOR_INLINE double _mm_sum_pd(__m128d a) {
     return  _mm_cvtsd_f64(_mm_add_sd(a, shuf));
 }
 #endif
+
+#ifdef __AVX__
 FASTOR_INLINE float _mm256_sum_ps(__m256 a) {
 //#ifdef USE_HADD
     // IVY 14 OPS - HW 16 OPS
@@ -62,10 +66,12 @@ FASTOR_INLINE double _mm256_sum_pd(__m256d a) {
     __m128d result = _mm_add_sd(sum_high, _mm256_castpd256_pd128(sum));
     return _mm_cvtsd_f64(result);
 }
+#endif
 //!---------------------------------------------------------------//
 //!
 //!---------------------------------------------------------------//
 //! Reversing a register
+#ifdef __SSE4_2__
 FASTOR_INLINE __m128 _mm_reverse_ps(__m128 a) {
     // 1OP
     return _mm_shuffle_ps(a,a,_MM_SHUFFLE(0,1,2,3));
@@ -74,6 +80,8 @@ FASTOR_INLINE __m128d _mm_reverse_pd(__m128d a) {
     // 1OP
     return _mm_shuffle_pd(a,a,0x1);
 }
+#endif
+#ifdef __AVX__
 FASTOR_INLINE __m256 _mm256_reverse_ps(__m256 a) {
     // IVY 2OPS / HW 4OPS
     __m256 r1 = _mm256_permute2f128_ps(a,a,0x1);
@@ -84,10 +92,12 @@ FASTOR_INLINE __m256d _mm256_reverse_pd(__m256d a) {
     __m256d r1 = _mm256_permute2f128_pd(a,a,0x1);
     return _mm256_shuffle_pd(r1,r1,5);
 }
+#endif
 //!---------------------------------------------------------------//
 //!
 //!---------------------------------------------------------------//
 //! Bit shifting
+#ifdef __SSE4_2__
 FASTOR_INLINE __m128 _mm_shift1_ps(__m128 a) {
     // 1OP
     return _mm_castsi128_ps(_mm_slli_si128(_mm_castps_si128(a), 4));
@@ -101,6 +111,8 @@ FASTOR_INLINE __m128 _mm_shift3_ps(__m128 a) {
     __m128 shift2 = _mm_shuffle_ps(ZEROPS, a, 0x40);
     return _mm_shuffle_ps(ZEROPS,shift2,_MM_SHUFFLE(2,0,2,0));
 }
+#endif
+#ifdef __AVX__
 FASTOR_INLINE __m256 _mm256_shift1_ps(__m256 a) {
     // IVY 3OPS / HW 5OPS
     __m256 r1 = _mm256_permute_ps(a,_MM_SHUFFLE(2,1,0,3));
@@ -136,11 +148,14 @@ FASTOR_INLINE __m256 _mm256_shift7_ps(__m256 a) {
     __m128 r1 = _mm_shift3_ps(_mm256_castps256_ps128(a));
     return _mm256_insertf128_ps(VZEROPS,r1,0x1);
 }
-
+#endif
+#ifdef __SSE4_2__
 FASTOR_INLINE __m128d _mm_shift1_pd(__m128d a) {
     // 1OP
     return _mm_shuffle_pd(ZEROPD,a,0x1);
 }
+#endif
+#ifdef __AVX__
 FASTOR_INLINE __m256d _mm256_shift1_pd(__m256d a) {
     // IVY - 4 OPS / HW - 8 OPS
     __m128d r1 = _mm256_castpd256_pd128(a);
@@ -158,9 +173,11 @@ FASTOR_INLINE __m256d _mm256_shift3_pd(__m256d a) {
     __m256d r1 = _mm256_castpd128_pd256(_mm_shift1_pd(_mm256_castpd256_pd128(a)));
     return _mm256_permute2f128_pd(r1,r1,0x1);
 }
+#endif
 //!---------------------------------------------------------------//
 //!
 //!---------------------------------------------------------------//
+#ifdef __SSE4_2__
 // Change sign of a register - all one cycle
 FASTOR_INLINE __m128 _mm_neg_ps(__m128 a) {
     return _mm_xor_ps(a, MZEROPS);
@@ -168,15 +185,19 @@ FASTOR_INLINE __m128 _mm_neg_ps(__m128 a) {
 FASTOR_INLINE __m128d _mm_neg_pd(__m128d a) {
     return _mm_xor_pd(a, MZEROPD);
 }
+#endif
+#ifdef __AVX__
 FASTOR_INLINE __m256 _mm256_neg_ps(__m256 a) {
     return _mm256_xor_ps(a, MVZEROPS);
 }
 FASTOR_INLINE __m256d _mm256_neg_pd(__m256d a) {
     return _mm256_xor_pd(a, MVZEROPD);
 }
+#endif
 //!---------------------------------------------------------------//
 //!
 //!---------------------------------------------------------------//
+#ifdef __SSE4_2__
 // maximum value in a register - horizontal max
 FASTOR_INLINE float _mm_hmax_ps(__m128 a) {
     // 8OPS
@@ -188,6 +209,8 @@ FASTOR_INLINE double _mm_hmax_pd(__m128d a) {
     // 4OPS
     return _mm_cvtsd_f64(_mm_max_pd(a,_mm_reverse_pd(a)));
 }
+#endif
+#ifdef __AVX__
 FASTOR_INLINE float _mm256_hmax_ps(__m256 a) {
     // IVY 18OPS / HW 24 OPS
     __m128 lo = _mm256_castps256_ps128(a);
@@ -208,10 +231,12 @@ FASTOR_INLINE double _mm256_hmax_pd(__m256d a) {
     __m256d tmp = _mm256_shuffle_pd(max0,max0,_MM_SHUFFLE(0,0,0,1));
     return _mm_cvtsd_f64(_mm256_castpd256_pd128(_mm256_max_pd(max0,tmp)));
 }
+#endif
 //!---------------------------------------------------------------//
 //!
 //!---------------------------------------------------------------//
 // minimum value in a register - horizontal min
+#ifdef __SSE4_2__
 FASTOR_INLINE float _mm_hmin_ps(__m128 a) {
     // 8OPS
     __m128 max0 = _mm_min_ps(a,_mm_reverse_ps(a));
@@ -222,6 +247,8 @@ FASTOR_INLINE double _mm_hmin_pd(__m128d a) {
     // 4OPS
     return _mm_cvtsd_f64(_mm_min_pd(a,_mm_reverse_pd(a)));
 }
+#endif
+#ifdef __AVX__
 FASTOR_INLINE float _mm256_hmin_ps(__m256 a) {
     // IVY 18OPS / HW 24 OPS
     __m128 lo = _mm256_castps256_ps128(a);
@@ -242,8 +269,10 @@ FASTOR_INLINE double _mm256_hmin_pd(__m256d a) {
     __m256d tmp = _mm256_shuffle_pd(max0,max0,_MM_SHUFFLE(0,0,0,1));
     return _mm_cvtsd_f64(_mm256_castpd256_pd128(_mm256_min_pd(max0,tmp)));
 }
+#endif
 //!---------------------------------------------------
 // indexing a register
+#ifdef __SSE4_2__
 FASTOR_INLINE float _mm_get0_ps(__m128 a) {
     // NO OP
     return _mm_cvtss_f32(a);
@@ -268,6 +297,8 @@ FASTOR_INLINE double _mm_get1_pd(__m128d a) {
     // 1 OP
     return _mm_cvtsd_f64(_mm_shuffle_pd(a,a,_MM_SHUFFLE2(0,1)));
 }
+#endif
+#ifdef __AVX__
 FASTOR_INLINE float _mm256_get0_ps(__m256 a) {
     // NO OP
     return _mm_cvtss_f32(_mm256_castps256_ps128(a));
@@ -324,10 +355,12 @@ FASTOR_INLINE double _mm256_get3_pd(__m256d a) {
     __m128d higher = _mm256_extractf128_pd(a,0x1);
     return _mm_cvtsd_f64(_mm_shuffle_pd(higher,higher,_MM_SHUFFLE2(0,1)));
 }
+#endif
 
 
 
 //!----------------------------------------------------------------
+#ifdef __AVX__
 // Equivalent ot _MM_TRANSPOSE_PS
 #define _MM_TRANSPOSE4_PD(row0,row1,row2,row3)                                 \
 {                                                                \
@@ -374,29 +407,144 @@ FASTOR_INLINE void _MM_TRANSPOSE8_PS(__m256 &row0, __m256 &row1, __m256 &row2,
     row6 = _mm256_permute2f128_ps(__tt2, __tt6, 0x31);
     row7 = _mm256_permute2f128_ps(__tt3, __tt7, 0x31);
 }
+#endif
 
 
 
+
+//!------------------------------------------------------------------
+// Integral arithmetics available only with AVX2
+#ifndef __AVX2__
+static inline __m128i _mm_mul_epi32x(const __m128i &a, const __m128i &b)
+{
+#ifdef __SSE4_1__
+    return _mm_mullo_epi32(a, b);
+#else
+    // USE SSE 2
+    __m128i tmp1 = _mm_mul_epu32(a,b);
+    __m128i tmp2 = _mm_mul_epu32( _mm_srli_si128(a,4), _mm_srli_si128(b,4));
+    return _mm_unpacklo_epi32(_mm_shuffle_epi32(tmp1, _MM_SHUFFLE (0,0,2,0)), _mm_shuffle_epi32(tmp2, _MM_SHUFFLE (0,0,2,0)));
+#endif
+}
+
+#ifndef __AVX512CD__
+__m128i _mm_mul_epi64(__m128i _a, __m128i _b) {
+    __m128i out = _mm_mul_epi32x(_a,_b);
+    return out;
+}
+#endif
+
+
+__m256i _mm256_add_epi32(__m256i _a, __m256i _b) {
+    __m128i low_a = _mm256_castsi256_si128(_a);
+    __m128i high_a = _mm256_extractf128_si256(_a,1);
+    __m128i low_b = _mm256_castsi256_si128(_b);
+    __m128i high_b = _mm256_extractf128_si256(_b,1);
+    __m128i low = _mm_add_epi32(low_a,low_b);
+    __m128i high = _mm_add_epi32(high_a,high_b);
+    __m256i out = _mm256_castsi128_si256(low);
+    out = _mm256_insertf128_si256(out,high,1);
+    return out;
+}
+
+__m256i _mm256_sub_epi32(__m256i _a, __m256i _b) {
+    __m128i low_a = _mm256_castsi256_si128(_a);
+    __m128i high_a = _mm256_extractf128_si256(_a,1);
+    __m128i low_b = _mm256_castsi256_si128(_b);
+    __m128i high_b = _mm256_extractf128_si256(_b,1);
+    __m128i low = _mm_sub_epi32(low_a,low_b);
+    __m128i high = _mm_sub_epi32(high_a,high_b);
+    __m256i out = _mm256_castsi128_si256(low);
+    out = _mm256_insertf128_si256(out,high,1);
+    return out;
+}
+
+__m256i _mm256_mul_epi32(__m256i _a, __m256i _b) {
+    __m128i low_a = _mm256_castsi256_si128(_a);
+    __m128i high_a = _mm256_extractf128_si256(_a,0x1);
+    __m128i low_b = _mm256_castsi256_si128(_b);
+    __m128i high_b = _mm256_extractf128_si256(_b,0x1);
+    __m128i low = _mm_mul_epi32x(low_a,low_b);
+    __m128i high = _mm_mul_epi32x(high_a,high_b);
+    __m256i out = _mm256_castsi128_si256(low);
+    out = _mm256_insertf128_si256(out,high,0x1);
+    return out;
+}
+
+__m256i _mm256_div_epi32(__m256i _a, __m256i _b) {
+    // YIELDS INCORRECT
+    int *a_data = (int*) &_a;
+    int *b_data = (int*) &_b;
+    int FASTOR_ALIGN out_data[8];
+    for (int i=0; i<8; ++i)
+        out_data[i] = a_data[i]/b_data[i];
+    __m256i out = _mm256_setzero_si256();
+    _mm256_store_si256((__m256i*)out_data,out);
+    return out;
+}
+
+// 64bit
+__m256i _mm256_add_epi64x(__m256i _a, __m256i _b) {
+    __m128i low_a = _mm256_castsi256_si128(_a);
+    __m128i high_a = _mm256_extractf128_si256(_a,1);
+    __m128i low_b = _mm256_castsi256_si128(_b);
+    __m128i high_b = _mm256_extractf128_si256(_b,1);
+    __m128i low = _mm_add_epi64(low_a,low_b);
+    __m128i high = _mm_add_epi64(high_a,high_b);
+    __m256i out = _mm256_castsi128_si256(low);
+    out = _mm256_insertf128_si256(out,high,1);
+    return out;
+}
+
+__m256i _mm256_sub_epi64x(__m256i _a, __m256i _b) {
+    __m128i low_a = _mm256_castsi256_si128(_a);
+    __m128i high_a = _mm256_extractf128_si256(_a,1);
+    __m128i low_b = _mm256_castsi256_si128(_b);
+    __m128i high_b = _mm256_extractf128_si256(_b,1);
+    __m128i low = _mm_sub_epi64(low_a,low_b);
+    __m128i high = _mm_sub_epi64(high_a,high_b);
+    __m256i out = _mm256_castsi128_si256(low);
+    out = _mm256_insertf128_si256(out,high,1);
+    return out;
+}
+
+__m256i _mm256_mul_epi64x(__m256i _a, __m256i _b) {
+    __m128i low_a = _mm256_castsi256_si128(_a);
+    __m128i high_a = _mm256_extractf128_si256(_a,0x1);
+    __m128i low_b = _mm256_castsi256_si128(_b);
+    __m128i high_b = _mm256_extractf128_si256(_b,0x1);
+    __m128i low = _mm_mul_epi64(low_a,low_b);
+    __m128i high = _mm_mul_epi64(high_a,high_b);
+    __m256i out = _mm256_castsi128_si256(low);
+    out = _mm256_insertf128_si256(out,high,0x1);
+    return out;
+}
+#endif
 
 #if defined(__cplusplus)
 
 //!-----------------------------------------------------------------
 //! Some further auxilary functions C++ only
+#ifdef __SSE4_2__
 static FASTOR_INLINE __m128d _add_pd(__m128d a) {
     // IVY 4 OPS
     __m128 shuftmp= _mm_movehl_ps(ZEROPS, _mm_castpd_ps(a));  // there is no movhlpd
     __m128d shuf  = _mm_castps_pd(shuftmp);
     return  _mm_add_sd(a, shuf);
 }
+#endif
 
 #ifdef USE_HADD
+#ifdef __SSE4_2__
 static FASTOR_INLINE __m128d _add_pd(__m256d a) {
     // IVY 12 OPS / HW 14 OPS
     __m128d sum_low = _add_pd(_mm256_castpd256_pd128(a));
     __m128d sum_high = _add_pd(_mm256_extractf128_pd(sum_low, 0x1));
     return _mm_add_pd(sum_high, sum_low);
 }
+#endif
 #else
+#ifdef __AVX__
 static FASTOR_INLINE __m128d _add_pd(__m256d a) {
     // IVY 9 OPS / HW 11 OPS
     __m256d sum_low = _mm256_hadd_pd(a, a);
@@ -404,6 +552,8 @@ static FASTOR_INLINE __m128d _add_pd(__m256d a) {
     return _mm_add_pd(sum_high, _mm256_castpd256_pd128(sum_low));
 }
 #endif
+#endif
+#ifdef __SSE4_2__
 FASTOR_INLINE __m128 _add_ps(__m128 a) {
     // 8 OPS
     __m128 shuf = _mm_movehdup_ps(a);        // line up elements 3,1 with 2,0
@@ -412,14 +562,18 @@ FASTOR_INLINE __m128 _add_ps(__m128 a) {
     sums        = _mm_add_ss(sums, shuf);
     return      sums;
 }
+#endif
+#ifdef __AVX__
 FASTOR_INLINE __m128 _add_ps(__m256 a) {
     // IVY 20 OPS / HW 22 OPS
     __m128 sum_low = _add_ps(_mm256_castps256_ps128(a));
     __m128 sum_high = _add_ps(_mm256_extractf128_ps(a,0x1));
     return _mm_add_ss(sum_low,sum_high);
 }
+#endif
 
 // horizontal add_sub
+#ifdef __SSE4_2__
 FASTOR_INLINE __m128 _addsub_ps(__m128 a) {
     // 8 OPS
     // If a = [a0 a1 a2 a3] this function returns (a1+a3)-(a0+a2)
@@ -450,14 +604,16 @@ FASTOR_INLINE __m128d _hsub_pd(__m128d a) {
     return _mm_sub_sd(a,_mm_shuffle_pd(a,a,0x1));
 #endif
 }
+#endif
 
 //!-----------------------------------------------------------------
 
-
+#ifdef __AVX__
 // Similar to SSE4 _mm_dp_pd for dot product
 __m128d _mm256_dp_pd(__m256d __X, __m256d __Y) {
     return _add_pd(_mm256_mul_pd(__X, __Y));
 }
+#endif
 
 #endif
 

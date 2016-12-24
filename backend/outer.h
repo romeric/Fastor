@@ -19,6 +19,7 @@ void _outer(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__
     }
 }
 
+#ifdef __SSE4_2__
 template<>
 void _outer<float,2,2,2,2>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
     // 31 OPS
@@ -189,7 +190,8 @@ void _outer<float,3,3,3,3>(const float * __restrict__ a, const float * __restric
 //    _mm_storeu_ps(out+33,c5_off);
 
 }
-
+#endif
+#ifdef __AVX__
 template<>
 void _outer<double,2,2,2,2>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
     // Fetch a to L1-cache
@@ -280,6 +282,7 @@ void _outer<double,3,3,3,3>(const double * __restrict__ a, const double * __rest
     _mm_store_sd(out+32,_mm_set_sd(_mm256_get2_pd(c2_off)));
     _mm256_storeu_pd(out+33,c5_off);
 }
+#endif
 
 }
 

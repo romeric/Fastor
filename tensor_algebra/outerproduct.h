@@ -26,7 +26,6 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
     constexpr int b_dim = sizeof...(Rest1);
     constexpr int out_dim = a_dim+b_dim;
 
-//    using detail::nprods;
     constexpr std::array<int,out_dim> maxes_out = {Rest0...,Rest1...};
     constexpr std::array<size_t,a_dim> products_a = nprods<Index<Rest0...>,typename std_ext::make_index_sequence<a_dim>::type>::values;
     constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
@@ -61,14 +60,17 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
             index_out += products_out[it]*as[it];
         }
 
-//        out_data[index_out] = a_data[index_a]*b_data[index_b];
         _vec_a.set(*(a_data+index_a));
         V _vec_out = _vec_a*V(b_data+index_b);
         _vec_out.store(out_data+index_out);
 
         // for benchmark gcc
-//        unused(_vec_out);
-//        unused(as);
+#ifdef __GNUC__
+#ifndef __clang__ //&& __INTEL_COMPILER
+        unused(_vec_out);
+        unused(as);
+#endif
+#endif
     }
 
     return out;
@@ -277,9 +279,67 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
 template<template<typename,size_t...Rest0> class Tensor0,
          template<typename,size_t...Rest1> class Tensor1,
          typename T, size_t ... Rest0, size_t ... Rest1,
-         typename std::enable_if<get_value<sizeof...(Rest1),Rest1...>::value % 2 != 0 &&
-                                 get_value<sizeof...(Rest1),Rest1...>::value % 4 != 0 &&
-                                 get_value<sizeof...(Rest1),Rest1...>::value % 8 != 0,bool>::type=0>
+         typename std::enable_if<(std::is_same<T,double>::value || std::is_same<T,float>::value) &&
+             get_value<sizeof...(Rest1),Rest1...>::value % 2 != 0 &&
+             get_value<sizeof...(Rest1),Rest1...>::value % 4 != 0 &&
+             get_value<sizeof...(Rest1),Rest1...>::value % 8 != 0,bool>::type=0>
+FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, const Tensor1<T,Rest1...> &b) {
+
+    Tensor<T,Rest0...,Rest1...> out;
+    out.zeros();
+    T *a_data = a.data();
+    T *b_data = b.data();
+    T *out_data = out.data();
+
+    constexpr int a_dim = sizeof...(Rest0);
+    constexpr int b_dim = sizeof...(Rest1);
+    constexpr int out_dim = a_dim+b_dim;
+    constexpr std::array<int,out_dim> maxes_out = {Rest0...,Rest1...};
+
+    constexpr std::array<size_t,a_dim> products_a = nprods<Index<Rest0...>,typename std_ext::make_index_sequence<a_dim>::type>::values;
+    constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
+    constexpr std::array<size_t,out_dim> products_out = nprods<Index<Rest0...,Rest1...>,typename std_ext::make_index_sequence<out_dim>::type>::values;
+
+    int as[out_dim];
+    std::fill(as,as+out_dim,0);
+    int it, jt;
+
+    while(true)
+    {
+        int index_a = as[a_dim-1];
+        for(it = 0; it< a_dim; it++) {
+            index_a += products_a[it]*as[it];
+        }
+        int index_b = as[out_dim-1];
+        for(it = a_dim; it< out_dim; it++) {
+            index_b += products_b[it-a_dim]*as[it];
+        }
+        int index_out = as[out_dim-1];
+        for(it = 0; it< out_dim; it++) {
+            index_out += products_out[it]*as[it];
+        }
+
+        out_data[index_out] = a_data[index_a]*b_data[index_b];
+
+        for(jt = out_dim-1 ; jt>=0 ; jt--)
+        {
+            if(++as[jt]<maxes_out[jt])
+                break;
+            else
+                as[jt]=0;
+        }
+        if(jt<0)
+            break;
+    }
+
+    return out;
+}
+
+
+template<template<typename,size_t...Rest0> class Tensor0,
+         template<typename,size_t...Rest1> class Tensor1,
+         typename T, size_t ... Rest0, size_t ... Rest1,
+         typename std::enable_if<!std::is_same<T,double>::value && !std::is_same<T,float>::value,bool>::type=0>
 FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, const Tensor1<T,Rest1...> &b) {
 
     Tensor<T,Rest0...,Rest1...> out;

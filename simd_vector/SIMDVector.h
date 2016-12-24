@@ -4,6 +4,8 @@
 #include "simd_vector_base.h"
 #include "simd_vector_float.h"
 #include "simd_vector_double.h"
+#include "simd_vector_int.h"
+#include "simd_vector_int64.h"
 
 
 // Generic overloads

@@ -14,6 +14,7 @@ FASTOR_INLINE T _trace(const T * __restrict__ a) {
         sum +=a[i*N+i];
 }
 
+#ifdef __SSE4_2__
 template<>
 FASTOR_INLINE double _trace<double,2,2>(const double * __restrict__ a) {
     // AVX VERSION
@@ -40,13 +41,16 @@ FASTOR_INLINE float _trace<float,2,2>(const float * __restrict__ a) {
     __m128 a_reg = _mm_load_ps(a);
     return _mm_cvtss_f32(_mm_add_ss(a_reg,_mm_reverse_ps(a_reg)));
 }
+#endif
 
+#ifdef __AVX__
 template<>
 FASTOR_INLINE float _trace<float,3,3>(const float * __restrict__ a) {
     __m256 a_reg = _mm256_load_ps(a);
     __m128 sum_two = _mm_add_ps(_mm256_castps256_ps128(a_reg),_mm256_extractf128_ps(a_reg,0x1));
     return _mm_cvtss_f32(_mm_add_ss(sum_two,_mm_load_ss(a+8)));
 }
+#endif
 
 }
 

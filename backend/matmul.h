@@ -191,7 +191,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 
 
 
-
+#ifdef __SSE4_2__
 
 template<>
 FASTOR_INLINE
@@ -339,7 +339,9 @@ void _matmul<float,3,3,3>(const float * __restrict__ a, const float * __restrict
     _mm_store_ss(out+8,out_22);
 }
 
+#endif
 
+#ifdef __AVX__
 template<>
 FASTOR_INLINE
 void _matmul<double,2,2,2>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
@@ -431,9 +433,9 @@ void _matmul<double,3,3,3>(const double * __restrict__ a, const double * __restr
     _mm_store_sd(out+7,out_21);
     _mm_store_sd(out+8,out_22);
 }
+#endif
 
-
-
+#ifdef __SSE4_2__
 template<>
 FASTOR_INLINE void _matmul<float,4,4,4>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
 
@@ -520,7 +522,7 @@ FASTOR_INLINE void _matmul<float,4,4,4>(const float * __restrict__ a, const floa
     }
 }
 
-
+#endif
 
 
 
@@ -536,7 +538,7 @@ FASTOR_INLINE void _matmul<float,4,4,4>(const float * __restrict__ a, const floa
 
 //!----------------------------------------------------------------------
 //! Matrix-vector multiplication
-
+#ifdef __SSE4_2__
 template<>
 FASTOR_INLINE
 void _matmul<float,2,2,1>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
@@ -573,8 +575,8 @@ void _matmul<float,3,3,1>(const float * __restrict__ a, const float * __restrict
     _mm_store_ss(out+1,c1);
     _mm_store_ss(out+2,c2);
 }
-
-
+#endif
+#ifdef __AVX__
 template<>
 void _matmul<double,2,2,1>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
     // IVY 15 OPS - HW 19 OPS
@@ -617,6 +619,7 @@ void _matmul<double,3,3,1>(const double * __restrict__ a, const double * __restr
     _mm_store_sd(out+1,c1);
     _mm_store_sd(out+2,c2);
 }
+#endif
 
 
 

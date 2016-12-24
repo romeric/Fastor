@@ -12,6 +12,7 @@ namespace Fastor {
 template<typename T, size_t M, size_t N>
 void _cofactor(const T * __restrict__ a, T * __restrict__ out);
 
+#ifdef __SSE4_2__
 template<>
 void _cofactor<float,2,2>(const float * __restrict__ a, float * __restrict__ out) {
     // 4 OPS
@@ -138,6 +139,8 @@ void _cofactor<double,3,3>(const double * __restrict__ a, double * __restrict__ 
     _mm_store_sd(out+7,c_21);
     _mm_store_sd(out+8,c_22);
 }
+
+#endif
 
 }
 

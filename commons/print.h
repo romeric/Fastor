@@ -4,7 +4,7 @@
 #include <array>
 
 
-#ifdef HAS_SSE
+#ifdef __SSE2__
 #include <emmintrin.h>
 void print(__m128 a) {
     std::cout << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << "\n";
@@ -13,7 +13,7 @@ void print(__m128d a) {
     std::cout << a[0] << " " << a[1] << "\n";
 }
 #endif
-#ifdef HAS_AVX
+#ifdef __AVX__
 #include <immintrin.h>
 void print(__m256 a) {
     std::cout << a[0] << " " << a[1] << " " << a[2] << " " << a[3] <<  " " << 

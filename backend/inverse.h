@@ -6,6 +6,8 @@
 
 namespace Fastor {
 
+#ifdef __SSE4_2__
+
 //FASTOR_INLINE __m128 _mm_dot_ps(__m128 v1, __m128 v2)
 //{
 //    __m128 mul0 = _mm_mul_ps(v1, v2);
@@ -253,6 +255,8 @@ FASTOR_INLINE void _inverse<__m128,4>(__m128 const in[4], __m128 out[4])
     out[2] = _mm_mul_ps(Inv2, Rcp0);
     out[3] = _mm_mul_ps(Inv3, Rcp0);
 }
+
+#endif
 
 
 template<typename T>
