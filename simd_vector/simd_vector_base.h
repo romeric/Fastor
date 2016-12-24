@@ -195,18 +195,18 @@ FASTOR_INLINE SIMDVector<T,ABI> operator+(const SIMDVector<T,ABI> &a, const SIMD
         out.value[i] = a.value[i] + b.value[i];
     return out;
 }
-template<typename T, int ABI>
-FASTOR_INLINE SIMDVector<T,ABI> operator+(const SIMDVector<T,ABI> &a, T b) {
+template<typename U, typename T, int ABI>
+FASTOR_INLINE SIMDVector<T,ABI> operator+(const SIMDVector<T,ABI> &a, U b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
-        out.value[i] = a.value[i] + b;
+        out.value[i] = a.value[i] + static_cast<T>(b);
     return out;
 }
-template<typename T, int ABI>
-FASTOR_INLINE SIMDVector<T,ABI> operator+(T a, const SIMDVector<T,ABI> &b) {
+template<typename U, typename T, int ABI>
+FASTOR_INLINE SIMDVector<T,ABI> operator+(U a, const SIMDVector<T,ABI> &b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
-        out.value[i] = a + b.value[i];
+        out.value[i] = static_cast<T>(a) + b.value[i];
     return out;
 }
 template<typename T, int ABI>
@@ -221,18 +221,18 @@ FASTOR_INLINE SIMDVector<T,ABI> operator-(const SIMDVector<T,ABI> &a, const SIMD
         out.value[i] = a.value[i] - b.value[i];
     return out;
 }
-template<typename T, int ABI>
-FASTOR_INLINE SIMDVector<T,ABI> operator-(const SIMDVector<T,ABI> &a, T b) {
+template<typename U, typename T, int ABI>
+FASTOR_INLINE SIMDVector<T,ABI> operator-(const SIMDVector<T,ABI> &a, U b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
-        out.value[i] = a.value[i] - b;
+        out.value[i] = a.value[i] - static_cast<T>(b);
     return out;
 }
-template<typename T, int ABI>
-FASTOR_INLINE SIMDVector<T,ABI> operator-(T a, const SIMDVector<T,ABI> &b) {
+template<typename U, typename T, int ABI>
+FASTOR_INLINE SIMDVector<T,ABI> operator-(U a, const SIMDVector<T,ABI> &b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
-        out.value[i] = a - b.value[i];
+        out.value[i] = static_cast<T>(a) - b.value[i];
     return out;
 }
 template<typename T, int ABI>
@@ -250,18 +250,18 @@ FASTOR_INLINE SIMDVector<T,ABI> operator*(const SIMDVector<T,ABI> &a, const SIMD
         out.value[i] = a.value[i] * b.value[i];
     return out;
 }
-template<typename T, int ABI>
-FASTOR_INLINE SIMDVector<T,ABI> operator*(const SIMDVector<T,ABI> &a, T b) {
+template<typename U, typename T, int ABI>
+FASTOR_INLINE SIMDVector<T,ABI> operator*(const SIMDVector<T,ABI> &a, U b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
-        out.value[i] = a.value[i] * b;
+        out.value[i] = a.value[i] * static_cast<T>(b);
     return out;
 }
-template<typename T, int ABI>
-FASTOR_INLINE SIMDVector<T,ABI> operator*(T a, const SIMDVector<T,ABI> &b) {
+template<typename U, typename T, int ABI>
+FASTOR_INLINE SIMDVector<T,ABI> operator*(U a, const SIMDVector<T,ABI> &b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
-        out.value[i] = a * b.value[i];
+        out.value[i] = static_cast<T>(a) * b.value[i];
     return out;
 }
 
@@ -272,18 +272,18 @@ FASTOR_INLINE SIMDVector<T,ABI> operator/(const SIMDVector<T,ABI> &a, const SIMD
         out.value[i] = a.value[i] / b.value[i];
     return out;
 }
-template<typename T, int ABI>
-FASTOR_INLINE SIMDVector<T,ABI> operator/(const SIMDVector<T,ABI> &a, T b) {
+template<typename U, typename T, int ABI>
+FASTOR_INLINE SIMDVector<T,ABI> operator/(const SIMDVector<T,ABI> &a, U b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
-        out.value[i] = a.value[i] / b;
+        out.value[i] = a.value[i] / static_cast<T>(b);
     return out;
 }
-template<typename T, int ABI>
-FASTOR_INLINE SIMDVector<T,ABI> operator/(T a, const SIMDVector<T,ABI> &b) {
+template<typename U, typename T, int ABI>
+FASTOR_INLINE SIMDVector<T,ABI> operator/(U a, const SIMDVector<T,ABI> &b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
-        out.value[i] = a / b.value[i];
+        out.value[i] = static_cast<T>(a) / b.value[i];
     return out;
 }
 

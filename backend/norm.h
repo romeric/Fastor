@@ -8,6 +8,29 @@
 namespace Fastor {
 
 template<typename T, size_t N>
+FASTOR_INLINE double _norm_nonfloating(const T* __restrict__ a) {
+
+    constexpr int size = N;
+    constexpr int unroll_upto = SIMDVector<T>::unroll_size(size);
+    constexpr int stride = SIMDVector<T>::Size;
+    int i = 0;
+
+    // Unroll upto register size
+    SIMDVector<T> vec_a=static_cast<T>(0), vec_out=static_cast<T>(0);
+    for (; i< unroll_upto; i+=stride) {
+        vec_a.load(a+i);
+        vec_out += vec_a*vec_a;
+    }
+    // Take care of the remainder
+    T scalar = static_cast<T>(0);
+    for (FASTOR_INDEX j=i; j< size; j++) {
+        scalar += a[j]*a[j];
+    }
+    return std::sqrt(static_cast<double>(vec_out.sum() + scalar));
+}
+
+
+template<typename T, size_t N>
 FASTOR_INLINE T _norm(const T* __restrict__ a) {
 
     constexpr int size = N;

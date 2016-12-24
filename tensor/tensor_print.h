@@ -227,6 +227,9 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,M,N,Rest...> &a) {
     return os;
 }
 
+
+
+
 }
 
 #endif // TENSOR_PRINT_H

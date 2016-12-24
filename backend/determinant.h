@@ -6,7 +6,6 @@
 
 namespace Fastor {
 
-
 template<typename T, size_t M, size_t N>
 FASTOR_INLINE T _det(const T* __restrict__ a);
 

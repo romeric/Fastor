@@ -170,6 +170,12 @@ As you can observe with combination of `permutation`, `contraction`, `reduction`
 ### A minimal framework
 Fastor is extremely light weight, it is a *header-only* library, requires no build or compilation process and has no external dependencies. It is written in pure C++11 from the foundation.  
 
+### Tested Compilers
+Fastor has been tested against the following compilers
+- GCC 4.8, GCC 4.9, GCC 5.1, GCC 5.2, GCC 5.3, GCC 5.4, GCC 6.2
+- Clang 3.6, Clang 3.7, Clang 3.8, Clang 3.9
+- Intel 16.0.1, Intel 16.0.2, Intel 16.0.3, Intel 17.0.1  
+
 ### Similar Projects
 Similar projects exist in particular
 - [FTensor](http://www.wlandry.net/Projects/FTensor): Dense tensor algebra framework for up to rank 4 tensors

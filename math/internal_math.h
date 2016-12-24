@@ -149,6 +149,13 @@ __m256d internal_atan(__m256d a) {
 
 #else
 
+// SHUT GCC6 -Wignored-attributes WARNINGS
+#ifdef __GNUC__
+#if __GNUC__==6
+#pragma GCC diagnostic ignored "-Wignored-attributes"
+#endif
+#endif
+
 template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
                                              std::is_same<T,__m256d>::value ,bool>::type=0>
 T internal_exp(T a) {
