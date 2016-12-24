@@ -42,8 +42,20 @@ void run() {
     std::iota(a,a+M*K,0);
     std::iota(b,b+N*K,0);
 
-    timeit(static_cast<void (*)(const T*, const T*, T*)>(&iterate_over_scalar<T,M,N,K>),a,b,out);
-    timeit(static_cast<void (*)(const T*, const T*, T*)>(&iterate_over_fastor<T,M,N,K>),a,b,out);
+    // timeit(static_cast<void (*)(const T*, const T*, T*)>(&iterate_over_scalar<T,M,N,K>),a,b,out);
+    // timeit(static_cast<void (*)(const T*, const T*, T*)>(&iterate_over_fastor<T,M,N,K>),a,b,out);
+
+    double time_scalar, time_fastor;
+    uint64_t cycles_scalar, cycles_fastor;
+
+    std::tie(time_scalar, cycles_scalar) = rtimeit(static_cast<void (*)(const T*, const T*, T*)>(&iterate_over_scalar<T,M,N,K>),a,b,out);
+    std::tie(time_fastor, cycles_fastor) = rtimeit(static_cast<void (*)(const T*, const T*, T*)>(&iterate_over_fastor<T,M,N,K>),a,b,out);
+
+    int64_t saved_cycles = int64_t((double)cycles_scalar/(double)(NITER) - (double)cycles_fastor/(double)(NITER));
+    auto &&w = std::fixed;
+    println(FGRN(BOLD("Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor, 
+        FGRN(BOLD("[saved CPU cycles]")), saved_cycles);
+    print();
 
     _mm_free(a);
     _mm_free(b);
@@ -53,6 +65,7 @@ void run() {
 
 int main() {
 
+    print(FBLU(BOLD("Running tensor matmul benchmarks [Benchmarks SIMD vectorisation]")));
     print("Single precision benchmark");
     run<float,2,2,2>();
     run<float,3,3,3>();

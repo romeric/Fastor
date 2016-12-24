@@ -54,8 +54,17 @@ void run() {
     std::iota(a,a+M*N,0);
     std::iota(b,b+M*N,0);
 
-    timeit(static_cast<void (*)(const T*, const T*, T*)>(&iterate_over_scalar<T,N>),a,b,out);
-    timeit(static_cast<void (*)(const T*, const T*, T*)>(&iterate_over_fastor<T,N>),a,b,out);
+    double time_scalar, time_fastor;
+    uint64_t cycles_scalar, cycles_fastor;
+
+    std::tie(time_scalar, cycles_scalar) = rtimeit(static_cast<void (*)(const T*, const T*, T*)>(&iterate_over_scalar<T,N>),a,b,out);
+    std::tie(time_fastor, cycles_fastor) = rtimeit(static_cast<void (*)(const T*, const T*, T*)>(&iterate_over_fastor<T,N>),a,b,out);
+
+    int64_t saved_cycles = int64_t((double)cycles_scalar/(double)(NITER) - (double)cycles_fastor/(double)(NITER));
+    auto &&w = std::fixed;
+    println(FGRN(BOLD("Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor, 
+        FGRN(BOLD("[saved CPU cycles]")), saved_cycles);
+    print();
 
     _mm_free(a);
     _mm_free(b);
@@ -65,10 +74,11 @@ void run() {
 
 int main() {
 
-    print("Single precision benchmark");
+    print(FBLU(BOLD("Running tensor cross product benchmarks [Benchmarks SIMD vectorisation and zero elimination]")));
+    print(FBLU(BOLD("Single precision:")));
     run<float,2,2>();
     run<float,3,3>();
-    print("Double precision benchmark");
+    print(FBLU(BOLD("Double precision:")));
     run<double,2,2>();
     run<double,3,3>();
 

@@ -39,8 +39,17 @@ void run() {
 
     std::iota(in,in+M*N,0);
 
-    timeit(static_cast<void (*)(const T*, T*)>(&iterate_over_scalar<T,M,N>),in,out);
-    timeit(static_cast<void (*)(const T*, T*)>(&iterate_over_fastor<T,M,N>),in,out);
+    double time_scalar, time_fastor;
+    uint64_t cycles_scalar, cycles_fastor;
+
+    std::tie(time_scalar, cycles_scalar) = rtimeit(static_cast<void (*)(const T*, T*)>(&iterate_over_scalar<T,M,N>),in,out);
+    std::tie(time_fastor, cycles_fastor) = rtimeit(static_cast<void (*)(const T*, T*)>(&iterate_over_fastor<T,M,N>),in,out);
+
+    int64_t saved_cycles = int64_t((double)cycles_scalar/(double)(NITER) - (double)cycles_fastor/(double)(NITER));
+    auto &&w = std::fixed;
+    println(FGRN(BOLD("Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor, 
+        FGRN(BOLD("[saved CPU cycles]")), saved_cycles);
+    print();
 
     _mm_free(in);
     _mm_free(out);
@@ -49,6 +58,7 @@ void run() {
 
 int main() {
 
+    print(FBLU(BOLD("Running tensor transpose operator benchmarks [Benchmarks SIMD vectorisation]")));
     print("Single precision benchmark");
     run<float,2,2>();
     run<float,3,3>();

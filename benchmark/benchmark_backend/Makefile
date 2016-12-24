@@ -1,24 +1,13 @@
 # DO NOT ALLOW THE COMPILER TO BREAK IEEE COMPLIANCE
 CXX = g++ -fabi-version=6 -finline-functions -fno-fast-math
-# CXX = /opt/gcc-5.3.0/bin/g++ -fabi-version=6 -finline-functions -fno-fast-math
-# CXX = /opt/gcc-5.2/bin/g++ -fabi-version=6 -finline-functions -fno-fast-math
 # CXX = clang++ -fno-fast-math
-# CXX = /media/MATLAB/intel/bin/icpc -fp-model=strict 
-# -fp-model=precise
-# CXX = /home/roman/Downloads/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
-CXX_FLAGS = -std=c++11 -O3 -mavx -funroll-loops 
-# CXX_FLAGS = -std=c++11 
+# CXX = icpc -fp-model=strict # -fp-model=precise
+CXX_FLAGS = -std=c++11 -O3 -mavx 
 # GCC_COMPAT = -fabi-version=6 -finline-functions
 INCLUDES = -I../../
 
 all: bench_transpose bench_trace bench_norm bench_doublecontract bench_crossproduct \
 	bench_outer bench_cyclic bench_matmul
-
-# ifeq ($(CXX),g++)
-# 	CXX = g++ -fabi-version=6 -finline-functions
-# else
-# 	CXX = CXX
-# endif 
 
 
 
@@ -45,6 +34,16 @@ bench_cyclic:
 
 bench_matmul:
 	$(CXX) benchmark_matmul.cpp -o benchmark_matmul.exe $(CXX_FLAGS) $(INCLUDES)
+
+run:
+	./benchmark_doublecontract.exe
+	./benchmark_norm.exe 
+	./benchmark_outer.exe 
+	./benchmark_cyclic.exe 
+	./benchmark_crossproduct.exe 
+	./benchmark_transpose.exe 
+	./benchmark_trace.exe 
+	./benchmark_matmul.exe
 
 clean:
 	rm -rf benchmark_transpose.exe benchmark_trace.exe benchmark_norm.exe benchmark_doublecontract.exe \
