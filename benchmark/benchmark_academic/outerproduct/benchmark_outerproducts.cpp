@@ -93,7 +93,7 @@ void iterate_over_fastor(const Tensor<T,Rest...> &a, const Tensor<T,Rest...>& b)
     for (; iter<NITER; ++iter) {
         auto out = Fastor::outer(a,b);
         unused(a); unused(b); unused(out);
-        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
+        // further hack for gcc, seemingly  doesn't hurt performance
         // T *out_data = out.data();
         // out_data[1] += 1; 
     }
@@ -139,12 +139,12 @@ void run() {
 
 int main() {
 
-    print("Running SIMD benchmark\n");
+    print(FBLU(BOLD("Running SIMD benchmark for isomorphic tensor products\n")));
     print("2D outer products: single precision");
     run<100000UL,float,4,4>();
     run<100000UL,float,2,16>();
     print("2D outer products: double precision");
-    run<100000UL,double,2,2>();
+    run<100000UL,double,3,2>();
     run<100000UL,double,4,4>();
 
     print("3D outer products: single precision");

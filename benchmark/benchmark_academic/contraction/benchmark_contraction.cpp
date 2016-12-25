@@ -1,38 +1,5 @@
 #include <Fastor.h>
-
 using namespace Fastor;
-
-
-// template<size_t NITER, typename T, class Index_I, class Index_J, size_t ... Rest0, size_t ... Rest1>
-// void iterate_over_scalar(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...>& b) {
-//     size_t iter = 0;
-//     for (; iter<NITER; ++iter) {
-//         auto out = contraction<Index_I,Index_J>(a,b);
-//         unused(a); unused(b); unused(out);
-//         // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
-//         // T *out_data = out.data();
-//         // out_data[1] += 1; 
-//     }
-// }
-
-// template<size_t NITER, typename T, class Index_I, class Index_J, size_t ... Rest0, size_t ... Rest1>
-// void run(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
-
-//     double elapsed_time; size_t cycles;
-//     std::tie(elapsed_time,cycles) = rtimeit(static_cast<void (*)(const Tensor<T,Rest0...> &, 
-//         const Tensor<T,Rest1...>&)>(&iterate_over_scalar<NITER,T,Index_I,Index_J>),a,b);
-
-//     // std::tie(elapsed_time,cycles) = rtimeit(static_cast<void (*)(const Tensor<T,Rest0...> &, 
-//         // const Tensor<T,Rest1...>&)>(&iterate_over_scalar<NITER,T,Index_I,Index_J,Rest0...,Rest1...>),a,b);
-//     print(elapsed_time);
-
-//     // write
-//     const std::string filename = "SIMD_products_results_gcc";
-//     std::array<size_t,sizeof...(Rest0)> arr0 = {Rest0...};
-//     std::array<size_t,sizeof...(Rest1)> arr1 = {Rest1...};
-//     write(filename,"Tensor<"+type_name<T>()+","+itoa(arr0)+">"+" x "+"Tensor<"+type_name<T>()+","+itoa(arr1)+">");
-//     write(filename,elapsed_time);
-// }
 
 template<size_t NITER, typename T, class Index_I, class Index_J, class Tensor0, class Tensor1>
 void iterate_over_scalar(const Tensor0 &a, const Tensor1& b) {
@@ -53,14 +20,10 @@ void run(const Tensor0 &a, const Tensor1& b) {
     std::tie(elapsed_time,cycles) = rtimeit(static_cast<void (*)(const Tensor0 &, 
         const Tensor1&)>(&iterate_over_scalar<NITER,T,Index_I,Index_J,Tensor0,Tensor1>),a,b);
 
-    // std::tie(elapsed_time,cycles) = rtimeit(static_cast<void (*)(const Tensor<T,Rest0...> &, 
-        // const Tensor<T,Rest1...>&)>(&iterate_over_scalar<NITER,T,Index_I,Index_J,Rest0...,Rest1...>),a,b);
     print(elapsed_time);
 
     // write
     const std::string filename = "SIMD_products_results";
-    // std::array<size_t,sizeof...(Rest0)> arr0 = {Rest0...};
-    // std::array<size_t,sizeof...(Rest1)> arr1 = {Rest1...};
     // write(filename,"Tensor<"+type_name<T>()+","+itoa(arr0)+">"+" x "+"Tensor<"+type_name<T>()+","+itoa(arr1)+">");
     write(filename,elapsed_time);
 }
@@ -68,15 +31,13 @@ void run(const Tensor0 &a, const Tensor1& b) {
 
 int main() {
 
-    print("Running SIMD benchmark\n");
+    print(FBLU(BOLD("Running SIMD benchmark for non-isomorphic tensor products\n")));
     print("1 Index contraction: single precision SSE");
     Tensor<float,2,3,4,5,2> af0; Tensor<float,2,3,3,4> bf0; af0.arange(0); bf0.arange(1);
     run<100UL,float,Index<0,1,2,3,7>,Index<4,1,5,6>>(af0,bf0);
     print("1 Index contraction: double precision SSE");
     Tensor<double,2,3,4,5,2> ad0; Tensor<double,2,3,3,2> bd0; ad0.arange(0); bd0.arange(1);
     run<100UL,double,Index<0,1,2,3,7>,Index<4,1,5,6>>(ad0,bd0);
-    // auto c0 = contraction<Index<0,1,2,3,7>,Index<4,1,5,6>>(af0,bf0); print(c0);
-    // auto c1 = contraction<Index<0,1,2,3,7>,Index<4,1,5,6>>(ad0,bd0); print(c1);
 
     print("1 Index contraction: single precision AVX");
     Tensor<float,2,3,4,5,2> af1; Tensor<float,2,3,2,8> bf1; af0.arange(0); bf1.arange(1);
