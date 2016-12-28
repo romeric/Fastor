@@ -156,8 +156,10 @@ __m256d internal_atan(__m256d a) {
 #endif
 #endif
 
-template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
-                                             std::is_same<T,__m256d>::value ,bool>::type=0>
+
+
+
+template<typename T>
 T internal_exp(T a) {
    T out;
    for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
@@ -166,8 +168,7 @@ T internal_exp(T a) {
    return out;
 }
 
-template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
-                                             std::is_same<T,__m256d>::value ,bool>::type=0>
+template<typename T>
 T internal_log(T a) {
    T out;
    for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
@@ -176,8 +177,7 @@ T internal_log(T a) {
    return out;
 }
 
-template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
-                                             std::is_same<T,__m256d>::value ,bool>::type=0>
+template<typename T>
 T internal_sin(T a) {
    T out;
    for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
@@ -186,8 +186,7 @@ T internal_sin(T a) {
    return out;
 }
 
-template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
-                                             std::is_same<T,__m256d>::value ,bool>::type=0>
+template<typename T>
 T internal_cos(T a) {
    T out;
    for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
@@ -196,8 +195,7 @@ T internal_cos(T a) {
    return out;
 }
 
-template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
-                                             std::is_same<T,__m256d>::value ,bool>::type=0>
+template<typename T>
 T internal_tan(T a) {
    T out;
    for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
@@ -215,8 +213,7 @@ T internal_asin(T a) {
    return out;
 }
 
-template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
-                                             std::is_same<T,__m256d>::value ,bool>::type=0>
+template<typename T>
 T internal_acos(T a) {
    T out;
    for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
@@ -225,8 +222,7 @@ T internal_acos(T a) {
    return out;
 }
 
-template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
-                                             std::is_same<T,__m256d>::value ,bool>::type=0>
+template<typename T>
 T internal_atan(T a) {
    T out;
    for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
@@ -239,8 +235,7 @@ T internal_atan(T a) {
 
 
 // not available in vdt
-template<typename T, typename U, typename std::enable_if<std::is_same<T,__m256>::value ||
-                                             std::is_same<T,__m256d>::value ,bool>::type=0>
+template<typename T, typename U>
 T internal_pow(T a, U b) {
    T out;
    for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
@@ -249,8 +244,7 @@ T internal_pow(T a, U b) {
    return out;
 }
 
-template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
-                                             std::is_same<T,__m256d>::value ,bool>::type=0>
+template<typename T>
 T internal_sinh(T a) {
    T out;
    for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
@@ -259,8 +253,7 @@ T internal_sinh(T a) {
    return out;
 }
 
-template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
-                                             std::is_same<T,__m256d>::value ,bool>::type=0>
+template<typename T>
 T internal_cosh(T a) {
    T out;
    for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
@@ -269,8 +262,7 @@ T internal_cosh(T a) {
    return out;
 }
 
-template<typename T, typename std::enable_if<std::is_same<T,__m256>::value ||
-                                             std::is_same<T,__m256d>::value ,bool>::type=0>
+template<typename T>
 T internal_tanh(T a) {
    T out;
    for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
@@ -278,6 +270,7 @@ T internal_tanh(T a) {
    }
    return out;
 }
+
 
 }
 

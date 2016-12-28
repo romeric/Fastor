@@ -222,6 +222,27 @@ struct is_vectorisable<Index<Idx0...>,Index<Idx1...>,Tensor<double,Rest...>> {
 //------------------------------------------------------------------------------------------------------------//
 
 
+//! Checks reducible vectorisability and returns a stride and a type (use this for working on general strides)
+//------------------------------------------------------------------------------------------------------------//
+template<class Idx, class Tens>
+struct is_reducibly_vectorisable;
+
+template<typename T, size_t ...Idx, size_t...Rest>
+struct is_reducibly_vectorisable<Index<Idx...>,Tensor<T,Rest...>> {
+    static constexpr size_t fastest_changing_index = get_value<sizeof...(Rest),Rest...>::value;
+    static constexpr bool value = (fastest_changing_index % get_vector_size<T,SSE>::size==0);
+    static constexpr bool sse_vectorisability = (fastest_changing_index % get_vector_size<T,SSE>::size==0 &&
+                                                 fastest_changing_index % get_vector_size<T,AVX>::size!=0);
+    static constexpr bool avx_vectorisability = (fastest_changing_index % get_vector_size<T,SSE>::size==0 &&
+                                                 fastest_changing_index % get_vector_size<T,AVX>::size==0);
+    static constexpr int stride = (avx_vectorisability ? get_vector_size<T,AVX>::size :
+                                   (sse_vectorisability ? get_vector_size<T,SSE>::size : 1));
+
+    using type = typename std::conditional<avx_vectorisability,SIMDVector<T,AVX>,
+        typename std::conditional<sse_vectorisability,SIMDVector<T,SSE>,SIMDVector<T,sizeof(T)*8>>::type>::type;
+};
+//------------------------------------------------------------------------------------------------------------//
+
 
 
 // Cost model for by-pair tensor contraction
@@ -268,7 +289,7 @@ struct get_resuling_index<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tenso
 
 
 
-// How many loops should be set up
+// How many nested loops should be set up
 //------------------------------------------------------------------------------------------------------------//
 template<class T, class U, class V, class W, class Seq>
 struct no_of_loops_to_set;
@@ -411,12 +432,174 @@ struct is_reduction<Index<Idx0...>,Index<Idx1...>> {
 
 
 
+//--------------------------------------------------------------------------------------------------------------//
+template<size_t N>
+constexpr int contain_prod(const size_t (&ind)[N], const size_t (&seq)[N], size_t num){
+    return (ind[num]==0) ? static_cast<int>(seq[num]) : -1;
+}
+
+template<size_t N>
+constexpr int last_indices_prod(const int (&seq)[N], int num){
+    return (seq[num-1]!=-1) ? seq[num-1]*last_indices_prod(seq,num-1) : 1;
+}
+
+
+template<class Idx0, class Idx1, class Tens0, class Tens1, class Seq>
+struct general_stride_finder;
+
+template<typename T, size_t ...Idx0, size_t ...Idx1, size_t...Rest0, size_t...Rest1, size_t ... ss>
+struct general_stride_finder<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>, std_ext::index_sequence<ss...>> {
+
+    using OutIndices = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
+      typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::indices;
+
+    static constexpr size_t b_idx[sizeof...(Idx1)] = {Idx1...};
+    static constexpr size_t b_dim[sizeof...(Rest1)] = {Rest1...};
+//    static constexpr std::array<size_t,sizeof...(ss)> container_idx = {contains(OutIndices::_IndexHolder,b_idx[ss])...};
+    static constexpr size_t container_idxx[sizeof...(Rest1)] = {contains(OutIndices::_IndexHolder,b_idx[ss])...};
+//    static constexpr std::array<int,sizeof...(ss)> container_dim = {contain_prod(container_idxx,b_dim,ss)...};
+    static constexpr int container_dim[sizeof...(Rest1)] = {contain_prod(container_idxx,b_dim,ss)...};
+    static constexpr int value = last_indices_prod(container_dim,sizeof...(Rest1));
+};
+
+//template<typename T, size_t ... Idx0, size_t ... Idx1, size_t ... Rest0, size_t ... Rest1, size_t ... ss>
+//constexpr std::array<size_t,sizeof...(ss)>
+//general_stride_finder<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,std_ext::index_sequence<ss...>>::container_idx;
+//template<typename T, size_t ... Idx0, size_t ... Idx1, size_t ... Rest0, size_t ... Rest1, size_t ... ss>
+//constexpr std::array<int,sizeof...(ss)>
+//general_stride_finder<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,std_ext::index_sequence<ss...>>::container_dim;
+//--------------------------------------------------------------------------------------------------------------------//
 
 
 
 
+// A complete tensor contraction meta-engine
+//--------------------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------//
+template<int N>
+constexpr int find_remaining(const int (&maxes_out)[N], int remaining, int i) {
+    return i==0 ? remaining/maxes_out[0] : find_remaining(maxes_out,remaining,i-1) / maxes_out[i];
+}
+
+template<int N>
+constexpr int cartesian_product_single(const int (&maxes_out)[N], int remaining, int i, int n=0) {
+    return (i/(find_remaining(maxes_out,remaining,n))) % maxes_out[n];
+}
+
+template<int Idx, class Tens, class Seq>
+struct gen_single_cartesian_product;
+
+template<int I, size_t ... Rest, size_t ... ss, typename T>
+struct gen_single_cartesian_product<I,Tensor<T,Rest...>,std_ext::index_sequence<ss...>> {
+    static constexpr int vals[sizeof...(Rest)] = {Rest...};
+    static constexpr std::array<int,sizeof...(ss)> values = {cartesian_product_single(vals,prod<Rest...>::value,I,ss)...};
+};
+
+template<int I, size_t ... Rest, size_t ... ss, typename T>
+constexpr std::array<int,sizeof...(ss)> gen_single_cartesian_product<I,Tensor<T,Rest...>,std_ext::index_sequence<ss...>>::values;
 
 
+template<typename T, int i, size_t ... Rest>
+constexpr std::array<int,sizeof...(Rest)> all_cartesian_product() {
+    return gen_single_cartesian_product<i,Tensor<T,Rest...>,typename std_ext::make_index_sequence<sizeof...(Rest)>::type>::values;
+}
+
+
+template<class Tens, class Seq>
+struct cartesian_product;
+
+template<size_t ... Rest, size_t ... ss, typename T>
+struct cartesian_product<Tensor<T,Rest...>,std_ext::index_sequence<ss...>> {
+    static constexpr std::array<std::array<int,sizeof...(Rest)>,sizeof...(ss)> values = {all_cartesian_product<T,ss,Rest...>()...};
+
+};
+
+template<size_t ... Rest, size_t ... ss, typename T>
+constexpr std::array<std::array<int,sizeof...(Rest)>,sizeof...(ss)> cartesian_product<Tensor<T,Rest...>,std_ext::index_sequence<ss...>>::values;
+
+
+template<size_t N, size_t O,size_t All>
+constexpr int get_indices(const std::array<size_t,N> &products,
+                          const std::array<size_t,N>& idx,
+                          const std::array<std::array<int,O>,All> &as_all,
+                          int i,
+                          int it) {
+    return it==0 ? as_all[i][idx[static_cast<int>(N)-1]] + products[0]*as_all[i][idx[0]] :
+        products[it]*as_all[i][idx[it]]+get_indices(products,idx,as_all,i,it-1);
+}
+
+// Blowing compilation time and memory usage 101
+//--------------------------------------------------------------------------------------------------------------//
+template<class Idx0, class Idx1, class Tens0, class Tens1, class Seq>
+struct contract_meta_engine;
+
+template<size_t ... Idx0, size_t ... Idx1, size_t ... Rest0, size_t ... Rest1, size_t ... ss, typename T>
+struct contract_meta_engine<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,std_ext::index_sequence<ss...>> {
+
+    using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
+                              typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
+    using OutIndices = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
+                              typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::indices;
+
+    static constexpr int a_dim = sizeof...(Rest0);
+    static constexpr int b_dim = sizeof...(Rest1);
+    static constexpr int out_dim = OutTensor::Dimension;
+    static constexpr int total = sizeof...(ss);
+
+    static constexpr auto& idx_a = IndexFirstTensor<Index<Idx0...>,Index<Idx1...>, Tensor<T,Rest0...>,Tensor<T,Rest1...>,
+                              typename std_ext::make_index_sequence<sizeof...(Rest0)>::type>::indices;
+    static constexpr auto& idx_b = IndexSecondTensor<Index<Idx0...>,Index<Idx1...>, Tensor<T,Rest0...>,Tensor<T,Rest1...>,
+                              typename std_ext::make_index_sequence<sizeof...(Rest1)>::type>::indices;
+    static constexpr auto& idx_out = IndexResultingTensor<Index<Idx0...>,Index<Idx1...>, Tensor<T,Rest0...>,Tensor<T,Rest1...>,
+                              typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::indices;
+
+    static constexpr int uniques = no_of_unique<Idx0...,Idx1...>::value;
+    using uniques_type = typename std_ext::make_index_sequence<uniques>::type;
+    static constexpr auto& maxes_out = no_of_loops_to_set<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,
+            uniques_type>::dims;
+
+    using maxes_out_type = typename no_of_loops_to_set<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,
+            uniques_type>::type;
+
+    static constexpr std::array<size_t,a_dim> products_a = nprods<Index<Rest0...>,typename std_ext::make_index_sequence<a_dim>::type>::values;
+    static constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
+    using Index_with_dims = typename put_dims_in_Index<OutTensor>::type;
+    static constexpr std::array<size_t,Index_with_dims::NoIndices> products_out = nprods<Index_with_dims,
+            typename std_ext::make_index_sequence<Index_with_dims::NoIndices>::type>::values;
+
+    // Generate the cartesian product
+    static constexpr auto& as_all = cartesian_product<maxes_out_type,typename std_ext::make_index_sequence<total>::type>::values;
+    // Alternatively you can pass the ss... directly into cartesian_product but that does not change anything in terms of
+    // memory usage or compilation time
+    //using maxes_out_indices = typename no_of_loops_to_set<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,
+    //        uniques_type>::indices;
+    //static constexpr std::array<std::array<int,maxes_out_indices::NoIndices>,total> as_all = {all_cartesian_product<ss,2,3,4,2>()...};
+
+    static constexpr std::array<int,sizeof...(ss)> index_a = {get_indices(products_a,idx_a,as_all,ss,a_dim-1)...};
+    static constexpr std::array<int,sizeof...(ss)> index_b = {get_indices(products_b,idx_b,as_all,ss,b_dim-1)...};
+    static constexpr std::array<int,sizeof...(ss)> index_out = {get_indices(products_out,idx_out,as_all,ss,out_dim-1)...};
+};
+
+template<size_t ... Idx0, size_t ... Idx1, size_t ... Rest0, size_t ... Rest1, size_t ... ss, typename T>
+constexpr std::array<int,sizeof...(ss)>
+contract_meta_engine<Index<Idx0...>,Index<Idx1...>,
+Tensor<T,Rest0...>,Tensor<T,Rest1...>,
+std_ext::index_sequence<ss...>>::index_a;
+
+template<size_t ... Idx0, size_t ... Idx1, size_t ... Rest0, size_t ... Rest1, size_t ... ss, typename T>
+constexpr std::array<int,sizeof...(ss)>
+contract_meta_engine<Index<Idx0...>,Index<Idx1...>,
+Tensor<T,Rest0...>,Tensor<T,Rest1...>,
+std_ext::index_sequence<ss...>>::index_b;
+
+template<size_t ... Idx0, size_t ... Idx1, size_t ... Rest0, size_t ... Rest1, size_t ... ss, typename T>
+constexpr std::array<int,sizeof...(ss)>
+contract_meta_engine<Index<Idx0...>,Index<Idx1...>,
+Tensor<T,Rest0...>,Tensor<T,Rest1...>,
+std_ext::index_sequence<ss...>>::index_out;
+
+//--------------------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------//
 
 
 

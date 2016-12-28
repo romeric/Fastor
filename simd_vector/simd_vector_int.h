@@ -8,6 +8,9 @@ namespace Fastor {
 
 // AVX VERSION
 //-----------------------------------------------------------------------------------------------
+
+#ifdef __AVX__
+
 template<>
 struct SIMDVector<int,256> {
 
@@ -63,34 +66,34 @@ struct SIMDVector<int,256> {
 
     // In-place operators
     FASTOR_INLINE void operator+=(int num) {
-        value = _mm256_add_epi32(value,_mm256_set1_epi32(num));
+        value = _mm256_add_epi32x(value,_mm256_set1_epi32(num));
 
     }
     FASTOR_INLINE void operator+=(__m256i regi) {
-        value = _mm256_add_epi32(value,regi);
+        value = _mm256_add_epi32x(value,regi);
     }
     FASTOR_INLINE void operator+=(const SIMDVector<int> &a) {
-        value = _mm256_add_epi32(value,a.value);
+        value = _mm256_add_epi32x(value,a.value);
     }
 
     FASTOR_INLINE void operator-=(int num) {
-        value = _mm256_sub_epi32(value,_mm256_set1_epi32(num));
+        value = _mm256_sub_epi32x(value,_mm256_set1_epi32(num));
     }
     FASTOR_INLINE void operator-=(__m256i regi) {
-        value = _mm256_sub_epi32(value,regi);
+        value = _mm256_sub_epi32x(value,regi);
     }
     FASTOR_INLINE void operator-=(const SIMDVector<int> &a) {
-        value = _mm256_sub_epi32(value,a.value);
+        value = _mm256_sub_epi32x(value,a.value);
     }
 
     FASTOR_INLINE void operator*=(int num) {
-        value = _mm256_mul_epi32(value,_mm256_set1_epi32(num));
+        value = _mm256_mul_epi32x(value,_mm256_set1_epi32(num));
     }
     FASTOR_INLINE void operator*=(__m256i regi) {
-        value = _mm256_mul_epi32(value,regi);
+        value = _mm256_mul_epi32x(value,regi);
     }
     FASTOR_INLINE void operator*=(const SIMDVector<int> &a) {
-        value = _mm256_mul_epi32(value,a.value);
+        value = _mm256_mul_epi32x(value,a.value);
     }
 
     FASTOR_INLINE int minimum() {
@@ -139,17 +142,17 @@ std::ostream& operator<<(std::ostream &os, SIMDVector<int> a) {
 
 FASTOR_INLINE SIMDVector<int> operator+(const SIMDVector<int> &a, const SIMDVector<int> &b) {
     SIMDVector<int> out;
-    out.value = _mm256_add_epi32(a.value,b.value);
+    out.value = _mm256_add_epi32x(a.value,b.value);
     return out;
 }
 FASTOR_INLINE SIMDVector<int> operator+(const SIMDVector<int> &a, int b) {
     SIMDVector<int> out;
-    out.value = _mm256_add_epi32(a.value,_mm256_set1_epi32(b));
+    out.value = _mm256_add_epi32x(a.value,_mm256_set1_epi32(b));
     return out;
 }
 FASTOR_INLINE SIMDVector<int> operator+(int a, const SIMDVector<int> &b) {
     SIMDVector<int> out;
-    out.value = _mm256_add_epi32(_mm256_set1_epi32(a),b.value);
+    out.value = _mm256_add_epi32x(_mm256_set1_epi32(a),b.value);
     return out;
 }
 FASTOR_INLINE SIMDVector<int> operator+(const SIMDVector<int> &b) {
@@ -158,17 +161,17 @@ FASTOR_INLINE SIMDVector<int> operator+(const SIMDVector<int> &b) {
 
 FASTOR_INLINE SIMDVector<int> operator-(const SIMDVector<int> &a, const SIMDVector<int> &b) {
     SIMDVector<int> out;
-    out.value = _mm256_sub_epi32(a.value,b.value);
+    out.value = _mm256_sub_epi32x(a.value,b.value);
     return out;
 }
 FASTOR_INLINE SIMDVector<int> operator-(const SIMDVector<int> &a, int b) {
     SIMDVector<int> out;
-    out.value = _mm256_sub_epi32(a.value,_mm256_set1_epi32(b));
+    out.value = _mm256_sub_epi32x(a.value,_mm256_set1_epi32(b));
     return out;
 }
 FASTOR_INLINE SIMDVector<int> operator-(int a, const SIMDVector<int> &b) {
     SIMDVector<int> out;
-    out.value = _mm256_sub_epi32(_mm256_set1_epi32(a),b.value);
+    out.value = _mm256_sub_epi32x(_mm256_set1_epi32(a),b.value);
     return out;
 }
 FASTOR_INLINE SIMDVector<int> operator-(const SIMDVector<int> &b) {
@@ -179,23 +182,29 @@ FASTOR_INLINE SIMDVector<int> operator-(const SIMDVector<int> &b) {
 
 FASTOR_INLINE SIMDVector<int> operator*(const SIMDVector<int> &a, const SIMDVector<int> &b) {
     SIMDVector<int> out;
-    out.value = _mm256_mul_epi32(a.value,b.value);
+    out.value = _mm256_mul_epi32x(a.value,b.value);
     return out;
 }
 FASTOR_INLINE SIMDVector<int> operator*(const SIMDVector<int> &a, int b) {
     SIMDVector<int> out;
-    out.value = _mm256_mul_epi32(a.value,_mm256_set1_epi32(b));
+    out.value = _mm256_mul_epi32x(a.value,_mm256_set1_epi32(b));
     return out;
 }
 FASTOR_INLINE SIMDVector<int> operator*(int a, const SIMDVector<int> &b) {
     SIMDVector<int> out;
-    out.value = _mm256_mul_epi32(_mm256_set1_epi32(a),b.value);
+    out.value = _mm256_mul_epi32x(_mm256_set1_epi32(a),b.value);
     return out;
 }
 
 
+#endif
+
+
 // SSE VERSION
 //-----------------------------------------------------------------------------------------------
+
+#ifdef __SSE4_2__
+
 template<>
 struct SIMDVector<int,128> {
 
@@ -381,6 +390,8 @@ FASTOR_INLINE SIMDVector<int,128> operator*(int a, const SIMDVector<int,128> &b)
 }
 
 
+
+#endif
 
 
 // SCALAR VERSION

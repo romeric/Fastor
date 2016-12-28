@@ -73,8 +73,6 @@ struct extractor_contract_3_no_opt<Index<Idx0...>, Index<Idx1...>, Index<Idx2...
                     typename std_ext::make_index_sequence<out_dim>::type>;
           constexpr auto& maxes_out = nloops::dims;
           constexpr int total = nloops::value;
-//            print(maxes_out);
-
 
           constexpr std::array<size_t,a_dim> products_a = nprods<Index<Rest0...>,typename std_ext::make_index_sequence<a_dim>::type>::values;
           constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
@@ -83,10 +81,6 @@ struct extractor_contract_3_no_opt<Index<Idx0...>, Index<Idx1...>, Index<Idx2...
           using Index_with_dims = typename put_dims_in_Index<OutTensor>::type;
           constexpr std::array<size_t,OutTensor::Dimension> products_out = \
                   nprods<Index_with_dims,typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::values;
-
-//          print(type_name<OutTensor>());
-//          print(type_name<OutIndice>());
-//          print(products_b,products_out);
 
           using vectorisability = is_vectorisable<
                     Index<Idx0...,Idx1...>,
@@ -105,9 +99,7 @@ struct extractor_contract_3_no_opt<Index<Idx0...>, Index<Idx1...>, Index<Idx2...
               for (int n = 0; n < out_dim; ++n) {
                   remaining /= maxes_out[n];
                   as[n] = ( i / remaining ) % maxes_out[n];
-//                  std::cout << as[n] << " ";
               }
-//              print();
 
               int index_a = as[idx_a[a_dim-1]];
               for(it = 0; it< a_dim; it++) {
@@ -125,7 +117,7 @@ struct extractor_contract_3_no_opt<Index<Idx0...>, Index<Idx1...>, Index<Idx2...
               for(it = 0; it< OutTensor::Dimension; it++) {
                   index_out += products_out[it]*as[idx_out[it]];
               }
-//                std::cout << index_a << " " << index_b << " " << index_c << " " << index_out << "\n";
+
               _vec_a.set(*(a_data+index_a));
               _vec_b.set(*(b_data+index_b));
               V _vec_out = _vec_a*_vec_b*V(c_data+index_c) +  V(out_data+index_out);

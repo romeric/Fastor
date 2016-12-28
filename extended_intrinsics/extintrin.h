@@ -23,6 +23,7 @@ FASTOR_INLINE double _mm_sum_pd(__m128d a) {
 }
 #endif
 #else
+#ifdef __SSE4_2__
 FASTOR_INLINE float _mm_sum_ps(__m128 a) {
     // 8 OPS
     __m128 shuf = _mm_movehdup_ps(a);
@@ -37,6 +38,7 @@ FASTOR_INLINE double _mm_sum_pd(__m128d a) {
     __m128d shuf  = _mm_castps_pd(shuftmp);
     return  _mm_cvtsd_f64(_mm_add_sd(a, shuf));
 }
+#endif
 #endif
 
 #ifdef __AVX__
@@ -427,15 +429,17 @@ static inline __m128i _mm_mul_epi32x(const __m128i &a, const __m128i &b)
 #endif
 }
 
+#ifdef __SSE4_2__
 #ifndef __AVX512CD__
 __m128i _mm_mul_epi64(__m128i _a, __m128i _b) {
     __m128i out = _mm_mul_epi32x(_a,_b);
     return out;
 }
 #endif
+#endif
 
-
-__m256i _mm256_add_epi32(__m256i _a, __m256i _b) {
+#ifdef __AVX__
+__m256i _mm256_add_epi32x(__m256i _a, __m256i _b) {
     __m128i low_a = _mm256_castsi256_si128(_a);
     __m128i high_a = _mm256_extractf128_si256(_a,1);
     __m128i low_b = _mm256_castsi256_si128(_b);
@@ -447,7 +451,7 @@ __m256i _mm256_add_epi32(__m256i _a, __m256i _b) {
     return out;
 }
 
-__m256i _mm256_sub_epi32(__m256i _a, __m256i _b) {
+__m256i _mm256_sub_epi32x(__m256i _a, __m256i _b) {
     __m128i low_a = _mm256_castsi256_si128(_a);
     __m128i high_a = _mm256_extractf128_si256(_a,1);
     __m128i low_b = _mm256_castsi256_si128(_b);
@@ -459,7 +463,7 @@ __m256i _mm256_sub_epi32(__m256i _a, __m256i _b) {
     return out;
 }
 
-__m256i _mm256_mul_epi32(__m256i _a, __m256i _b) {
+__m256i _mm256_mul_epi32x(__m256i _a, __m256i _b) {
     __m128i low_a = _mm256_castsi256_si128(_a);
     __m128i high_a = _mm256_extractf128_si256(_a,0x1);
     __m128i low_b = _mm256_castsi256_si128(_b);
@@ -471,7 +475,7 @@ __m256i _mm256_mul_epi32(__m256i _a, __m256i _b) {
     return out;
 }
 
-__m256i _mm256_div_epi32(__m256i _a, __m256i _b) {
+__m256i _mm256_div_epi32x(__m256i _a, __m256i _b) {
     // YIELDS INCORRECT
     int *a_data = (int*) &_a;
     int *b_data = (int*) &_b;
@@ -519,6 +523,7 @@ __m256i _mm256_mul_epi64x(__m256i _a, __m256i _b) {
     out = _mm256_insertf128_si256(out,high,0x1);
     return out;
 }
+#endif
 #endif
 
 #if defined(__cplusplus)

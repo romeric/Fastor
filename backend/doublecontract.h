@@ -57,6 +57,8 @@ FASTOR_INLINE double _doublecontract<double,3,3>(const double* __restrict__ a, c
 }
 
 
+#endif
+
 // doublecontract and transpose
 template<typename T, size_t M, size_t N>
 FASTOR_INLINE T _doublecontract_transpose(const T* __restrict__ a, const T* __restrict__ b) {
@@ -66,8 +68,6 @@ FASTOR_INLINE T _doublecontract_transpose(const T* __restrict__ a, const T* __re
             dc += a[i*N+j]*b[j*M+i];
     return dc;
 }
-
-#endif
 
 
 }

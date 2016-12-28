@@ -8,6 +8,9 @@ namespace Fastor {
 
 // AVX VERSION
 //-----------------------------------------------------------------------------------------------
+
+#ifdef __AVX__
+
 template<>
 struct SIMDVector<Int64,256> {
 
@@ -193,8 +196,15 @@ FASTOR_INLINE SIMDVector<Int64> operator*(Int64 a, const SIMDVector<Int64> &b) {
 }
 
 
+#endif
+
+
+
 // SSE VERSION
 //-----------------------------------------------------------------------------------------------
+
+#ifdef __SSE4_2__
+
 template<>
 struct SIMDVector<Int64,128> {
     // CAREFUL WHILE USING THIS AS THIS CONVERTS Int64 TO int IN MOST CASES
@@ -403,6 +413,9 @@ FASTOR_INLINE SIMDVector<Int64,128> operator*(Int64 a, const SIMDVector<Int64,12
     out.value = _mm_mul_epi64(numb,b.value);
     return out;
 }
+
+
+#endif
 
 
 

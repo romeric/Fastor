@@ -12,16 +12,48 @@
 #include "summation.h"
 #include "outerproduct.h"
 #include "contraction.h"
-#include "contraction_no_opt.h"
+#include "strided_contraction.h"
+#include "network_contraction.h"
+#include "network_contraction_no_opmin.h"
 
 namespace Fastor {
 
 
+//template<class Index_I, class Index_J,
+//         typename T, size_t ... Rest0, size_t ... Rest1>
+//auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
+//-> decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
+//        return extractor_contract_2<Index_I,Index_J>::contract_impl(a,b);
+//}
+
+//constexpr bool is_scalar_reduction = is_reduction<Index_I,Index_J>::value;
+
+
 template<class Index_I, class Index_J,
-         typename T, size_t ... Rest0, size_t ... Rest1>
+         typename T, size_t ... Rest0, size_t ... Rest1,
+         typename std::enable_if<is_reduction<Index_I,Index_J>::value,bool>::type=0>
 auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
 -> decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
-    return extractor_contract_2<Index_I,Index_J>::contract_impl(a,b);
+    // Dispatch to the right routine
+    return inner(a,b);
+}
+
+
+template<class Index_I, class Index_J,
+         typename T, size_t ... Rest0, size_t ... Rest1,
+         typename std::enable_if<!is_reduction<Index_I,Index_J>::value,bool>::type=0>
+auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
+-> decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
+
+    // Dispatch to the right routine
+    using vectorisability = is_vectorisable<Index_I,Index_J,Tensor<T,Rest1...>>;
+    constexpr bool is_reducible = vectorisability::last_index_contracted;
+    if (is_reducible) {
+        return extractor_reducible_contract<Index_I,Index_J>::contract_impl(a,b);
+    }
+    else {
+        return extractor_contract_2<Index_I,Index_J>::contract_impl(a,b);
+    }
 }
 
 

@@ -7,6 +7,8 @@ namespace Fastor {
 
 // AVX VERSION
 //--------------------------------------------------------------------------------------------------
+#ifdef __AVX__
+
 template <>
 struct SIMDVector<double, 256> {
     static constexpr FASTOR_INDEX Size = get_vector_size<double>::size;
@@ -59,6 +61,9 @@ struct SIMDVector<double, 256> {
     }
     FASTOR_INLINE void set_sequential(double num0) {
         value = _mm256_setr_pd(num0,num0+1.0,num0+2.0,num0+3.0);
+    }
+    FASTOR_INLINE void broadcast(const double *data) {
+        value = _mm256_broadcast_sd(data);
     }
 
     // In-place operators
@@ -131,8 +136,12 @@ struct SIMDVector<double, 256> {
 
 
 std::ostream& operator<<(std::ostream &os, SIMDVector<double> a) {
+#ifdef FASTOR_INTEL
     // ICC crashes without a copy
     const __m256d value = a.value;
+#else
+    const auto &value = a.value;
+#endif
     os << "[" << value[0] <<  " " << value[1] << " " << value[2] << " " << value[3] << "]\n";
     return os;
 }
@@ -215,7 +224,7 @@ FASTOR_INLINE SIMDVector<double> sqrt(const SIMDVector<double> &a) {
     return out;
 }
 
-
+#endif
 
 
 
@@ -225,6 +234,9 @@ FASTOR_INLINE SIMDVector<double> sqrt(const SIMDVector<double> &a) {
 
 // SSE VERSION
 //------------------------------------------------------------------------------------------------------------
+
+#ifdef __SSE4_2__
+
 template <>
 struct SIMDVector<double, 128> {
     static constexpr FASTOR_INDEX Size = get_vector_size<double,128>::size;
@@ -275,6 +287,9 @@ struct SIMDVector<double, 128> {
     }
     FASTOR_INLINE void set_sequential(double num0) {
         value = _mm_setr_pd(num0,num0+1.0);
+    }
+    FASTOR_INLINE void broadcast(const double *data) {
+        value = _mm_load1_pd(data);
     }
 
     // In-place operators
@@ -428,6 +443,9 @@ FASTOR_INLINE SIMDVector<double,128> sqrt(const SIMDVector<double,128> &a) {
 }
 
 
+#endif
+
+
 
 // SCALAR VERSION
 //------------------------------------------------------------------------------------------------------------
@@ -475,6 +493,10 @@ struct SIMDVector<double, 64> {
 
     FASTOR_INLINE void set_sequential(double num) {
         value = num;
+    }
+
+    FASTOR_INLINE void broadcast(const double *data) {
+        value = *data;
     }
 
     // In-place operators

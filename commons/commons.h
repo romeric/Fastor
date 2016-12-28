@@ -1,23 +1,34 @@
 #ifndef COMMONS_H
 #define COMMONS_H
 
-#if __cplusplus < 201103
-#if (defined Vc_MSVC && Vc_MSVC >= 160000000)
-// these compilers still work, even if they don't define __cplusplus as expected
-#else
-#error "Fastor requires support for C++11."
+
+#ifdef __GNUC__
+    #ifndef __clang__
+        #ifndef __INTEL_COMPILER
+            #define FASTOR_GCC
+        #endif
+    #endif
 #endif
-#elif __cplusplus >= 201402L
-# define Vc_CXX14 1
+
+#ifdef __INTEL_COMPILER
+    #define FASTOR_INTEL
+#endif
+
+#ifdef __clang__
+    #define FASTOR_CLANG
+#endif
+
+#if defined(_MSC_VER)
+    #define FASTOR_MSC
 #endif
 
 #if defined(_MSC_VER)
     #if _MSC_VER < 1800
-       #error SIMDTensor needs a C++11 compliant compiler
+       #error Fastor needs an ISO C++11 compliant compiler
     #endif
 #elif defined(__GNUC__) || defined(__GNUG__)
     #if __cplusplus <= 199711L
-        #error SIMDTensor needs a C++11 compliant compiler
+        #error Fastor needs an ISO C++11 compliant compiler
     #endif
 #endif
 
@@ -38,7 +49,7 @@
 // Define this if hadd seems beneficial
 //#define USE_HADD
 
-// Bounds check - on by default
+// Bounds checking - on by default
 #define BOUNDSCHECK
 
 #include <cstdlib>
