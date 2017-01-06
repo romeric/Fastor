@@ -119,6 +119,7 @@ struct SIMDVector<double, 256> {
         return out;
     }
     FASTOR_INLINE double sum() {return _mm256_sum_pd(value);}
+    FASTOR_INLINE double product() {return _mm256_prod_pd(value);}
     FASTOR_INLINE SIMDVector<double> reverse() {
         SIMDVector<double> out;
         out.value = _mm256_reverse_pd(value);
@@ -341,6 +342,7 @@ struct SIMDVector<double, 128> {
         return out;
     }
     FASTOR_INLINE double sum() {return _mm_sum_pd(value);}
+    FASTOR_INLINE double product() {return _mm_prod_pd(value);}
     FASTOR_INLINE SIMDVector<double,128> reverse() {
         SIMDVector<double,128> out;
         out.value = _mm_reverse_pd(value);
@@ -533,6 +535,7 @@ struct SIMDVector<double, 64> {
         return *this;
     }
     FASTOR_INLINE double sum() {return value;}
+    FASTOR_INLINE double product() {return value;}
     FASTOR_INLINE SIMDVector<double,64> reverse() {
         return *this;
     }

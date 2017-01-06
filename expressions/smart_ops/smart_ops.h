@@ -26,16 +26,26 @@ struct BinaryMatMulOp {
     FASTOR_INDEX dimension(FASTOR_INDEX i) const {return lhs.dimension(i);}
 
 //private:
+#ifndef COPY_SMART_EXPR
     const TLhs &lhs;
     const TRhs &rhs;
+#else
+    TLhs lhs;
+    TRhs rhs;
+#endif
 };
 template<typename TLhs, typename TRhs,
          typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
                                  !std::is_arithmetic<TRhs>::value,bool>::type = 0 >
 FASTOR_INLINE BinaryMatMulOp<TLhs, TRhs> lmatmul(const TLhs &lhs, const TRhs &rhs) {
-//  return BinaryMatMulOp<TLhs, TRhs>(lhs.self(), rhs.self());
   return BinaryMatMulOp<TLhs, TRhs>(lhs, rhs);
 }
+//template<typename TLhs, typename TRhs,
+//         typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
+//                                 !std::is_arithmetic<TRhs>::value,bool>::type = 0 >
+//FASTOR_INLINE BinaryMatMulOp<TLhs, TRhs> lmatmul(TLhs &&lhs, const TRhs &rhs) {
+//  return BinaryMatMulOp<TLhs, TRhs>(lhs, rhs);
+//}
 //!--------------------------------------------------------------!//
 
 
@@ -51,13 +61,15 @@ struct UnaryTransposeOp {
         return expr(static_cast<U>(j),static_cast<U>(i));
     }
 
-//private:
+#ifndef COPY_SMART_EXPR
     const Expr &expr;
+#else
+    Expr expr;
+#endif
 };
 template<typename Expr,
          typename std::enable_if<!std::is_arithmetic<Expr>::value,bool>::type = 0 >
 FASTOR_INLINE UnaryTransposeOp<Expr> ltranspose(const Expr &expr) {
-//  return UnaryTransposeOp<Expr>(expr.self());
   return UnaryTransposeOp<Expr>(expr);
 }
 //!--------------------------------------------------------------!//
@@ -79,7 +91,11 @@ struct UnaryTraceOp {
         return result;
     }
 
+#ifndef COPY_SMART_EXPR
     const Expr &expr;
+#else
+    Expr expr;
+#endif
 };
 template<typename Expr,
          typename std::enable_if<!std::is_arithmetic<Expr>::value,bool>::type = 0 >
@@ -104,8 +120,11 @@ struct UnaryDetOp {
         return result;
     }
 
-
+#ifndef COPY_SMART_EXPR
     const Expr &expr;
+#else
+    Expr expr;
+#endif
 };
 template<typename Expr,
          typename std::enable_if<!std::is_arithmetic<Expr>::value,bool>::type = 0 >
@@ -128,8 +147,11 @@ struct UnaryAdjOp {
         _adjoint<U,dimension,dimension>(expr.data(),_data);
     }
 
-
+#ifndef COPY_SMART_EXPR
     const Expr &expr;
+#else
+    Expr expr;
+#endif
 };
 template<typename Expr,
          typename std::enable_if<!std::is_arithmetic<Expr>::value,bool>::type = 0 >
@@ -153,7 +175,11 @@ struct UnaryCofOp {
     }
 
 
+#ifndef COPY_SMART_EXPR
     const Expr &expr;
+#else
+    Expr expr;
+#endif
 };
 template<typename Expr,
          typename std::enable_if<!std::is_arithmetic<Expr>::value,bool>::type = 0 >
@@ -178,8 +204,11 @@ struct UnaryInvOp {
         return result;
     }
 
-
+#ifndef COPY_SMART_EXPR
     const Expr &expr;
+#else
+    Expr expr;
+#endif
 };
 template<typename Expr,
          typename std::enable_if<!std::is_arithmetic<Expr>::value,bool>::type = 0 >

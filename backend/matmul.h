@@ -164,7 +164,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
                 }
             }
         }
-//        print("3");
+//        print("3 version");
     }
 
     else {

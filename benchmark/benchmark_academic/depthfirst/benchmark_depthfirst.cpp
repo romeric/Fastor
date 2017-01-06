@@ -26,24 +26,16 @@ void run_benchmark_3() {
     Tensor<T,a,b,d> ss2;
     Tensor<T,e,f,d> ss3;
 
-//    ss1.iota(0); ss2.iota(0); ss3.iota(0);
     ss1.random(); ss2.random(); ss3.random();
 
-    double time_dp, time_nodp;
-    std::tie(time_nodp,std::ignore) = rtimeit(static_cast<Tensor<real,c,e,f> (*)(const Tensor<real,a,b,c>&,
-                                              const Tensor<real,a,b,d>&,
-                                              const Tensor<real,e,f,d>&)>(&contraction_<Index<I,J,K>,
-                                                                         Index<I,J,L>,Index<M,N,L>,NoDepthFirst>),
-                                                                         ss1,ss2,ss3);
-    std::tie(time_dp,std::ignore) = rtimeit(static_cast<Tensor<real,c,e,f> (*)(const Tensor<real,a,b,c>&,
+    double time;
+    std::tie(time,std::ignore) = rtimeit(static_cast<Tensor<real,c,e,f> (*)(const Tensor<real,a,b,c>&,
                                               const Tensor<real,a,b,d>&,
                                               const Tensor<real,e,f,d>&)>(&contraction<Index<I,J,K>,
                                                                          Index<I,J,L>,Index<M,N,L>>),
                                                                          ss1,ss2,ss3);
+   println(time,"\n");
 
-   println(time_nodp,time_dp,"\n");
-
-    // contraction<Index<I,J,K>,Index<I,J,L>,Index<M,N,L>>(ss1,ss2,ss3);
 }
 
 void runner_3() {

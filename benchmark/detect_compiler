@@ -1,0 +1,56 @@
+#!/bin/bash
+
+
+CUR=$pwd
+
+if hash g++-6 2>/dev/null; then
+    GCC=g++-6
+elif hash g++ 2>/dev/null; then
+    GCC=g++
+else
+    if [ "$1" == "gcc" ] || [ "$1" == "g++" ]; then
+        echo "$1 not installed in the default location."
+    fi
+fi
+
+
+if hash clang++-3.9 2>/dev/null; then
+    CLANG=clang++-3.9
+elif [ -d "/media/MATLAB/clang+llvm-3.9.0-x86_64-linux-gnu-ubuntu-14.04/bin/" ]; then
+    cd "/media/MATLAB/clang+llvm-3.9.0-x86_64-linux-gnu-ubuntu-14.04/bin/"
+    GRUBB=$(ls | grep clang++)
+    if [ "$GRUBB" == "clang++" ]; then
+        CLANG=/media/MATLAB/clang+llvm-3.9.0-x86_64-linux-gnu-ubuntu-14.04/bin/$GRUBB
+    fi
+    cd $CUR
+else
+    if [ "$1" == "clang" ] || [ "$1" == "clang++" ]; then
+        echo "$1 not installed in the default location."
+    fi
+fi
+
+
+if hash icpc 2>/dev/null; then
+    ICC=icpc
+elif [ -d "/home/roman/intel_2017/bin/" ]; then
+    cd "/home/roman/intel_2017/bin/"
+    GRUBB=$(ls | grep icpc)
+    if [ "$GRUBB" == "icpc" ]; then
+        ICC=/home/roman/intel_2017/bin/$GRUBB
+    fi
+    cd $CUR
+elif [ -d "/media/MATLAB/intel_2017/bin/" ]; then
+    cd "/media/MATLAB/intel_2017/bin/"
+    GRUBB=$(ls | grep icpc)
+    if [ "$GRUBB" == "icpc" ]; then
+        ICC=/media/MATLAB/intel_2017/bin/$GRUBB
+    fi
+    cd $CUR
+else
+    if [ "$1" == "icc" ] || [ "$1" == "icpc" ]; then
+        echo "$1 not installed in the default location."
+    fi
+fi
+
+
+echo "$GCC $CLANG $ICC"

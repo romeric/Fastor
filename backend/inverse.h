@@ -6,6 +6,93 @@
 
 namespace Fastor {
 
+template<typename T, size_t N>
+FASTOR_INLINE void _inverse(const T *__restrict__ src, T *__restrict__ dst);
+
+template<>
+FASTOR_INLINE void _inverse<double,2>(const double *__restrict__ src, double *__restrict__ dst)
+{
+    double det;
+
+    double src0 = src[0];
+    double src1 = src[1];
+    double src2 = src[2];
+    double src3 = src[3];
+
+    /* Compute adjoint: */
+    dst[0] = + src3;
+    dst[1] = - src1;
+    dst[2] = - src2;
+    dst[3] = + src0;
+
+    /* Compute determinant: */
+    det = src0 * dst[0] + src1 * dst[2];
+
+    /* Multiply adjoint with reciprocal of determinant: */
+    det = static_cast<double>(1.0) / det;
+    dst[0] *= det;
+    dst[1] *= det;
+    dst[2] *= det;
+    dst[3] *= det;
+#ifdef __AVX__
+    // This might hurt the performance as the data is already loaded
+//    _mm256_store_pd(dst,_mm256_mul_pd(_mm256_load_pd(dst),_mm256_set1_pd(det)));
+#endif
+}
+
+
+template<>
+FASTOR_INLINE void _inverse<double,3>(const double *__restrict__ src, double *__restrict__ dst)
+{
+    double det;
+
+    double src0 = src[0];
+    double src1 = src[1];
+    double src2 = src[2];
+    double src3 = src[3];
+    double src4 = src[4];
+    double src5 = src[5];
+    double src6 = src[6];
+    double src7 = src[7];
+    double src8 = src[8];
+
+    /* Compute adjoint: */
+    dst[0] = + src4 * src8 - src5 * src7;
+    dst[1] = - src1 * src8 + src2 * src7;
+    dst[2] = + src1 * src5 - src2 * src4;
+    dst[3] = - src3 * src8 + src5 * src6;
+    dst[4] = + src0 * src8 - src2 * src6;
+    dst[5] = - src0 * src5 + src2 * src3;
+    dst[6] = + src3 * src7 - src4 * src6;
+    dst[7] = - src0 * src7 + src1 * src6;
+    dst[8] = + src0 * src4 - src1 * src3;
+
+    /* Compute determinant: */
+    det = src0 * dst[0] + src1 * dst[3] + src2 * dst[6];
+
+    /* Multiply adjoint with reciprocal of determinant: */
+    det = static_cast<double>(1.0) / det;
+
+    dst[0] *= det;
+    dst[1] *= det;
+    dst[2] *= det;
+    dst[3] *= det;
+    dst[4] *= det;
+    dst[5] *= det;
+    dst[6] *= det;
+    dst[7] *= det;
+    dst[8] *= det;
+
+#ifdef __AVX__
+    // This might hurt the performance as the data is already loaded
+//    __m256d v0 = _mm256_set1_pd(det);
+//    _mm256_store_pd(dst,_mm256_mul_pd(_mm256_load_pd(dst),v0));
+//    _mm256_store_pd(dst+4,_mm256_mul_pd(_mm256_load_pd(dst+4),v0));
+//    _mm_store_sd(dst+8,_mm_mul_sd(_mm_load_sd(dst+8), _mm256_castpd256_pd128(v0)));
+#endif
+
+}
+
 #ifdef __SSE4_2__
 
 //FASTOR_INLINE __m128 _mm_dot_ps(__m128 v1, __m128 v2)

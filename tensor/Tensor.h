@@ -6,30 +6,32 @@
 #include "simd_vector/SIMDVector.h"
 #include "AbstractTensor.h"
 #include "Range.h"
-
+#include "expressions/smart_ops/smart_ops.h"
 
 namespace Fastor {
 
-template<typename TLhs, typename TRhs>
-struct BinaryMatMulOp;
+//template<typename TLhs, typename TRhs>
+//struct BinaryMatMulOp;
 
-template<typename Expr>
-struct UnaryTransposeOp;
+//template<typename Expr>
+//struct UnaryTransposeOp;
 
-template<typename Expr>
-struct UnaryTraceOp;
+//template<typename Expr>
+//struct UnaryTraceOp;
 
-template<typename Expr>
-struct UnaryDetOp;
+//template<typename Expr>
+//struct UnaryDetOp;
 
-template<typename Expr>
-struct UnaryAdjOp;
+//template<typename Expr>
+//struct UnaryAdjOp;
 
-template<typename Expr>
-struct UnaryCofOp;
+//template<typename Expr>
+//struct UnaryCofOp;
 
-template<typename Expr>
-struct UnaryInvOp;
+//template<typename Expr>
+//struct UnaryInvOp;
+
+
 
 
 template<typename T, size_t ... Rest>
@@ -80,11 +82,12 @@ public:
         const Derived &src = src_.self();
         static_assert(DIMS==Dimension, "TENSOR RANK MISMATCH");
         FASTOR_ASSERT(src.size()==Size, "TENSOR SIZE MISMATCH");
+#ifdef SHAPE_CHECK
         // Check if shape of tensors match
         for (FASTOR_INDEX i=0; i<Dimension; ++i) {
             FASTOR_ASSERT(src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
-
+#endif
         for (FASTOR_INDEX i = 0; i < Size; i+=Stride) {
             src.eval(static_cast<T>(i)).store(_data+i);
         }
@@ -95,10 +98,11 @@ public:
         const Derived &src = src_.self();
         static_assert(DIMS==Dimension, "TENSOR RANK MISMATCH");
         FASTOR_ASSERT(src.size()==Size, "TENSOR SIZE MISMATCH");
+#ifdef SHAPE_CHECK
         for (FASTOR_INDEX i=0; i<Dimension; ++i) {
             FASTOR_ASSERT(src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
-
+#endif
         for (FASTOR_INDEX i = 0; i < Size; i+=Stride) {
             src.eval(static_cast<T>(i)).store(_data+i);
         }
@@ -110,10 +114,11 @@ public:
         const Derived &src = src_.self();
         static_assert(DIMS==Dimension, "TENSOR RANK MISMATCH");
         FASTOR_ASSERT(src.size()==Size, "TENSOR SIZE MISMATCH");
+#ifdef SHAPE_CHECK
         for (FASTOR_INDEX i=0; i<Dimension; ++i) {
             FASTOR_ASSERT(src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
-
+#endif
         for (FASTOR_INDEX i = 0; i < Size; i+=Stride) {
             src.eval(static_cast<T>(i)).store(_data+i);
         }
@@ -151,10 +156,20 @@ public:
     }
     //----------------------------------------------------------------------------------------------------------//
 
+
     // Smart binders
     //----------------------------------------------------------------------------------------------------------//
     template<size_t I, size_t J, size_t K>
     FASTOR_INLINE Tensor(const BinaryMatMulOp<Tensor<T,I,J>,Tensor<T,J,K>>& src_) {
+        constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
+        for (FASTOR_INDEX i = 0; i < dimension(0); i++) {
+            for (FASTOR_INDEX j = 0; j < dimension(1); j++) {
+                _data[i*N+j] = src_.eval(static_cast<T>(i),static_cast<T>(j));
+            }
+        }
+    }
+    template<size_t I, size_t J, size_t K>
+    FASTOR_INLINE Tensor(BinaryMatMulOp<Tensor<T,I,J>,Tensor<T,J,K>> &&src_) {
         constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
         for (FASTOR_INDEX i = 0; i < dimension(0); i++) {
             for (FASTOR_INDEX j = 0; j < dimension(1); j++) {
@@ -223,9 +238,19 @@ public:
         static_assert(sizeof...(Rest)==0, "DETERMINANT OPERATOR WORKS ON SECOND ORDER TENSORS AND RETURNS A SCALAR");
         _data[0] = src_.eval(static_cast<T>(0)); // Passing a zero is just a hack to make the type known to eval
     }
+    template<size_t I>
+    FASTOR_INLINE Tensor(UnaryDetOp<Tensor<T,I,I>> &&src_) {
+             static_assert(sizeof...(Rest)==0, "DETERMINANT OPERATOR WORKS ON SECOND ORDER TENSORS AND RETURNS A SCALAR");
+        _data[0] = src_.eval(static_cast<T>(0));
+    }
 
     template<size_t I>
     FASTOR_INLINE Tensor(const UnaryAdjOp<Tensor<T,I,I>> &src_) {
+        static_assert(I==get_value<1,Rest...>::value && I==get_value<2,Rest...>::value, "DIMENSION MISMATCH");
+        src_.eval(_data);
+    }
+    template<size_t I>
+    FASTOR_INLINE Tensor(UnaryAdjOp<Tensor<T,I,I>> &&src_) {
         static_assert(I==get_value<1,Rest...>::value && I==get_value<2,Rest...>::value, "DIMENSION MISMATCH");
         src_.eval(_data);
     }
@@ -235,15 +260,21 @@ public:
         static_assert(I==get_value<1,Rest...>::value && I==get_value<2,Rest...>::value, "DIMENSION MISMATCH");
         src_.eval(_data);
     }
-
     template<size_t I>
-    FASTOR_INLINE Tensor(const UnaryTransposeOp<UnaryCofOp<Tensor<T,I,I>>> &src_) {
+    FASTOR_INLINE Tensor(UnaryCofOp<Tensor<T,I,I>> &&src_) {
         static_assert(I==get_value<1,Rest...>::value && I==get_value<2,Rest...>::value, "DIMENSION MISMATCH");
-        _adjoint<T,I,I>(src_.expr.expr.data(),_data);
+        src_.eval(_data);
     }
 
     template<size_t I>
     FASTOR_INLINE Tensor(const UnaryInvOp<Tensor<T,I,I>> &src_) {
+        static_assert(I==get_value<1,Rest...>::value && I==get_value<2,Rest...>::value, "DIMENSION MISMATCH");
+        T det_data = src_.eval(_data);
+        FASTOR_WARN(std::abs(det_data)>PRECI_TOL, "WARNING: TENSOR IS NEARLY SINGULAR");
+        *this = *this/det_data;
+    }
+    template<size_t I>
+    FASTOR_INLINE Tensor(UnaryInvOp<Tensor<T,I,I>> &&src_) {
         static_assert(I==get_value<1,Rest...>::value && I==get_value<2,Rest...>::value, "DIMENSION MISMATCH");
         T det_data = src_.eval(_data);
         FASTOR_WARN(std::abs(det_data)>PRECI_TOL, "WARNING: TENSOR IS NEARLY SINGULAR");
@@ -298,9 +329,71 @@ public:
 
     template<size_t I>
     FASTOR_INLINE Tensor(const UnaryTransposeOp<UnaryAdjOp<Tensor<T,I,I>>> &src_) {
-        static_assert(I==get_value<1,Rest...>::value, "DIMENSION MISMATCH");
+        static_assert(I==get_value<1,Rest...>::value && I==get_value<2,Rest...>::value, "DIMENSION MISMATCH");
         _cofactor<T,I,I>(src_.expr.expr.data(),_data);
     }
+
+    template<size_t I>
+    FASTOR_INLINE Tensor(const UnaryTransposeOp<UnaryCofOp<Tensor<T,I,I>>> &src_) {
+        static_assert(I==get_value<1,Rest...>::value && I==get_value<2,Rest...>::value, "DIMENSION MISMATCH");
+        _adjoint<T,I,I>(src_.expr.expr.data(),_data);
+    }
+
+    //----------------------------------------------------------------------------------------------------------//
+    template<size_t ndim, size_t nodeperelem>
+    FASTOR_INLINE Tensor(const BinaryMatMulOp<BinaryMatMulOp<UnaryInvOp<BinaryMatMulOp<Tensor<T, ndim, nodeperelem>,
+                                   Tensor<T, nodeperelem, ndim> > >,
+                                   Tensor<T, ndim, nodeperelem> >, Tensor<T, nodeperelem, ndim> > &src) {
+        //! Domain-aware expression for chaining multiple operators [used for calculating the
+        //! deformation gradient F, for instance]
+
+        static_assert(Size==ndim*ndim,"RESULTING TENSOR MUST BE SQUARE");
+        this->zeros();
+
+#ifndef IDEAL_IMPL
+
+        const T FASTOR_ALIGN *x = src.rhs.data();
+#ifdef FASTOR_INTEL
+        T FASTOR_ALIGN *X = src.lhs.lhs.expr.rhs.data();
+#else
+        T FASTOR_ALIGN *X = src.rhs.data();
+#endif
+        const T FASTOR_ALIGN *Jm = src.lhs.rhs.data();
+
+        T FASTOR_ALIGN PG[ndim*ndim] = {static_cast<T>(0)};
+        _matmul<T,ndim,nodeperelem,ndim>(Jm,X,PG);
+        T FASTOR_ALIGN invPG[ndim*ndim];
+        _inverse<T,ndim>(PG,invPG);
+        T FASTOR_ALIGN MG[ndim*nodeperelem] = {static_cast<T>(0)};
+        _matmul<T,ndim,ndim,nodeperelem>(invPG,Jm,MG);
+#ifdef FASTOR_GCC
+        _matmul<T,ndim,nodeperelem,ndim>(MG,x,_data);
+#endif
+#ifdef FASTOR_INTEL
+        unused(_data);
+#endif
+#ifdef FASTOR_CLANG
+        T FASTOR_ALIGN xx[ndim*ndim];
+        _matmul<T,ndim,nodeperelem,ndim>(MG,x,xx);
+        std::copy(xx,xx+ndim*ndim,_data);
+#endif
+
+#else
+        const T *x = src.rhs.data();
+        const T *Jm = src.lhs.rhs.data();
+        const T *X = src.lhs.lhs.expr.rhs.data();
+
+        T FASTOR_ALIGN PG[ndim*ndim] = {static_cast<T>(0.)};
+        _matmul<T,ndim,nodeperelem,ndim>(Jm,X,PG);
+        T FASTOR_ALIGN invPG[ndim*ndim];
+        _inverse<T,ndim>(PG,invPG);
+        T FASTOR_ALIGN MG[ndim*nodeperelem] = {static_cast<T>(0.)};
+        _matmul<T,ndim,ndim,nodeperelem>(invPG,Jm,MG);
+        _matmul<T,ndim,nodeperelem,ndim>(MG,x,_data);
+
+#endif
+    }
+
     //----------------------------------------------------------------------------------------------------------//
 
     // Raw pointer providers
@@ -701,20 +794,76 @@ public:
     }
 
     FASTOR_INLINE void random() {
+        //! Populate tensor with random numbers
         for (FASTOR_INDEX i=0; i<this->Size; ++i) {
             _data[i] = (T)rand()/RAND_MAX;
         }
     }
 
     FASTOR_INLINE T sum() const {
-        T summ = static_cast<T>(0);
-        for (FASTOR_INDEX i=0; i< Size; i++) {
-            summ += _data[i];
+
+        if ((Size==0) || (Size==1)) return _data[0];
+
+        using V = SIMDVector<T>;
+        constexpr int unroll_upto = V::unroll_size(Size);
+        constexpr int stride = V::Size;
+        int i = 0;
+
+        V vec =static_cast<T>(0);
+        for (; i< unroll_upto; i+=stride) {
+            vec += V(_data+i);
         }
-        return summ;
+        T scalar = static_cast<T>(0);
+        for (int j=i; j< Size; j++) {
+            scalar += _data[j];
+        }
+        return vec.sum() + scalar;
     }
 
-    // Special function
+    FASTOR_INLINE T product() const {
+
+        if ((Size==0) || (Size==1)) return _data[0];
+
+        using V = SIMDVector<T>;
+        constexpr int unroll_upto = V::unroll_size(Size);
+        constexpr int stride = V::Size;
+        int i = 0;
+
+        V vec =static_cast<T>(1);
+        for (; i< unroll_upto; i+=stride) {
+            vec *= V(_data+i);
+        }
+        T scalar = static_cast<T>(0);
+        for (int j=i; j< Size; j++) {
+            scalar *= _data[j];
+        }
+        return vec.product()*scalar;
+    }
+
+
+    // Converters
+    FASTOR_INLINE T toscalar() const {
+        //! Returns a scalar
+        static_assert(Size==1,"ONLY TENSORS OF SIZE 1 CAN BE CONVERTED TO SCALAR");
+        return _data[0];
+    }
+
+    FASTOR_INLINE std::array<T,Size> toarray() const {
+        //! Returns std::array
+        std::array<T,Size> out;
+        std::copy(_data,_data+Size,out.begin());
+        return out;
+    }
+
+    FASTOR_INLINE std::vector<T> tovector() const {
+        //! Returns std::vector
+        std::vector<T> out(Size);
+        std::copy(_data,_data+Size,out.begin());
+        return out;
+    }
+
+
+    // Boolean functions
     constexpr FASTOR_INLINE bool is_uniform() const {
         //! A tensor is uniform if it spans equally in all dimensions,
         //! i.e. generalisation of square matrix to n dimension

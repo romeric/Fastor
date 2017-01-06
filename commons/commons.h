@@ -24,11 +24,11 @@
 
 #if defined(_MSC_VER)
     #if _MSC_VER < 1800
-       #error Fastor needs an ISO C++11 compliant compiler
+       #error FASTOR REQUIRES AN ISO C++11 COMPLIANT COMPILER
     #endif
 #elif defined(__GNUC__) || defined(__GNUG__)
     #if __cplusplus <= 199711L
-        #error Fastor needs an ISO C++11 compliant compiler
+        #error FASTOR REQUIRES AN ISO C++11 COMPLIANT COMPILER
     #endif
 #endif
 
@@ -49,8 +49,17 @@
 // Define this if hadd seems beneficial
 //#define USE_HADD
 
+// ADDITIONAL MACROS DEFINED THROUGHOUT FASTOR
+//-----------------------------------------------
 // Bounds checking - on by default
 #define BOUNDSCHECK
+//#define FASTOR_DONT_VECTORISE
+//#define FASTOR_DONT_PERFORM_OP_MIN
+//#define COPY_SMART_EXPR
+#define SHAPE_CHECK
+#define DepthFirst -200
+#define NoDepthFirst -201
+//-----------------------------------------------
 
 #include <cstdlib>
 #include <cassert>
@@ -77,15 +86,12 @@
 #define PlaneStrain -152
 #define PlaneStress -153
 
-#define DepthFirst -200
-#define NoDepthFirst -201
-
-
 #define SSE 128
 #define AVX 256
 #define Scalar 64
 #define Double 64
 #define Single 32
+
 
 
 #ifdef __SSE4_2__
@@ -113,6 +119,9 @@
 
 using FASTOR_INDEX = size_t;
 using Int64 = long long int;
+using DEFAULT_FLOAT_TYPE = double;
+using DFT = DEFAULT_FLOAT_TYPE;
+using FASTOR_VINDEX = volatile size_t;
 
 
 #define PRECI_TOL 1e-14
@@ -135,6 +144,42 @@ void FASTOR_WARN(bool cond, const std::string &x) {
         std::cout << x << std::endl;
     }
 }
+
+#define _FASTOR_TOSTRING(X) #X
+#define FASTOR_TOSTRING(X) _FASTOR_TOSTRING(X)
+
+
+#if defined(__GNUC__)
+    #define DEPRECATE(foo, msg) foo __attribute__((deprecated(msg)))
+#elif defined(_MSC_VER)
+    #define DEPRECATE(foo, msg) __declspec(deprecated(msg)) foo
+#else
+    #error FASTOR STATIC WARNING DOES NOT SUPPORT THIS COMPILER
+#endif
+
+#define PP_CAT(x,y) PP_CAT1(x,y)
+#define PP_CAT1(x,y) x##y
+
+namespace useless
+{
+    struct true_type {};
+    struct false_type {};
+    template <int test> struct converter : public true_type {};
+    template <> struct converter<0> : public false_type {};
+}
+
+#define FASTOR_STATIC_WARN(cond, msg) \
+struct PP_CAT(static_warning,__LINE__) { \
+  DEPRECATE(void _(::useless::false_type const& ),msg) {}; \
+  void _(::useless::true_type const& ) {}; \
+  PP_CAT(static_warning,__LINE__)() {_(::useless::converter<(cond)>());} \
+}
+
+
+
+//
+#define FASTOR_ISALIGNED(POINTER, BYTE_COUNT) \
+    (((uintptr_t)(const void *)(POINTER)) % (BYTE_COUNT) == 0)
 
 
 #include "extended_algorithms.h"

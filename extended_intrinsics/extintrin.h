@@ -24,6 +24,7 @@ FASTOR_INLINE double _mm_sum_pd(__m128d a) {
 #endif
 #else
 #ifdef __SSE4_2__
+
 FASTOR_INLINE float _mm_sum_ps(__m128 a) {
     // 8 OPS
     __m128 shuf = _mm_movehdup_ps(a);
@@ -38,10 +39,27 @@ FASTOR_INLINE double _mm_sum_pd(__m128d a) {
     __m128d shuf  = _mm_castps_pd(shuftmp);
     return  _mm_cvtsd_f64(_mm_add_sd(a, shuf));
 }
+
+FASTOR_INLINE float _mm_prod_ps(__m128 a) {
+    // 12 OPS
+    __m128 shuf  = _mm_movehdup_ps(a);
+    __m128 prods = _mm_mul_ps(a, shuf);
+    shuf         = _mm_movehl_ps(shuf, prods);
+    prods        = _mm_mul_ss(prods, shuf);
+    return       _mm_cvtss_f32(prods);
+}
+FASTOR_INLINE double _mm_prod_pd(__m128d a) {
+    // 6 OPS
+    __m128 shuftmp= _mm_movehl_ps(ZEROPS, _mm_castpd_ps(a));
+    __m128d shuf  = _mm_castps_pd(shuftmp);
+    return  _mm_cvtsd_f64(_mm_mul_sd(a, shuf));
+}
+
 #endif
 #endif
 
 #ifdef __AVX__
+
 FASTOR_INLINE float _mm256_sum_ps(__m256 a) {
 //#ifdef USE_HADD
     // IVY 14 OPS - HW 16 OPS
@@ -68,6 +86,20 @@ FASTOR_INLINE double _mm256_sum_pd(__m256d a) {
     __m128d result = _mm_add_sd(sum_high, _mm256_castpd256_pd128(sum));
     return _mm_cvtsd_f64(result);
 }
+
+
+FASTOR_INLINE float _mm256_prod_ps(__m256 a) {
+    // ~ IVY 30 OPS - HW 32 OPS
+    return _mm_prod_ps(_mm256_castps256_ps128(a))*_mm_prod_ps(_mm256_extractf128_ps(a, 0x1));
+}
+FASTOR_INLINE double _mm256_prod_pd(__m256d a) {
+    // IVY 12 OPS - HW - 14 OPS
+    __m256d sum = _mm256_mul_pd(a, _mm256_shuffle_pd(a,a,0x5));
+    __m128d sum_high = _mm256_extractf128_pd(sum, 0x1);
+    __m128d result = _mm_mul_sd(sum_high, _mm256_castpd256_pd128(sum));
+    return _mm_cvtsd_f64(result);
+}
+
 #endif
 //!---------------------------------------------------------------//
 //!

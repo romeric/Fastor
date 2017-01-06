@@ -52,7 +52,17 @@ uint64_t rdtsc(){
 #define CYCLES
 #endif
 
-
+//#if defined(INCREASE_BENCH_TIMER_0)
+//#define RUNTIME 2.0
+//#elif defined(INCREASE_BENCH_TIMER_1)
+//#define RUNTIME 3.0
+//#elif defined(INCREASE_BENCH_TIMER_2)
+//#define RUNTIME 5.0
+//#elif defined(INCREASE_BENCH_TIMER_3)
+//#define RUNTIME 10.0
+//#else
+//#define RUNTIME 1.0
+//#endif
 #define RUNTIME 1.0
 
 template<typename T, typename ... Params, typename ... Args>

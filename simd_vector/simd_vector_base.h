@@ -148,6 +148,13 @@ struct SIMDVector {
             quan += value[i];
         return quan;
     }
+    FASTOR_INLINE T product() {
+        //! Don't use prod as that is the name of a meta-function
+        T quan = 1;
+        for (FASTOR_INDEX i=0; i<Size;++i)
+            quan *= value[i];
+        return quan;
+    }
     FASTOR_INLINE SIMDVector<T,ABI> reverse() {
         T FASTOR_ALIGN tmp[Size];
         std::copy(value,value+Size,tmp);

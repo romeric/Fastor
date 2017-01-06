@@ -8,6 +8,7 @@
 #include <array>
 #include <vector>
 #include <numeric>
+#include <cstring>
 
 #ifndef _WIN32
 #include <sys/resource.h>

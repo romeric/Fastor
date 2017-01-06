@@ -111,31 +111,55 @@ struct meta_max<m,n> {
     static const int value = (m>=n) ? m : n;
 };
 //-------
-template<int ... size_t>
+template<int ... rest>
 struct meta_argmin;
 
-//template<int m, int n, int ... rest>
-//struct meta_argmin<m,n,rest...> {
-//    static constexpr int pval = meta_min<m,n>::value;
-//    static const int value = (pval <= meta_min<pval,rest...>::value) ?
-//                meta_argmin<pval,rest...>::value : meta_argmin<pval,rest...>::value+1;
+template<int m, int n, int ... rest>
+struct meta_argmin<m,n,rest...> {
+    static constexpr int pval = meta_min<m,n>::value;
+    static const int value = (pval <= meta_min<pval,rest...>::value) ?
+                meta_argmin<m,n>::value : meta_argmin<pval,rest...>::value+1;
+};
+
+//template<int m, int n, int p, int q, int r>
+//struct meta_argmin<m,n,p,q,r> {
+//    static constexpr int pval = meta_min<m,n,p,q>::value;
+//    static constexpr int value = ( pval <= meta_min<pval,r>::value) ? meta_argmin<m,n,p,q>::value : 4;
 //};
 
-template<int m, int n, int p, int q>
-struct meta_argmin<m,n,p,q> {
-    static constexpr int pval = meta_min<m,n,p>::value;
-    static constexpr int value = ( pval <= meta_min<pval,q>::value) ? meta_argmin<m,n,p>::value : 3;
-};
+//template<int m, int n, int p, int q>
+//struct meta_argmin<m,n,p,q> {
+//    static constexpr int pval = meta_min<m,n,p>::value;
+//    static constexpr int value = ( pval <= meta_min<pval,q>::value) ? meta_argmin<m,n,p>::value : 3;
+//};
 
-template<int m, int n, int p>
-struct meta_argmin<m,n,p> {
-    static constexpr int pval = meta_min<m,n>::value;
-    static constexpr int value = ( pval <= meta_min<pval,p>::value) ? meta_argmin<m,n>::value : 2;
-};
+//template<int m, int n, int p>
+//struct meta_argmin<m,n,p> {
+//    static constexpr int pval = meta_min<m,n>::value;
+//    static constexpr int value = ( pval <= meta_min<pval,p>::value) ? meta_argmin<m,n>::value : 2;
+//};
 
 template<int m, int n>
 struct meta_argmin<m,n> {
     static const int value = (m<n) ? 0 : 1;
+};
+
+//-------
+
+//-------
+template<int ... rest>
+struct meta_argmax;
+
+template<int m, int n, int ... rest>
+struct meta_argmax<m,n,rest...> {
+    static constexpr int pval = meta_max<m,n>::value;
+    static const int value = (pval >= meta_max<pval,rest...>::value) ?
+                meta_argmax<m,n>::value : meta_argmax<pval,rest...>::value+1;
+};
+
+template<int m, int n>
+struct meta_argmax<m,n> {
+    static const int value = (m>n) ? 0 : 1;
 };
 
 //-------
@@ -146,7 +170,7 @@ template<int Y,
          int InfX = 0,
          int SupX = ((Y==1) ? 1 : Y/2),
          bool Done = ((SupX-InfX)<=1 ? true : ((SupX*SupX <= Y) && ((SupX+1)*(SupX+1) > Y))) >
-                                // use ?: instead of || just to shut up a stupid gcc 4.3 warning
+                                // use ?: instead of || just to shut up a gcc 4.3 warning
 class meta_sqrt
 {
     enum {
@@ -351,6 +375,92 @@ struct apply_typelist<MFC, typelist<Ts...>> {
 ///////////////////////////////////////////////////////////////
 
 
+
+
+// Check if indices appear more than twice [for Einstein summation]
+//---------------------------------------------------------------------------------------------------------------
+template <typename T>
+constexpr const T& ct_max(T const& t1, T const& t2) {
+    return t1 < t2 ? t2 : t1;
+}
+
+
+template <size_t S, size_t... Sizes>
+struct count__;
+
+template <size_t S>
+struct count__<S> {
+    static constexpr size_t value = std::integral_constant<size_t, 0>::value;
+};
+
+template <size_t S1, size_t... Sizes>
+struct count__<S1, S1, Sizes...> {
+    static constexpr size_t value = std::integral_constant<size_t, 1 + count__<S1, Sizes...>::value>::value;
+};
+
+template <size_t S1, size_t S2, size_t... Sizes>
+struct count__<S1, S2, Sizes...> {
+   static constexpr size_t value = count__<S1, Sizes...>::value;
+};
+
+template <size_t...all>
+struct max_count;
+
+template <>
+struct max_count<> {
+    static constexpr size_t value = std::integral_constant<size_t, 0>::value;
+};
+
+template <size_t S, size_t... Sizes>
+struct max_count<S, Sizes...> {
+    static constexpr size_t value = std::integral_constant<size_t, ct_max(1 + count__<S, Sizes...>::value,
+                                            max_count<Sizes...>::value)>::value;
+};
+
+template <size_t... Sizes>
+struct no_more_than_two {
+    static constexpr size_t value = std::integral_constant<bool, max_count<Sizes...>::value <= 2>::value;
+};
+
+//template <size_t... Sizes>
+//struct no_more_than_two {
+//    static constexpr size_t value = std::integral_constant<bool, max_count<Sizes...>::value <= 2>::value;
+//};
+
+
+
+//template <size_t S, size_t... Sizes>
+//struct count__;
+
+//template <size_t S>
+//struct count__<S>: std::integral_constant<size_t, 0> {};
+
+//template <size_t S1, size_t... Sizes>
+//struct count__<S1, S1, Sizes...>:
+//    std::integral_constant<size_t, 1 + count__<S1, Sizes...>{}> {};
+
+//template <size_t S1, size_t S2, size_t... Sizes>
+//struct count__<S1, S2, Sizes...>:
+//    count__<S1, Sizes...> {};
+
+//template <size_t...>
+//struct max_count;
+
+//template <>
+//struct max_count<>: std::integral_constant<size_t, 0> { };
+
+//template <size_t S, size_t... Sizes>
+//struct max_count<S, Sizes...>:
+//    std::integral_constant<size_t, ct_max(1 + count__<S, Sizes...>{},
+//                                            max_count<Sizes...>::value)> { };
+
+////template <size_t... Sizes>
+////struct no_more_than_two: std::integral_constant<bool, max_count<Sizes...>{} <= 2> { };
+
+//template <size_t... Sizes>
+//struct no_more_than_two std::integral_constant<bool, max_count<Sizes...>{} <= 2> { };
+
+//---------------------------------------------------------------------------------------------------------------
 
 
 }

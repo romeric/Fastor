@@ -28,24 +28,18 @@ void run_benchmark_4() {
 
     ss1.random(); ss2.random(); ss3.random(); ss4.random();
 
-    double time_dp, time_nodp;
-    std::tie(time_nodp,std::ignore) = rtimeit(static_cast<Tensor<T,d,g> (*)(const Tensor<T,a,b,c>&,
-                                              const Tensor<T,a,b,d>&,
-                                              const Tensor<T,e,f,c>&, const Tensor<T,e,f,g>&)>(&contraction_<Index<I,J,K>,
-                                                                         Index<I,J,L>,Index<M,N,K>,Index<M,N,O>,NoDepthFirst>),
-                                                                         ss1,ss2,ss3,ss4);
-    std::tie(time_dp,std::ignore) = rtimeit(static_cast<Tensor<T,d,g> (*)(const Tensor<T,a,b,c>&,
+    double time;
+    std::tie(time,std::ignore) = rtimeit(static_cast<Tensor<T,d,g> (*)(const Tensor<T,a,b,c>&,
                                               const Tensor<T,a,b,d>&,
                                               const Tensor<T,e,f,c>&, const Tensor<T,e,f,g>&)>(&contraction<Index<I,J,K>,
                                                                          Index<I,J,L>,Index<M,N,K>,Index<M,N,O>>),
                                                                          ss1,ss2,ss3,ss4);
 
-   println(time_nodp,time_dp,"\n");
-    // contraction<Index<I,J,K>,Index<I,J,L>,Index<M,N,O>,Index<M,N,P>>(ss1,ss2,ss3);
+   println(time,"\n");
 }
 
 void runner_4() {
-    // two temporary created
+    // two temporaries created
 
     // 0.5*L1
     {

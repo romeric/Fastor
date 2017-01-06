@@ -7,9 +7,6 @@ void iterate_over_scalar(const Tensor0 &a, const Tensor1& b) {
     for (; iter<NITER; ++iter) {
         auto out = contraction<Index_I,Index_J>(a,b);
         unused(a); unused(b); unused(out);
-        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
-        // T *out_data = out.data();
-        // out_data[1] += 1; 
     }
 }
 
@@ -24,7 +21,6 @@ void run(const Tensor0 &a, const Tensor1& b) {
 
     // write
     const std::string filename = "SIMD_products_results";
-    // write(filename,"Tensor<"+type_name<T>()+","+itoa(arr0)+">"+" x "+"Tensor<"+type_name<T>()+","+itoa(arr1)+">");
     write(filename,elapsed_time);
 }
 

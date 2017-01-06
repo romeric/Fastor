@@ -152,6 +152,7 @@ constexpr int retrieve_value(const size_t (&ind0)[M], const size_t (&ind1)[N], c
             ? 1 : nums1[find_index(ind1,ind1[i])];
 }
 
+
 // does an array ind contain a number num (bool equivalent of find_index)
 template<size_t N>
 constexpr bool contains(const size_t (&ind)[N], int num){
@@ -245,23 +246,27 @@ struct is_reducibly_vectorisable<Index<Idx...>,Tensor<T,Rest...>> {
 
 
 
-// Cost model for by-pair tensor contraction
+
+//! Check if indices in Einstein summation appear more than twice
 //------------------------------------------------------------------------------------------------------------//
-template<class Ind0, class Ind1, class Tensor0, class Tensor1, class Seq>
-struct pair_flop_cost;
+template<class ... Ind>
+struct einsum_index_checker;
 
-template<class T, size_t... Idx0, size_t... Idx1, size_t ...Rest0, size_t ...Rest1, size_t... ss>
-struct pair_flop_cost<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,std_ext::index_sequence<ss...>> {
-
-    static constexpr size_t ind0[sizeof...(Idx0)] = {Idx0... };
-    static constexpr size_t ind1[sizeof...(Idx1)] = {Idx1... };
-    static constexpr int nums0[sizeof...(Rest0)] = {Rest0... };
-    static constexpr int nums1[sizeof...(Rest1)] = {Rest1... };
-    static constexpr int cost_tensor0 = prod<Rest0...>::value;
-    static constexpr int remaining_cost = prod<retrieve_value(ind0,ind1,nums1,ss)...>::value;
-    static constexpr int value = cost_tensor0*remaining_cost;
+template<size_t ... Idx>
+struct einsum_index_checker<Index<Idx...>> {
+    static constexpr bool value = no_more_than_two<Idx...>::value;
 };
+
+//template<size_t ... Idx0, size_t ... Idx1>
+//struct einsum_index_checker<Index<Idx0...>,Index<Idx1...>> {
+//    static constexpr bool value = no_more_than_two<Idx0...,Idx1...>::value;
+//};
 //------------------------------------------------------------------------------------------------------------//
+
+
+
+
+
 
 
 
@@ -316,31 +321,6 @@ template<size_t ... Idx0, size_t ... Idx1, size_t ... Rest0, size_t ... Rest1, t
 constexpr std::array<size_t,sizeof...(ss)>
 no_of_loops_to_set<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,std_ext::index_sequence<ss...>>::dims;
 //------------------------------------------------------------------------------------------------------------//
-
-
-
-
-// Cost model for triplet tensor contraction
-//------------------------------------------------------------------------------------------------------------//
-template<class Ind0, class Ind1, class Ind2, class Tensor0, class Tensor1, class Tensor2>
-struct triplet_flop_cost;
-
-template<class T, size_t... Idx0, size_t... Idx1, size_t... Idx2, size_t ...Rest0, size_t ...Rest1, size_t ...Rest2>
-struct triplet_flop_cost<Index<Idx0...>,Index<Idx1...>,Index<Idx2...>,
-        Tensor<T,Rest0...>,Tensor<T,Rest1...>,Tensor<T,Rest2...>> {
-
-    using concat_tensor_01 = typename no_of_loops_to_set<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,
-            typename std_ext::make_index_sequence<no_of_unique<Idx0...,Idx1...>::value>::type>::type;
-
-    using concat_index_01 = typename no_of_loops_to_set<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,
-            typename std_ext::make_index_sequence<no_of_unique<Idx0...,Idx1...>::value>::type>::indices;
-
-    static constexpr int value = pair_flop_cost<concat_index_01,Index<Idx2...>,concat_tensor_01,Tensor<T,Rest2...>,
-                    typename std_ext::make_index_sequence<sizeof...(Rest2)>::type>::value;
-};
-//------------------------------------------------------------------------------------------------------------//
-
-
 
 
 
