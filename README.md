@@ -49,7 +49,7 @@ int main() {
     Tensor<double,5,5,5> D; D.random();
     auto E = reduction(D);
 
-    // An example of tensor tensor permutation
+    // An example of tensor permutation
     Tensor<float,3,4,5,2> F; F.random();
     auto G = permutation<Index<J,K,I,L>>(F);
 
