@@ -32,6 +32,14 @@ will output the following
 ⎢     21,      22,      23 ⎥
 ⎣     24,      25,      26 ⎦
 ~~~
+Einstein summation as well as summing over multiple (i.e. more than two) indices are supported 
+~~~c++
+Tensor<double,3,4,4> A; Tensor<double,4,5,6,7> B;
+// fill A and B
+
+auto C = einsum<Index<I,J,K>,Index<J,L,M,N>>(A,B);
+auto D = contraction<Index<I,I,J>,Index<I,K,P,Q>>(A,B);  // index I appearing 3 times
+~~~
 
 ### No heap allocation
 Fastor is essentially designed for small mutlidimensional tensors, that can appear in computing stresses, work conjugates, Hessian etc, during numerical integration in a finite element framework. As can be seen from the above examples, Fastor is based on fixed size static arrays (entirely stack allocation). The dimensions of the tensors must be known at compile time, which is typically the case for the use-cases it is designed for. However one of the strongest features of Fastor is in its in-built template meta-programming engine, in that, it can automatically determine at *compile time*, the dimensions of the tensors resulting from a complex operation yet to be performed, hence it can always allocate exactly the right amount of stack memory required. This is in contrast to static arrays in `C` or `Fortran` where one has to allocate a huge block of memory before hand to avoid stack overflow.   
@@ -171,10 +179,10 @@ As you can observe with combination of `permutation`, `contraction`, `reduction`
 Fastor is extremely light weight, it is a *header-only* library, requires no build or compilation process and has no external dependencies. It is written in pure C++11 from the foundation.  
 
 ### Tested Compilers
-Fastor has been tested against the following compilers
+Fastor has been tested against the following compilers (on Ubuntu 14.04 and Ubuntu 16.04)
 - GCC 4.8, GCC 4.9, GCC 5.1, GCC 5.2, GCC 5.3, GCC 5.4, GCC 6.2
 - Clang 3.6, Clang 3.7, Clang 3.8, Clang 3.9
-- Intel 16.0.1, Intel 16.0.2, Intel 16.0.3, Intel 17.0.1  
+- Intel 16.0.1, Intel 16.0.2, Intel 16.0.3, Intel 17.0.1
 
 ### Similar Projects
 Similar projects exist in particular
