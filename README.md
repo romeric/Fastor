@@ -151,7 +151,7 @@ For higher rank tensor networks comprising of many tensors, a full generalisatio
   <img src="docs/imgs/05l2.png" width="280">
   <img src="docs/imgs/05l3.png" width="280">
 </p>
-The X-axis shows the number FLOPS saved/reduced over single expression evaluation scheme. Certainly, the bigger the size of tensors the more reduction in FLOPs is necessary to over to compensate for the temporaries created during by-pair evalution. 
+The X-axis shows the number FLOPS saved/reduced over single expression evaluation scheme. Certainly, the bigger the size of tensors the more reduction in FLOPs is necessary to compensate for the temporaries created during by-pair evalution. 
 
 
 ### Boolean tensor algebra
