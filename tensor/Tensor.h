@@ -794,9 +794,16 @@ public:
     }
 
     FASTOR_INLINE void random() {
-        //! Populate tensor with random numbers
+        //! Populate tensor with random FP numbers
         for (FASTOR_INDEX i=0; i<this->Size; ++i) {
             _data[i] = (T)rand()/RAND_MAX;
+        }
+    }
+
+    FASTOR_INLINE void randint() {
+        //! Populate tensor with random integer numbers
+        for (FASTOR_INDEX i=0; i<this->Size; ++i) {
+            _data[i] = (T)rand();
         }
     }
 

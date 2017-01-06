@@ -32,14 +32,34 @@ will output the following
 ⎢     21,      22,      23 ⎥
 ⎣     24,      25,      26 ⎦
 ~~~
-Einstein summation as well as summing over multiple (i.e. more than two) indices are supported 
+Einstein summation as well as summing over multiple (i.e. more than two) indices are supported. As a complete example, for instance, consider 
 ~~~c++
-Tensor<double,3,4,4> A; Tensor<double,4,5,6,7> B;
-// fill A and B
+#include <Fastor.h>
+using namespace Fastor;
+enum {I,J,K,L,M,N};
 
-auto C = einsum<Index<I,J,K>,Index<J,L,M,N>>(A,B);
-auto D = contraction<Index<I,I,J>,Index<I,K,P,Q>>(A,B);  // index I appearing 3 times
+int main() {
+    // An example of Einstein summation
+    Tensor<double,2,3,5> A; Tensor<double,3,5,2,4> B; 
+    // fill A and B
+    A.random(); B.random();
+    auto C = einsum<Index<I,J,K>,Index<J,L,M,N>>(A,B);
+
+    // An example of summing over three indices
+    Tensor<double,5,5,5> D; D.random();
+    auto E = reduction(D);
+
+    // An example of tensor tensor permutation
+    Tensor<float,3,4,5,2> F; F.random();
+    auto G = permutation<Index<J,K,I,L>>(F);
+
+    // Output the results
+    print("Our big tensors:",C,E,G);
+
+    return 0;
+}
 ~~~
+You can compile and run this by providing the following (or equivalent) flags to your compiler `-O3 -mavx`.
 
 ### No heap allocation
 Fastor is essentially designed for small mutlidimensional tensors, that can appear in computing stresses, work conjugates, Hessian etc, during numerical integration in a finite element framework. As can be seen from the above examples, Fastor is based on fixed size static arrays (entirely stack allocation). The dimensions of the tensors must be known at compile time, which is typically the case for the use-cases it is designed for. However one of the strongest features of Fastor is in its in-built template meta-programming engine, in that, it can automatically determine at *compile time*, the dimensions of the tensors resulting from a complex operation yet to be performed, hence it can always allocate exactly the right amount of stack memory required. This is in contrast to static arrays in `C` or `Fortran` where one has to allocate a huge block of memory before hand to avoid stack overflow.   
