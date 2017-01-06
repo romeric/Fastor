@@ -9,23 +9,26 @@
 # ./run_benchmark.sh profile
 
 
+read GCC CLANG ICC TEMPLIGHT < <(../../../detect_compiler $1)
+
+
 if [ "$1" == "gcc" ] || [ "$1" == "g++" ]; then
-	COMPILER=g++-6
+	COMPILER=$GCC
 	CRES=compilation_results_gcc
 	BRES=binary_results_gcc
 	RRES=runtime_results_gcc
 elif [ "$1" == "clang" ] || [ "$1" == "clang++" ]; then
-	COMPILER=clang++-3.9
+	COMPILER=$CLANG
 	CRES=compilation_results_clang
 	BRES=binary_results_clang
 	RRES=runtime_results_clang
 elif [ "$1" == "icc" ] || [ "$1" == "icpc" ]; then
-	COMPILER=/home/roman/intel_2017/bin/icpc
+	COMPILER=$ICC
 	CRES=compilation_results_icc
 	BRES=binary_results_icc
 	RRES=runtime_results_icc
 elif [ "$1" == "profile" ]; then
-	templight=/home/roman/PROFILER_CPP/templight_binary/metashell/3rd/templight/build/bin/templight++
+	templight=$TEMPLIGHT
 else
 	echo "Don't understand the compiler"
 	exit 1

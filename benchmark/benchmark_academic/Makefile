@@ -7,14 +7,14 @@ all:
 	./run_benchmark.sh gcc runtime_bench
 	./run_benchmark.sh clang runtime_bench
 	./run_benchmark.sh icc runtime_bench
-	cd ..
+	cd ../..
 
 	echo "Running compliation benchmark for operation minimisation scheme"
 	cd compilation_process/depthfirst/
 	./run_benchmark.sh gcc
 	./run_benchmark.sh clang
 	./run_benchmark.sh icc
-	cd ..
+	cd ../..
 
 	echo "Running run time benchmark for operation minimisation scheme"
 	cd depthfirst/
@@ -33,4 +33,23 @@ all:
 	make
 	make run
 	cd ..
+
+
+clean:
+	cd compilation_process/bypair_optimisation/
+	make all_clean
+	cd ../..
+	cd compilation_process/depthfirst/
+	make all_clean
+	cd ../..
+	cd depthfirst/
+	make clean
+	cd ..
+	cd contraction/
+	make clean
+	cd ..
+	cd outerproduct/
+	make clean
+	cd ..
+
 

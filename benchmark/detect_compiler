@@ -53,4 +53,21 @@ else
 fi
 
 
-echo "$GCC $CLANG $ICC"
+if hash templight++ 2>/dev/null; then
+    TEMPLIGHT=icpc
+elif [ -d "home/roman/PROFILER_CPP/templight_binary/metashell/3rd/templight/build/bin/" ]; then
+    cd "/home/roman/PROFILER_CPP/templight_binary/metashell/3rd/templight/build/bin/"
+    GRUBB=$(ls | grep templight++)
+    if [ "$GRUBB" == "templight++" ]; then
+        TEMPLIGHT=/home/roman/PROFILER_CPP/templight_binary/metashell/3rd/templight/build/bin/$GRUBB
+    fi
+    cd $CUR
+else
+    if [ "$1" == "profile" ]; then
+        echo "$1 not installed. Aborting"
+        exit 1
+    fi
+fi
+
+
+echo "$GCC $CLANG $ICC $TEMPLIGHT"

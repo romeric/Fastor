@@ -459,6 +459,12 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
 
 #endif
 
+
+template<typename T, size_t ... Rest0, size_t ... Rest1>
+FASTOR_INLINE Tensor<T,Rest0...,Rest1...> dyadic(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
+    return outer(a,b);
+}
+
 }
 
 #endif // OUTERPRODUCT_H

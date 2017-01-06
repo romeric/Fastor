@@ -1,14 +1,21 @@
-# DO NOT ALLOW THE COMPILER TO BREAK IEEE COMPLIANCE
-CXX = g++ -fabi-version=6 -finline-functions -fno-fast-math
-# CXX = clang++ -fno-fast-math
-# CXX = icpc -fp-model=strict # -fp-model=precise
 CXX_FLAGS = -std=c++11 -O3 -mavx 
-# GCC_COMPAT = -fabi-version=6 -finline-functions
 INCLUDES = -I../../
+
+
+# DO NOT ALLOW THE COMPILER TO BREAK IEEE COMPLIANCE
+ifeq "$(CXX)" "g++"
+    CXX_FLAGS += -fno-fast-math -fabi-version=6
+endif
+ifeq "$(CXX)" "clang++"
+    CXX_FLAGS += -fno-fast-math
+endif
+ifeq "$(CXX)" "icpc"
+    CXX_FLAGS += -fp-model=strict
+endif
+
 
 all: bench_transpose bench_trace bench_norm bench_doublecontract bench_crossproduct \
 	bench_outer bench_cyclic bench_matmul
-
 
 
 bench_transpose:

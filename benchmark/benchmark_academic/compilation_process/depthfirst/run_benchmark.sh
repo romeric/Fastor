@@ -31,7 +31,6 @@ else
     exit 1
 fi
 
-
 make CXX=$COMPILER OPFLAG="OP" TIME_RES=$CRES_OP > $BRES_OP
 make CXX=$COMPILER OPFLAG="NOP" TIME_RES=$CRES_NOP > $BRES_NOP
 make clean

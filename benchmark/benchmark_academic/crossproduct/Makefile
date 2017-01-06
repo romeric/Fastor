@@ -2,9 +2,9 @@
 # ENSURE THE SCALAR CODE IS COMPILED AS REQUIRED BY THE BENCHMARK BY PASSING 
 # APPROPRIATE FLAGS
 
-GCC = /opt/gcc-5.3.0/bin/g++ -fabi-version=6 -finline-functions -fno-fast-math -D_GLIBCXX_USE_CXX11_ABI=0
-CLANG = /home/roman/Downloads/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
-ICC = /home/roman/intel_e2/bin/icpc -fp-model=strict
+GCC = g++ -fabi-version=6 -D_GLIBCXX_USE_CXX11_ABI=0 -fno-fast-math
+CLANG = clang++ -fno-fast-math
+ICC = icpc -fp-model=strict
 
 GCC_FLAGS_Fastor = -std=c++11 -O3 -mavx 
 CLANG_FLAGS_Fastor = -std=c++11 -O3 -mavx 

@@ -5,6 +5,7 @@
 #include "tensor/Tensor.h"
 #include "meta/einsum_meta.h"
 #include "indicial.h"
+#include "backend/voigt.h"
 
 #include "reshape.h"
 #include "permutation.h"
@@ -350,6 +351,75 @@ auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b,
 
 
 #endif
+
+
+#ifdef __AVX__
+
+// Specific overloads
+template<class Ind0, class Ind1, int Convert,
+         typename T, size_t I, size_t J, size_t K, size_t L,
+         typename std::enable_if<(std::is_same<T,float>::value || std::is_same<T,double>::value) &&
+                                 I==J && J==K && K==L && (I==2 || I==3) &&
+                                 Ind0::NoIndices==2 && Ind1::NoIndices==2 && Convert==Voigt,bool>::type = 0>
+FASTOR_INLINE typename VoigtType<T,I,J,K,L>::return_type
+einsum(const Tensor<T,I,J> & a, const Tensor<T,K,L> &b) {
+
+    using OutTensor = typename VoigtType<T,I,J,K,L>::return_type;
+    OutTensor out;
+
+    constexpr int i = static_cast<int>(Ind0::_IndexHolder[0]);
+    constexpr int j = static_cast<int>(Ind0::_IndexHolder[1]);
+    constexpr int k = static_cast<int>(Ind1::_IndexHolder[0]);
+    constexpr int l = static_cast<int>(Ind1::_IndexHolder[1]);
+
+    constexpr bool is_dyadic = i<j && j<k && k<l;
+    constexpr bool is_cyclic = (i<j && i<k && i<l) && j>k && j<l;
+    static_assert(is_dyadic || is_cyclic, "INCORRECT INPUT FOR EINSUM FUNCTION");
+
+    if (is_dyadic) {
+        _outer<T,I,J,K,L>(a.data(),b.data(),out.data());
+    }
+
+    if (is_cyclic) {
+        _cyclic<T,I,J,K,L>(a.data(),b.data(),out.data());
+    }
+
+    return out;
+}
+
+
+template<class Ind0, class Ind1, int Convert,
+         typename T, size_t I, size_t J, size_t K, size_t L,
+         typename std::enable_if<(!std::is_same<T,float>::value && !std::is_same<T,double>::value) &&
+                                 I==J && J==K && K==L && (I==2 || I==3) &&
+                                 Ind0::NoIndices==2 && Ind1::NoIndices==2 && Convert==Voigt,bool>::type = 0>
+FASTOR_INLINE typename VoigtType<T,I,J,K,L>::return_type
+einsum(const Tensor<T,I,J> & a, const Tensor<T,K,L> &b) {
+
+    constexpr int i = static_cast<int>(Ind0::_IndexHolder[0]);
+    constexpr int j = static_cast<int>(Ind0::_IndexHolder[1]);
+    constexpr int k = static_cast<int>(Ind1::_IndexHolder[0]);
+    constexpr int l = static_cast<int>(Ind1::_IndexHolder[1]);
+
+    constexpr bool is_dyadic = i<j && j<k && k<l;
+    constexpr bool is_cyclic = (i<j && i<k && i<l) && j>k && j<l;
+    static_assert(is_dyadic || is_cyclic, "INCORRECT INPUT FOR EINSUM FUNCTION");
+
+    using Ind = typename concat_<Ind0,Ind1>::type;
+
+    if (is_dyadic) {
+        auto out = contraction<Ind0,Ind1>(a,b);
+        return voigt(out);
+    }
+
+    if (is_cyclic) {
+        auto out = permutation<Ind>(contraction<Ind0,Ind1>(a,b));
+        return voigt(out);
+    }
+}
+
+#endif
+
 
 } // end of namespace
 
