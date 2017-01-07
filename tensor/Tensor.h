@@ -10,29 +10,6 @@
 
 namespace Fastor {
 
-//template<typename TLhs, typename TRhs>
-//struct BinaryMatMulOp;
-
-//template<typename Expr>
-//struct UnaryTransposeOp;
-
-//template<typename Expr>
-//struct UnaryTraceOp;
-
-//template<typename Expr>
-//struct UnaryDetOp;
-
-//template<typename Expr>
-//struct UnaryAdjOp;
-
-//template<typename Expr>
-//struct UnaryCofOp;
-
-//template<typename Expr>
-//struct UnaryInvOp;
-
-
-
 
 template<typename T, size_t ... Rest>
 class Tensor: public AbstractTensor<Tensor<T,Rest...>,sizeof...(Rest)> {
@@ -180,9 +157,19 @@ public:
 
     template<size_t I, size_t J, size_t K>
     FASTOR_INLINE Tensor(const BinaryMatMulOp<Tensor<T,I,J>,BinaryMatMulOp<Tensor<T,J,K>,Tensor<T,K>>>& src_) {
-        T tmp[Size];
+        T FASTOR_ALIGN tmp[Size];
         _matmul<T,J,K,K>(src_.rhs.lhs.data(),src_.rhs.rhs.data(),tmp);
         _matmul<T,J,K,K>(src_.lhs.lhs.data(),tmp,_data);
+    }
+
+    template<class Derived0, class Derived1, class Derived2>
+    FASTOR_INLINE Tensor(const BinaryMatMulOp<BinaryMatMulOp<AbstractTensor<Derived0,Derived0::Dimension>,
+                         AbstractTensor<Derived1,Derived1::Dimension>>,
+                         AbstractTensor<Derived2,Derived2::Dimension>>& src_) {
+        // The generic version of reducing matrix-matrix to matrix-vector multiplications, for instance A*B*(a+b)
+        T FASTOR_ALIGN tmp[Size];
+        unused(src_);
+        FASTOR_ASSERT(false,"NOT IMPLEMENTED YET");
     }
 
     template<size_t I,size_t J>
