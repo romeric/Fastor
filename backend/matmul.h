@@ -603,6 +603,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 template<>
 FASTOR_INLINE
 void _matmul<float,2,2,2>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
+
 #ifndef USE_OLD_VERSION
     // 17 OPS
     __m128 ar = _mm_load_ps(a);

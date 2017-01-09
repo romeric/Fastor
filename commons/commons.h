@@ -56,8 +56,11 @@
 //#define FASTOR_DONT_VECTORISE
 //#define FASTOR_DONT_PERFORM_OP_MIN
 //#define COPY_SMART_EXPR
-#define FASTOR_UNROLL_LENGTH 1 // FOR MATMUL
+#define FASTOR_MATMUL_UNROLL_LENGTH 1
+//#define FASTOR_MATMUL_UNROLL_INNER
 #define SHAPE_CHECK
+//#define USE_OLD_VERSION // TO USE SOME OLD VERSIONS OF INTRINSICS
+
 #define DepthFirst -200
 #define NoDepthFirst -201
 //-----------------------------------------------
