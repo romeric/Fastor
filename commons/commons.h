@@ -56,6 +56,7 @@
 //#define FASTOR_DONT_VECTORISE
 //#define FASTOR_DONT_PERFORM_OP_MIN
 //#define COPY_SMART_EXPR
+#define FASTOR_UNROLL_LENGTH 1 // FOR MATMUL
 #define SHAPE_CHECK
 #define DepthFirst -200
 #define NoDepthFirst -201
@@ -124,6 +125,7 @@ using DFT = DEFAULT_FLOAT_TYPE;
 using FASTOR_VINDEX = volatile size_t;
 
 
+#define ROUND_DOWN(x, s) ((x) & ~((s)-1))
 #define PRECI_TOL 1e-14
 
 void FASTOR_ASSERT(bool cond, const std::string &x) {

@@ -66,128 +66,535 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
     }
 }
 
-// Non-sqaure matrices
+
+#ifdef __SSE4_2__
+
+// (2xk) x (kx2) matrices
 template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<(M==K && K!=N) || (M!=K && K==N) || (M!=K && K!=N)
-                                 || ((M==N && M==K) && N % SIMDVector<T>::Size !=0),bool>::type = 0>
+         typename std::enable_if<(M!=K && M==N && M==2 && std::is_same<T,double>::value),bool>::type = 0>
 FASTOR_INLINE
 void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
 
-    // The branches are optimised away
-    constexpr size_t stride_sse = N % SIMDVector<T,128>::Size;
-    constexpr size_t stride_avx = N % SIMDVector<T>::Size;
-    constexpr size_t stride_3 = N % 3;
+    __m128d out_row0 = ZEROPD;
+    __m128d out_row1 = ZEROPD;
 
-    if (stride_sse == 0 && stride_avx != 0) {
-        // SSE
-        using V = SIMDVector<T,128>;
-        constexpr size_t stride = V::Size;
+    for (size_t i=0; i<K; ++i) {
+        __m128d brow = _mm_loadu_pd(&b[i*2]);
+        // row 0
+        __m128d a_vec0 = _mm_set1_pd(a[i]);
+        out_row0 = _mm_add_pd(out_row0,_mm_mul_pd(a_vec0,brow));
+        // row 1
+        __m128d a_vec1 = _mm_set1_pd(a[K+i]);
+        out_row1 = _mm_add_pd(out_row1,_mm_mul_pd(a_vec1,brow));
+    }
+    _mm_store_pd(out,out_row0);
+    _mm_storeu_pd(out+2,out_row1);
+}
 
-        V _vec_a;
-        for (size_t i=0; i<M*N; i+=stride) {
-            _vec_a.store(&out[i+stride]);
-        }
 
+// (2xk) x (kx2) matrices
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<(M!=K && M==N && M==2 && std::is_same<T,float>::value),bool>::type = 0>
+FASTOR_INLINE
+void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+
+    __m128 out_row0 = ZEROPS;
+    __m128 out_row1 = ZEROPS;
+
+    for (size_t i=0; i<K; i++) {
+
+        __m128 brow = _mm_loadu_ps(&b[i*2]);
+        // row 0
+        __m128 a_vec0 = _mm_set1_ps(a[i]);
+        out_row0 = _mm_add_ps(out_row0,_mm_mul_ps(a_vec0,brow));
+        // row 1
+        __m128 a_vec1 = _mm_set1_ps(a[K+i]);
+        out_row1 = _mm_add_ps(out_row1,_mm_mul_ps(a_vec1,brow));
+    }
+    _mm_store_ps(out,_mm_shuffle_ps(out_row0,out_row1,_MM_SHUFFLE(1,0,1,0)));
+}
+
+#endif
+
+#ifdef __AVX__
+
+// (3xk) x (kx3) matrices
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<(M!=K && M==N && M==3 && std::is_same<T,double>::value),bool>::type = 0>
+FASTOR_INLINE
+void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+
+    __m256d out_row0 = VZEROPD;
+    __m256d out_row1 = VZEROPD;
+    __m256d out_row2 = VZEROPD;
+
+    for (size_t i=0; i<K; ++i) {
+        __m256d brow = _mm256_loadul3_pd(&b[i*3]);
+        // row 0
+        __m256d a_vec0 = _mm256_set1_pd(a[i]);
+        out_row0 = _mm256_add_pd(out_row0,_mm256_mul_pd(a_vec0,brow));
+        // row 1
+        __m256d a_vec1 = _mm256_set1_pd(a[K+i]);
+        out_row1 = _mm256_add_pd(out_row1,_mm256_mul_pd(a_vec1,brow));
+        // row 2
+        __m256d a_vec2 = _mm256_set1_pd(a[2*K+i]);
+        out_row2 = _mm256_add_pd(out_row2,_mm256_mul_pd(a_vec2,brow));
+    }
+    _mm256_store_pd(out,out_row0);
+    _mm256_storeu_pd(out+3,out_row1);
+    _mm256_storeu_pd(out+6,out_row2);
+}
+
+#endif
+
+#ifdef __SSE4_2__
+
+// (3xk) x (kx3) matrices
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<(M!=K && M==N && M==3 && std::is_same<T,float>::value),bool>::type = 0>
+FASTOR_INLINE
+void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+
+    __m128 out_row0 = ZEROPS;
+    __m128 out_row1 = ZEROPS;
+    __m128 out_row2 = ZEROPS;
+
+    for (size_t i=0; i<K; ++i) {
+        __m128 brow = _mm_loadul3_ps(&b[i*3]);
+        // row 0
+        __m128 a_vec0 = _mm_set1_ps(a[i]);
+        out_row0 = _mm_add_ps(out_row0,_mm_mul_ps(a_vec0,brow));
+        // row 1
+        __m128 a_vec1 = _mm_set1_ps(a[K+i]);
+        out_row1 = _mm_add_ps(out_row1,_mm_mul_ps(a_vec1,brow));
+        // row 2
+        __m128 a_vec2 = _mm_set1_ps(a[2*K+i]);
+        out_row2 = _mm_add_ps(out_row2,_mm_mul_ps(a_vec2,brow));
+    }
+    _mm_store_ps(out,out_row0);
+    _mm_storeu_ps(out+3,out_row1);
+    _mm_storeu_ps(out+6,out_row2);
+}
+
+#endif
+
+#ifdef __AVX__
+
+// (4xk) x (kx4) matrices
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<(M!=K && M==N && M==4 && std::is_same<T,double>::value),bool>::type = 0>
+FASTOR_INLINE
+void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+
+    __m256d out_row0 = VZEROPD;
+    __m256d out_row1 = VZEROPD;
+    __m256d out_row2 = VZEROPD;
+    __m256d out_row3 = VZEROPD;
+
+    for (size_t i=0; i<K; ++i) {
+        __m256d brow = _mm256_load_pd(&b[i*4]);
+        // row 0
+        __m256d a_vec0 = _mm256_set1_pd(a[i]);
+        out_row0 = _mm256_add_pd(out_row0,_mm256_mul_pd(a_vec0,brow));
+        // row 1
+        __m256d a_vec1 = _mm256_set1_pd(a[K+i]);
+        out_row1 = _mm256_add_pd(out_row1,_mm256_mul_pd(a_vec1,brow));
+        // row 2
+        __m256d a_vec2 = _mm256_set1_pd(a[2*K+i]);
+        out_row2 = _mm256_add_pd(out_row2,_mm256_mul_pd(a_vec2,brow));
+        // row 3
+        __m256d a_vec3 = _mm256_set1_pd(a[3*K+i]);
+        out_row3 = _mm256_add_pd(out_row3,_mm256_mul_pd(a_vec3,brow));
+    }
+    _mm256_store_pd(out,out_row0);
+    _mm256_store_pd(out+4,out_row1);
+    _mm256_store_pd(out+8,out_row2);
+    _mm256_store_pd(out+12,out_row3);
+}
+
+#endif
+#ifdef __SSE4_2__
+
+// (4xk) x (kx4) matrices
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<(M!=K && M==N && M==4 && std::is_same<T,float>::value),bool>::type = 0>
+FASTOR_INLINE
+void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+
+    __m128 out_row0 = ZEROPS;
+    __m128 out_row1 = ZEROPS;
+    __m128 out_row2 = ZEROPS;
+    __m128 out_row3 = ZEROPS;
+
+    for (size_t i=0; i<K; ++i) {
+        __m128 brow = _mm_load_ps(&b[i*4]);
+        // row 0
+        __m128 a_vec0 = _mm_set1_ps(a[i]);
+        out_row0 = _mm_add_ps(out_row0,_mm_mul_ps(a_vec0,brow));
+        // row 1
+        __m128 a_vec1 = _mm_set1_ps(a[K+i]);
+        out_row1 = _mm_add_ps(out_row1,_mm_mul_ps(a_vec1,brow));
+        // row 2
+        __m128 a_vec2 = _mm_set1_ps(a[2*K+i]);
+        out_row2 = _mm_add_ps(out_row2,_mm_mul_ps(a_vec2,brow));
+        // row 2
+        __m128 a_vec3 = _mm_set1_ps(a[3*K+i]);
+        out_row3 = _mm_add_ps(out_row3,_mm_mul_ps(a_vec3,brow));
+    }
+    _mm_store_ps(out,out_row0);
+    _mm_store_ps(out+4,out_row1);
+    _mm_store_ps(out+8,out_row2);
+    _mm_store_ps(out+12,out_row3);
+}
+
+#endif
+
+
+// (3x3) x (3xn) matrices
+template<typename T, size_t M, size_t N>
+FASTOR_INLINE
+void _matmul_3x3xn(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+
+
+    using V256 = SIMDVector<double,256>;
+    using V128 = SIMDVector<double,128>;
+
+    constexpr int SIZE_AVX = V256::Size;
+    constexpr int SIZE_SSE = V128::Size;
+    constexpr int ROUND_AVX = ROUND_DOWN(N,(int)SIZE_AVX);
+    constexpr int ROUND_SSE = ROUND_DOWN(N,(int)SIZE_SSE);
+
+    size_t k=0;
+    for (; k<ROUND_AVX; k+=SIZE_AVX) {
+
+        V256 out_row0, out_row1, out_row2, vec_a0, vec_a1, vec_a2;
         for (size_t i=0; i<M; ++i) {
-            for (size_t j=0; j<K; ++j) {
-                _vec_a.set(a[i*K+j]);
-                for (size_t k=0; k<N; k+=stride) {
-                    V _vec_out = _vec_a*V(&b[j*N+k]) +  V(&out[i*N+k]);
-                    _vec_out.store(&out[i*N+k]);
-                }
-            }
+            V256 brow; brow.load(&b[i*N+k],false);
+            vec_a0.set(a[i]);
+            vec_a1.set(a[i+M]);
+            vec_a2.set(a[i+2*M]);
+            out_row0 += vec_a0*brow;
+            out_row1 += vec_a1*brow;
+            out_row2 += vec_a2*brow;
         }
-//        print("sse");
+        out_row0.store(out+k,false);
+        out_row1.store(out+N+k,false);
+        out_row2.store(out+2*N+k,false);
     }
 
-    else if (stride_sse == 0 && stride_avx == 0) {
-        // AVX
-        using V = SIMDVector<T>;
-//        using V = SIMDVector<T,128>;
-        constexpr size_t stride = V::Size;
-//        print(stride);
-
-        V _vec_a;
-        for (size_t i=0; i<M*N; i+=stride) {
-            _vec_a.store(&out[i+stride]);
-        }
-
+    for (; k<ROUND_SSE; k+=SIZE_SSE) {
+        V128 out_row0, out_row1, out_row2, vec_a0, vec_a1, vec_a2;
         for (size_t i=0; i<M; ++i) {
-            for (size_t j=0; j<K; ++j) {
-                _vec_a.set(a[i*K+j]);
-                for (size_t k=0; k<N; k+=stride) {
-                    V _vec_out = _vec_a*V(&b[j*N+k]) +  V(&out[i*N+k]);
-//                    V _vec_out;
-//                    if (j*N+k==0)
-//                        _vec_out = _vec_a*V(_mm256_set_pd(3,2,1,0)) +  V(&out[i*N+k]);
-//                    else
-//                        _vec_out = _vec_a*V(&b[j*N+k]) +  V(&out[i*N+k]);
-//                    print(_vec_a, V(&b[j*N+k]), _vec_a*V(&b[j*N+k]));
-//                    std::cout << i+j+k << " " << _vec_a << " " << V(&b[j*N+k]) << " " << _vec_a*V(&b[j*N+k]) << "\n";
-                    _vec_out.store(&out[i*N+k]);
-                }
-            }
+            V128 brow; brow.load(&b[i*N+k],false);
+            vec_a0.set(a[i]);
+            vec_a1.set(a[i+M]);
+            vec_a2.set(a[i+2*M]);
+            out_row0 += vec_a0*brow;
+            out_row1 += vec_a1*brow;
+            out_row2 += vec_a2*brow;
         }
-//        print("avx");
+        out_row0.store(out+k,false);
+        out_row1.store(out+N+k,false);
+        out_row2.store(out+2*N+k,false);
     }
 
-    else if (stride_sse != 0 && stride_avx != 0 && stride_3==0) {
-        // For 3!
-        using V = SIMDVector<T,SSE>;
-        constexpr size_t stride = 3;
-
-        V _vec_a;
-        for (size_t i=0; i<M*N; i+=stride) {
-            _vec_a.store(&out[i+stride]);
+    for (; k<N; k++) {
+        T out_row0=0., out_row1=0., out_row2=0.;
+        for (int i=0; i<M; ++i) {
+            T brow = b[i*N+k];
+            out_row0 += a[i]*brow;
+            out_row1 += a[i+M]*brow;
+            out_row2 += a[i+2*M]*brow;
         }
-
-        // requires unaligned load/store
-//        for (size_t i=0; i<M; ++i) {
-//            for (size_t j=0; j<K; ++j) {
-//                _vec_a.set(a[i*K+j]);
-//                const T tmp = a[i*K+j];
-//                for (size_t k=0; k<N; k+=stride) {
-//                    V _vec_out = _vec_a*V(&b[j*N+k]) +  V(&out[i*N+k]);
-//                    _vec_out.store(&out[i*N+k]);
-//                    out[i*N+k+2] += tmp*b[j*N+k+2];
-//                }
-//            }
-//        }
-
-        for (size_t i=0; i<M; ++i) {
-            for (size_t j=0; j<K; ++j) {
-                const T tmp = a[i*K+j];
-                for (size_t k=0; k<N; k+=stride) {
-                    out[i*N+k] += tmp*b[j*N+k];
-                    out[i*N+k+1] += tmp*b[j*N+k+1];
-                    out[i*N+k+2] += tmp*b[j*N+k+2];
-                }
-            }
-        }
-//        print("3 version");
-    }
-
-    else {
-        // Scalar
-        for (size_t i=0; i<M; ++i) {
-            for (size_t k=0; k<N; ++k ) {
-                out[i*N+k] = a[i*K]*b[k];
-            }
-            for (size_t j=1; j<K; ++j) {
-                for (size_t k=0; k<N; ++k ) {
-                    out[i*N+k] += a[i*K+j]*b[j*N+k];
-                }
-            }
-        }
-//        print("scalar");
+        out[k] = out_row0;
+        out[N+k] = out_row1;
+        out[2*N+k] = out_row2;
     }
 }
 
 
 
 
+// Non-sqaure matrices
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<(M==K && K!=N) || (M!=K && K==N) || (M!=K && K!=N && M!=N)
+                                 || (M!=K && M==N && M!=2 && M!=3 && M!=4)
+                                 || ((M==N && M==K) && N % SIMDVector<T>::Size !=0),bool>::type = 0>
+FASTOR_INLINE
+void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+
+    if (M==3 && K==3 && N!=K) {
+        _matmul_3x3xn<T,M,N>(a,b,out);
+        return;
+    }
+
+    using V256 = SIMDVector<double,256>;
+    using V128 = SIMDVector<double,128>;
+
+    constexpr int SIZE_AVX = V256::Size;
+    constexpr int SIZE_SSE = V128::Size;
+    constexpr int ROUND_AVX = ROUND_DOWN(N,(int)SIZE_AVX);
+    constexpr int ROUND_SSE = ROUND_DOWN(N,(int)SIZE_SSE);
 
 
+#if FASTOR_MATMUL_UNROLL_LENGTH==2
+
+    size_t j=0;
+    for (; j<ROUND_DOWN(M,2); j+=2) {
+        int k=0;
+        for (; k<ROUND_AVX; k+=SIZE_AVX) {
+            V256 out_row0, out_row1, vec_a0, vec_a1;
+            for (size_t i=0; i<K; ++i) {
+                V256 brow; brow.load(&b[i*N+k],false);
+                vec_a0.set(a[j*K+i]);
+                vec_a1.set(a[(j+1)*K+i]);
+                out_row0 += vec_a0*brow;
+                out_row1 += vec_a1*brow;
+            }
+            out_row0.store(out+k+N*j,false);
+            out_row1.store(out+k+N*(j+1),false);
+        }
+
+        for (; k<ROUND_SSE; k+=SIZE_SSE) {
+            V128 out_row0, out_row1, vec_a0, vec_a1;
+            for (size_t i=0; i<K; ++i) {
+                V128 brow; brow.load(&b[i*N+k],false);
+                vec_a0.set(a[j*K+i]);
+                vec_a1.set(a[(j+1)*K+i]);
+                out_row0 += vec_a0*brow;
+                out_row1 += vec_a1*brow;
+            }
+            out_row0.store(out+k+N*j,false);
+            out_row1.store(out+k+N*(j+1),false);
+        }
+
+        for (; k<N; k++) {
+            T out_row0 = 0., out_row1 = 0.;
+            for (size_t i=0; i<K; ++i) {
+                T brow = b[i*N+k];
+                out_row0 += a[j*K+i]*brow;
+                out_row1 += a[(j+1)*K+i]*brow;
+            }
+            out[k+N*j] = out_row0;
+            out[k+N*(j+1)] = out_row1;
+        }
+    }
+
+    for (; j<M; ++j) {
+        int k=0;
+        for (; k<ROUND_AVX; k+=SIZE_AVX) {
+            V256 out_row, vec_a;
+            for (size_t i=0; i<K; ++i) {
+                V256 brow; brow.load(&b[i*N+k],false);
+                vec_a.set(a[j*K+i]);
+                out_row += vec_a*brow;
+            }
+            out_row.store(out+k+N*j,false);
+        }
+
+        for (; k<ROUND_SSE; k+=SIZE_SSE) {
+            V128 out_row, vec_a;
+            for (size_t i=0; i<K; ++i) {
+                V128 brow; brow.load(&b[i*N+k],false);
+                vec_a.set(a[j*K+i]);
+                out_row += vec_a*brow;
+            }
+            out_row.store(out+k+N*j,false);
+        }
+
+        for (; k<N; k++) {
+            T out_row = 0.;
+            for (size_t i=0; i<K; ++i) {
+                out_row += a[j*K+i]*b[i*N+k];
+            }
+            out[k+N*j] = out_row;
+        }
+    }
+
+
+#elif FASTOR_MATMUL_UNROLL_LENGTH==4
+
+    size_t j=0;
+    for (; j<ROUND_DOWN(M,4); j+=4) {
+        int k=0;
+        for (; k<ROUND_AVX; k+=SIZE_AVX) {
+            V256 out_row0, out_row1, out_row2, out_row3, vec_a0, vec_a1, vec_a2, vec_a3;
+            for (size_t i=0; i<K; ++i) {
+                V256 brow; brow.load(&b[i*N+k],false);
+                vec_a0.set(a[j*K+i]);
+                vec_a1.set(a[(j+1)*K+i]);
+                vec_a2.set(a[(j+2)*K+i]);
+                vec_a3.set(a[(j+3)*K+i]);
+                out_row0 += vec_a0*brow;
+                out_row1 += vec_a1*brow;
+                out_row2 += vec_a2*brow;
+                out_row3 += vec_a3*brow;
+            }
+            out_row0.store(out+k+N*j,false);
+            out_row1.store(out+k+N*(j+1),false);
+            out_row2.store(out+k+N*(j+2),false);
+            out_row3.store(out+k+N*(j+3),false);
+        }
+
+        for (; k<ROUND_SSE; k+=SIZE_SSE) {
+            V128 out_row0, out_row1, out_row2, out_row3, vec_a0, vec_a1, vec_a2, vec_a3;
+            for (int i=0; i<K; ++i) {
+                V128 brow; brow.load(&b[i*N+k],false);
+                vec_a0.set(a[j*K+i]);
+                vec_a1.set(a[(j+1)*K+i]);
+                vec_a2.set(a[(j+2)*K+i]);
+                vec_a3.set(a[(j+3)*K+i]);
+                out_row0 += vec_a0*brow;
+                out_row1 += vec_a1*brow;
+                out_row2 += vec_a2*brow;
+                out_row3 += vec_a3*brow;
+            }
+            out_row0.store(out+k+N*j,false);
+            out_row1.store(out+k+N*(j+1),false);
+            out_row2.store(out+k+N*(j+2),false);
+            out_row3.store(out+k+N*(j+3),false);
+        }
+
+        for (; k<N; k++) {
+            T out_row0 = 0., out_row1 = 0., out_row2 = 0., out_row3 = 0.;
+            for (size_t i=0; i<K; ++i) {
+                T brow = b[i*N+k];
+                out_row0 += a[j*K+i]*brow;
+                out_row1 += a[(j+1)*K+i]*brow;
+                out_row2 += a[(j+2)*K+i]*brow;
+                out_row3 += a[(j+3)*K+i]*brow;
+            }
+            out[k+N*j] = out_row0;
+            out[k+N*(j+1)] = out_row1;
+            out[k+N*(j+2)] = out_row2;
+            out[k+N*(j+3)] = out_row3;
+        }
+    }
+
+    for (; j<M; ++j) {
+        int k=0;
+        for (; k<ROUND_AVX; k+=SIZE_AVX) {
+            V256 out_row, vec_a;
+            for (int i=0; i<K; ++i) {
+                V256 brow; brow.load(&b[i*N+k],false);
+                vec_a.set(a[j*K+i]);
+                out_row += vec_a*brow;
+            }
+            out_row.store(out+k+N*j,false);
+        }
+
+        for (; k<ROUND_SSE; k+=SIZE_SSE) {
+            V128 out_row, vec_a;
+            for (int i=0; i<K; ++i) {
+                V128 brow; brow.load(&b[i*N+k],false);
+                vec_a.set(a[j*K+i]);
+                out_row += vec_a*brow;
+            }
+            out_row.store(out+k+N*j,false);
+        }
+
+        for (; k<N; k++) {
+            T out_row = 0.;
+            for (int i=0; i<K; ++i) {
+                out_row += a[j*K+i]*b[i*N+k];
+            }
+            out[k+N*j] = out_row;
+        }
+    }
+
+#else
+
+    for (size_t j=0; j<M; ++j) {
+        size_t k=0;
+        for (; k<ROUND_AVX; k+=SIZE_AVX) {
+            V256 out_row, vec_a;
+            for (size_t i=0; i<K; ++i) {
+                V256 brow; brow.load(&b[i*N+k],false);
+                vec_a.set(a[j*K+i]);
+                out_row += vec_a*brow;
+            }
+            out_row.store(out+k+N*j,false);
+        }
+
+        for (; k<ROUND_SSE; k+=SIZE_SSE) {
+            V128 out_row, vec_a;
+            for (int i=0; i<K; ++i) {
+                V128 brow; brow.load(&b[i*N+k],false);
+                vec_a.set(a[j*K+i]);
+                out_row += vec_a*brow;
+            }
+            out_row.store(out+k+N*j,false);
+        }
+
+        for (; k<N; k++) {
+            T out_row = 0.;
+            for (size_t i=0; i<K; ++i) {
+                out_row += a[j*K+i]*b[i*N+k];
+            }
+            out[N*j+k] = out_row;
+        }
+    }
+
+#endif
+
+#ifdef FASTOR_MATMUL_UNROLL_INNER
+#ifndef FASTOR_MATMUL_UNROLL_LENGTH
+
+    constexpr int INNER_UNROLL = ROUND_DOWN(K,2);
+
+    for (size_t j=0; j<M; ++j) {
+        int k=0;
+        for (; k<ROUND_AVX; k+=SIZE_AVX) {
+            V256 out_row, out_row0, out_row1, vec_a0, vec_a1;
+            int i=0;
+            for (; i<INNER_UNROLL; i+=2) {
+                V256 brow0; brow0.load(&b[i*N+k],false);
+                V256 brow1; brow1.load(&b[(i+1)*N+k],false);
+                vec_a0.set(a[j*K+i]);
+                vec_a1.set(a[j*K+i+1]);
+                out_row0 += vec_a0*brow0;
+                out_row1 += vec_a1*brow1;
+            }
+            for (; i<K; ++i) {
+                V256 brow; brow.load(&b[i*N+k],false);
+                vec_a0.set(a[j*K+i]);
+                out_row += vec_a0*brow;
+            }
+            out_row += out_row0 + out_row1;
+            out_row.store(out+k+N*j,false);
+        }
+
+        for (; k<ROUND_SSE; k+=SIZE_SSE) {
+            V128 out_row, out_row0, out_row1, vec_a0, vec_a1;
+            int i=0;
+            for (; i<INNER_UNROLL; i+=2) {
+                V128 brow0; brow0.load(&b[i*N+k],true);
+                V128 brow1; brow1.load(&b[(i+1)*N+k],false);
+                vec_a0.set(a[j*K+i]);
+                vec_a1.set(a[j*K+i+1]);
+                out_row0 += vec_a0*brow0;
+                out_row1 += vec_a1*brow1;
+            }
+            for (; i<K; ++i) {
+                V128 brow; brow.load(&b[i*N+k],false);
+                vec_a0.set(a[j*K+i]);
+                out_row += vec_a0*brow;
+            }
+            out_row += out_row0 + out_row1;
+            out_row.store(out+k+N*j,false);
+        }
+
+        for (; k<N; k++) {
+            T out_row = 0.;
+            for (size_t i=0; i<K; ++i) {
+                out_row += a[j*K+i]*b[i*N+k];
+            }
+            out[N*j+k] = out_row;
+        }
+    }
+#endif
+#endif
+}
 
 
 
@@ -196,6 +603,17 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 template<>
 FASTOR_INLINE
 void _matmul<float,2,2,2>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
+#ifndef USE_OLD_VERSION
+    // 17 OPS
+    __m128 ar = _mm_load_ps(a);
+    __m128 br = _mm_load_ps(b);
+    __m128 ar0 = _mm_shuffle_ps(ar,ar,_MM_SHUFFLE(2,2,0,0));
+    __m128 ar1 = _mm_shuffle_ps(ar,ar,_MM_SHUFFLE(3,3,1,1));
+    __m128 br0 = _mm_shuffle_ps(br,br,_MM_SHUFFLE(1,0,1,0));
+    __m128 br1 = _mm_shuffle_ps(br,br,_MM_SHUFFLE(3,2,3,2));
+    __m128 res = _mm_add_ps(_mm_mul_ps(ar0,br0),_mm_mul_ps(ar1,br1));
+    _mm_store_ps(out,res);
+#else
     // 24 OPS
     __m128 ar = _mm_load_ps(a);
     __m128 br = _mm_load_ps(b);
@@ -209,11 +627,57 @@ void _matmul<float,2,2,2>(const float * __restrict__ a, const float * __restrict
     c = _mm_shuffle_ps(c,c,_MM_SHUFFLE(1,2,3,0));
 
     _mm_store_ps(out,c);
+#endif
 }
 
 template<>
 FASTOR_INLINE
 void _matmul<float,3,3,3>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
+
+#ifndef USE_OLD_VERSION
+    // 63 OPS + 3 OPS
+    // This is a completely vectorised approach that reduces
+    // (27 scalar mul + 18 scalar add) to (9 SSE mul + 6 SEE add)
+
+    __m128 brow0 = _mm_loadl3_ps(b);
+    __m128 brow1 = _mm_loadul3_ps(b+3);
+    __m128 brow2 = _mm_loadul3_ps(b+6);
+
+    {
+        __m128 ai0 = _mm_set1_ps(a[0]);
+        __m128 ai1 = _mm_set1_ps(a[1]);
+        __m128 ai2 = _mm_set1_ps(a[2]);
+
+        ai0 = _mm_mul_ps(ai0,brow0);
+        ai1 = _mm_mul_ps(ai1,brow1);
+        ai2 = _mm_mul_ps(ai2,brow2);
+        _mm_store_ps(out,_mm_add_ps(ai0,_mm_add_ps(ai1,ai2)));
+    }
+
+    {
+        __m128 ai0 = _mm_set1_ps(a[3]);
+        __m128 ai1 = _mm_set1_ps(a[4]);
+        __m128 ai2 = _mm_set1_ps(a[5]);
+
+        ai0 = _mm_mul_ps(ai0,brow0);
+        ai1 = _mm_mul_ps(ai1,brow1);
+        ai2 = _mm_mul_ps(ai2,brow2);
+        _mm_storeu_ps(out+3,_mm_add_ps(ai0,_mm_add_ps(ai1,ai2)));
+    }
+
+    {
+        __m128 ai0 = _mm_set1_ps(a[6]);
+        __m128 ai1 = _mm_set1_ps(a[7]);
+        __m128 ai2 = _mm_set1_ps(a[8]);
+
+        ai0 = _mm_mul_ps(ai0,brow0);
+        ai1 = _mm_mul_ps(ai1,brow1);
+        ai2 = _mm_mul_ps(ai2,brow2);
+        _mm_storeu_ps(out+6,_mm_add_ps(ai0,_mm_add_ps(ai1,ai2)));
+    }
+
+#else
+
     // 144 OPS with store_ss
     // 150 OPS with store_ps
     __m128 arow0 = _mm_shift1_ps(_mm_load_ps(a));
@@ -316,17 +780,6 @@ void _matmul<float,3,3,3>(const float * __restrict__ a, const float * __restrict
     out_22 = _mm_add_ss(sums, shuf);
 #endif
 
-    // blend is not correct check
-//    __m128 twos0 = _mm_blend_ps(out_00,out_01,0x2);
-//    __m128 twos1 = _mm_blend_ps(out_02,out_10,0x2);
-//    __m128 fours0 = _mm_shuffle_ps(twos0,twos1,_MM_SHUFFLE(1,0,1,0));
-//    _mm_store_ps(out,fours0);
-//    __m128 twos2 = _mm_blend_ps(out_11,out_12,0x2);
-//    __m128 twos3 = _mm_blend_ps(out_20,out_21,0x2);
-//    __m128 fours1 = _mm_shuffle_ps(twos2,twos3,_MM_SHUFFLE(1,0,1,0));
-//    _mm_store_ps(out+4,fours1);
-//    _mm_store_ss(out+8,out_22);
-
     // This is equally fast
     _mm_store_ss(out,out_00);
     _mm_store_ss(out+1,out_01);
@@ -337,6 +790,9 @@ void _matmul<float,3,3,3>(const float * __restrict__ a, const float * __restrict
     _mm_store_ss(out+6,out_20);
     _mm_store_ss(out+7,out_21);
     _mm_store_ss(out+8,out_22);
+
+#endif
+
 }
 
 #endif
@@ -377,6 +833,52 @@ void _matmul<double,2,2,2>(const double * __restrict__ a, const double * __restr
 template<>
 FASTOR_INLINE
 void _matmul<double,3,3,3>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
+
+
+#ifndef USE_OLD_VERSION
+    // 63 OPS + (3 OPS IVY)/(9 OPS HW)
+    // This is a completely vectorised approach that reduces
+    // (27 scalar mul + 18 scalar add) to (9 SSE mul + 6 SEE add)
+
+    __m256d brow0 = _mm256_loadl3_pd(b);
+    __m256d brow1 = _mm256_loadul3_pd(b+3);
+    __m256d brow2 = _mm256_loadul3_pd(b+6);
+
+    {
+        __m256d ai0 = _mm256_set1_pd(a[0]);
+        __m256d ai1 = _mm256_set1_pd(a[1]);
+        __m256d ai2 = _mm256_set1_pd(a[2]);
+
+        ai0 = _mm256_mul_pd(ai0,brow0);
+        ai1 = _mm256_mul_pd(ai1,brow1);
+        ai2 = _mm256_mul_pd(ai2,brow2);
+        _mm256_store_pd(out,_mm256_add_pd(ai0,_mm256_add_pd(ai1,ai2)));
+    }
+
+    {
+        __m256d ai0 = _mm256_set1_pd(a[3]);
+        __m256d ai1 = _mm256_set1_pd(a[4]);
+        __m256d ai2 = _mm256_set1_pd(a[5]);
+
+        ai0 = _mm256_mul_pd(ai0,brow0);
+        ai1 = _mm256_mul_pd(ai1,brow1);
+        ai2 = _mm256_mul_pd(ai2,brow2);
+        _mm256_storeu_pd(out+3,_mm256_add_pd(ai0,_mm256_add_pd(ai1,ai2)));
+    }
+
+    {
+        __m256d ai0 = _mm256_set1_pd(a[6]);
+        __m256d ai1 = _mm256_set1_pd(a[7]);
+        __m256d ai2 = _mm256_set1_pd(a[8]);
+
+        ai0 = _mm256_mul_pd(ai0,brow0);
+        ai1 = _mm256_mul_pd(ai1,brow1);
+        ai2 = _mm256_mul_pd(ai2,brow2);
+        _mm256_storeu_pd(out+6,_mm256_add_pd(ai0,_mm256_add_pd(ai1,ai2)));
+    }
+
+#else
+
     // IVY 135 OPS / HW 162 OPS
     __m256d arow0 = _mm256_insertf128_pd(_mm256_castpd128_pd256(_mm_load_pd(a)),_mm_load_sd(a+2),0x1);
     __m256d arow1 = _mm256_insertf128_pd(_mm256_castpd128_pd256(_mm_loadu_pd(a+3)),_mm_load_sd(a+5),0x1);
@@ -432,6 +934,8 @@ void _matmul<double,3,3,3>(const double * __restrict__ a, const double * __restr
     _mm_store_sd(out+6,out_20);
     _mm_store_sd(out+7,out_21);
     _mm_store_sd(out+8,out_22);
+#endif
+
 }
 #endif
 

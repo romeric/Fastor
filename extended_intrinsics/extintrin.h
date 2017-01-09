@@ -5,6 +5,48 @@
 
 //!                HANDY EXTENSION TO INTRINSICS
 //!---------------------------------------------------------------//
+
+#ifdef __SSE4_2__
+FASTOR_INLINE __m128 _mm_loadl3_ps(const float *value) {
+    //! Align load a vector into the first three elements of an xmm
+    __m128i xy = _mm_loadl_epi64((const __m128i*)value);
+    __m128 z = _mm_load_ss(&value[2]);
+    return _mm_movelh_ps(_mm_castsi128_ps(xy), z);
+}
+
+FASTOR_INLINE __m128 _mm_loadul3_ps(const float *value) {
+    //! Unalign load a vector into the first three elements of an xmm
+    __m128 x = _mm_load_ss(value);
+    __m128 y = _mm_load_ss(&value[1]);
+    __m128 z = _mm_load_ss(&value[2]);
+    __m128 xy = _mm_movelh_ps(x, y);
+    return _mm_shuffle_ps(xy, z, _MM_SHUFFLE(2, 0, 2, 0));
+}
+#endif
+#ifdef __AVX__
+
+FASTOR_INLINE __m256d _mm256_loadl3_pd(const double *value) {
+    //! Align load a vector into the first three elements of an ymm
+    __m128d xy   = _mm_load_pd(value);
+    __m128d z    = _mm_load_sd(&value[2]);
+    __m256d vec  = _mm256_castpd128_pd256(xy);
+    return _mm256_insertf128_pd(vec, z,0x1);
+}
+
+FASTOR_INLINE __m256d _mm256_loadul3_pd(const double *value) {
+    //! Align load a vector into the first three elements of an ymm
+//    __m128d xy   = _mm_loadu_pd(value);
+//    __m128d z    = _mm_load_sd(&value[2]);
+//    __m256d vec  = _mm256_castpd128_pd256(xy);
+//    return _mm256_insertf128_pd(vec, z,0x1);
+    // Alternatively
+    __m256i mask = _mm256_set_epi64x(0,-1,-1,-1);
+    return _mm256_maskload_pd(value,(__m256i) mask);
+}
+
+#endif
+
+
 #ifdef USE_HADD
 #ifdef __SSE3__
 //! Horizontal summation of registers
