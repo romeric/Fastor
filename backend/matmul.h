@@ -802,6 +802,23 @@ template<>
 FASTOR_INLINE
 void _matmul<double,2,2,2>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
 
+#ifndef USE_OLD_VERSION
+
+    const double a0 = a[0], a1=a[1], a2=a[2], a3=a[3];
+    __m256d ar0 = _mm256_setr_pd(a0,a0,a2,a2);
+    __m256d ar1 = _mm256_setr_pd(a1,a1,a3,a3);
+    __m128d brl = _mm_load_pd(b);
+    __m256d br0 = _mm256_castpd128_pd256(brl);
+    br0 = _mm256_insertf128_pd(br0,brl,0x1);
+    __m128d brh = _mm_load_pd(b+2);
+    __m256d br1 = _mm256_castpd128_pd256(brh);
+    br1 = _mm256_insertf128_pd(br1,brh,0x1);
+
+    __m256d res = _mm256_add_pd(_mm256_mul_pd(ar0,br0),_mm256_mul_pd(ar1,br1));
+
+    _mm256_store_pd(out,res);
+
+#else
     __m256d ar = _mm256_load_pd(a);
     __m256d br = _mm256_load_pd(b);
 
@@ -828,6 +845,8 @@ void _matmul<double,2,2,2>(const double * __restrict__ a, const double * __restr
     d2 = _mm256_extractf128_pd(mul1,1);
     _mm_store_sd(out+2,d1);
     _mm_store_sd(out+1,d2);
+
+#endif
 }
 
 template<>
