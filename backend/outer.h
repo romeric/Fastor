@@ -20,6 +20,9 @@ void _outer(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__
 }
 
 #ifdef __SSE4_2__
+
+// The followings are Voigt overloads
+
 template<>
 void _outer<float,2,2,2,2>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
     // 31 OPS

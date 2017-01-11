@@ -418,6 +418,25 @@ einsum(const Tensor<T,I,J> & a, const Tensor<T,K,L> &b) {
     }
 }
 
+
+
+template<class Ind0, class Ind1,
+         typename T, size_t I, size_t J, size_t K, size_t L,
+         typename std::enable_if<I==J && J==K && K==L &&
+                                 Ind0::NoIndices==2 && Ind1::NoIndices==2 &&
+                                 Ind0::_IndexHolder[0] < Ind0::_IndexHolder[1] &&
+                                 Ind0::_IndexHolder[1] < Ind1::_IndexHolder[0] &&
+                                 Ind1::_IndexHolder[0] < Ind1::_IndexHolder[1],bool>::type = 0>
+FASTOR_INLINE Tensor<T,I,J,K,L>
+einsum(const Tensor<T,I,J> &a, const Tensor<T,K,L> &b) {
+
+     Tensor<T,I,J,K,L> out;
+     _dyadic<T,I*J,K*L>(a.data(),b.data(),out.data());
+
+     return out;
+
+}
+
 #endif
 
 

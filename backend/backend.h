@@ -11,6 +11,7 @@
 #include "cofactor.h"
 #include "matmul.h"
 #include "outer.h"
+#include "dyadic.h"
 #include "cyclic_0.h"
 #include "tensor_cross.h"
 #include "norm.h"

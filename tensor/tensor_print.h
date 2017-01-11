@@ -101,6 +101,7 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,P,M,Rest...> &a) {
     return os;
 }
 
+
 template<typename T, size_t P, size_t Q, size_t ... Rest,
          typename std::enable_if<sizeof...(Rest)==2,bool>::type=0>
 std::ostream& operator<<(std::ostream &os, const Tensor<T,Q,P,Rest...> &a) {
@@ -111,21 +112,29 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,Q,P,Rest...> &a) {
     for (size_t l=0; l<Q; ++l) {
         for (size_t k=0; k<P; ++k) {
             os << "["<< l << "," << k << ",:,:]\n";
-            os << "⎡" << w << a(l,k,0,0);
-            for (size_t j = 1; j < N; ++j) {
-                os << ", " << w << a(l,k,0,j);
-            }
-            os << " ⎤\n";
-            for (size_t i = 1; i + 1 < M; ++i) {
-                os << "⎢" << w << a(l,k,i,0);
+            if (M>1) {
+                os << "⎡" << w << a(l,k,0,0);
                 for (size_t j = 1; j < N; ++j) {
-                    os << ", " << w << a(l,k,i,j);
+                    os << ", " << w << a(l,k,0,j);
                 }
-                os << " ⎥\n";
+                os << " ⎤\n";
+                for (size_t i = 1; i + 1 < M; ++i) {
+                    os << "⎢" << w << a(l,k,i,0);
+                    for (size_t j = 1; j < N; ++j) {
+                        os << ", " << w << a(l,k,i,j);
+                    }
+                    os << " ⎥\n";
+                }
+                os << "⎣" << w << a(l,k,M - 1,0);
+                for (size_t j = 1; j < N; ++j) {
+                    os << ", " << w << a(l,k,M - 1,j);
+                }
             }
-            os << "⎣" << w << a(l,k,M - 1,0);
-            for (size_t j = 1; j < N; ++j) {
-                os << ", " << w << a(l,k,M - 1,j);
+            else {
+                os << "⎡" << w << a(l,k,0,0);
+                for (size_t j = 1; j < N; ++j) {
+                    os << ", " << w << a(l,k,0,j);
+                }
             }
             os << " ⎦\n";
         }

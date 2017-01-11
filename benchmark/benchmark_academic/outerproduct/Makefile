@@ -13,14 +13,14 @@ GCC = g++-6 -fabi-version=6 -fno-fast-math -fno-associative-math -D_GLIBCXX_USE_
 CLANG = clang++-3.9 -fno-fast-math -fno-associative-math
 ICC = /home/roman/intel_2017/bin/icpc -fp-model=strict
 
-GCC_FLAGS_Fastor = -std=c++11 -O3 -mavx 
-GCC_FLAGS_Scalar = -std=c++11 -O3 -mavx -fno-tree-vectorize
+GCC_FLAGS_Fastor = -std=c++11 -O3 -mavx -DFASTOR_USE_OLD_OUTER
+GCC_FLAGS_Scalar = -std=c++11 -O3 -mavx -fno-tree-vectorize -DFASTOR_USE_OLD_OUTER
 
-CLANG_FLAGS_Fastor = -std=c++11 -O3 -mavx 
-CLANG_FLAGS_Scalar = -std=c++11 -O3 -mavx -fno-tree-vectorize -fno-vectorize
+CLANG_FLAGS_Fastor = -std=c++11 -O3 -mavx -DFASTOR_USE_OLD_OUTER
+CLANG_FLAGS_Scalar = -std=c++11 -O3 -mavx -fno-tree-vectorize -fno-vectorize -DFASTOR_USE_OLD_OUTER
 
-ICC_FLAGS_Fastor = -std=c++11 -O3 -mavx 
-ICC_FLAGS_Scalar = -std=c++11 -O3 -mavx #-no-vec
+ICC_FLAGS_Fastor = -std=c++11 -O3 -mavx -DFASTOR_USE_OLD_OUTER
+ICC_FLAGS_Scalar = -std=c++11 -O3 -mavx -DFASTOR_USE_OLD_OUTER #-no-vec
 
 INCLUDES = -I../../../
 

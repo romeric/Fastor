@@ -11,6 +11,28 @@ namespace Fastor {
 
 #ifndef FASTOR_DONT_VECTORISE
 
+
+#ifndef FASTOR_USE_OLD_OUTER
+
+template<typename T, size_t ...Rest0, size_t ...Rest1>
+FASTOR_INLINE Tensor<T,Rest0...,Rest1...>
+outer(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
+     Tensor<T,Rest0...,Rest1...> out;
+     _dyadic<T,prod<Rest0...>::value,prod<Rest1...>::value>(a.data(),b.data(),out.data());
+     return out;
+}
+
+template<typename T>
+FASTOR_INLINE Tensor<T>
+outer(const Tensor<T> &a, const Tensor<T> &b) {
+     Tensor<T> out;
+     _dyadic<T,1,1>(a.data(),b.data(),out.data());
+     return out;
+}
+
+
+#else
+
 // SSE optimisable overload
 template<template<typename,size_t...Rest0> class Tensor0,
          template<typename,size_t...Rest1> class Tensor1,
@@ -390,6 +412,26 @@ FASTOR_INLINE Tensor<T,Rest0...,Rest1...> outer(const Tensor0<T,Rest0...> &a, co
 
     return out;
 }
+
+// Fixes a bug in old outer-product
+template<typename T, size_t I, size_t J,
+         typename std::enable_if<I==J,bool>::type = 0>
+FASTOR_INLINE Tensor<T,I,J>
+outer(const Tensor<T,I> &a, const Tensor<T,J> &b) {
+     Tensor<T,I,J> out;
+     _dyadic<T,I,J>(a.data(),b.data(),out.data());
+     return out;
+}
+
+template<typename T>
+FASTOR_INLINE Tensor<T>
+outer(const Tensor<T> &a, const Tensor<T> &b) {
+     Tensor<T> out;
+     _dyadic<T,1,1>(a.data(),b.data(),out.data());
+     return out;
+}
+
+#endif
 
 
 #else
