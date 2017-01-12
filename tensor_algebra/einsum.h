@@ -13,6 +13,7 @@
 #include "summation.h"
 #include "outerproduct.h"
 #include "contraction.h"
+#include "contraction_single.h"
 #include "strided_contraction.h"
 #include "network_contraction.h"
 #include "strided_network_contraction.h"
@@ -20,6 +21,28 @@
 
 namespace Fastor {
 
+
+// Single tensor
+// This does not make sense
+//template<class Index_I, typename T, size_t ... Rest0,
+//         typename std::enable_if<is_single_reduction<Index_I>::value,bool>::type=0>
+//auto einsum(const Tensor<T,Rest0...> &a)
+//-> decltype(extractor_contract_1<Index_I>::contract_impl(a)) {
+//    return inner(a);
+//}
+
+
+template<class Index_I, typename T, size_t ... Rest0,
+         typename std::enable_if<!is_single_reduction<Index_I>::value,bool>::type=0>
+auto einsum(const Tensor<T,Rest0...> &a)
+-> decltype(extractor_contract_1<Index_I>::contract_impl(a)) {
+    static_assert(einsum_index_checker<Index_I>::value,
+                  "INDICES FOR EINSUM FUNCTION CANNOT APPEAR MORE THAN TWICE. USE CONTRACTION INSTEAD");
+    return extractor_contract_1<Index_I>::contract_impl(a);
+}
+
+
+// Two tensor
 
 template<class Index_I, class Index_J,
          typename T, size_t ... Rest0, size_t ... Rest1,
@@ -434,7 +457,6 @@ einsum(const Tensor<T,I,J> &a, const Tensor<T,K,L> &b) {
      _dyadic<T,I*J,K*L>(a.data(),b.data(),out.data());
 
      return out;
-
 }
 
 #endif

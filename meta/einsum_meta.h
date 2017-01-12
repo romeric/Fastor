@@ -411,6 +411,16 @@ struct is_reduction<Index<Idx0...>,Index<Idx1...>> {
 };
 
 
+// Reduction for a single tensor
+template<class Idx0>
+struct is_single_reduction;
+
+template<size_t ... Idx0>
+struct is_single_reduction<Index<Idx0...>> {
+    static constexpr bool value = no_of_unique<Idx0...>::value==1;
+};
+
+
 
 //--------------------------------------------------------------------------------------------------------------//
 template<size_t N>
