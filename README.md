@@ -1,8 +1,8 @@
 # Fastor
-**Fastor** is a **FA**st **S**IMD op**T**imised tens**OR** algebra framework, with emphasis on tensor contraction algorithms typically arising in the mechanics of nonlinear solids, fluids and coupled continua. There are two paradigms that Fastor exploits:
+**Fastor** is a **FA**st **S**IMD op**T**imised tens**OR** algebra framework, with emphasis on tensor contraction algorithms typically arising in classical mechanics, in particular, in finite element analysis of nonlinear solids, fluids and coupled continua. There are two paradigms that Fastor exploits:
 
-- **Operation minimisation/complexity reducing algorithms** via statically dispatched (zero-overhead) bespoke kernels for a set of tensor products using either a priori knowledge of tensors (through topological studies) or smart expression templates (that perform mathematical transformation or *compile time* graph optimisation) or both
-- **Data parallelism/stream computing** by utilising explicit SIMD (SSE/AVX) intrinsics
+- **Operation minimisation/complexity reducing algorithms** via statically dispatched (zero-overhead) bespoke kernels for a variety of tensor products using either a priori knowledge of tensors (through topological studies) or smart expression templates (that perform mathematical transformation or *compile time* graph optimisation) or both
+- **Data parallelism/stream computing** by utilising explicit SIMD (SSE/SSE2/SSE3/SSE4/AVX/AVX2/AVX512/FMA) instructions
 
 ### High-level API
 Fastor provides a high level interface for tensor algebra. As a first example consider the following
@@ -205,7 +205,7 @@ Fastor has been tested against the following compilers (on Ubuntu 14.04 and Ubun
 - Intel 16.0.1, Intel 16.0.2, Intel 16.0.3, Intel 17.0.1
 
 ### Similar Projects
-Similar projects exist in particular
+Similar projects exist with varying levels of functionality, in particular
 - [FTensor](http://www.wlandry.net/Projects/FTensor): Dense tensor algebra framework for up to rank 4 tensors
 - [LTensor](https://code.google.com/archive/p/ltensor/): Dense tensor algebra framework for up to rank 4 tensors
 - [libtensor](https://github.com/juanjosegarciaripoll/tensor): Dense tensor algebra framework for up to rank 6 tensors
@@ -216,7 +216,7 @@ Similar projects exist in particular
 
 It should be noted, that compared to the above projects Fastor is *minimal* in terms of function overloads as well as design and does not try to be a full-fledged tensor algebra framework, like Eigen. It is designed with specific needs in mind. Some noteworthy differences are
 
-- Most of Fastor's routines do not fall back to scalar code on non-SIMD architectures. That has just not been the goal of Fastor. In particular you need to have an AVX enabled micro-architecture for it to run, i.e. starting from Intel Sandy-Bridge or AMD Bulldozer generation onwards. Extension to support more vector enabled archetictures such as AVX-512, MIC and GPUs is planned and should be in fact straight-forward to plug them in, by using the [Vc](https://github.com/VcDevel/Vc) library. Fastor's underlying vector type APIs are purposely kept very close to `Vc`, so that in eventual case of porting, a change of namespace would suffice.  
-- Fastor is for small tensors and stack allocated and the limit to the dimensions of the tensor is dictated by the compilers template instantiation depth which is by default 500 in `gcc` at which point you would certainly exceed stack-allocation limit anyway. Some of the above libraries are limited to a few dimensional tensors. 
-- Most of the points mentioned above, like resolving indices at compile time, Voigt transformation, the einsum feature is specific to and niceties of Fastor. Some of these design principles certainly make Fastor less flexible compared to the above mentioned projects.
-- While stable, Fastor is in its infancy, whereas most of the aforementioned projects have reached a certain level maturity. Unless you find some features of Fastor appealing and work in the areas that we do, there is no reason why you shouldn't be using one of the above projects. In particular, Eigen is a really powerful alternative. 
+- Some of Fastor's routines do not fall back to scalar code on non-SIMD architectures. That has just not been the goal of Fastor. In particular you need to have an AVX enabled micro-architecture for it to run, i.e. starting from Intel Sandy-Bridge or AMD Bulldozer generation onwards. Extension to support more vector enabled archetictures such as AVX-512, MIC and GPUs is planned and should be in fact straight-forward to plug them in, by using the [Vc](https://github.com/VcDevel/Vc) library. Fastor's underlying vector type APIs are purposely kept very close to `Vc`, so that in eventual case of porting, a change of namespace would suffice.  
+- Fastor is for small and on-cache tensors and the limit to the dimensions of the tensor is dictated by the compilers template instantiation depth which is by default 500 in `gcc` at which point you would certainly exceed stack-allocation limit anyway. Some of the above libraries are limited to a few dimensional tensors. 
+- Most of the points mentioned above, like resolving indices at compile time, Voigt transformation, the einsum feature is specific to Fastor. Some of these design principles certainly make Fastor less flexible.
+- While stable, Fastor is in its infancy, whereas most of the aforementioned projects have reached a certain level maturity. 
