@@ -186,12 +186,12 @@ Tensor<double,5,3,4> B;
 Tensor<double,3,3,3> C;
 auto D = permutation<Index<2,0,1>>(A); // type of D is deduced at compile time as Tensor<double,5,3,4>
 auto E = einsum<Index<I,J,K>,Index<L,M,N>>(D,B); // type of E is deduced at compile time as Tensor<double,5,3,4,5,3,4>
-auto F = einsum<Index<I,I,I>>(C); // type of F is deduced at compile time as scalar i.e. Tensor<double>
-auto F2 = reduction(C); // same as above, returned value is a scalar Tensor<double>
-auto E2 = einsum<Index<I,J,K>,Index<I,J,K>>(D,B); // type of E is deduced at compile time as Tensor<double>
+auto F = einsum<Index<I,I,J>>(C); // type of F is deduced at compile time as Tensor<double,3>
+auto F2 = reduction(C); // type of F2 is deduced at compile time as scalar i.e. Tensor<double>
+auto E2 = reduction(D,B); // type of E2 is deduced at compile time as Tensor<double>
 Tensor<float,2,2> G,H;
-einsum<Index<I,I>>(H); // trace of H
-einsum<Index<I,J>,Index<I,J>>(G,H); // double contraction of G and H
+trace(H); // trace of H, in other words H_II
+reduction(G,H); // double contraction of G and H i.e. G_IJ*H_IJ
 ~~~
 As you can observe with combination of `permutation`, `contraction`, `reduction` and `einsum` (which itself is a glorified wrapper over the first three) any type of tensor contraction, and permutation that you can percieve of, is possible, and using meta-programming the right amount of stack memory to be allocated is deduced at compile time.
 
