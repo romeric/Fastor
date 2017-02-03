@@ -3,6 +3,8 @@
 
 #include <fstream>
 
+namespace Fastor {
+
 template<typename T>
 void write(const std::string &filename, const T &a) {
 //    if ( filename.empty() )
@@ -34,6 +36,8 @@ void write(const std::string &filename) {
 //    outfile.close();
 //}
 
+
+} // end of namespace
 
 #endif // WRITE_H
 

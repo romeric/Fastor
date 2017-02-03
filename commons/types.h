@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 #include <typeinfo>
 #include <type_traits>
@@ -5,6 +6,9 @@
 #if defined(__GNUC__)
 #include <cxxabi.h>
 #endif
+
+namespace Fastor {
+
 
 template <class T>
 std::string type_name()
@@ -28,3 +32,6 @@ std::string type_name()
         r += "&&";
     return r;
 }
+
+
+} // end of namespace

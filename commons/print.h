@@ -1,11 +1,21 @@
+#pragma once
+
 #include <iostream>
 #include <iomanip>
 #include <vector>
 #include <array>
 
-
 #ifdef __SSE2__
 #include <emmintrin.h>
+#endif
+#ifdef __AVX__
+#include <immintrin.h>
+#endif
+
+namespace Fastor {
+
+
+#ifdef __SSE2__
 void print(__m128 a) {
     std::cout << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << "\n";
 }
@@ -14,7 +24,6 @@ void print(__m128d a) {
 }
 #endif
 #ifdef __AVX__
-#include <immintrin.h>
 void print(__m256 a) {
     std::cout << a[0] << " " << a[1] << " " << a[2] << " " << a[3] <<  " " << 
     a[4] << " " << a[5] << " " << a[6] << " " << a[7] << "\n";
@@ -150,3 +159,6 @@ void warn(const T &first, const Rest& ... rest) {
     warn(first);
     warn(rest...);
 }
+
+
+} // end of namespace

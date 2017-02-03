@@ -214,8 +214,8 @@ public:
     FASTOR_INLINE Tensor(const UnaryTraceOp<BinaryMatMulOp<Tensor<T,I,J>,UnaryTransposeOp<Tensor<T,J,K>>>> &a) {
         static_assert(I==K, "SECOND ORDER TENSOR MUST BE SQUARE");
         static_assert(sizeof...(Rest)==0, "TRACE OPERATOR WORKS ON SECOND ORDER TENSORS AND RETURNS A SCALAR");
-        if (I!=J) { _data[0] = _doublecontract_transpose<T,I,J>(a.expr.lhs.expr.data(),a.expr.rhs.data()); }
-        else { _data[0] = _doublecontract<T,I,K>(a.expr.lhs.expr.data(),a.expr.rhs.data());}
+        if (I!=J) { _data[0] = _doublecontract_transpose<T,I,J>(a.expr.lhs.data(),a.expr.rhs.expr.data()); }
+        else { _data[0] = _doublecontract<T,I,K>(a.expr.lhs.data(),a.expr.rhs.expr.data());}
     }
 
 

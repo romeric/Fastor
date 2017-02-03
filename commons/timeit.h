@@ -1,7 +1,13 @@
+#pragma once
+
 #include <iostream>
 #include <chrono>
 #include <cmath>
 #include <cstdint>
+#include <utility>
+#include <tuple>
+
+namespace Fastor {
 
 #ifndef _COLORS_
 #define _COLORS_
@@ -138,7 +144,6 @@ inline double timeit(T (*func)(Params...), Args...args)
 
 
 // timeit with return values
-#include <tuple>
 template<typename T, typename ... Params, typename ... Args>
 inline std::tuple<double,uint64_t> rtimeit(T (*func)(Params...), Args...args)
 {
@@ -204,3 +209,6 @@ void no_op(){}
 //clobber
 template <typename T> void unused(T &&x) { asm("" ::"m"(x)); }
 template <typename T, typename ... U> void unused(T&& x, U&& ...y) { unused(x); unused(y...); }
+
+
+} // end of namespace

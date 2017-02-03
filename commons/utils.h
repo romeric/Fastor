@@ -1,3 +1,5 @@
+#pragma once
+
 #include "timeit.h"
 #include "print.h"
 #include "write.h"
