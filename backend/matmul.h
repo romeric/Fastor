@@ -300,7 +300,7 @@ void _matmul_3x3xn(const T * __restrict__ a, const T * __restrict__ b, T * __res
 
     for (; k<N; k++) {
         T out_row0=0., out_row1=0., out_row2=0.;
-        for (int i=0; i<M; ++i) {
+        for (size_t i=0; i<M; ++i) {
             T brow = b[i*N+k];
             out_row0 += a[i]*brow;
             out_row1 += a[i+M]*brow;
@@ -518,7 +518,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 
         for (; k<ROUND_SSE; k+=SIZE_SSE) {
             V128 out_row, vec_a;
-            for (int i=0; i<K; ++i) {
+            for (size_t i=0; i<K; ++i) {
                 V128 brow; brow.load(&b[i*N+k],false);
                 vec_a.set(a[j*K+i]);
                 out_row += vec_a*brow;

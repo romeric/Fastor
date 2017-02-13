@@ -84,7 +84,7 @@ struct UnaryTraceOp {
     // The eval function evaluates the expression at position i
     template<typename U>
     FASTOR_INLINE U eval(U i) const {
-        U result = 0;
+        U result = 0; unused(i);
         for (U i=0; i<static_cast<U>(expr.dimension(0)); i+=1) {
             result += expr.eval(static_cast<U>(i),static_cast<U>(i));
         }

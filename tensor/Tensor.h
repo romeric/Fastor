@@ -671,9 +671,13 @@ public:
         using V = SIMDVector<T>;
         T* a_data = a.data();
         V _vec;
-        for (FASTOR_INDEX i=0; i<Size; i+=V::Size) {
+        FASTOR_INDEX i=0;
+        for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
             _vec = V(_data+i) + V(a_data+i);
             _vec.store(_data+i);
+        }
+        for (; i<Size; ++i) {
+            _data[i] += a_data[i];
         }
     }
 
@@ -681,9 +685,13 @@ public:
         using V = SIMDVector<T>;
         T* a_data = a.data();
         V _vec;
-        for (FASTOR_INDEX i=0; i<Size; i+=V::Size) {
+        FASTOR_INDEX i=0;
+        for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
             _vec = V(_data+i) - V(a_data+i);
             _vec.store(_data+i);
+        }
+        for (; i<Size; ++i) {
+            _data[i] -= a_data[i];
         }
     }
 
@@ -691,9 +699,13 @@ public:
         using V = SIMDVector<T>;
         T* a_data = a.data();
         V _vec;
-        for (FASTOR_INDEX i=0; i<Size; i+=V::Size) {
+        FASTOR_INDEX i=0;
+        for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
             _vec = V(_data+i) * V(a_data+i);
             _vec.store(_data+i);
+        }
+        for (; i<Size; ++i) {
+            _data[i] *= a_data[i];
         }
     }
 
@@ -701,9 +713,13 @@ public:
         using V = SIMDVector<T>;
         T* a_data = a.data();
         V _vec;
-        for (FASTOR_INDEX i=0; i<Size; i+=V::Size) {
+        FASTOR_INDEX i=0;
+        for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
             _vec = V(_data+i) / V(a_data+i);
             _vec.store(_data+i);
+        }
+        for (; i<Size; ++i) {
+            _data[i] /= a_data[i];
         }
     }
     //----------------------------------------------------------------------------------------------------------//
@@ -720,20 +736,24 @@ public:
     template<typename U=T>
     FASTOR_INLINE void fill(U num0) {
         T num = static_cast<T>(num0);
-        for (FASTOR_INDEX i=0; i<Size; i+=Stride) {
+        FASTOR_INDEX i=0;
+        for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
             SIMDVector<T> _vec = num;
             _vec.store(_data+i);
         }
+        for (; i<Size; ++i) _data[i] = num0;
     }
 
     template<typename U=T>
     FASTOR_INLINE void iota(U num0=static_cast<U>(0)) {
         T num = static_cast<T>(num0);
         SIMDVector<T> _vec;
-        for (FASTOR_INDEX i=0; i<Size; i+=Stride) {
+        FASTOR_INDEX i=0;
+        for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
             _vec.set_sequential(i+num);
             _vec.store(_data+i);
         }
+        for (; i<Size; ++i) _data[i] = i;
     }
 
     template<typename U=T>
@@ -743,9 +763,11 @@ public:
 
     FASTOR_INLINE void zeros() {
         SIMDVector<T> _zeros;
-        for (FASTOR_INDEX i=0; i< Size; i+=Stride) {
+        FASTOR_INDEX i=0;
+        for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
             _zeros.store(_data+i);
         }
+        for (; i<Size; ++i) _data[i] = 0;
     }
 
     FASTOR_INLINE void ones() {
@@ -954,7 +976,7 @@ public:
         }
     }
     template<typename ... Args, typename std::enable_if<sizeof...(Args)==2,bool>::type=0>
-    FASTOR_INLINE bool is_symmetric(Args ... args) {
+    FASTOR_INLINE bool is_symmetric(Args ...) {
         return true;
     }
 

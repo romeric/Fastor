@@ -223,10 +223,6 @@ struct extractor_reducible_contract<Index<Idx0...>, Index<Idx1...>> {
                 nprods<Index_with_dims,typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::values;
 
         // Check for reducible vectorisability
-//        using nloops_out = loop_setter<
-//                  OutIndice, OutTensor, typename std_ext::make_index_sequence<OutTensor::Dimension>::type>;
-//        constexpr int total_contracted = nloops_out::value;
-//        constexpr int general_stride = total/total_contracted;
         constexpr int general_stride = general_stride_finder<Index<Idx0...>,Index<Idx1...>,
                 Tensor<T,Rest0...>,Tensor<T,Rest1...>, typename std_ext::make_index_sequence<b_dim>::type>::value;
 
@@ -265,16 +261,10 @@ struct extractor_reducible_contract<Index<Idx0...>, Index<Idx1...>> {
                 index_out += products_out[it]*as[idx_out[it]];
             }
 
-    //        println(index_b, index_b+general_stride,index_b+2*general_stride, index_b+3*general_stride,"\n"); //
-    //        println(index_out,index_a,index_b, index_b*general_stride,counter,"\n");
 //            asm("#BEGIN");
             _vec_a.set(*(a_data+index_a));
-//            _vec_a.broadcast(a_data+index_a);
+            //_vec_a.broadcast(a_data+index_a);
             vector_setter(_vec_b, b_data, index_b, general_stride);
-//            const T FASTOR_ALIGN tmp[] = {b_data[index_b+general_stride],b_data[index_b]};
-//            _vec_b.load(tmp);
-//            _vec_b.set(b_data[index_b+3*general_stride], b_data[index_b+2*general_stride],
-//                    b_data[index_b+general_stride],b_data[index_b]);
             V _vec_out = _vec_a*_vec_b +  V(out_data+index_out);
             _vec_out.store(out_data+index_out);
 //            asm("#END");

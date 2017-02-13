@@ -92,6 +92,7 @@ struct SIMDVector {
     }
     template<typename U, typename ... Args>
     FASTOR_INLINE void set(U first, Args ... args) {
+        unused(first);
         static_assert(sizeof...(args)==1,"CANNOT SET VECTOR WITH VALUES DUE TO ABI CONSIDERATION");
     }
     FASTOR_INLINE void set_sequential(T num0) {

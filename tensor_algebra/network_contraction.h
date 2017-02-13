@@ -467,7 +467,7 @@ struct extractor_contract_8<Index<Idx0...>, Index<Idx1...>, Index<Idx2...>,
         resulting_tensor_3 tmp3 = contraction<resulting_index_2,Index<Idx4...>>(tmp2,e);
         resulting_tensor_4 tmp4 = contraction<resulting_index_3,Index<Idx5...>>(tmp3,f);
         resulting_tensor_5 tmp5 = contraction<resulting_index_4,Index<Idx6...>>(tmp4,g);
-        auto tmp6 = contraction<resulting_index_5,Index<Idx7...>>(tmp5,g);
+        auto tmp6 = contraction<resulting_index_5,Index<Idx7...>>(tmp5,h);
 
         return tmp6;
 
