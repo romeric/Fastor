@@ -204,6 +204,19 @@ Fastor has been tested against the following compilers (on Ubuntu 14.04 and Ubun
 - Clang 3.6, Clang 3.7, Clang 3.8, Clang 3.9
 - Intel 16.0.1, Intel 16.0.2, Intel 16.0.3, Intel 17.0.1
 
+### Reference/Citation
+Fastor can be cited as
+````latex
+@Article{Poya2017,
+    author="Poya, Roman and Gil, Antonio J. and Ortigosa, Rogelio",
+    title = "A high performance data parallel tensor contraction framework: Application to coupled electro-mechanics",
+    journal = "Computer Physics Communications",
+    year="2017",
+    doi = "http://dx.doi.org/10.1016/j.cpc.2017.02.016",
+    url = "http://www.sciencedirect.com/science/article/pii/S0010465517300681"
+}
+````
+
 ### Similar Projects
 Similar projects exist with varying levels of functionality, in particular
 - [FTensor](http://www.wlandry.net/Projects/FTensor): Dense tensor algebra framework for up to rank 4 tensors
