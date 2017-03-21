@@ -613,8 +613,8 @@ static FASTOR_INLINE __m128d _add_pd(__m128d a) {
 }
 #endif
 
-#ifdef USE_HADD
-#ifdef __SSE4_2__
+#ifdef USE_HADD // hadd is beneficial here and the flag is used in the opposite way
+#ifdef __AVX__
 static FASTOR_INLINE __m128d _add_pd(__m256d a) {
     // IVY 12 OPS / HW 14 OPS
     __m128d sum_low = _add_pd(_mm256_castpd256_pd128(a));

@@ -58,6 +58,8 @@ uint64_t rdtsc(){
 #define CYCLES
 #endif
 
+// #define USE_SYSTEM_CLOCK
+
 //#if defined(INCREASE_BENCH_TIMER_0)
 //#define RUNTIME 2.0
 //#elif defined(INCREASE_BENCH_TIMER_1)
@@ -84,8 +86,13 @@ inline double timeit(T (*func)(Params...), Args...args)
 
     for (auto iter=0; iter<1e09; ++iter)
     {
+#ifdef USE_SYSTEM_CLOCK
         std::chrono::time_point<std::chrono::system_clock> start, end;
         start = std::chrono::system_clock::now();
+#else
+        std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+        start = std::chrono::high_resolution_clock::now();
+#endif
 #ifdef CYCLES
         auto cycle = rdtsc();
 #endif
@@ -95,8 +102,12 @@ inline double timeit(T (*func)(Params...), Args...args)
 
 #ifdef CYCLES
         cycle = rdtsc() - cycle;
-#endif        
+#endif
+#ifdef USE_SYSTEM_CLOCK        
         end = std::chrono::system_clock::now();
+#else
+        end = std::chrono::high_resolution_clock::now();
+#endif
         std::chrono::duration<double> elapsed_seconds = end-start;
 
         mean_time += elapsed_seconds.count();
@@ -186,15 +197,6 @@ inline std::tuple<double,uint64_t> rtimeit(T (*func)(Params...), Args...args)
         if (mean_time > RUNTIME)
         {
             mean_time /= counter;
-            // if (mean_time >= 1.0e-3 && mean_time < 1.)
-            //     mean_time /= 1.0e-03;
-            // else if (mean_time >= 1.0e-6 && mean_time < 1.0e-3)
-            //     mean_time /= 1.0e-06;
-            // else if (mean_time < 1.0e-6)
-            //     mean_time /= 1.0e-09;
-            // else
-            //     mean_time = mean_time;
-
             break;
         }
     }

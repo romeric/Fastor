@@ -753,7 +753,7 @@ public:
             _vec.set_sequential(i+num);
             _vec.store(_data+i);
         }
-        for (; i<Size; ++i) _data[i] = i;
+        for (; i<Size; ++i) _data[i] = i+num0;
     }
 
     template<typename U=T>

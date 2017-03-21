@@ -51,7 +51,7 @@ T reduction(const Tensor<T,Rest...> &a) {
 
 
 template<typename T, size_t ... Rest>
-T inner(const Tensor<T,Rest...> &a) {
+FASTOR_INLINE T inner(const Tensor<T,Rest...> &a) {
     //! Reduces a multi-dimensional tensor to a scalar
     //!
     //! If a is scalar/Tensor<T> returns the value itself
@@ -83,6 +83,61 @@ T inner(const Tensor<T,Rest...> &a, const Tensor<T,Rest...> &b) {
     else {
         return a_data[0]*b_data[0];
     }
+}
+
+#ifdef __SSE4_2__
+// Specialisation for inner product of small vectors. 
+// This is similar to _doublecontract, but _doublecontract 
+// is specialised for 2nd order tensors
+template<>
+float inner<float,2>(const Tensor<float,2> &a, const Tensor<float,2> &b) {
+    // 9 OPS
+    const float *a_data = a.data();
+    const float *b_data = b.data();
+    __m128 va = {a_data[0],a_data[1],0,0};
+    __m128 vb = {b_data[0],b_data[1],0,0};
+    __m128 vc = _mm_mul_ps(va,vb);
+    return _mm_cvtss_f32(_mm_add_ss(vc,_mm_shuffle_ps(vc,vc,0x1)));
+}
+template<>
+float inner<float,3>(const Tensor<float,3> &a, const Tensor<float,3> &b) {
+    // 13 OPS
+    const float *a_data = a.data();
+    const float *b_data = b.data();
+    __m128 va = {a_data[0],a_data[1],a_data[2],0};
+    __m128 vb = {b_data[0],b_data[1],b_data[2],0};
+    __m128 vc = _mm_mul_ps(va,vb);
+    return _mm_sum_ps(vc);
+}
+template<>
+float inner<float,4>(const Tensor<float,4> &a, const Tensor<float,4> &b) {
+    // 13 OPS
+    return _mm_sum_ps(_mm_mul_ps(_mm_load_ps(a.data()),_mm_load_ps(b.data())));
+}
+template<>
+double inner<double,2>(const Tensor<double,2> &a, const Tensor<double,2> &b) {
+    // 9 OPS
+    return _mm_sum_pd(_mm_mul_pd(_mm_load_pd(a.data()),_mm_load_pd(b.data())));
+}
+#endif
+#ifdef __AVX__
+template<>
+double inner<double,3>(const Tensor<double,3> &a, const Tensor<double,3> &b) {
+    // IVY 13 OPS - HW - 15 OPS
+    return _mm256_sum_pd(_mm256_mul_pd(_mm256_loadl3_pd(a.data()),_mm256_loadl3_pd(b.data())));
+}
+template<>
+double inner<double,4>(const Tensor<double,4> &a, const Tensor<double,4> &b) {
+    // IVY 13 OPS - HW - 15 OPS
+    return _mm256_sum_pd(_mm256_mul_pd(_mm256_load_pd(a.data()),_mm256_load_pd(b.data())));
+}
+#endif
+
+
+template<typename T, size_t M, size_t N>
+T inner(const Tensor<T,M,N> &a, const Tensor<T,M,N> &b) {
+    //! Reduction of a tensor pair to a scalar (double contraction specilisation)
+    return _doublecontract<T,M,N>(a.data(),b.data());
 }
 
 

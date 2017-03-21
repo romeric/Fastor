@@ -52,14 +52,16 @@
 // ADDITIONAL MACROS DEFINED THROUGHOUT FASTOR
 //-----------------------------------------------
 // Bounds checking - on by default
+#ifndef NDEBUG
 #define BOUNDSCHECK
+#define SHAPE_CHECK
+#endif
 //#define FASTOR_DONT_VECTORISE
 //#define FASTOR_DONT_PERFORM_OP_MIN
 //#define COPY_SMART_EXPR
 #define FASTOR_MATMUL_UNROLL_LENGTH 1
 //#define FASTOR_MATMUL_UNROLL_INNER
 //#define FASTOR_USE_OLD_OUTER
-#define SHAPE_CHECK
 //#define USE_OLD_VERSION // TO USE SOME OLD VERSIONS OF INTRINSICS
 
 #define DepthFirst -200
@@ -132,6 +134,7 @@ using FASTOR_VINDEX = volatile size_t;
 #define ROUND_DOWN(x, s) ((x) & ~((s)-1))
 #define PRECI_TOL 1e-14
 
+#ifndef NDEBUG
 void FASTOR_ASSERT(bool cond, const std::string &x) {
     if (cond==true) {
         return;
@@ -141,6 +144,9 @@ void FASTOR_ASSERT(bool cond, const std::string &x) {
         exit(EXIT_FAILURE);
     }
 }
+#else
+void FASTOR_ASSERT(bool, const std::string&) {}
+#endif
 
 void FASTOR_WARN(bool cond, const std::string &x) {
     if (cond==true) {
