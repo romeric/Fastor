@@ -722,7 +722,7 @@ public:
     }
 
     // Scalar overloads for in-place operators
-    template<typename U=T>
+    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     FASTOR_INLINE void operator +=(U num) {
         using V = SIMDVector<T>;
         V _vec, _vec_a((T)num);
@@ -736,7 +736,7 @@ public:
         }
     }
 
-    template<typename U=T>
+    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     FASTOR_INLINE void operator -=(U num) {
         using V = SIMDVector<T>;
         V _vec, _vec_a((T)num);
@@ -750,7 +750,7 @@ public:
         }
     }
 
-    template<typename U=T>
+    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     FASTOR_INLINE void operator *=(U num) {
         using V = SIMDVector<T>;
         V _vec, _vec_a((T)num);
@@ -764,7 +764,7 @@ public:
         }
     }
 
-    template<typename U=T>
+    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     FASTOR_INLINE void operator /=(U num) {
         using V = SIMDVector<T>;
         V _vec, _vec_a((T)num);
@@ -775,6 +775,79 @@ public:
         }
         for (; i<Size; ++i) {
             _data[i] /= (U)(num);
+        }
+    }
+
+    // CRTP Overloads
+    template<typename Derived, size_t DIMS>
+    FASTOR_INLINE void operator +=(const AbstractTensor<Derived,DIMS>& src_) {
+        const Derived &src = src_.self();
+        static_assert(DIMS==Dimension, "TENSOR RANK MISMATCH");
+        FASTOR_ASSERT(src.size()==Size, "TENSOR SIZE MISMATCH");
+#ifdef SHAPE_CHECK
+        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
+            FASTOR_ASSERT(src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
+        }
+#endif
+        using V = SIMDVector<T>;
+        V _vec;
+        for (FASTOR_INDEX i = 0; i < Size; i+=Stride) {
+            _vec = V(_data+i) + src.eval(static_cast<T>(i));
+            _vec.store(_data+i);
+        }
+    }
+
+    template<typename Derived, size_t DIMS>
+    FASTOR_INLINE void operator -=(const AbstractTensor<Derived,DIMS>& src_) {
+        const Derived &src = src_.self();
+        static_assert(DIMS==Dimension, "TENSOR RANK MISMATCH");
+        FASTOR_ASSERT(src.size()==Size, "TENSOR SIZE MISMATCH");
+#ifdef SHAPE_CHECK
+        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
+            FASTOR_ASSERT(src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
+        }
+#endif
+        using V = SIMDVector<T>;
+        V _vec;
+        for (FASTOR_INDEX i = 0; i < Size; i+=Stride) {
+            _vec = V(_data+i) - src.eval(static_cast<T>(i));
+            _vec.store(_data+i);
+        }
+    }
+
+    template<typename Derived, size_t DIMS>
+    FASTOR_INLINE void operator *=(const AbstractTensor<Derived,DIMS>& src_) {
+        const Derived &src = src_.self();
+        static_assert(DIMS==Dimension, "TENSOR RANK MISMATCH");
+        FASTOR_ASSERT(src.size()==Size, "TENSOR SIZE MISMATCH");
+#ifdef SHAPE_CHECK
+        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
+            FASTOR_ASSERT(src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
+        }
+#endif
+        using V = SIMDVector<T>;
+        V _vec;
+        for (FASTOR_INDEX i = 0; i < Size; i+=Stride) {
+            _vec = V(_data+i) * src.eval(static_cast<T>(i));
+            _vec.store(_data+i);
+        }
+    }
+
+    template<typename Derived, size_t DIMS>
+    FASTOR_INLINE void operator /=(const AbstractTensor<Derived,DIMS>& src_) {
+        const Derived &src = src_.self();
+        static_assert(DIMS==Dimension, "TENSOR RANK MISMATCH");
+        FASTOR_ASSERT(src.size()==Size, "TENSOR SIZE MISMATCH");
+#ifdef SHAPE_CHECK
+        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
+            FASTOR_ASSERT(src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
+        }
+#endif
+        using V = SIMDVector<T>;
+        V _vec;
+        for (FASTOR_INDEX i = 0; i < Size; i+=Stride) {
+            _vec = V(_data+i) / src.eval(static_cast<T>(i));
+            _vec.store(_data+i);
         }
     }
     //----------------------------------------------------------------------------------------------------------//
