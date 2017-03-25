@@ -398,8 +398,6 @@ public:
     template<typename... Args, typename std::enable_if<sizeof...(Args)==1
                             && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
     FASTOR_INLINE T& operator()(Args ... args) {
-        constexpr FASTOR_INDEX indices = sizeof...(Args);
-        static_assert(indices==Dimension, "INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
         constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
         const FASTOR_INDEX i = get_index<0>(args...);
 #ifdef BOUNDSCHECK
@@ -720,6 +718,63 @@ public:
         }
         for (; i<Size; ++i) {
             _data[i] /= a_data[i];
+        }
+    }
+
+    // Scalar overloads for in-place operators
+    template<typename U=T>
+    FASTOR_INLINE void operator +=(U num) {
+        using V = SIMDVector<T>;
+        V _vec, _vec_a((T)num);
+        FASTOR_INDEX i=0;
+        for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
+            _vec = V(_data+i) + _vec_a;
+            _vec.store(_data+i);
+        }
+        for (; i<Size; ++i) {
+            _data[i] += (U)(num);
+        }
+    }
+
+    template<typename U=T>
+    FASTOR_INLINE void operator -=(U num) {
+        using V = SIMDVector<T>;
+        V _vec, _vec_a((T)num);
+        FASTOR_INDEX i=0;
+        for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
+            _vec = V(_data+i) - _vec_a;
+            _vec.store(_data+i);
+        }
+        for (; i<Size; ++i) {
+            _data[i] -= (U)(num);
+        }
+    }
+
+    template<typename U=T>
+    FASTOR_INLINE void operator *=(U num) {
+        using V = SIMDVector<T>;
+        V _vec, _vec_a((T)num);
+        FASTOR_INDEX i=0;
+        for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
+            _vec = V(_data+i) * _vec_a;
+            _vec.store(_data+i);
+        }
+        for (; i<Size; ++i) {
+            _data[i] *= (U)(num);
+        }
+    }
+
+    template<typename U=T>
+    FASTOR_INLINE void operator /=(U num) {
+        using V = SIMDVector<T>;
+        V _vec, _vec_a((T)num);
+        FASTOR_INDEX i=0;
+        for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
+            _vec = V(_data+i) / _vec_a;
+            _vec.store(_data+i);
+        }
+        for (; i<Size; ++i) {
+            _data[i] /= (U)(num);
         }
     }
     //----------------------------------------------------------------------------------------------------------//

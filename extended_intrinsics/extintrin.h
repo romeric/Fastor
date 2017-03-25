@@ -491,9 +491,10 @@ FASTOR_INLINE void _MM_TRANSPOSE8_PS(__m256 &row0, __m256 &row1, __m256 &row2,
 //!------------------------------------------------------------------
 // Integral arithmetics available only with AVX2
 #ifndef __AVX2__
+#ifdef __SSE2__
 static inline __m128i _mm_mul_epi32x(const __m128i &a, const __m128i &b)
 {
-#ifdef __SSE4_1__
+#ifdef __SSE4_2__
     return _mm_mullo_epi32(a, b);
 #else
     // USE SSE 2
@@ -502,6 +503,7 @@ static inline __m128i _mm_mul_epi32x(const __m128i &a, const __m128i &b)
     return _mm_unpacklo_epi32(_mm_shuffle_epi32(tmp1, _MM_SHUFFLE (0,0,2,0)), _mm_shuffle_epi32(tmp2, _MM_SHUFFLE (0,0,2,0)));
 #endif
 }
+#endif
 
 #ifdef __SSE4_2__
 #ifndef __AVX512CD__
