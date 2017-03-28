@@ -77,17 +77,8 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
 
         return out;
     }
-// };
 
 #elif CONTRACT_OPT==1
-
-      // template<typename T, size_t ... Rest0, size_t ... Rest1>
-      //   static
-      //   typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
-      //            typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type
-      //   contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
-
-      //     static_assert(!is_reduction<Index<Idx0...>,Index<Idx1...>>::value,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
 
           using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
             typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
@@ -158,17 +149,8 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
 
           return out;
       }
-// };
 
 #else
-
-          // template<typename T, size_t ... Rest0, size_t ... Rest1>
-          //   static
-          //   typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
-          //            typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type
-          //   contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
-
-          //     static_assert(!is_reduction<Index<Idx0...>,Index<Idx1...>>::value,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
 
               using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
                 typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
@@ -251,20 +233,16 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
                       index_out += products_out[it]*as[idx_out[it]];
                   }
 //                  __asm__ volatile ("#BEGIN");
-//                  print("BEGIN");
 //                  println(index_out,index_a,index_b,"\n");
                   _vec_a.set(*(a_data+index_a));
 //                  _vec_a.broadcast(&a_data[index_a]);
                   V _vec_out = _vec_a*V(b_data+index_b) +  V(out_data+index_out);
                   _vec_out.store(out_data+index_out);
-//                  print("END");
 //                  __asm__ volatile ("#END");
               }
 
               return out;
           }
-    // };
-
 
 #endif
 
