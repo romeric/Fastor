@@ -1,6 +1,7 @@
 #ifndef CONTRACTION_H
 #define CONTRACTION_H
 
+#include "backend/dyadic.h"
 #include "tensor/Tensor.h"
 #include "indicial.h"
 
@@ -22,13 +23,12 @@ namespace Fastor {
 //#define CONTRACT_OPT 1
 
 
-template<class T, class U>
+template<class T, class U, class enable=void>
 struct extractor_contract_2 {};
 
 template<size_t ... Idx0, size_t ... Idx1>
-struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>> {
-
-#if CONTRACT_OPT==2
+struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>, 
+          typename std::enable_if<no_of_unique<Idx0...,Idx1...>::value!=sizeof...(Idx0)+sizeof...(Idx1)>::type> {
 
     template<typename T, size_t ... Rest0, size_t ... Rest1>
       static
@@ -37,6 +37,8 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>> {
       contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
 
           static_assert(!is_reduction<Index<Idx0...>,Index<Idx1...>>::value,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
+
+#if CONTRACT_OPT==2
 
           constexpr int total = no_of_loops_to_set<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,
                   typename std_ext::make_index_sequence<no_of_unique<Idx0...,Idx1...>::value>::type>::value;
@@ -75,17 +77,17 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>> {
 
         return out;
     }
-};
+// };
 
 #elif CONTRACT_OPT==1
 
-      template<typename T, size_t ... Rest0, size_t ... Rest1>
-        static
-        typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
-                 typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type
-        contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
+      // template<typename T, size_t ... Rest0, size_t ... Rest1>
+      //   static
+      //   typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
+      //            typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type
+      //   contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
 
-          static_assert(!is_reduction<Index<Idx0...>,Index<Idx1...>>::value,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
+      //     static_assert(!is_reduction<Index<Idx0...>,Index<Idx1...>>::value,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
 
           using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
             typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
@@ -156,17 +158,17 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>> {
 
           return out;
       }
-};
+// };
 
 #else
 
-          template<typename T, size_t ... Rest0, size_t ... Rest1>
-            static
-            typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
-                     typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type
-            contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
+          // template<typename T, size_t ... Rest0, size_t ... Rest1>
+          //   static
+          //   typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
+          //            typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type
+          //   contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
 
-              static_assert(!is_reduction<Index<Idx0...>,Index<Idx1...>>::value,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
+          //     static_assert(!is_reduction<Index<Idx0...>,Index<Idx1...>>::value,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
 
               using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
                 typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
@@ -261,10 +263,30 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>> {
 
               return out;
           }
-    };
+    // };
 
 
 #endif
+
+};
+
+
+// Dispatch einsum to outer product, note that strided_contraction never 
+// dispatches to outer product as that case never happens 
+template<size_t ... Idx0, size_t ... Idx1>
+struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>, 
+          typename std::enable_if<no_of_unique<Idx0...,Idx1...>::value==sizeof...(Idx0)+sizeof...(Idx1)>::type> {
+
+    template<typename T, size_t ... Rest0, size_t ... Rest1>
+          static Tensor<T,Rest0...,Rest1...>
+          FASTOR_INLINE contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
+              Tensor<T,Rest0...,Rest1...> out;
+              _dyadic<T,prod<Rest0...>::value, prod<Rest1...>::value>(a.data(),b.data(),out.data());
+              return out;
+          }
+
+};
+
 
 
 
