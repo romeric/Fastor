@@ -46,6 +46,10 @@
     #define FASTOR_ALIGN __declspec(align(32))
 #endif
 
+#if !defined(__FMA__) && defined(__AVX2__)
+    #define __FMA__ 1
+#endif
+
 // Define this if hadd seems beneficial
 //#define USE_HADD
 

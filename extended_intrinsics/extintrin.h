@@ -490,9 +490,8 @@ FASTOR_INLINE void _MM_TRANSPOSE8_PS(__m256 &row0, __m256 &row1, __m256 &row2,
 
 //!------------------------------------------------------------------
 // Integral arithmetics available only with AVX2
-#ifndef __AVX2__
 #ifdef __SSE2__
-static inline __m128i _mm_mul_epi32x(const __m128i &a, const __m128i &b)
+FASTOR_INLINE __m128i _mm_mul_epi32x(const __m128i &a, const __m128i &b)
 {
 #ifdef __SSE4_2__
     return _mm_mullo_epi32(a, b);
@@ -507,7 +506,7 @@ static inline __m128i _mm_mul_epi32x(const __m128i &a, const __m128i &b)
 
 #ifdef __SSE4_2__
 #ifndef __AVX512CD__
-__m128i _mm_mul_epi64(__m128i _a, __m128i _b) {
+FASTOR_INLINE __m128i _mm_mul_epi64(__m128i _a, __m128i _b) {
     __m128i out = _mm_mul_epi32x(_a,_b);
     return out;
 }
@@ -515,7 +514,8 @@ __m128i _mm_mul_epi64(__m128i _a, __m128i _b) {
 #endif
 
 #ifdef __AVX__
-__m256i _mm256_add_epi32x(__m256i _a, __m256i _b) {
+#ifndef __AVX2__
+FASTOR_INLINE __m256i _mm256_add_epi32x(__m256i _a, __m256i _b) {
     __m128i low_a = _mm256_castsi256_si128(_a);
     __m128i high_a = _mm256_extractf128_si256(_a,1);
     __m128i low_b = _mm256_castsi256_si128(_b);
@@ -527,7 +527,7 @@ __m256i _mm256_add_epi32x(__m256i _a, __m256i _b) {
     return out;
 }
 
-__m256i _mm256_sub_epi32x(__m256i _a, __m256i _b) {
+FASTOR_INLINE __m256i _mm256_sub_epi32x(__m256i _a, __m256i _b) {
     __m128i low_a = _mm256_castsi256_si128(_a);
     __m128i high_a = _mm256_extractf128_si256(_a,1);
     __m128i low_b = _mm256_castsi256_si128(_b);
@@ -539,7 +539,7 @@ __m256i _mm256_sub_epi32x(__m256i _a, __m256i _b) {
     return out;
 }
 
-__m256i _mm256_mul_epi32x(__m256i _a, __m256i _b) {
+FASTOR_INLINE __m256i _mm256_mul_epi32x(__m256i _a, __m256i _b) {
     __m128i low_a = _mm256_castsi256_si128(_a);
     __m128i high_a = _mm256_extractf128_si256(_a,0x1);
     __m128i low_b = _mm256_castsi256_si128(_b);
@@ -551,20 +551,8 @@ __m256i _mm256_mul_epi32x(__m256i _a, __m256i _b) {
     return out;
 }
 
-__m256i _mm256_div_epi32x(__m256i _a, __m256i _b) {
-    // YIELDS INCORRECT
-    int *a_data = (int*) &_a;
-    int *b_data = (int*) &_b;
-    int FASTOR_ALIGN out_data[8];
-    for (int i=0; i<8; ++i)
-        out_data[i] = a_data[i]/b_data[i];
-    __m256i out = _mm256_setzero_si256();
-    _mm256_store_si256((__m256i*)out_data,out);
-    return out;
-}
-
 // 64bit
-__m256i _mm256_add_epi64x(__m256i _a, __m256i _b) {
+FASTOR_INLINE __m256i _mm256_add_epi64x(__m256i _a, __m256i _b) {
     __m128i low_a = _mm256_castsi256_si128(_a);
     __m128i high_a = _mm256_extractf128_si256(_a,1);
     __m128i low_b = _mm256_castsi256_si128(_b);
@@ -576,7 +564,7 @@ __m256i _mm256_add_epi64x(__m256i _a, __m256i _b) {
     return out;
 }
 
-__m256i _mm256_sub_epi64x(__m256i _a, __m256i _b) {
+FASTOR_INLINE __m256i _mm256_sub_epi64x(__m256i _a, __m256i _b) {
     __m128i low_a = _mm256_castsi256_si128(_a);
     __m128i high_a = _mm256_extractf128_si256(_a,1);
     __m128i low_b = _mm256_castsi256_si128(_b);
@@ -587,8 +575,38 @@ __m256i _mm256_sub_epi64x(__m256i _a, __m256i _b) {
     out = _mm256_insertf128_si256(out,high,1);
     return out;
 }
+#else
 
-__m256i _mm256_mul_epi64x(__m256i _a, __m256i _b) {
+FASTOR_INLINE __m256i _mm256_add_epi32x(__m256i _a, __m256i _b) {
+    return _mm256_add_epi32(_a,_b);
+}
+FASTOR_INLINE __m256i _mm256_sub_epi32x(__m256i _a, __m256i _b) {
+    return _mm256_sub_epi32(_a,_b);
+}
+FASTOR_INLINE __m256i _mm256_mul_epi32x(__m256i _a, __m256i _b) {
+    return _mm256_mul_epi32(_a,_b);
+}
+FASTOR_INLINE __m256i _mm256_add_epi64x(__m256i _a, __m256i _b) {
+    return _mm256_add_epi64(_a,_b);
+}
+FASTOR_INLINE __m256i _mm256_sub_epi64x(__m256i _a, __m256i _b) {
+    return _mm256_sub_epi64(_a,_b);
+}
+#endif
+
+FASTOR_INLINE __m256i _mm256_div_epi32x(__m256i _a, __m256i _b) {
+    // YIELDS INCORRECT
+    int *a_data = (int*) &_a;
+    int *b_data = (int*) &_b;
+    int FASTOR_ALIGN out_data[8];
+    for (int i=0; i<8; ++i)
+        out_data[i] = a_data[i]/b_data[i];
+    __m256i out = _mm256_setzero_si256();
+    _mm256_store_si256((__m256i*)out_data,out);
+    return out;
+}
+
+FASTOR_INLINE __m256i _mm256_mul_epi64x(__m256i _a, __m256i _b) {
     __m128i low_a = _mm256_castsi256_si128(_a);
     __m128i high_a = _mm256_extractf128_si256(_a,0x1);
     __m128i low_b = _mm256_castsi256_si128(_b);
@@ -600,7 +618,34 @@ __m256i _mm256_mul_epi64x(__m256i _a, __m256i _b) {
     return out;
 }
 #endif
-#endif
+
+
+
+
+// #ifdef __SSE2__
+// #ifndef __FMA__
+// FASTOR_INLINE __m128 _mm_fmadd_ps(__m128 a, __m128 b, __m128 c) {
+//     return _mm_add_ps(_mm_mul_ps(a,b),c);
+// }
+// FASTOR_INLINE __m128d _mm_fmadd_pd(__m128d a, __m128d b, __m128d c) {
+//     return _mm_add_pd(_mm_mul_pd(a,b),c);
+// }
+// #endif
+// #endif
+// #ifdef __AVX__
+// #ifndef __FMA__
+// FASTOR_INLINE __m256 _mm256_fmadd_ps(__m256 a, __m256 b, __m256 c) {
+//     return _mm256_add_ps(_mm256_mul_ps(a,b),c);
+// }
+// FASTOR_INLINE __m256d _mm256_fmadd_pd(__m256d a, __m256d b, __m256d c) {
+//     return _mm256_add_pd(_mm256_mul_pd(a,b),c);
+// }
+// #endif
+// #endif
+
+
+
+
 
 #if defined(__cplusplus)
 

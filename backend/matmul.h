@@ -130,6 +130,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 
     for (size_t i=0; i<K; ++i) {
         __m256d brow = _mm256_loadul3_pd(&b[i*3]);
+#ifndef __FMA__ 
         // row 0
         __m256d a_vec0 = _mm256_set1_pd(a[i]);
         out_row0 = _mm256_add_pd(out_row0,_mm256_mul_pd(a_vec0,brow));
@@ -139,6 +140,17 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
         // row 2
         __m256d a_vec2 = _mm256_set1_pd(a[2*K+i]);
         out_row2 = _mm256_add_pd(out_row2,_mm256_mul_pd(a_vec2,brow));
+#else
+        // row 0
+        __m256d a_vec0 = _mm256_set1_pd(a[i]);
+        out_row0 = _mm256_fmadd_pd(a_vec0,brow,out_row0);
+        // row 1
+        __m256d a_vec1 = _mm256_set1_pd(a[K+i]);
+        out_row1 = _mm256_fmadd_pd(a_vec1,brow,out_row1);
+        // row 2
+        __m256d a_vec2 = _mm256_set1_pd(a[2*K+i]);
+        out_row2 = _mm256_fmadd_pd(a_vec2,brow,out_row2);
+#endif        
     }
     _mm256_store_pd(out,out_row0);
     _mm256_storeu_pd(out+3,out_row1);
