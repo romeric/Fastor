@@ -57,6 +57,12 @@ struct SIMDVector {
     FASTOR_INLINE SIMDVector(const SIMDVector<T,ABI> &a) {
         std::copy(a.value,a.value+a.Size,value);
     }
+    // Not requried as they are almost never used by the compiler
+//    FASTOR_INLINE SIMDVector(SIMDVector<T,ABI> &&a) {
+//        // Cannot swap constexper member but should be okay since ABIs are the same
+//        //std::swap(Size,a.Size);
+//        std::swap(value,a.value);
+//    }
     FASTOR_INLINE SIMDVector(const T *data) {
         std::copy(data,data+Size,value);
     }
@@ -73,6 +79,10 @@ struct SIMDVector {
         std::copy(a.value,a.value+a.Size,value);
         return *this;
     }
+//    FASTOR_INLINE SIMDVector<T,ABI> operator=(SIMDVector<T,ABI> &&a) {
+//        std::swap(value,a.value);
+//        return *this;
+//    }
 
     FASTOR_INLINE void load(const T *data, bool Aligned=true) {
         std::copy(data,data+Size,value);
