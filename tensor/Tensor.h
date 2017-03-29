@@ -192,7 +192,6 @@ public:
         return out;
     }
 
-
     FASTOR_INLINE T eval(T i, T j) const {
         return _data[static_cast<FASTOR_INDEX>(i)*get_value<2,Rest...>::value+static_cast<FASTOR_INDEX>(j)];
     }
