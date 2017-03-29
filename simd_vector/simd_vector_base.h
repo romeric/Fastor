@@ -57,7 +57,8 @@ struct SIMDVector {
     FASTOR_INLINE SIMDVector(const SIMDVector<T,ABI> &a) {
         std::copy(a.value,a.value+a.Size,value);
     }
-    // Not requried as they are almost never used by the compiler
+    // Not requried as they are almost never used by the compiler,
+    // as constexpr memeber classes make are essentially non-copyable
 //    FASTOR_INLINE SIMDVector(SIMDVector<T,ABI> &&a) {
 //        // Cannot swap constexper member but should be okay since ABIs are the same
 //        //std::swap(Size,a.Size);
