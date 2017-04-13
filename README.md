@@ -106,7 +106,7 @@ A(seq(2,last),all,all).noalias() += A(seq(0,last-2),all,all);           // A[2::
 Tensor<double,2,2,5> C = A(iseq<0,2>(),iseq<0,2>(),iseq<0,last,2>());   // C = A[0:2,0:2,0::2]
 // Note that iseq returns an immediate tensor rather than a tensor view and hence cannot appear
 // on the left hand side, for instance 
-A(iseq<0,2>(),iseq<0,2>(),iseq<0,last,2>()) = 2; // Will not compile
+A(iseq<0,2>(),iseq<0,2>(),iseq<0,last,2>()) = 2; // Will not compile, as left operand as an rvalue
 
 // One can also index a tensor with another tensor(s)
 Tensor<float,10,10> E; E.fill(2);
