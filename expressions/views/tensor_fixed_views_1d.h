@@ -10,7 +10,7 @@ namespace Fastor {
 
 
 
-// 2D const fixed views
+// 1D const fixed views
 //----------------------------------------------------------------------------------------------//
 template<typename T, size_t N, int F0, int L0, int S0>
 struct TensorConstFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1> :

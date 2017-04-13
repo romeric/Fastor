@@ -149,20 +149,6 @@ public:
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        // FASTOR_INDEX i;
-        // for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-        //     auto _vec_other = other_src.template eval<T>(i);
-        //     for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-        //         auto it = (i+j) / range_detector<F1,L1,S1>::value, jt = (i+j) % range_detector<F1,L1,S1>::value;
-        //         auto idx = S0*it*N+S1*jt + Padding;
-        //         _data[idx] += _vec_other[j];
-        //     }
-        // }
-        // for (; i <size(); i++) {
-        //     auto it = i / range_detector<F1,L1,S1>::value, jt = i % range_detector<F1,L1,S1>::value;
-        //     auto idx = S0*it*N+S1*jt + Padding;
-        //     _data[idx] += other_src.template eval_s<T>(i);
-        // }
         for (FASTOR_INDEX i = 0; i < dimension(0); i++) {
             FASTOR_INDEX j;
             for (j = 0; j < ROUND_DOWN(dimension(1),Stride); j+=Stride) {
@@ -571,9 +557,6 @@ public:
 
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        // SIMDVector<U,DEFAULT_ABI> _vec; 
-        // vector_setter(_vec,expr.data(),S0*i*N+S1*j + Padding,S1);
-        // return _vec;
         SIMDVector<U,DEFAULT_ABI> _vec; 
         if (S1==1) _vec.load(expr.data()+S0*i*N+S1*j + Padding, false);
         else vector_setter(_vec,expr.data(),S0*i*N+S1*j + Padding,S1);

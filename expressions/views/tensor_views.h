@@ -58,11 +58,6 @@ public:
 #ifndef NDEBUG
             FASTOR_ASSERT(_seq._last <= expr.dimension(counter) && _seq._first<expr.dimension(counter),"INDEX OUT OF BOUNDS");
 #endif            
-            // else if (_seq._last > expr.dimension(counter) && _seq._first==expr.dimension(counter)) {
-            //     auto dim = expr.dimension(counter);
-            //     _seq._first = dim-1;
-            //     _seq._last = dim;
-            // }
             counter++;
         }
     }
@@ -546,27 +541,6 @@ public:
 
             _data[ind] = other_src.template eval_s<T>(i);
         }
-
-        // In this context this is the same or slower
-        // int it, jt, i=0;
-        // while(true) {
-        //     int ind = 0;
-        //     for(it = 0; it< DIMS; it++) {
-        //         ind += products_[it]*as[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
-        //     }
-
-        //     _data[ind] = other_src.template eval_s<T>(i);
-        //     i++;
-
-        //     for(jt = DIMS-1 ; jt>=0 ; jt--) {
-        //         if(++as[jt]<dimension(jt))
-        //             break;
-        //         else
-        //             as[jt]=0;
-        //     }
-        //     if(jt<0)
-        //         break;
-        // }
 #endif
     }
 
@@ -2102,20 +2076,6 @@ public:
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        // FASTOR_INDEX i;
-        // for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-        //     auto _vec_other = other_src.template eval<T>(i);
-        //     for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-        //         auto it = (i+j) / _seq1.size(), jt = (i+j) % _seq1.size();
-        //         auto idx = _seq0._step*it*N+_seq1._step*jt + _seq0._first*N + _seq1._first;
-        //         _data[idx] += _vec_other[j];
-        //     }
-        // }
-        // for (; i <size(); i++) {
-        //     auto it = i / _seq1.size(), jt = i % _seq1.size();
-        //     auto idx = _seq0._step*it*N+_seq1._step*jt + _seq0._first*N + _seq1._first;
-        //     _data[idx] += other_src.template eval_s<T>(i);
-        // }
         for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
             FASTOR_INDEX j;
             for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
@@ -2626,12 +2586,6 @@ public:
 
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        // SIMDVector<U,DEFAULT_ABI> _vec; 
-        // vector_setter(_vec,expr.data(),_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,_seq1._step);
-        // return _vec;
-        // SIMDVector<T,DEFAULT_ABI> _vec;
-        // _vec.load(expr.data()+_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,false);
-        // return _vec;
         SIMDVector<U,DEFAULT_ABI> _vec; 
         if (_seq1._step==1) _vec.load(expr.data()+_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,false);       
         else vector_setter(_vec,expr.data(),_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,_seq1._step);

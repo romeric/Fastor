@@ -164,7 +164,7 @@ L128:
   cmpq  %r13, %rcx
   jne L129
 ~~~
-As can be observed, the compiler emits unaligned load and store instructions, but the rest of generated code is extremely efficient. For stack allocated and small tensor the unalgined load/store operations should not be a bottleneck, as the data would fit in L1 cache potentially. 
+As can be observed, the compiler emits unaligned load and store instructions, but the rest of the generated code is extremely efficient. For stack allocated and small tensors the unalgined load/store operations should not be a bottleneck, as the data would fit in L1 cache potentially. 
 
 ### Performance benchmark
 Consider the dyadic product `A_ik*B_jl`, that can be computed in Fastor like 
