@@ -111,7 +111,6 @@ void run_finite_difference() {
 #endif
 
     while (iter <100000 && err>1e-6) {
-    // while (iter < 32000) {
 #if defined(USE_LOOPS)
         err = finite_difference_loop_impl(u);
 #elif defined(USE_SEQ_ALIAS)
@@ -162,7 +161,6 @@ int main(int argc, char *argv[]) {
     t_j.tic();
     // Putting all this in stack might hurt the performance
     // as opposed to compiling for each individual benchmarks
-    // run_finite_difference<double,100>();
     if (N==100) run_finite_difference<double,100>();
     if (N==150) run_finite_difference<double,150>();
     if (N==200) run_finite_difference<double,200>();

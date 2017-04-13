@@ -693,7 +693,7 @@ public:
     }
     //----------------------------------------------------------------------------------------------------------//
 
-private:
+protected:
     template<typename Derived, size_t DIMS>
     FASTOR_INLINE void verify_dimensions(const AbstractTensor<Derived,DIMS>& src_) {
         static_assert(DIMS==Dimension, "TENSOR RANK MISMATCH");
@@ -709,37 +709,6 @@ private:
     //----------------------------------------------------------------------------------------------------------//
 
 };
-
-
-
-
-// Indexing specific to vectors and matrices
-//----------------------------------------------------------------------------------------------------------//
-template<typename T, size_t I, size_t J>
-FASTOR_INLINE Tensor<T,I> column(const Tensor<T,I,J> &arr, int n) {
-    Tensor<T,I> out;
-    FASTOR_INDEX counter = 0;
-    for (FASTOR_INDEX i=0; i<I; ++i) {
-        out(counter) = arr(i,n);
-        counter++;
-    }
-    return out;
-}
-
-template<typename T, size_t I, size_t J>
-FASTOR_INLINE Tensor<T,J> row(const Tensor<T,I,J> &arr, int n) {
-    Tensor<T,J> out;
-    FASTOR_INDEX counter = 0;
-    for (FASTOR_INDEX i=0; i<J; ++i) {
-        out(counter) = arr(n,i);
-        counter++;
-    }
-    return out;
-}
-
-
-//----------------------------------------------------------------------------------------------------------//
-
 
 
 }
