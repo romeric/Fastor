@@ -114,6 +114,16 @@ E(all,it) += E(all,it) * 15.;
 E(t_it) -= 42 + E;  
 // Aside from iseq, all other possible slicing and broadcasting types are possible
 ~~~
+It should be mentioned that since tensor views work on a view (reference) of (to) a tensor and do not copy any data in the background, the use of the keyword `auto` can be dangerous at times 
+~~~
+auto B = A(all,all,seq(0,5),seq(0,3)); // the scope of view expressions ends here when ; is encountered, as view is a refrerence to an rvalue
+auto C = B + 2; // Hence this will sigfault as B refers to a non-existing piece of memory
+~~~
+To solve this issue, use immediate construction from a view
+~~~
+Tensor<double,2,2,5,3> B = A(all,all,seq(0,5),seq(0,3)); // B is now permanent
+auto C = B + 2; // This will behave as expected
+~~~
 Note that Fastor, tries very hard to vectorise (read SIMD vectorisation) tensor views, but this heavily depends on the compilers ability to inline multiple recursive functions [as is the case for all expression templates]. If a view appears on the right hand side of an assignment, but not on the left, Fastor automatically vectorises the expression. However if a view appears on the left hand side of an assignment, Fastor does not by default vectorises the expression. To enable vectorisation across all tensor views use the compiler flag `-DFASTOR_USE_VECTORISE_EXPR_ASSIGN`. Also for performance reasons, it is beneficial to avoid assigning overlapping domains to each otherwise a copy will be made. If your code does not use any overlapping assignments, then this feature can be turned off completely by issusing `-DFASTOR_NO_ALIAS`. At this stage it is also beneficial to consider that while compiling a big project the inlining limit of the compiler should be increased i.e. `-finline-limit=<big number>` for GCC, `-mllvm -inline-threshold=<big number>` for Clang and `-inline-forceinline` for ICC. 
 
 As an example to see how efficiently tensor views can be vectorised, consider the following example   
@@ -123,11 +133,11 @@ Tensor<double,100,100> u, v;
 // A complex assignment expression involving multiple tensor views
 u(seq(1,last-1),seq(1,last-1)) = 
     ((  v(seq(0,last-2),seq(1,last-1)) + v(seq(2,last),seq(1,last-1)) +
-        v(seq(1,last-1),seq(0,last-2)) + v(seq(1,last-1),seq(2,last)) )*18.5 +
+        v(seq(1,last-1),seq(0,last-2)) + v(seq(1,last-1),seq(2,last)) )*4.0 +
         v(seq(0,last-2),seq(0,last-2)) + v(seq(0,last-2),seq(2,last)) +
-        v(seq(2,last),seq(0,last-2))   + v(seq(2,last),seq(2,last)) ) / 64.0;
+        v(seq(2,last),seq(0,last-2))   + v(seq(2,last),seq(2,last)) ) / 20.0;
 ~~~
-using `GCC 6.2` with `-O3 -mavx2 -mfma -finline-limit=100000` the above expression compiles to
+using `GCC 6.2` with `-O3 -mavx2 -mfma -finline-limit=100000 -ffp-contract=fast -DNDEBUG -DFASTOR_NO_ALIAS -DFASTOR_USE_VECTORISE_EXPR_ASSIGN` the above expression compiles to
 ~~~assembly
 L129:
   leaq  -768(%rcx), %rdx
