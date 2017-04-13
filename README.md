@@ -1,5 +1,5 @@
 # Fastor
-**Fastor** [**FA**st **S**IMD op**T**imised tens**OR**] algebra framework: Fastor is a high performance stack-based tensor (multi-dimensional array) library written in modern C++ [C++11/14/17], with powerful in-built tensor algebraic functionalities (tensor contraction, permutation, reductions, orthogonal and special tensor groups and many more). Designed as a generic tensor algebra algebra Fastor also incorporates domain specific semantics for tensor contraction algorithms typically arising in classical mechanics, in particular, in finite element analysis of nonlinear solids, fluids and coupled continua. There are multiple paradigms that Fastor exploits:
+**Fastor** [**FA**st **S**IMD op**T**imised tens**OR**] algebra framework: is a stack-based high performance tensor (multi-dimensional array) library written in modern C++ [C++11/14/17] with powerful in-built tensor algebraic functionalities (tensor contraction, permutation, reductions, orthogonal and special tensor groups and many more). Designed as a generic multi-dimensional tensor algebra library, Fastor also incorporates domain specific semantics for tensor contraction algorithms typically arising in classical mechanics, in particular, in finite element analysis of nonlinear solids, fluids and coupled continua. There are multiple paradigms that Fastor exploits:
 
 - **Operation minimisation/Low FLOP/Complexity reducing Algorithms:** Fastor relies on an extremely smart and domain-aware Expression Template (ET) engine that can perform mathematical transformation or *compile time* graph optimisation or both to reduce the complexity of evaluation of expressions by orders of magnitude. Some of these functionalities are almost non-existing in other available C++ ET linear algebra frameworks. 
 - **SIMD/Data parallelism/Stream computing** Fastor utilises explicit SIMD (SSE/SSE2/SSE3/SSE4/AVX/AVX2/AVX512/FMA) instructions
@@ -164,7 +164,7 @@ L128:
   cmpq  %r13, %rcx
   jne L129
 ~~~
-As can be observed, the compiler emits unaligned load and store instructions, but the rest of the generated code is extremely efficient. For stack allocated and small tensors the unalgined load/store operations should not be a bottleneck, as the data would fit in L1 cache potentially. 
+As can be observed, the compiler emits unaligned load and store instructions, but the rest of the generated code is extremely efficient (it does not get more efficient than this). For stack allocated and small tensors the unalgined load/store operations should not be a bottleneck, as the data would fit in L1 cache potentially. 
 
 ### Performance benchmark
 Consider the dyadic product `A_ik*B_jl`, that can be computed in Fastor like 
