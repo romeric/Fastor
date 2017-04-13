@@ -20,8 +20,6 @@ public:
 
     static constexpr FASTOR_INDEX Dimension = Rank;
     static constexpr FASTOR_INDEX size() {return Derived::Size;}
-//    constexpr FASTOR_INDEX size() const {return Derived::Size;}
-
 };
 
 }

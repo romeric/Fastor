@@ -93,7 +93,7 @@ FASTOR_INLINE void _inverse<double,3>(const double *__restrict__ src, double *__
 
 }
 
-#ifdef __SSE4_2__
+#if defined(__SSE4_2__) && defined(__SSE4_1__)
 
 //FASTOR_INLINE __m128 _mm_dot_ps(__m128 v1, __m128 v2)
 //{

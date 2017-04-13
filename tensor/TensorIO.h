@@ -18,12 +18,12 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,M> &a) {
     os.precision(9);
 //    auto &&w = std::setw(7);
     auto &&w = std::fixed;
-    os << "⎡" << w << a(0) << " ⎤\n";
+    os << "[ " << w << a(0) << " ]\n";
     for (size_t i = 1; i + 1 < M; ++i) {
-        os << "⎢" << w << a(i) << " ⎥\n";
+        os << "[ " << w << a(i) << " ]\n";
     }
     if (M > 1)
-        os << "⎣" << w << a(M - 1) << " ⎦\n";
+        os << "[ " << w << a(M - 1) << " ]\n";
 
     return os;
 }
@@ -35,31 +35,31 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,M,N> &a) {
 //    auto &&w = std::setw(7);
     auto &&w = std::fixed;
     if (M>1) {
-        os << "⎡" << w << a(0,0);
+        os << "[ " << w << a(0,0);
         for (size_t j = 1; j < N; ++j) {
             os << ", " << w << a(0,j);
         }
-        os << " ⎤\n";
+        os << " ]\n";
         for (size_t i = 1; i + 1 < M; ++i) {
-            os << "⎢" << w << a(i,0);
+            os << "[ " << w << a(i,0);
             for (size_t j = 1; j < N; ++j) {
                 os << ", " << w << a(i,j);
             }
-            os << " ⎥\n";
+            os << " ]\n";
         }
-        os << "⎣" << w << a(M - 1,0);
+        os << "[ " << w << a(M - 1,0);
         for (size_t j = 1; j < N; ++j) {
             os << ", " << w << a(M - 1,j);
         }
     }
     else {
-        os << "⎡" << w << a(0,0);
+        os << "[ " << w << a(0,0);
         for (size_t j = 1; j < N; ++j) {
             os << ", " << w << a(0,j);
         }
     }
 
-    return os << " ⎦\n";
+    return os << " ]\n";
 }
 
 
@@ -72,30 +72,30 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,P,M,Rest...> &a) {
     for (size_t k=0; k<P; ++k) {
         os << "["<< k << ",:,:]\n";
         if (M>1) {
-            os << "⎡" << w << a(k,0,0);
+            os << "[ " << w << a(k,0,0);
             for (size_t j = 1; j < N; ++j) {
                 os << ", " << w << a(k,0,j);
             }
-            os << " ⎤\n";
+            os << " ]\n";
             for (size_t i = 1; i + 1 < M; ++i) {
-                os << "⎢" << w << a(k,i,0);
+                os << "[" << w << a(k,i,0);
                 for (size_t j = 1; j < N; ++j) {
                     os << ", " << w << a(k,i,j);
                 }
-                os << " ⎥\n";
+                os << " ]\n";
             }
-            os << "⎣" << w << a(k,M - 1,0);
+            os << "[ " << w << a(k,M - 1,0);
             for (size_t j = 1; j < N; ++j) {
                 os << ", " << w << a(k,M - 1,j);
             }
         }
         else {
-            os << "⎡" << w << a(k,0,0);
+            os << "[ " << w << a(k,0,0);
             for (size_t j = 1; j < N; ++j) {
                 os << ", " << w << a(k,0,j);
             }
         }
-        os << " ⎦\n";
+        os << " ]\n";
     }
 
     return os;
@@ -113,30 +113,30 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,Q,P,Rest...> &a) {
         for (size_t k=0; k<P; ++k) {
             os << "["<< l << "," << k << ",:,:]\n";
             if (M>1) {
-                os << "⎡" << w << a(l,k,0,0);
+                os << "[ " << w << a(l,k,0,0);
                 for (size_t j = 1; j < N; ++j) {
                     os << ", " << w << a(l,k,0,j);
                 }
-                os << " ⎤\n";
+                os << " ]\n";
                 for (size_t i = 1; i + 1 < M; ++i) {
-                    os << "⎢" << w << a(l,k,i,0);
+                    os << "[ " << w << a(l,k,i,0);
                     for (size_t j = 1; j < N; ++j) {
                         os << ", " << w << a(l,k,i,j);
                     }
-                    os << " ⎥\n";
+                    os << " ]\n";
                 }
-                os << "⎣" << w << a(l,k,M - 1,0);
+                os << "[ " << w << a(l,k,M - 1,0);
                 for (size_t j = 1; j < N; ++j) {
                     os << ", " << w << a(l,k,M - 1,j);
                 }
             }
             else {
-                os << "⎡" << w << a(l,k,0,0);
+                os << "[ " << w << a(l,k,0,0);
                 for (size_t j = 1; j < N; ++j) {
                     os << ", " << w << a(l,k,0,j);
                 }
             }
-            os << " ⎦\n";
+            os << " ]\n";
         }
     }
     return os;
@@ -207,30 +207,30 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,M,N,Rest...> &a) {
         }
         os << ":,:]\n";
         if (DimensionHolder[a.Dimension-2] > 1) {
-            os << "⎡" << w << a_data[lastrowcol*dims];
+            os << "[ " << w << a_data[lastrowcol*dims];
             for (size_t j = 1; j < DimensionHolder[a.Dimension-1]; ++j) {
                 os << ", " << w << a_data[j+lastrowcol*dims];
             }
-            os << " ⎤\n";
+            os << " ]\n";
             for (size_t i = 1; i + 1 < DimensionHolder[a.Dimension-2]; ++i) {
-                os << "⎢" << w << a_data[i*DimensionHolder[a.Dimension-1]+lastrowcol*dims];
+                os << "[" << w << a_data[i*DimensionHolder[a.Dimension-1]+lastrowcol*dims];
                 for (size_t j = 1; j < DimensionHolder[a.Dimension-1]; ++j) {
                     os << ", " << w << a_data[i*DimensionHolder[a.Dimension-1]+j+lastrowcol*dims];
                 }
-                os << " ⎥\n";
+                os << " ]\n";
             }
-            os << "⎣" << w << a_data[(DimensionHolder[a.Dimension-2]-1)*DimensionHolder[a.Dimension-1]+lastrowcol*dims];
+            os << "[ " << w << a_data[(DimensionHolder[a.Dimension-2]-1)*DimensionHolder[a.Dimension-1]+lastrowcol*dims];
             for (size_t j = 1; j < DimensionHolder[a.Dimension-1]; ++j) {
                 os << ", " << w << a_data[(DimensionHolder[a.Dimension-2]-1)*DimensionHolder[a.Dimension-1]+j+lastrowcol*dims];
             }
         }
         else {
-            os << "⎡" << w << a_data[lastrowcol*dims];
+            os << "[ " << w << a_data[lastrowcol*dims];
             for (size_t j = 1; j < DimensionHolder[a.Dimension-1]; ++j) {
                 os << ", " << w << a_data[j+lastrowcol*dims];
             }
         }
-        os << " ⎦\n";
+        os << " ]\n";
     }
 
     return os;

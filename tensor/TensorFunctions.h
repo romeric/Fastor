@@ -1,5 +1,5 @@
-#ifndef TENSOR_FUNCS_H
-#define TENSOR_FUNCS_H
+#ifndef TENSOR_FUNCTIONS_H
+#define TENSOR_FUNCTIONS_H
 
 #include "tensor/Tensor.h"
 
@@ -301,5 +301,5 @@ Tensor<T,Rest...> kronecker_delta() {
 
 }
 
-#endif // TENSOR_FUNCS_H
+#endif // TENSOR_FUNCTIONS_H
 

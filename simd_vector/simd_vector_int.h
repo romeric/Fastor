@@ -51,8 +51,8 @@ struct SIMDVector<int,256> {
             _mm256_storeu_si256((__m256i*)data,value);
     }
 
-    FASTOR_INLINE int operator[](FASTOR_INDEX i) {return value[i];}
-    FASTOR_INLINE int operator()(FASTOR_INDEX i) {return value[i];}
+    FASTOR_INLINE int operator[](FASTOR_INDEX i) const {return value[i];}
+    FASTOR_INLINE int operator()(FASTOR_INDEX i) const {return value[i];}
 
     FASTOR_INLINE void set(int num) {
         value = _mm256_set1_epi32(num);
@@ -196,6 +196,19 @@ FASTOR_INLINE SIMDVector<int> operator*(int a, const SIMDVector<int> &b) {
     return out;
 }
 
+FASTOR_INLINE SIMDVector<int> abs(const SIMDVector<int> &a) {
+    SIMDVector<int> out;
+#ifdef __AVX2__
+    out.value = _mm256_abs_epi32(a.value);
+#else
+    __m128i lo = _mm_abs_epi32(_mm256_castsi256_si128(a.value));
+    __m128i hi = _mm_abs_epi32(_mm256_extracti128_si256(a.value,0x1));
+    out.value = _mm256_castsi128_si256(lo);
+    out.value = _mm256_insertf128_si256(out.value,hi,0x1);
+#endif
+    return out;
+}
+
 
 #endif
 
@@ -245,8 +258,8 @@ struct SIMDVector<int,128> {
             _mm_storeu_si128((__m128i*)data,value);
     }
 
-    FASTOR_INLINE int operator[](FASTOR_INDEX i) {return value[i];}
-    FASTOR_INLINE int operator()(FASTOR_INDEX i) {return value[i];}
+    FASTOR_INLINE int operator[](FASTOR_INDEX i) const {return value[i];}
+    FASTOR_INLINE int operator()(FASTOR_INDEX i) const {return value[i];}
 
     FASTOR_INLINE void set(int num) {
         value = _mm_set1_epi32(num);
@@ -389,6 +402,12 @@ FASTOR_INLINE SIMDVector<int,128> operator*(int a, const SIMDVector<int,128> &b)
     return out;
 }
 
+FASTOR_INLINE SIMDVector<int,128> abs(const SIMDVector<int,128> &a) {
+    SIMDVector<int,128> out;
+    out.value = _mm_abs_epi32(a.value);
+    return out;
+}
+
 
 
 #endif
@@ -431,8 +450,8 @@ struct SIMDVector<int, 32> {
         data[0] = value;
     }
 
-    FASTOR_INLINE int operator[](FASTOR_INDEX) {return value;}
-    FASTOR_INLINE int operator()(FASTOR_INDEX) {return value;}
+    FASTOR_INLINE int operator[](FASTOR_INDEX) const {return value;}
+    FASTOR_INLINE int operator()(FASTOR_INDEX) const {return value;}
 
     FASTOR_INLINE void set(int num) {
         value = num;
@@ -569,6 +588,10 @@ FASTOR_INLINE SIMDVector<int,32> operator/(int a, const SIMDVector<int,32> &b) {
 
 FASTOR_INLINE SIMDVector<int,32> sqrt(const SIMDVector<int,32> &a) {
     return std::sqrt(a.value);
+}
+
+FASTOR_INLINE SIMDVector<int,32> abs(const SIMDVector<int,32> &a) {
+    return std::abs(a.value);
 }
 
 

@@ -26,7 +26,7 @@ FASTOR_INLINE double _norm_nonfloating(const T* __restrict__ a) {
     for (FASTOR_INDEX j=i; j< size; j++) {
         scalar += a[j]*a[j];
     }
-    return std::sqrt(static_cast<double>(vec_out.sum() + scalar));
+    return sqrts(static_cast<double>(vec_out.sum() + scalar));
 }
 
 
@@ -42,14 +42,18 @@ FASTOR_INLINE T _norm(const T* __restrict__ a) {
     SIMDVector<T> vec_a=static_cast<T>(0), vec_out=static_cast<T>(0);
     for (; i< unroll_upto; i+=stride) {
         vec_a.load(a+i);
+#ifdef __FMA__
+        vec_out = fmadd(vec_a,vec_a,vec_out);
+#else
         vec_out += vec_a*vec_a;
+#endif
     }
     // Take care of the remainder
     T scalar = static_cast<T>(0);
     for (FASTOR_INDEX j=i; j< size; j++) {
         scalar += a[j]*a[j];
     }
-    return std::sqrt(vec_out.sum() + scalar);
+    return sqrts(vec_out.sum() + scalar);
 }
 
 #ifdef __SSE4_2__

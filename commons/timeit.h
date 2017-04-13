@@ -54,7 +54,7 @@ uint64_t rdtsc(){
 }
 #endif
 
-#ifndef CYCLES
+#ifndef NO_CYCLES
 #define CYCLES
 #endif
 
@@ -203,6 +203,29 @@ inline std::tuple<double,uint64_t> rtimeit(T (*func)(Params...), Args...args)
 
     return std::make_tuple(mean_time,uint64_t(cycles/(1.0*counter)));
 }
+
+
+
+// tic toc
+template<typename T=double>
+struct timer
+{
+    inline void tic() {t0 = std::chrono::high_resolution_clock::now();}
+
+    inline T toc(const std::string &msg="") {
+        using namespace std::chrono;
+        elapsed = high_resolution_clock::now() - t0;
+        T elapsed_seconds = duration<T,seconds::period>(elapsed).count();
+        if (msg.empty()) std::cout << FGRN(BOLD("Elapsed time is: ")) << 
+            elapsed_seconds << FGRN(BOLD(" seconds \n"));
+        else std::cout  << std::string("\x1B[32m ")+std::string("\x1B[1m")+msg+std::string("\x1B[0m")+" " 
+                        << elapsed_seconds << FGRN(BOLD(" seconds \n"));
+        return elapsed_seconds;
+    }
+
+    std::chrono::high_resolution_clock::time_point t0;
+    std::chrono::high_resolution_clock::duration elapsed;
+};
 
 
 // Define a no operation function

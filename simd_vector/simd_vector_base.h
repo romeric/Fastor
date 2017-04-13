@@ -94,8 +94,8 @@ struct SIMDVector {
         unused(Aligned);
     }
 
-    FASTOR_INLINE T operator[](FASTOR_INDEX i) {return value[i];}
-    FASTOR_INLINE T operator()(FASTOR_INDEX i) {return value[i];}
+    FASTOR_INLINE T operator[](FASTOR_INDEX i) const {return value[i];}
+    FASTOR_INLINE T operator()(FASTOR_INDEX i) const {return value[i];}
 
     FASTOR_INLINE void set(T num) {
         for (FASTOR_INDEX i=0; i<Size;++i)
@@ -104,7 +104,8 @@ struct SIMDVector {
     template<typename U, typename ... Args>
     FASTOR_INLINE void set(U first, Args ... args) {
         unused(first);
-        static_assert(sizeof...(args)==1,"CANNOT SET VECTOR WITH VALUES DUE TO ABI CONSIDERATION");
+        // Relax this restriction
+        // static_assert(sizeof...(args)==1,"CANNOT SET VECTOR WITH VALUES DUE TO ABI CONSIDERATION");
     }
     FASTOR_INLINE void set_sequential(T num0) {
         for (FASTOR_INDEX i=0; i<Size;++i)
@@ -307,10 +308,34 @@ FASTOR_INLINE SIMDVector<T,ABI> operator/(U a, const SIMDVector<T,ABI> &b) {
 }
 
 template<typename T, int ABI>
+FASTOR_INLINE SIMDVector<T,ABI> rcp(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<a.Size; ++i)
+        out.value[i] = T(1.)/a.value[i];
+    return out;
+}
+
+template<typename T, int ABI>
 FASTOR_INLINE SIMDVector<T,ABI> sqrt(const SIMDVector<T,ABI> &a) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<a.Size; ++i)
         out.value[i] = std::sqrt(a.value[i]);
+    return out;
+}
+
+template<typename T, int ABI>
+FASTOR_INLINE SIMDVector<T,ABI> rsqrt(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<a.Size; ++i)
+        out.value[i] = T(1.)/std::sqrt(a.value[i]);
+    return out;
+}
+
+template<typename T, int ABI>
+FASTOR_INLINE SIMDVector<T,ABI> abs(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<a.Size; ++i)
+        out.value[i] = std::abs(a.value[i]);
     return out;
 }
 

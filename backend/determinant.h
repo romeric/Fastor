@@ -14,7 +14,7 @@ template<>
 FASTOR_INLINE float _det<float,2,2>(const float* __restrict__ a) {
     // 10 OPS
     __m128 a1 = _mm_load_ps(a);
-    __m128 a2 = _mm_shuffle_ps(a1,a1,_MM_SHUFFLE(0,2,1,3));
+    __m128 a2 = _mm_shuffle_ps(a1,a1,_MM_SHUFFLE(0,1,2,3));
     __m128 a3 = _mm_mul_ps(a1,a2);
     return _mm_cvtss_f32(_mm_sub_ss(a3,_mm_shuffle_ps(a3,a3,_MM_SHUFFLE(0,0,0,1))));
 }

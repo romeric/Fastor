@@ -274,6 +274,30 @@ FASTOR_INLINE __m256d _mm256_neg_pd(__m256d a) {
 //!
 //!---------------------------------------------------------------//
 #ifdef __SSE4_2__
+// Absolute value of a register - all one cycle
+FASTOR_INLINE __m128 _mm_abs_ps(__m128 x) {
+    static const __m128 sign_mask = _mm_set1_ps(-0.f); // -0.f = 1 << 31
+    return _mm_andnot_ps(sign_mask, x);
+}
+FASTOR_INLINE __m128d _mm_abs_pd(__m128d x) {
+    static const __m128d sign_mask = _mm_set1_pd(-0.); // -0. = 1 << 63
+    return _mm_andnot_pd(sign_mask, x); // !sign_mask & x
+}
+#endif
+#ifdef __AVX__
+FASTOR_INLINE __m256 _mm256_abs_ps(__m256 x) {
+    static const __m256 sign_mask = _mm256_set1_ps(-0.f); // -0.f = 1 << 31
+    return _mm256_andnot_ps(sign_mask, x);
+}
+FASTOR_INLINE __m256d _mm256_abs_pd(__m256d x) {
+    static const __m256d sign_mask = _mm256_set1_pd(-0.); // -0. = 1 << 63
+    return _mm256_andnot_pd(sign_mask, x); // !sign_mask & x
+}
+#endif
+//!---------------------------------------------------------------//
+//!
+//!---------------------------------------------------------------//
+#ifdef __SSE4_2__
 // maximum value in a register - horizontal max
 FASTOR_INLINE float _mm_hmax_ps(__m128 a) {
     // 8OPS
@@ -514,7 +538,7 @@ FASTOR_INLINE __m128i _mm_mul_epi64(__m128i _a, __m128i _b) {
 #endif
 
 #ifdef __AVX__
-#ifndef __AVX2__
+// #ifndef __AVX2__
 FASTOR_INLINE __m256i _mm256_add_epi32x(__m256i _a, __m256i _b) {
     __m128i low_a = _mm256_castsi256_si128(_a);
     __m128i high_a = _mm256_extractf128_si256(_a,1);
@@ -575,24 +599,24 @@ FASTOR_INLINE __m256i _mm256_sub_epi64x(__m256i _a, __m256i _b) {
     out = _mm256_insertf128_si256(out,high,1);
     return out;
 }
-#else
-
-FASTOR_INLINE __m256i _mm256_add_epi32x(__m256i _a, __m256i _b) {
-    return _mm256_add_epi32(_a,_b);
-}
-FASTOR_INLINE __m256i _mm256_sub_epi32x(__m256i _a, __m256i _b) {
-    return _mm256_sub_epi32(_a,_b);
-}
-FASTOR_INLINE __m256i _mm256_mul_epi32x(__m256i _a, __m256i _b) {
-    return _mm256_mul_epi32(_a,_b);
-}
-FASTOR_INLINE __m256i _mm256_add_epi64x(__m256i _a, __m256i _b) {
-    return _mm256_add_epi64(_a,_b);
-}
-FASTOR_INLINE __m256i _mm256_sub_epi64x(__m256i _a, __m256i _b) {
-    return _mm256_sub_epi64(_a,_b);
-}
-#endif
+// #else
+// Note that these instruction work on alternating bytes  
+// FASTOR_INLINE __m256i _mm256_add_epi32x(__m256i _a, __m256i _b) {
+//     return _mm256_add_epi32(_a,_b);
+// }
+// FASTOR_INLINE __m256i _mm256_sub_epi32x(__m256i _a, __m256i _b) {
+//     return _mm256_sub_epi32(_a,_b);
+// }
+// FASTOR_INLINE __m256i _mm256_mul_epi32x(__m256i _a, __m256i _b) {
+//     return _mm256_mul_epi32(_a,_b);
+// }
+// FASTOR_INLINE __m256i _mm256_add_epi64x(__m256i _a, __m256i _b) {
+//     return _mm256_add_epi64(_a,_b);
+// }
+// FASTOR_INLINE __m256i _mm256_sub_epi64x(__m256i _a, __m256i _b) {
+//     return _mm256_sub_epi64(_a,_b);
+// }
+// #endif
 
 FASTOR_INLINE __m256i _mm256_div_epi32x(__m256i _a, __m256i _b) {
     // YIELDS INCORRECT
@@ -739,6 +763,17 @@ FASTOR_INLINE __m128d _hsub_pd(__m128d a) {
 __m128d _mm256_dp_pd(__m256d __X, __m256d __Y) {
     return _add_pd(_mm256_mul_pd(__X, __Y));
 }
+#endif
+
+
+// Additional math functions for scalars -> the name sqrts is to sqrts ambiguity with libm sqrt 
+template<typename T, typename std::enable_if<std::is_arithmetic<T>::value,bool>::type=0> 
+FASTOR_INLINE auto sqrts(T a) -> decltype(std::sqrt(a)) {return std::sqrt(a);}
+#ifdef __SSE4_2__
+template<>
+FASTOR_INLINE float sqrts<float>(float a) {return _mm_cvtss_f32(_mm_sqrt_ps(_mm_set1_ps(a)));}
+template<>
+FASTOR_INLINE double sqrts<double>(double a) {return _mm_cvtsd_f64(_mm_sqrt_pd(_mm_set1_pd(a)));}
 #endif
 
 #endif

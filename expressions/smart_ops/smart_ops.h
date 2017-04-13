@@ -40,12 +40,6 @@ template<typename TLhs, typename TRhs,
 FASTOR_INLINE BinaryMatMulOp<TLhs, TRhs> lmatmul(const TLhs &lhs, const TRhs &rhs) {
   return BinaryMatMulOp<TLhs, TRhs>(lhs, rhs);
 }
-//template<typename TLhs, typename TRhs,
-//         typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
-//                                 !std::is_arithmetic<TRhs>::value,bool>::type = 0 >
-//FASTOR_INLINE BinaryMatMulOp<TLhs, TRhs> lmatmul(TLhs &&lhs, const TRhs &rhs) {
-//  return BinaryMatMulOp<TLhs, TRhs>(lhs, rhs);
-//}
 //!--------------------------------------------------------------!//
 
 

@@ -50,8 +50,8 @@ struct SIMDVector<float,256> {
             _mm256_storeu_ps(data,value);
     }
 
-    FASTOR_INLINE float operator[](FASTOR_INDEX i) {return value[i];}
-    FASTOR_INLINE float operator()(FASTOR_INDEX i) {return value[i];}
+    FASTOR_INLINE float operator[](FASTOR_INDEX i) const {return value[i];}
+    FASTOR_INLINE float operator()(FASTOR_INDEX i) const {return value[i];}
 
     FASTOR_INLINE void set(float num) {
         value = _mm256_set1_ps(num);
@@ -228,9 +228,27 @@ FASTOR_INLINE SIMDVector<float> operator/(float a, const SIMDVector<float> &b) {
     return out;
 }
 
+FASTOR_INLINE SIMDVector<float> rcp(const SIMDVector<float> &a) {
+    SIMDVector<float> out;
+    out.value = _mm256_rcp_ps(a.value);
+    return out;
+}
+
 FASTOR_INLINE SIMDVector<float> sqrt(const SIMDVector<float> &a) {
     SIMDVector<float> out;
     out.value = _mm256_sqrt_ps(a.value);
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<float> rsqrt(const SIMDVector<float> &a) {
+    SIMDVector<float> out;
+    out.value = _mm256_rsqrt_ps(a.value);
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<float> abs(const SIMDVector<float> &a) {
+    SIMDVector<float> out;
+    out.value = _mm256_abs_ps(a.value);
     return out;
 }
 
@@ -286,8 +304,8 @@ struct SIMDVector<float,128> {
             _mm_storeu_ps(data,value);
     }
 
-    FASTOR_INLINE float operator[](FASTOR_INDEX i) {return value[i];}
-    FASTOR_INLINE float operator()(FASTOR_INDEX i) {return value[i];}
+    FASTOR_INLINE float operator[](FASTOR_INDEX i) const {return value[i];}
+    FASTOR_INLINE float operator()(FASTOR_INDEX i) const {return value[i];}
 
     FASTOR_INLINE void set(float num) {
         value = _mm_set1_ps(num);
@@ -452,9 +470,27 @@ FASTOR_INLINE SIMDVector<float,128> operator/(float a, const SIMDVector<float,12
     return out;
 }
 
+FASTOR_INLINE SIMDVector<float,128> rcp(const SIMDVector<float,128> &a) {
+    SIMDVector<float,128> out;
+    out.value = _mm_rcp_ps(a.value);
+    return out;
+}
+
 FASTOR_INLINE SIMDVector<float,128> sqrt(const SIMDVector<float,128> &a) {
     SIMDVector<float,128> out;
     out.value = _mm_sqrt_ps(a.value);
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<float,128> rsqrt(const SIMDVector<float,128> &a) {
+    SIMDVector<float,128> out;
+    out.value = _mm_rsqrt_ps(a.value);
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<float,128> abs(const SIMDVector<float,128> &a) {
+    SIMDVector<float,128> out;
+    out.value = _mm_abs_ps(a.value);
     return out;
 }
 
@@ -501,8 +537,8 @@ struct SIMDVector<float, 32> {
         data[0] = value;
     }
 
-    FASTOR_INLINE float operator[](FASTOR_INDEX) {return value;}
-    FASTOR_INLINE float operator()(FASTOR_INDEX) {return value;}
+    FASTOR_INLINE float operator[](FASTOR_INDEX) const {return value;}
+    FASTOR_INLINE float operator()(FASTOR_INDEX) const {return value;}
 
     FASTOR_INLINE void set(float num) {
         value = num;
@@ -642,8 +678,20 @@ FASTOR_INLINE SIMDVector<float,32> operator/(float a, const SIMDVector<float,32>
     return out;
 }
 
+FASTOR_INLINE SIMDVector<float,32> rcp(const SIMDVector<float,32> &a) {
+    return 1.f / a.value;
+}
+
 FASTOR_INLINE SIMDVector<float,32> sqrt(const SIMDVector<float,32> &a) {
     return std::sqrt(a.value);
+}
+
+FASTOR_INLINE SIMDVector<float,32> rsqrt(const SIMDVector<float,32> &a) {
+    return 1.f/std::sqrt(a.value);
+}
+
+FASTOR_INLINE SIMDVector<float,32> abs(const SIMDVector<float,32> &a) {
+    return std::abs(a.value);
 }
 
 }

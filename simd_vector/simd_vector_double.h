@@ -48,10 +48,8 @@ struct SIMDVector<double, 256> {
             _mm256_storeu_pd(data,value);
     }
 
-    FASTOR_INLINE double operator[](FASTOR_INDEX i) {return value[i];}
-//    FASTOR_INLINE double& operator[](FASTOR_INDEX i) {return value[i];}
-//    FASTOR_INLINE const double& operator[](FASTOR_INDEX i) const {return value[i];}
-    FASTOR_INLINE double operator()(FASTOR_INDEX i) {return value[i];}
+    FASTOR_INLINE double operator[](FASTOR_INDEX i) const {return value[i];}
+    FASTOR_INLINE double operator()(FASTOR_INDEX i) const {return value[i];}
 
     FASTOR_INLINE void set(double num) {
         value = _mm256_set1_pd(num);
@@ -219,9 +217,36 @@ FASTOR_INLINE SIMDVector<double> operator/(double a, const SIMDVector<double> &b
     return out;
 }
 
+FASTOR_INLINE SIMDVector<double> rcp(const SIMDVector<double> &a) {
+    SIMDVector<double> out;
+    // This is very inaccurate for double precision
+    out.value = _mm256_cvtps_pd(_mm_rcp_ps(_mm256_cvtpd_ps(a.value)));
+    return out;
+
+    // // For making it more accurate using Newton Raphson use this
+    // __m128d xmm0 = _mm256_cvtps_pd(_mm_rcp_ps(_mm256_cvtpd_ps(a.value)));
+    // xmm0 = _mm256_mul_pd(xmm0,_mm256_sub_pd(VTWOPD,_mm256_mul_pd(x,xmm0)));
+    // out.value = _mm256_mul_pd(xmm0,_mm256_sub_pd(VTWOPD,_mm256_mul_pd(x,xmm0)));
+    // return out;
+    
+}
+
 FASTOR_INLINE SIMDVector<double> sqrt(const SIMDVector<double> &a) {
     SIMDVector<double> out;
     out.value = _mm256_sqrt_pd(a.value);
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<double> rsqrt(const SIMDVector<double> &a) {
+    SIMDVector<double> out;
+   // This is very inaccurate for double precision
+    out.value = _mm256_cvtps_pd(_mm_rsqrt_ps(_mm256_cvtpd_ps(a.value)));
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<double> abs(const SIMDVector<double> &a) {
+    SIMDVector<double> out;
+    out.value = _mm256_abs_pd(a.value);
     return out;
 }
 
@@ -277,8 +302,8 @@ struct SIMDVector<double, 128> {
             _mm_storeu_pd(data,value);
     }
 
-    FASTOR_INLINE double operator[](FASTOR_INDEX i) {return value[i];}
-    FASTOR_INLINE double operator()(FASTOR_INDEX i) {return value[i];}
+    FASTOR_INLINE double operator[](FASTOR_INDEX i) const {return value[i];}
+    FASTOR_INLINE double operator()(FASTOR_INDEX i) const {return value[i];}
 
     FASTOR_INLINE void set(double num) {
         value = _mm_set1_pd(num);
@@ -438,9 +463,37 @@ FASTOR_INLINE SIMDVector<double,128> operator/(double a, const SIMDVector<double
     return out;
 }
 
+FASTOR_INLINE SIMDVector<double,128> rcp(const SIMDVector<double,128> &a) {
+    SIMDVector<double,128> out;
+    // This is very inaccurate for double precision
+    out.value = _mm_cvtps_pd(_mm_rcp_ps(_mm_cvtpd_ps(a.value)));
+    return out;
+
+    /*
+    // For making it more accurate using Newton Raphson use this
+    __m128d xmm0 = _mm_cvtps_pd(_mm_rcp_ps(_mm_cvtpd_ps(a.value)));
+    xmm0 = _mm_mul_pd(xmm0,_mm_sub_pd(TWOPD,_mm_mul_pd(x,xmm0)));
+    out.value = _mm_mul_pd(xmm0,_mm_sub_pd(TWOPD,_mm_mul_pd(x,xmm0)));
+    return out;
+    */
+}
+
 FASTOR_INLINE SIMDVector<double,128> sqrt(const SIMDVector<double,128> &a) {
     SIMDVector<double,128> out;
     out.value = _mm_sqrt_pd(a.value);
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<double,128> rsqrt(const SIMDVector<double,128> &a) {
+    SIMDVector<double,128> out;
+    // This is very inaccurate for double precision
+    out.value = _mm_cvtps_pd(_mm_rsqrt_ps(_mm_cvtpd_ps(a.value)));
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<double,128> abs(const SIMDVector<double,128> &a) {
+    SIMDVector<double,128> out;
+    out.value = _mm_abs_pd(a.value);
     return out;
 }
 
@@ -486,8 +539,8 @@ struct SIMDVector<double, 64> {
         data[0] = value;
     }
 
-    FASTOR_INLINE double operator[](FASTOR_INDEX) {return value;}
-    FASTOR_INLINE double operator()(FASTOR_INDEX) {return value;}
+    FASTOR_INLINE double operator[](FASTOR_INDEX) const {return value;}
+    FASTOR_INLINE double operator()(FASTOR_INDEX) const {return value;}
 
     FASTOR_INLINE void set(double num) {
         value = num;
@@ -627,8 +680,20 @@ FASTOR_INLINE SIMDVector<double,64> operator/(double a, const SIMDVector<double,
     return out;
 }
 
+FASTOR_INLINE SIMDVector<double,64> rcp(const SIMDVector<double,64> &a) {
+    return 1.0/a.value;
+}
+
 FASTOR_INLINE SIMDVector<double,64> sqrt(const SIMDVector<double,64> &a) {
     return std::sqrt(a.value);
+}
+
+FASTOR_INLINE SIMDVector<double,64> rsqrt(const SIMDVector<double,64> &a) {
+    return 1.0/std::sqrt(a.value);
+}
+
+FASTOR_INLINE SIMDVector<double,64> abs(const SIMDVector<double,64> &a) {
+    return std::abs(a.value);
 }
 
 

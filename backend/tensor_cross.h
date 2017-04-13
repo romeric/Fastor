@@ -39,8 +39,15 @@ FASTOR_INLINE void _crossproduct<double,2,2,2>(const double *__restrict__ a, con
 
     _mm_store_sd(c+8,c_22);
     // Zero out the rest
+#ifdef __AVX__
     _mm256_store_pd(c,VZEROPD);
     _mm256_store_pd(c+4,VZEROPD);
+#else
+    _mm_store_pd(c,ZEROPD);
+    _mm_store_pd(c+2,ZEROPD);
+    _mm_store_pd(c+4,ZEROPD);
+    _mm_store_pd(c+6,ZEROPD);
+#endif
 }
 
 template<>
@@ -195,7 +202,12 @@ void _crossproduct<float,2,2,2>(const float *__restrict__ a, const float *__rest
 
     _mm_store_ss(c+8,c_22);
     // Zero the rest
+#ifdef __AVX__
     _mm256_store_ps(c,VZEROPS);
+#else
+    _mm_store_ps(c,ZEROPS);
+    _mm_store_ps(c+2,ZEROPS);
+#endif
 }
 
 template<>
@@ -299,7 +311,12 @@ FASTOR_INLINE void _crossproduct<double,PlaneStrain>(const double *__restrict__ 
 //    __m128d c_22 = _mm_sub_pd(_add_pd(tmp0),_add_pd(tmp1));
 
     // zero first
+#ifdef __AVX__
     _mm256_store_pd(c,VZEROPD);
+#else
+    _mm_store_pd(c,ZEROPD);
+    _mm_store_pd(c+2,ZEROPD);
+#endif
 //    _mm256_store_pd(c+4,VZEROPD);
     // store
     _mm_store_sd(c,c_00);
@@ -354,7 +371,12 @@ void _crossproduct<float,PlaneStrain>(const float *__restrict__ a, const float *
                                         _mm_shuffle_ps(b1,b0,_MM_SHUFFLE(0,1,1,0))));
 
     // zero first
+#ifdef __AVX__
     _mm256_store_ps(c,VZEROPS);
+#else
+    _mm_store_ps(c,ZEROPS);
+    _mm_store_ps(c+2,ZEROPS);
+#endif
     // store
     _mm_store_ss(c,c_00);
     _mm_store_ss(c+1,c_01);

@@ -5,15 +5,9 @@
 
 namespace Fastor {
 
-template<typename T> struct stride_finder {
-    static const size_t value = 32  / sizeof(T);
-};
 
-template<> struct stride_finder<double> {
-    static const size_t value = 4;
-};
-template<> struct stride_finder<float> {
-    static const size_t value = 8;
+template<typename T> struct stride_finder {
+    static constexpr size_t value = DEFAULT_ABI /  8 / sizeof(T);
 };
 
 template<size_t Idx, size_t ... Rest>
@@ -26,10 +20,15 @@ template<size_t First, size_t ... Rest>
 struct get_value<1,First,Rest...> {
     static const size_t value = First;
 };
+template<size_t Idx>
+// Work around to avoid compiler errors
+struct get_value<Idx> {
+    static const size_t value = 0; 
+};
 
 template <size_t N, typename... Args>
-auto get_index(Args&&... as) -> decltype(std::get<N>(std::forward_as_tuple(std::forward<Args>(as)...)))
-{
+constexpr inline auto get_index(Args&&... as) 
+-> decltype(std::get<N>(std::forward_as_tuple(std::forward<Args>(as)...))) {
     return std::get<N>(std::forward_as_tuple(std::forward<Args>(as)...));
 }
 
@@ -70,13 +69,42 @@ struct get_all {
 };
 
 
+template<typename T>
+constexpr T size_proder_(T one){
+    return one.size();
+}
+template<typename T>
+constexpr T size_proder_(T one, T two){
+    return one.size()*two.size();
+}
+template<typename T, typename ... Ts>
+constexpr T size_proder_(T one, T two, Ts ... ts) {
+    return _proder_(_proder_(one,two),ts...);
+}
+
+
 //-----------
-template<size_t first, size_t last, size_t step>
+// template<size_t first, size_t last, size_t step>
+// struct range_detector {
+//     static constexpr size_t range = last - first;
+//     static constexpr size_t value = range % step==0 ? range/step : range/step+1;
+// };
+template<int first, int last, int step>
 struct range_detector {
-    static constexpr size_t range = last - first;
-    static constexpr size_t value = range % step==0 ? range/step : range/step+1;
+    static constexpr int range = last - first;
+    static constexpr int value = range % step==0 ? range/step : range/step+1;
 };
 //-----------
+
+
+// Expression binding type for binary operators
+//-----------
+template<class T>
+struct ExprBinderType {
+    using type = typename std::conditional<std::is_arithmetic<T>::value, T, const T&>::type;
+};
+//-----------
+
 
 
 //-------
@@ -255,6 +283,25 @@ namespace std_ext  // back port to c++11
     template<> struct make_index_sequence<1> : index_sequence<0> { };
 }
 ////////////////////////////
+
+
+
+
+
+///////////
+template<size_t F0, size_t L0, size_t S0, size_t F1, size_t L1, size_t S1, size_t Ncol, class Y>
+struct ravel_2d_indices;
+
+template<size_t F0, size_t L0, size_t S0, size_t F1, size_t L1, size_t S1, size_t Ncol, size_t ... ss>
+struct ravel_2d_indices<F0,L0,S0,F1,L1,S1,Ncol,std_ext::index_sequence<ss...>> {
+    static constexpr size_t size_1 = range_detector<F1,L1,S1>::value;
+    static constexpr std::array<size_t,sizeof...(ss)> idx = {(S0*(ss/size_1)*Ncol + S1*(ss%size_1) + F0*Ncol + F1)...};
+};
+template<size_t F0, size_t L0, size_t S0, size_t F1, size_t L1, size_t S1, size_t Ncol, size_t ... ss>
+constexpr std::array<size_t,sizeof...(ss)>
+ravel_2d_indices<F0,L0,S0,F1,L1,S1,Ncol,std_ext::index_sequence<ss...>>::idx;
+/////////////
+
 
 
 

@@ -41,7 +41,7 @@ __m256d internal_log(__m256d a) {
    return out;
 }
 
-// This can give inaccurate solution
+// This can give inaccurate results
 //__m256 internal_pow(__m256 a, __m256 b) {
 //   __m256 out;
 //   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {

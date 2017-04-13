@@ -50,6 +50,14 @@
     #define __FMA__ 1
 #endif
 
+
+// Only for GCC & Clang, affects tensor divisions.
+// ICC's default option is fast anyway (i.e. -fp-model fast=1)
+// but it does not define the __FAST_MATH__ macro
+#if defined(__FAST_MATH__)
+#define FASTOR_FAST_MATH
+#endif
+
 // Define this if hadd seems beneficial
 //#define USE_HADD
 
@@ -67,6 +75,11 @@
 //#define FASTOR_MATMUL_UNROLL_INNER
 //#define FASTOR_USE_OLD_OUTER
 //#define USE_OLD_VERSION // TO USE SOME OLD VERSIONS OF INTRINSICS
+//#define FASTOR_USE_VECTORISED_EXPR_ASSIGN  // TO USE VECTORISED EXPRESSION ASSIGNMENT
+
+#ifndef FASTOR_NO_ALIAS
+#define FASTOR_DISALLOW_ALIASING
+#endif
 
 #define DepthFirst -200
 #define NoDepthFirst -201
@@ -99,10 +112,25 @@
 
 #define SSE 128
 #define AVX 256
+#define AVX512 512
 #define Scalar 64
 #define Double 64
 #define Single 32
 
+#ifdef __SSE4_2__
+    #ifdef __AVX__
+        #ifdef __AVX512F__
+            #define DEFAULT_ABI AVX512
+        #else
+            #define DEFAULT_ABI AVX
+        #endif
+    #else
+        #define DEFAULT_ABI SSE
+    #endif
+#else
+    // Define the largest float size as vector size
+    #define DEFAULT_ABI Double
+#endif
 
 
 #ifdef __SSE4_2__
@@ -115,6 +143,8 @@
 #define ONEPD (_mm_set1_pd(1.0))
 #define HALFPS (_mm_set1_ps(0.5f))
 #define HALFPD (_mm_set1_pd(0.5))
+#define TWOPS (_mm_set1_ps(2.0f))
+#define TOWPD (_mm_set1_pd(2.0))
 #endif
 #ifdef __AVX__
 #define VZEROPS (_mm256_set1_ps(0.f))
@@ -126,6 +156,8 @@
 #define VONEPD (_mm256_set1_pd(1.0))
 #define VHALFPS (_mm256_set1_ps(0.5f))
 #define VHALFPD (_mm256_set1_pd(0.5))
+#define VTWOPS (_mm256_set1_ps(2.0f))
+#define VTOWPD (_mm256_set1_pd(2.0))
 #endif
 
 using FASTOR_INDEX = size_t;
@@ -196,6 +228,9 @@ struct PP_CAT(static_warning,__LINE__) { \
 //
 #define FASTOR_ISALIGNED(POINTER, BYTE_COUNT) \
     (((uintptr_t)(const void *)(POINTER)) % (BYTE_COUNT) == 0)
+
+// asm comment
+#define FASTOR_ASM(STR) asm(STR ::)
 
 
 #include "extended_algorithms.h"

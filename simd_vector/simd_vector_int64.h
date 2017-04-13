@@ -51,8 +51,8 @@ struct SIMDVector<Int64,256> {
             _mm256_storeu_si256((__m256i*)data,value);
     }
 
-    FASTOR_INLINE Int64 operator[](FASTOR_INDEX i) {return value[i];}
-    FASTOR_INLINE Int64 operator()(FASTOR_INDEX i) {return value[i];}
+    FASTOR_INLINE Int64 operator[](FASTOR_INDEX i) const {return value[i];}
+    FASTOR_INLINE Int64 operator()(FASTOR_INDEX i) const {return value[i];}
 
     FASTOR_INLINE void set(Int64 num) {
         value = _mm256_set1_epi64x(num);
@@ -250,8 +250,8 @@ struct SIMDVector<Int64,128> {
             _mm_storeu_si128((__m128i*)data,value);
     }
 
-    FASTOR_INLINE Int64 operator[](FASTOR_INDEX i) {return value[i];}
-    FASTOR_INLINE Int64 operator()(FASTOR_INDEX i) {return value[i];}
+    FASTOR_INLINE Int64 operator[](FASTOR_INDEX i) const {return value[i];}
+    FASTOR_INLINE Int64 operator()(FASTOR_INDEX i) const {return value[i];}
 
     FASTOR_INLINE void set(Int64 num) {
         value = _mm_set_epi64((__m64)num,(__m64)num);
@@ -342,7 +342,7 @@ struct SIMDVector<Int64,128> {
 
 std::ostream& operator<<(std::ostream &os, SIMDVector<Int64,128> a) {
     const int *value = (int*) &a.value;
-    os << "[" << value[0] <<  " " << value[1] << " " << value[2] << " " << value[3] << "]\n";
+    os << "[" << value[0] <<  " " << value[1] << "]\n";
     return os;
 }
 
@@ -457,8 +457,8 @@ struct SIMDVector<Int64, 64> {
         data[0] = value;
     }
 
-    FASTOR_INLINE int operator[](FASTOR_INDEX) {return value;}
-    FASTOR_INLINE int operator()(FASTOR_INDEX) {return value;}
+    FASTOR_INLINE int operator[](FASTOR_INDEX) const {return value;}
+    FASTOR_INLINE int operator()(FASTOR_INDEX) const {return value;}
 
     FASTOR_INLINE void set(int num) {
         value = num;
@@ -595,6 +595,10 @@ FASTOR_INLINE SIMDVector<Int64,64> operator/(Int64 a, const SIMDVector<Int64,64>
 
 FASTOR_INLINE SIMDVector<Int64,64> sqrt(const SIMDVector<Int64,64> &a) {
     return std::sqrt(a.value);
+}
+
+FASTOR_INLINE SIMDVector<Int64,64> abs(const SIMDVector<Int64,64> &a) {
+    return std::abs(a.value);
 }
 
 

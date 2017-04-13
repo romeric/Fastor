@@ -80,12 +80,21 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 
     for (size_t i=0; i<K; ++i) {
         __m128d brow = _mm_loadu_pd(&b[i*2]);
+#ifndef __FMA__
         // row 0
         __m128d a_vec0 = _mm_set1_pd(a[i]);
         out_row0 = _mm_add_pd(out_row0,_mm_mul_pd(a_vec0,brow));
         // row 1
         __m128d a_vec1 = _mm_set1_pd(a[K+i]);
         out_row1 = _mm_add_pd(out_row1,_mm_mul_pd(a_vec1,brow));
+#else
+        // row 0
+        __m128d a_vec0 = _mm_set1_pd(a[i]);
+        out_row0 = _mm_fmadd_pd(a_vec0,brow,out_row0);
+        // row 1
+        __m128d a_vec1 = _mm_set1_pd(a[K+i]);
+        out_row1 = _mm_fmadd_pd(a_vec1,brow,out_row1);
+#endif 
     }
     _mm_store_pd(out,out_row0);
     _mm_storeu_pd(out+2,out_row1);
@@ -102,14 +111,22 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
     __m128 out_row1 = ZEROPS;
 
     for (size_t i=0; i<K; i++) {
-
         __m128 brow = _mm_loadu_ps(&b[i*2]);
+#ifndef __FMA__
         // row 0
         __m128 a_vec0 = _mm_set1_ps(a[i]);
         out_row0 = _mm_add_ps(out_row0,_mm_mul_ps(a_vec0,brow));
         // row 1
         __m128 a_vec1 = _mm_set1_ps(a[K+i]);
         out_row1 = _mm_add_ps(out_row1,_mm_mul_ps(a_vec1,brow));
+#else
+        // row 0
+        __m128 a_vec0 = _mm_set1_ps(a[i]);
+        out_row0 = _mm_fmadd_ps(a_vec0,brow,out_row0);
+        // row 1
+        __m128 a_vec1 = _mm_set1_ps(a[K+i]);
+        out_row1 = _mm_fmadd_ps(a_vec1,brow,out_row1);
+#endif 
     }
     _mm_store_ps(out,_mm_shuffle_ps(out_row0,out_row1,_MM_SHUFFLE(1,0,1,0)));
 }
@@ -173,6 +190,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 
     for (size_t i=0; i<K; ++i) {
         __m128 brow = _mm_loadul3_ps(&b[i*3]);
+#ifndef __FMA__ 
         // row 0
         __m128 a_vec0 = _mm_set1_ps(a[i]);
         out_row0 = _mm_add_ps(out_row0,_mm_mul_ps(a_vec0,brow));
@@ -182,6 +200,18 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
         // row 2
         __m128 a_vec2 = _mm_set1_ps(a[2*K+i]);
         out_row2 = _mm_add_ps(out_row2,_mm_mul_ps(a_vec2,brow));
+#else
+        // row 0
+        __m128 a_vec0 = _mm_set1_ps(a[i]);
+        out_row0 = _mm_fmadd_ps(a_vec0,brow,out_row0);
+        // row 1
+        __m128 a_vec1 = _mm_set1_ps(a[K+i]);
+        out_row1 = _mm_fmadd_ps(a_vec1,brow,out_row1);
+        // row 2
+        __m128 a_vec2 = _mm_set1_ps(a[2*K+i]);
+        out_row2 = _mm_fmadd_ps(a_vec2,brow,out_row2);
+#endif
+
     }
     _mm_store_ps(out,out_row0);
     _mm_storeu_ps(out+3,out_row1);
@@ -205,6 +235,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 
     for (size_t i=0; i<K; ++i) {
         __m256d brow = _mm256_load_pd(&b[i*4]);
+#ifndef __FMA__
         // row 0
         __m256d a_vec0 = _mm256_set1_pd(a[i]);
         out_row0 = _mm256_add_pd(out_row0,_mm256_mul_pd(a_vec0,brow));
@@ -217,6 +248,20 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
         // row 3
         __m256d a_vec3 = _mm256_set1_pd(a[3*K+i]);
         out_row3 = _mm256_add_pd(out_row3,_mm256_mul_pd(a_vec3,brow));
+#else
+        // row 0
+        __m256d a_vec0 = _mm256_set1_pd(a[i]);
+        out_row0 = _mm256_fmadd_pd(a_vec0,brow,out_row0);
+        // row 1
+        __m256d a_vec1 = _mm256_set1_pd(a[K+i]);
+        out_row1 = _mm256_fmadd_pd(a_vec1,brow,out_row1);
+        // row 2
+        __m256d a_vec2 = _mm256_set1_pd(a[2*K+i]);
+        out_row2 = _mm256_fmadd_pd(a_vec2,brow,out_row2);
+        // row 3
+        __m256d a_vec3 = _mm256_set1_pd(a[3*K+i]);
+        out_row3 = _mm256_fmadd_pd(a_vec3,brow,out_row3);
+#endif  
     }
     _mm256_store_pd(out,out_row0);
     _mm256_store_pd(out+4,out_row1);
@@ -240,6 +285,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 
     for (size_t i=0; i<K; ++i) {
         __m128 brow = _mm_load_ps(&b[i*4]);
+#ifndef __FMA__
         // row 0
         __m128 a_vec0 = _mm_set1_ps(a[i]);
         out_row0 = _mm_add_ps(out_row0,_mm_mul_ps(a_vec0,brow));
@@ -249,9 +295,23 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
         // row 2
         __m128 a_vec2 = _mm_set1_ps(a[2*K+i]);
         out_row2 = _mm_add_ps(out_row2,_mm_mul_ps(a_vec2,brow));
-        // row 2
+        // row 3
         __m128 a_vec3 = _mm_set1_ps(a[3*K+i]);
         out_row3 = _mm_add_ps(out_row3,_mm_mul_ps(a_vec3,brow));
+#else
+        // row 0
+        __m128 a_vec0 = _mm_set1_ps(a[i]);
+        out_row0 = _mm_fmadd_ps(a_vec0,brow,out_row0);
+        // row 1
+        __m128 a_vec1 = _mm_set1_ps(a[K+i]);
+        out_row1 = _mm_fmadd_ps(a_vec1,brow,out_row1);
+        // row 2
+        __m128 a_vec2 = _mm_set1_ps(a[2*K+i]);
+        out_row2 = _mm_fmadd_ps(a_vec2,brow,out_row2);
+        // row 3
+        __m128 a_vec3 = _mm_set1_ps(a[3*K+i]);
+        out_row3 = _mm_fmadd_ps(out_row3,brow,a_vec3);
+#endif
     }
     _mm_store_ps(out,out_row0);
     _mm_store_ps(out+4,out_row1);
@@ -285,9 +345,15 @@ void _matmul_3x3xn(const T * __restrict__ a, const T * __restrict__ b, T * __res
             vec_a0.set(a[i]);
             vec_a1.set(a[i+M]);
             vec_a2.set(a[i+2*M]);
+#ifndef __FMA__
             out_row0 += vec_a0*brow;
             out_row1 += vec_a1*brow;
             out_row2 += vec_a2*brow;
+#else
+            out_row0 = fmadd(vec_a0,brow,out_row0);
+            out_row1 = fmadd(vec_a1,brow,out_row1);
+            out_row2 = fmadd(vec_a2,brow,out_row2);
+#endif            
         }
         out_row0.store(out+k,false);
         out_row1.store(out+N+k,false);
@@ -301,9 +367,15 @@ void _matmul_3x3xn(const T * __restrict__ a, const T * __restrict__ b, T * __res
             vec_a0.set(a[i]);
             vec_a1.set(a[i+M]);
             vec_a2.set(a[i+2*M]);
+#ifndef __FMA__
             out_row0 += vec_a0*brow;
             out_row1 += vec_a1*brow;
             out_row2 += vec_a2*brow;
+#else
+            out_row0 = fmadd(vec_a0,brow,out_row0);
+            out_row1 = fmadd(vec_a1,brow,out_row1);
+            out_row2 = fmadd(vec_a2,brow,out_row2);
+#endif 
         }
         out_row0.store(out+k,false);
         out_row1.store(out+N+k,false);
@@ -360,8 +432,13 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
                 V256 brow; brow.load(&b[i*N+k],false);
                 vec_a0.set(a[j*K+i]);
                 vec_a1.set(a[(j+1)*K+i]);
+#ifndef __FMA__
                 out_row0 += vec_a0*brow;
                 out_row1 += vec_a1*brow;
+#else
+                out_row0 = fmadd(vec_a0,brow,out_row0);
+                out_row1 = fmadd(vec_a1,brow,out_row1);
+#endif
             }
             out_row0.store(out+k+N*j,false);
             out_row1.store(out+k+N*(j+1),false);
@@ -373,8 +450,13 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
                 V128 brow; brow.load(&b[i*N+k],false);
                 vec_a0.set(a[j*K+i]);
                 vec_a1.set(a[(j+1)*K+i]);
+#ifndef __FMA__
                 out_row0 += vec_a0*brow;
                 out_row1 += vec_a1*brow;
+#else
+                out_row0 = fmadd(vec_a0,brow,out_row0);
+                out_row1 = fmadd(vec_a1,brow,out_row1);
+#endif
             }
             out_row0.store(out+k+N*j,false);
             out_row1.store(out+k+N*(j+1),false);
@@ -400,6 +482,11 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
                 V256 brow; brow.load(&b[i*N+k],false);
                 vec_a.set(a[j*K+i]);
                 out_row += vec_a*brow;
+#ifndef __FMA__
+                out_row += vec_a*brow;
+#else
+                out_row = fmadd(vec_a,brow,out_row);
+#endif
             }
             out_row.store(out+k+N*j,false);
         }
@@ -409,7 +496,11 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
             for (size_t i=0; i<K; ++i) {
                 V128 brow; brow.load(&b[i*N+k],false);
                 vec_a.set(a[j*K+i]);
+#ifndef __FMA__
                 out_row += vec_a*brow;
+#else
+                out_row = fmadd(vec_a,brow,out_row);
+#endif
             }
             out_row.store(out+k+N*j,false);
         }
@@ -441,6 +532,17 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
                 out_row1 += vec_a1*brow;
                 out_row2 += vec_a2*brow;
                 out_row3 += vec_a3*brow;
+#ifndef __FMA__
+                out_row0 += vec_a0*brow;
+                out_row1 += vec_a1*brow;
+                out_row2 += vec_a2*brow;
+                out_row3 += vec_a3*brow;
+#else
+                out_row0 = fmadd(vec_a0,brow,out_row0);
+                out_row1 = fmadd(vec_a1,brow,out_row1);
+                out_row2 = fmadd(vec_a2,brow,out_row2);
+                out_row3 = fmadd(vec_a3,brow,out_row3);
+#endif
             }
             out_row0.store(out+k+N*j,false);
             out_row1.store(out+k+N*(j+1),false);
@@ -456,10 +558,17 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
                 vec_a1.set(a[(j+1)*K+i]);
                 vec_a2.set(a[(j+2)*K+i]);
                 vec_a3.set(a[(j+3)*K+i]);
+#ifndef __FMA__
                 out_row0 += vec_a0*brow;
                 out_row1 += vec_a1*brow;
                 out_row2 += vec_a2*brow;
                 out_row3 += vec_a3*brow;
+#else
+                out_row0 = fmadd(vec_a0,brow,out_row0);
+                out_row1 = fmadd(vec_a1,brow,out_row1);
+                out_row2 = fmadd(vec_a2,brow,out_row2);
+                out_row3 = fmadd(vec_a3,brow,out_row3);
+#endif
             }
             out_row0.store(out+k+N*j,false);
             out_row1.store(out+k+N*(j+1),false);
@@ -490,7 +599,11 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
             for (int i=0; i<K; ++i) {
                 V256 brow; brow.load(&b[i*N+k],false);
                 vec_a.set(a[j*K+i]);
+#ifndef __FMA__
                 out_row += vec_a*brow;
+#else
+                out_row = fmadd(vec_a,brow,out_row);
+#endif
             }
             out_row.store(out+k+N*j,false);
         }
@@ -500,7 +613,11 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
             for (int i=0; i<K; ++i) {
                 V128 brow; brow.load(&b[i*N+k],false);
                 vec_a.set(a[j*K+i]);
+#ifndef __FMA__
                 out_row += vec_a*brow;
+#else
+                out_row = fmadd(vec_a,brow,out_row);
+#endif
             }
             out_row.store(out+k+N*j,false);
         }
@@ -523,7 +640,11 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
             for (size_t i=0; i<K; ++i) {
                 V256 brow; brow.load(&b[i*N+k],false);
                 vec_a.set(a[j*K+i]);
+#ifndef __FMA__
                 out_row += vec_a*brow;
+#else
+                out_row = fmadd(vec_a,brow,out_row);
+#endif
             }
             out_row.store(out+k+N*j,false);
         }
@@ -533,7 +654,11 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
             for (size_t i=0; i<K; ++i) {
                 V128 brow; brow.load(&b[i*N+k],false);
                 vec_a.set(a[j*K+i]);
+#ifndef __FMA__
                 out_row += vec_a*brow;
+#else
+                out_row = fmadd(vec_a,brow,out_row);
+#endif
             }
             out_row.store(out+k+N*j,false);
         }
@@ -564,8 +689,13 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
                 V256 brow1; brow1.load(&b[(i+1)*N+k],false);
                 vec_a0.set(a[j*K+i]);
                 vec_a1.set(a[j*K+i+1]);
+#ifndef __FMA__
                 out_row0 += vec_a0*brow0;
                 out_row1 += vec_a1*brow1;
+#else
+                out_row0 = fmadd(vec_a0,brow0,out_row0);
+                out_row1 = fmadd(vec_a1,brow1,out_row1)
+#endif
             }
             for (; i<K; ++i) {
                 V256 brow; brow.load(&b[i*N+k],false);
@@ -584,8 +714,13 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
                 V128 brow1; brow1.load(&b[(i+1)*N+k],false);
                 vec_a0.set(a[j*K+i]);
                 vec_a1.set(a[j*K+i+1]);
+#ifndef __FMA__
                 out_row0 += vec_a0*brow0;
                 out_row1 += vec_a1*brow1;
+#else
+                out_row0 = fmadd(vec_a0,brow0,out_row0);
+                out_row1 = fmadd(vec_a1,brow1,out_row1)
+#endif
             }
             for (; i<K; ++i) {
                 V128 brow; brow.load(&b[i*N+k],false);

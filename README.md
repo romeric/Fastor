@@ -1,8 +1,9 @@
 # Fastor
-**Fastor** is a **FA**st **S**IMD op**T**imised tens**OR** algebra framework, with emphasis on tensor contraction algorithms typically arising in classical mechanics, in particular, in finite element analysis of nonlinear solids, fluids and coupled continua. There are two paradigms that Fastor exploits:
+**Fastor** [**FA**st **S**IMD op**T**imised tens**OR**] algebra framework: Fastor is a high performance stack-based tensor (multi-dimensional array) library written in modern C++ [C++11/14/17], with powerful in-built tensor algebraic functionalities (tensor contraction, permutation, reductions, orthogonal and special tensor groups and many more). Designed as a generic tensor algebra algebra Fastor also incorporates domain specific semantics for tensor contraction algorithms typically arising in classical mechanics, in particular, in finite element analysis of nonlinear solids, fluids and coupled continua. There are multiple paradigms that Fastor exploits:
 
-- **Operation minimisation/complexity reducing algorithms** via statically dispatched (zero-overhead) bespoke kernels for a variety of tensor products using either a priori knowledge of tensors (through topological studies) or smart expression templates (that perform mathematical transformation or *compile time* graph optimisation) or both
-- **Data parallelism/stream computing** by utilising explicit SIMD (SSE/SSE2/SSE3/SSE4/AVX/AVX2/AVX512/FMA) instructions
+- **Operation minimisation/Low FLOP/Complexity reducing Algorithms:** Fastor relies on an extremely smart and domain-aware Expression Template (ET) engine that can perform mathematical transformation or *compile time* graph optimisation or both to reduce the complexity of evaluation of expressions by orders of magnitude. Some of these functionalities are almost non-existing in other available C++ ET linear algebra frameworks. 
+- **SIMD/Data parallelism/Stream computing** Fastor utilises explicit SIMD (SSE/SSE2/SSE3/SSE4/AVX/AVX2/AVX512/FMA) instructions
+- **Zero overhead tensor algebraic functions** via statically dispatched (zero-overhead) bespoke kernels for a variety of tensor products using a priori knowledge of tensors through topological studies 
 
 ### High-level API
 Fastor provides a high level interface for tensor algebra. As a first example consider the following
@@ -14,6 +15,7 @@ Tensor<double,3,3,3> tensor_3; // A third order tensor with dimension 3x3x3
 tensor_3.arange(0); // fill tensor with sequentially ascending numbers
 print(tensor_3); // print out the tensor
 tensor_3(0,2,1); // index a tensor
+tensor_3(all,last,seq(0,2)); // slice a tensor
 tensor_3.rank(); // get rank of tensor, 3 in this case
 Tensor<float,2,2,2,2,1,2,2,4,3,2,3,3,6> tensor_13; // A 13th order tensor 
 ~~~
@@ -59,10 +61,10 @@ int main() {
     return 0;
 }
 ~~~
-You can compile and run this by providing the following (or equivalent) flags to your compiler `-std=c++11 -O3 -mavx`.
+You can compile and run this by providing the following (or equivalent) flags to your compiler `-std=c++14 -O3 -mavx -DNDEBUG`.
 
 ### No heap allocation
-Fastor is essentially designed for small mutlidimensional tensors, that can appear in computing stresses, work conjugates, Hessian etc, during numerical integration in a finite element framework. As can be seen from the above examples, Fastor is based on fixed size static arrays (entirely stack allocation). The dimensions of the tensors must be known at compile time, which is typically the case for the use-cases it is designed for. However one of the strongest features of Fastor is in its in-built template meta-programming engine, in that, it can automatically determine at *compile time*, the dimensions of the tensors resulting from a complex operation yet to be performed, hence it can always allocate exactly the right amount of stack memory required. This is in contrast to static arrays in `C` or `Fortran` where one has to allocate a huge block of memory before hand to avoid stack overflow.   
+Fastor is essentially designed for small mutlidimensional tensors (for instance, tensors appearing during numerical integration in a finite element framework such as stresses, work conjugates, Hessian or small multi-dimensional arrays useful for 2D/3D graphics). As can be seen from the above examples, Fastor is based on fixed size static arrays (entirely stack allocation). The dimensions of the tensors must be known at compile time, which is typically the case for the use-cases it is designed for. However one of the strongest features of Fastor is in its in-built template meta-programming engine, in that, it can automatically determine at *compile time*, the dimensions of the tensors resulting from a complex operation yet to be performed, hence it can always allocate exactly the right amount of stack memory required. This is in contrast to static arrays in `C` or `Fortran` where one has to allocate a huge block of memory before hand to avoid stack overflow.   
 
 ### Static disptaching for absolute branchless code
 This is a strong statement to make, but Fastor strives to generate optimised SIMD code by utilising the static nature of tensors and the `SFINAE` (Substitution Failure Is Not an Error) feature of `C++11` to statically dispatch calls to bespoke kernels, which completely avoids the need for runtime branching. For example the double contraction of two second order double precision tensors  `A` and `B`, `A_ij*B_ij` with dimensions `2x2`, is statically dispatched to 
@@ -78,6 +80,91 @@ __m128d summ = _mm_add_pd(_add_pd(r3),_add_pd(_mm256_add_pd(r1,r2)));
 return _mm_cvtsd_f64(summ);
 ~~~
 without the need for a branch or a potential `jmp` instruction in assembly (again note that `9 multiplication + 8 addition` is reduced to `3 multiplication + 3 addition`). The main motivation behind customising/optimising these operations for such small tensors is that they are typically needed in the critical hotspots of finite element implementations (i.e. they almost always happen to appear at every quadrature point).  
+
+
+### Tensor views: A powerful indexing, slicing and broadcasting mechanism
+Fastor introduces powerful tensor views which make tensor indexing, slicing and broadcating look and feel native to scientific programmers. Consider the following examples
+~~~c++
+Tensor<double,4,3,10> A, B;
+A.random(); B.random();
+// Dynamic views -> seq(first,last,step)
+Tensor<double,2,2,5> C = A(seq(0,2),seq(0,2),seq(0,last,2));            // C = A[0:2,0:2,0::2]
+auto D = B(all,all,0) + A(all,all,last);                                // D = B[:,:,0] + A[:,:,-1]
+A(2,all,3) = 5.0;                                                       // A[2,:,3] = 5.0;
+// Static views -> fseq<first,last,step>
+Tensor<double,2,2,5> C = A(fseq<0,2>(),fseq<0,2>(),fseq<0,last,2>());   // C = A[0:2,0:2,0::2]
+auto D = B(fall,fall,fix<0,1>()) + A(fall,fall,fseq<9,10>());            // D = B[:,:,0] + A[:,:,-1]
+A(2,fall,3) = 5.0;                                                      // A[2,:,3] = 5.0;
+// Overlapping is also allowed without having undefined behaviour
+A(seq(2,last),all,all).noalias() += A(seq(0,last-2),all,all);           // A[2::,:,:] += A[::-2,:,:]
+// If instead of a tensor view, one needs an actual tensor the iseq could be used
+// iseq<first,last,step>
+Tensor<double,2,2,5> C = A(iseq<0,2>(),iseq<0,2>(),iseq<0,last,2>());   // C = A[0:2,0:2,0::2]
+// Note that iseq returns an immediate tensor rather than a tensor view and hence cannot appear
+// on the left hand side, for instance 
+A(iseq<0,2>(),iseq<0,2>(),iseq<0,last,2>()) = 2; // Will not compile
+
+// One can also index a tensor with another tensor(s)
+Tensor<float,10,10> E; E.fill(2);
+Tensor<int,5> it = {0,1,3,6,8};
+Tensor<size_t,10,10> t_it; t_it.arange();
+E(it,0) = 2;
+E(it,seq(0,last,3)) /= -1000.;
+E(all,it) += E(all,it) * 15.;
+E(t_it) -= 42 + E;  
+// Aside from iseq, all other possible slicing and broadcasting types are possible
+~~~
+Note that Fastor, tries very hard to vectorise (read SIMD vectorisation) tensor views, but this heavily depends on the compilers ability to inline multiple recursive functions [as is the case for all expression templates]. If a view appears on the right hand side of an assignment, but not on the left, Fastor automatically vectorises the expression. However if a view appears on the left hand side of an assignment, Fastor does not by default vectorises the expression. To enable vectorisation across all tensor views use the compiler flag `-DFASTOR_USE_VECTORISE_EXPR_ASSIGN`. Also for performance reasons, it is beneficial to avoid assigning overlapping domains to each otherwise a copy will be made. If your code does not use any overlapping assignments, then this feature can be turned off completely by issusing `-DFASTOR_NO_ALIAS`. At this stage it is also beneficial to consider that while compiling a big project the inlining limit of the compiler should be increased i.e. `-finline-limit=<big number>` for GCC, `-mllvm -inline-threshold=<big number>` for Clang and `-inline-forceinline` for ICC. 
+
+As an example to see how efficiently tensor views can be vectorised, consider the following example   
+~~~c++
+Tensor<double,100,100> u, v;
+// fill u and v
+// A complex assignment expression involving multiple tensor views
+u(seq(1,last-1),seq(1,last-1)) = 
+    ((  v(seq(0,last-2),seq(1,last-1)) + v(seq(2,last),seq(1,last-1)) +
+        v(seq(1,last-1),seq(0,last-2)) + v(seq(1,last-1),seq(2,last)) )*18.5 +
+        v(seq(0,last-2),seq(0,last-2)) + v(seq(0,last-2),seq(2,last)) +
+        v(seq(2,last),seq(0,last-2))   + v(seq(2,last),seq(2,last)) ) / 64.0;
+~~~
+using `GCC 6.2` with `-O3 -mavx2 -mfma -finline-limit=100000` the above expression compiles to
+~~~assembly
+L129:
+  leaq  -768(%rcx), %rdx
+  movq  %rsi, %rax
+  .align 4,0x90
+L128:
+  vmovupd 8(%rax), %ymm0
+  vmovupd (%rax), %ymm1
+  addq  $32, %rdx
+  addq  $32, %rax
+  vaddpd  1576(%rax), %ymm0, %ymm0
+  vaddpd  768(%rax), %ymm0, %ymm0
+  vaddpd  784(%rax), %ymm0, %ymm0
+  vfmadd132pd %ymm3, %ymm1, %ymm0
+  vaddpd  -16(%rax), %ymm0, %ymm0
+  vaddpd  1568(%rax), %ymm0, %ymm0
+  vaddpd  1584(%rax), %ymm0, %ymm0
+  vdivpd  %ymm2, %ymm0, %ymm0
+  vmovupd %ymm0, -32(%rdx)
+  cmpq  %rdx, %rcx
+  jne L128
+  vmovupd 2376(%rsi), %xmm0
+  vaddpd  776(%rsi), %xmm0, %xmm0
+  addq  $800, %rcx
+  addq  $800, %rsi
+  vaddpd  768(%rsi), %xmm0, %xmm0
+  vaddpd  784(%rsi), %xmm0, %xmm0
+  vfmadd213pd -32(%rsi), %xmm5, %xmm0
+  vaddpd  -16(%rsi), %xmm0, %xmm0
+  vaddpd  1568(%rsi), %xmm0, %xmm0
+  vaddpd  1584(%rsi), %xmm0, %xmm0
+  vdivpd  %xmm4, %xmm0, %xmm0
+  vmovups %xmm0, -800(%rcx)
+  cmpq  %r13, %rcx
+  jne L129
+~~~
+As can be observed, the compiler emits unaligned load and store instructions, but the rest of generated code is extremely efficient. For stack allocated and small tensor the unalgined load/store operations should not be a bottleneck, as the data would fit in L1 cache potentially. 
 
 ### Performance benchmark
 Consider the dyadic product `A_ik*B_jl`, that can be computed in Fastor like 
@@ -199,7 +286,7 @@ As you can observe with combination of `permutation`, `contraction`, `reduction`
 Fastor is extremely light weight, it is a *header-only* library, requires no build or compilation process and has no external dependencies. It is written in pure C++11 from the foundation.  
 
 ### Tested Compilers
-Fastor has been tested against the following compilers (on Ubuntu 14.04 and Ubuntu 16.04)
+Fastor has been tested against the following compilers (on Ubuntu 14.04 and Ubuntu 16.04 and macOS). While compiling on macOS with Clang, `-std=c++14` is necessary
 - GCC 4.8, GCC 4.9, GCC 5.1, GCC 5.2, GCC 5.3, GCC 5.4, GCC 6.2
 - Clang 3.6, Clang 3.7, Clang 3.8, Clang 3.9
 - Intel 16.0.1, Intel 16.0.2, Intel 16.0.3, Intel 17.0.1
@@ -226,8 +313,6 @@ Similar projects exist with varying levels of functionality, in particular
 - [Blitz++'s tensor module](http://blitz.sourceforge.net/): Dense linear algebra framework for up to rank 11 tensors 
 - [TiledArray](https://github.com/ValeevGroup/tiledarray): Massively parallel arbitrary rank block sparse tensor algebra framework based on Eigen
 - [Cyclops Tensor Framework](https://github.com/solomonik/ctf): Distributed memory arbitrary rank sparse tensor algebra framework
-
-It should be noted, that compared to the above projects Fastor is *minimal* in terms of function overloads as well as design and does not try to be a full-fledged tensor algebra framework, like Eigen. It is designed with specific needs in mind. Some noteworthy differences are
 
 - Some of Fastor's routines do not fall back to scalar code on non-SIMD architectures. This is only true for some basic BLAS type routines and not for tensor contraction procedures. In particular you need to have an AVX enabled micro-architecture for it to run, i.e. starting from Intel Sandy-Bridge or AMD Bulldozer generation onwards. Extension to support more vector enabled archetictures such as AVX-512, MIC and GPUs is planned and should be in fact straight-forward to plug them in, by using the [Vc](https://github.com/VcDevel/Vc) library. Fastor's underlying vector type APIs are purposely kept very close to `Vc`, so that in eventual case of porting, a change of namespace would suffice.  
 - Fastor is for small and on-cache tensors. 

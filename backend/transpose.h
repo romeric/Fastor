@@ -11,7 +11,7 @@ template<typename T, size_t M, size_t N>
 FASTOR_INLINE void _transpose(const T * __restrict__ a, T * __restrict__ out) {
     for (size_t i=0; i< M; ++i)
         for (size_t j=0; j<N; ++j)
-            out[i*N+j] = a[j*M+i];
+            out[j*M+i] = a[i*N+j];
 }
 
 #ifdef __SSE4_2__
