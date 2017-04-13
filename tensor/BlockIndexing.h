@@ -119,7 +119,7 @@ FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,1> operator()(seq _s) {
     return TensorViewExpr<Tensor<T,Rest...>,1>(*this,_s);
 }
 
-FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,2> operator()(seq _s0, seq _s1) {
+FASTOR_INLINE const TensorViewExpr<Tensor<T,Rest...>,2> operator()(seq _s0, seq _s1) {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     return TensorViewExpr<Tensor<T,Rest...>,2>(*this,_s0,_s1);
 }

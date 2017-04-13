@@ -87,16 +87,20 @@ Fastor introduces powerful tensor views which make tensor indexing, slicing and 
 ~~~c++
 Tensor<double,4,3,10> A, B;
 A.random(); B.random();
+
 // Dynamic views -> seq(first,last,step)
 Tensor<double,2,2,5> C = A(seq(0,2),seq(0,2),seq(0,last,2));            // C = A[0:2,0:2,0::2]
 auto D = B(all,all,0) + A(all,all,last);                                // D = B[:,:,0] + A[:,:,-1]
-A(2,all,3) = 5.0;                                                       // A[2,:,3] = 5.0;
+A(2,all,3) = 5.0;                                                       // A[2,:,3] = 5.0
+
 // Static views -> fseq<first,last,step>
 Tensor<double,2,2,5> C = A(fseq<0,2>(),fseq<0,2>(),fseq<0,last,2>());   // C = A[0:2,0:2,0::2]
-auto D = B(fall,fall,fix<0,1>()) + A(fall,fall,fseq<9,10>());            // D = B[:,:,0] + A[:,:,-1]
-A(2,fall,3) = 5.0;                                                      // A[2,:,3] = 5.0;
+auto D = B(fall,fall,fix<0,1>()) + A(fall,fall,fseq<9,10>());           // D = B[:,:,0] + A[:,:,-1]
+A(2,fall,3) = 5.0;                                                      // A[2,:,3] = 5.0
+
 // Overlapping is also allowed without having undefined behaviour
 A(seq(2,last),all,all).noalias() += A(seq(0,last-2),all,all);           // A[2::,:,:] += A[::-2,:,:]
+
 // If instead of a tensor view, one needs an actual tensor the iseq could be used
 // iseq<first,last,step>
 Tensor<double,2,2,5> C = A(iseq<0,2>(),iseq<0,2>(),iseq<0,last,2>());   // C = A[0:2,0:2,0::2]
@@ -114,13 +118,13 @@ E(all,it) += E(all,it) * 15.;
 E(t_it) -= 42 + E;  
 // Aside from iseq, all other possible slicing and broadcasting types are possible
 ~~~
-It should be mentioned that since tensor views work on a view (reference) of (to) a tensor and do not copy any data in the background, the use of the keyword `auto` can be dangerous at times 
-~~~
-auto B = A(all,all,seq(0,5),seq(0,3)); // the scope of view expressions ends here when ; is encountered, as view is a refrerence to an rvalue
+It should be mentioned that since tensor views work on a view of (reference to) a tensor and do not copy any data in the background, the use of the keyword `auto` can be dangerous at times 
+~~~c++
+auto B = A(all,all,seq(0,5),seq(0,3)); // the scope of view expressions ends with ; as view is a refrerence to an rvalue
 auto C = B + 2; // Hence this will sigfault as B refers to a non-existing piece of memory
 ~~~
 To solve this issue, use immediate construction from a view
-~~~
+~~~c++
 Tensor<double,2,2,5,3> B = A(all,all,seq(0,5),seq(0,3)); // B is now permanent
 auto C = B + 2; // This will behave as expected
 ~~~
