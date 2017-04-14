@@ -89,7 +89,6 @@ public:
 
     constexpr FASTOR_INLINE TensorFixedViewExpr2D(Tensor<T,M,N> &_ex) : expr(_ex) {}
 
-
     //----------------------------------------------------------------------------------//
     void operator=(const TensorFixedViewExpr2D<Tensor<T,M,N>,fseq<F0,L0,S0>,fseq<F1,L1,S1>,2> &other_src) {
 #ifndef NDEBUG
@@ -99,7 +98,7 @@ public:
             FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
-        T *_data = expr.data();
+        T *__restrict__ _data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         // FASTOR_INDEX i;
         // for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
@@ -266,7 +265,7 @@ public:
             FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
-        T *_data = expr.data();
+        T *__restrict__ _data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         constexpr FASTOR_INDEX UNROLL_UPTO = ROUND_DOWN(dimension(0),Stride);
         for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
@@ -279,7 +278,7 @@ public:
                 expr(S0*i+F0,S1*j+F1) = other_src.template eval_s<T>(i,j);
             }
         }
-#else            
+#else           
         for (FASTOR_INDEX i = 0; i <range_detector<F0,L0,S0>::value; i++) {
             for (FASTOR_INDEX j = 0; j <range_detector<F1,L1,S1>::value; j++) {
                 expr(S0*i+F0,S1*j+F1) = other_src.template eval_s<T>(i,j);
@@ -564,7 +563,7 @@ public:
     }
 
     template<typename U=T>
-    FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
+    constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return expr(S0*i+F0,S1*j+F1);
     }
 };
