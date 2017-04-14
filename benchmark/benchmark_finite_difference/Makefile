@@ -51,7 +51,7 @@ run:
 
 	./out_seq_alias_vec.exe $(N)
 	./out_seq_noalias_vec.exe $(N)
-	# ./out_iseq_vec.exe $(N)
+	./out_iseq_vec.exe $(N)
 	./out_fseq_vec.exe $(N)
 
 
