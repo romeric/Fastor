@@ -59,7 +59,7 @@ public:
 
 
 
-// 2D non-const fixed views
+// 1D non-const fixed views
 //----------------------------------------------------------------------------------------------//
 template<typename T, size_t N, int F0, int L0, int S0>
 struct TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1> :
@@ -75,6 +75,10 @@ public:
     }
     static constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) {
         return range_detector<F0,L0,S0>::value;
+    }
+
+    FASTOR_INLINE TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1>& nolias() {
+        FASTOR_ASSERT(false,"FIXED 1D VIEWS DO NOT SUPPORT OVERLAPPING ASSIGNMENTS");
     }
 
     constexpr FASTOR_INLINE TensorFixedViewExpr1D(Tensor<T,N> &_ex) : expr(_ex) {}
@@ -217,15 +221,11 @@ public:
     }
 
     //----------------------------------------------------------------------------------//
-    template<typename Derived>
-    void operator=(const AbstractTensor<Derived,1> &other) {
+    template<typename Derived, size_t DIMS>
+    void operator=(const AbstractTensor<Derived,DIMS> &other) {
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -246,15 +246,11 @@ public:
 #endif
     }
 
-    template<typename Derived>
-    void operator+=(const AbstractTensor<Derived,1> &other) {
+    template<typename Derived, size_t DIMS>
+    void operator+=(const AbstractTensor<Derived,DIMS> &other) {
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -275,15 +271,11 @@ public:
 #endif
     }
 
-    template<typename Derived>
-    void operator-=(const AbstractTensor<Derived,1> &other) {
+    template<typename Derived, size_t DIMS>
+    void operator-=(const AbstractTensor<Derived,DIMS> &other) {
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -304,15 +296,11 @@ public:
 #endif
     }
 
-    template<typename Derived>
-    void operator*=(const AbstractTensor<Derived,1> &other) {
+    template<typename Derived, size_t DIMS>
+    void operator*=(const AbstractTensor<Derived,DIMS> &other) {
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -333,15 +321,11 @@ public:
 #endif
     }
 
-    template<typename Derived>
-    void operator/=(const AbstractTensor<Derived,1> &other) {
+    template<typename Derived, size_t DIMS>
+    void operator/=(const AbstractTensor<Derived,DIMS> &other) {
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -364,6 +348,7 @@ public:
     //----------------------------------------------------------------------------------//
 
 
+    // Scalar binders
     //----------------------------------------------------------------------------------//
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator=(U num) {

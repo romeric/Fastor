@@ -112,9 +112,9 @@ void run() {
 
 int main() {
 
-    print(FBLU(BOLD("Testing multi-dimensional tensor views: single precision")));
+    print(FBLU(BOLD("Testing 1-dimensional random tensor views: single precision")));
     run<float>();
-    print(FBLU(BOLD("Testing multi-dimensional tensor views: double precision")));
+    print(FBLU(BOLD("Testing 1-dimensional random tensor views: double precision")));
     run<double>();
 
     return 0;

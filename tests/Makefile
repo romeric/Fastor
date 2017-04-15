@@ -7,14 +7,18 @@ endif
 
 
 all: tests
-tests: test_simd_vectors test_basics test_linalg test_views
+tests: test_simd_vectors test_basics test_einsum test_linalg test_views test_complex_expressions
 # tests: test_views
+# tests: test_complex_expressions
 
 test_simd_vectors:
 	$(CXX) test_simd_vectors.cpp -o test_simd_vectors.exe $(CXX_FLAGS) $(INCLUDES)
 
 test_basics:
-	$(CXX) test_basics.cpp -o test_basics.exe $(CXX_FLAGS) $(INCLUDES)	
+	$(CXX) test_basics.cpp -o test_basics.exe $(CXX_FLAGS) $(INCLUDES)
+
+test_einsum:
+	$(CXX) test_einsum.cpp -o test_einsum.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14
 
 test_linalg:
 	$(CXX) test_linalg.cpp -o test_linalg.exe $(CXX_FLAGS) $(INCLUDES)	
@@ -41,9 +45,14 @@ test_views:
 	$(CXX) test_random_views_nd.cpp -o test_random_views_nd.exe $(CXX_FLAGS) $(INCLUDES)
 	$(CXX) test_random_views_nd.cpp -o test_random_views_nd_vec.exe $(CXX_FLAGS) $(INCLUDES) -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
 
+test_complex_expressions:
+	$(CXX) test_complex_expressions.cpp -o test_complex_expressions.exe $(CXX_FLAGS) $(INCLUDES)
+	$(CXX) test_complex_expressions.cpp -o test_complex_expressions_vec.exe $(CXX_FLAGS) $(INCLUDES) -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
+
 run:
 	./test_simd_vectors.exe
-	./test_basics.exe 
+	./test_basics.exe
+	./test_einsum.exe
 	./test_linalg.exe
 	./test_views_1d.exe
 	./test_views_1d_vec.exe
@@ -59,6 +68,8 @@ run:
 	./test_random_views_1d_vec.exe
 	./test_random_views_nd.exe
 	./test_random_views_nd_vec.exe
+	./test_complex_expressions.exe
+	./test_complex_expressions_vec.exe
 
 clean:
 	rm -rf *.exe

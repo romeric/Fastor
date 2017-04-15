@@ -159,6 +159,18 @@ operator()(fseq<F0,L0,S0>, fseq<F1,L1,S1>) {
         typename to_positive<fseq<F1,L1,S1>,get_value<2,Rest...>::value>::type,2>(*this);
 }
 
+template<int F0, int L0, int S0, typename Int, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
+FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,2> operator()(fseq<F0,L0,S0> _s, Int num) {
+    static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+    return TensorViewExpr<Tensor<T,Rest...>,2>(*this,seq(_s),seq(num));
+}
+
+template<int F0, int L0, int S0, typename Int, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
+FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,2> operator()(Int num, fseq<F0,L0,S0> _s) {
+    static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+    return TensorViewExpr<Tensor<T,Rest...>,2>(*this,seq(num),seq(_s));
+}
+
 template<typename Int, size_t N, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0> 
 FASTOR_INLINE TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,N>,1> operator()(const Tensor<Int,N> &_it) {
     static_assert(Dimension==1,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
@@ -296,6 +308,18 @@ operator()(fseq<F0,L0,S0>, fseq<F1,L1,S1>) const {
     return TensorConstFixedViewExpr2D<Tensor<T,Rest...>,
         typename to_positive<fseq<F0,L0,S0>,get_value<1,Rest...>::value>::type,
         typename to_positive<fseq<F1,L1,S1>,get_value<2,Rest...>::value>::type,2>(*this);
+}
+
+template<int F0, int L0, int S0, typename Int, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
+FASTOR_INLINE TensorConstViewExpr<Tensor<T,Rest...>,2> operator()(fseq<F0,L0,S0> _s, Int num) const {
+    static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+    return TensorConstViewExpr<Tensor<T,Rest...>,2>(*this,seq(_s),seq(num));
+}
+
+template<int F0, int L0, int S0, typename Int, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
+FASTOR_INLINE TensorConstViewExpr<Tensor<T,Rest...>,2> operator()(Int num, fseq<F0,L0,S0> _s) const {
+    static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+    return TensorConstViewExpr<Tensor<T,Rest...>,2>(*this,seq(num),seq(_s));
 }
 
 template<typename Int, size_t N, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0> 

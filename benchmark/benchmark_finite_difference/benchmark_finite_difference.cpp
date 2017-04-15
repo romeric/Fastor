@@ -127,9 +127,9 @@ void run_finite_difference() {
     T err = 2.;
     int iter = 0;
     
-    Tensor<T,1,num> x;
+    Tensor<T,num> x;
     for (auto i=0; i<num; ++i) {
-        x(0,i) = i*pi/(num-1);
+        x(i) = i*pi/(num-1);
     }
 
     Tensor<T,num,num> u; u.zeros();

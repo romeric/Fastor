@@ -9,7 +9,8 @@ namespace Fastor {
 // Const versions
 //----------------------------------------------------------------------------------//
 template<typename T, size_t N, typename Int, size_t IterSize>
-struct TensorConstRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>: public AbstractTensor<TensorConstRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>,1> {
+struct TensorConstRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>: 
+    public AbstractTensor<TensorConstRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>,1> {
 private:
     const Tensor<T,N> &expr;
     const Tensor<Int,IterSize> &it_expr;
@@ -78,7 +79,8 @@ public:
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return prod<IterSizes...>::value;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return it_expr.dimension(i);}
 
-    constexpr FASTOR_INLINE TensorConstRandomViewExpr(const Tensor<T,Rest...> &_ex, const Tensor<Int,IterSizes...> &_it) : expr(_ex), it_expr(_it) {
+    constexpr FASTOR_INLINE TensorConstRandomViewExpr(const Tensor<T,Rest...> &_ex, 
+        const Tensor<Int,IterSizes...> &_it) : expr(_ex), it_expr(_it) {
         static_assert(sizeof...(Rest)==DIMS && sizeof...(IterSizes)==DIMS, "INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     }
 
@@ -122,7 +124,8 @@ public:
 
 
 template<typename T, size_t N, typename Int, size_t IterSize>
-struct TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>: public AbstractTensor<TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>,1> {
+struct TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>: 
+    public AbstractTensor<TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>,1> {
 private:
     Tensor<T,N> &expr;
     const Tensor<Int,IterSize> &it_expr;
@@ -345,8 +348,8 @@ public:
 
     // AbstractTensor binders
     //----------------------------------------------------------------------------------//
-    template<typename Derived>
-    void operator=(const AbstractTensor<Derived,1> &other) {
+    template<typename Derived, size_t DIMS>
+    void operator=(const AbstractTensor<Derived,DIMS> &other) {
 #ifdef FASTOR_DISALLOW_ALIASING
         if (does_alias) {
             does_alias = false;
@@ -363,10 +366,6 @@ public:
         const Derived& other_src = other.self();  
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
 #endif
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         FASTOR_INDEX i;
@@ -386,8 +385,8 @@ public:
 #endif
     }
 
-    template<typename Derived>
-    void operator+=(const AbstractTensor<Derived,1> &other) {
+    template<typename Derived, size_t DIMS>
+    void operator+=(const AbstractTensor<Derived,DIMS> &other) {
 #ifdef FASTOR_DISALLOW_ALIASING
         if (does_alias) {
             does_alias = false;
@@ -404,10 +403,6 @@ public:
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
 #endif
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         FASTOR_INDEX i;
@@ -427,8 +422,8 @@ public:
 #endif
     }
 
-    template<typename Derived>
-    void operator-=(const AbstractTensor<Derived,1> &other) {
+    template<typename Derived, size_t DIMS>
+    void operator-=(const AbstractTensor<Derived,DIMS> &other) {
 #ifdef FASTOR_DISALLOW_ALIASING
         if (does_alias) {
             does_alias = false;
@@ -445,10 +440,6 @@ public:
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
 #endif
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         FASTOR_INDEX i;
@@ -468,8 +459,8 @@ public:
 #endif
     }
 
-    template<typename Derived>
-    void operator*=(const AbstractTensor<Derived,1> &other) {
+    template<typename Derived, size_t DIMS>
+    void operator*=(const AbstractTensor<Derived,DIMS> &other) {
 #ifdef FASTOR_DISALLOW_ALIASING
         if (does_alias) {
             does_alias = false;
@@ -486,10 +477,6 @@ public:
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -510,8 +497,8 @@ public:
 #endif
     }
 
-    template<typename Derived>
-    void operator/=(const AbstractTensor<Derived,1> &other) {
+    template<typename Derived, size_t DIMS>
+    void operator/=(const AbstractTensor<Derived,DIMS> &other) {
 #ifdef FASTOR_DISALLOW_ALIASING
         if (does_alias) {
             does_alias = false;
@@ -528,10 +515,6 @@ public:
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
 #endif
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         FASTOR_INDEX i;
@@ -989,8 +972,8 @@ public:
 
     // AbstractTensor overloads
     //------------------------------------------------------------------------------------//
-    template<typename Derived>
-    void operator=(const AbstractTensor<Derived,DIMS> &other) {
+    template<typename Derived, size_t OTHER_DIMS>
+    void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #ifdef FASTOR_DISALLOW_ALIASING
         if (does_alias) {
             does_alias = false;
@@ -1007,10 +990,6 @@ public:
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1031,8 +1010,8 @@ public:
 #endif
     }
 
-    template<typename Derived>
-    void operator+=(const AbstractTensor<Derived,DIMS> &other) {
+    template<typename Derived, size_t OTHER_DIMS>
+    void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #ifdef FASTOR_DISALLOW_ALIASING
         if (does_alias) {
             does_alias = false;
@@ -1049,10 +1028,6 @@ public:
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1073,8 +1048,8 @@ public:
 #endif
     }
 
-    template<typename Derived>
-    void operator-=(const AbstractTensor<Derived,DIMS> &other) {
+    template<typename Derived, size_t OTHER_DIMS>
+    void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #ifdef FASTOR_DISALLOW_ALIASING
         if (does_alias) {
             does_alias = false;
@@ -1091,10 +1066,6 @@ public:
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1115,8 +1086,8 @@ public:
 #endif
     }
 
-    template<typename Derived>
-    void operator*=(const AbstractTensor<Derived,DIMS> &other) {
+    template<typename Derived, size_t OTHER_DIMS>
+    void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #ifdef FASTOR_DISALLOW_ALIASING
         if (does_alias) {
             does_alias = false;
@@ -1133,10 +1104,6 @@ public:
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1157,8 +1124,8 @@ public:
 #endif
     }
 
-    template<typename Derived>
-    void operator/=(const AbstractTensor<Derived,DIMS> &other) {
+    template<typename Derived, size_t OTHER_DIMS>
+    void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #ifdef FASTOR_DISALLOW_ALIASING
         if (does_alias) {
             does_alias = false;
@@ -1175,10 +1142,6 @@ public:
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN

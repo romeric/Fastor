@@ -86,7 +86,7 @@ FASTOR_INLINE Tensor(const BinaryAddOp<BinaryMulOp<Derived0,Derived1,sizeof...(R
     using V = SIMDVector<T,DEFAULT_ABI>;
     V _vec;
     FASTOR_INDEX i;
-    for (i = 0; i <src.size(); i+=Stride) {
+    for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
         _vec = fmadd(src.lhs.lhs.template eval<T>(i), src.lhs.rhs.template eval<T>(i), src.rhs.template eval<T>(i) );
         _vec.store(_data+i);
     }
@@ -273,7 +273,7 @@ FASTOR_INLINE Tensor<T,Rest...>& operator=(const BinaryAddOp<BinaryMulOp<Derived
     using V = SIMDVector<T,DEFAULT_ABI>;
     V _vec;
     FASTOR_INDEX i;
-    for (i = 0; i <src.size(); i+=Stride) {
+    for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
         _vec = fmadd(src.lhs.lhs.template eval<T>(i), src.lhs.rhs.template eval<T>(i), src.rhs.template eval<T>(i) );
         _vec.store(_data+i);
     }
@@ -461,7 +461,7 @@ FASTOR_INLINE void operator+=(const BinaryAddOp<BinaryMulOp<Derived0,Derived1,si
     using V = SIMDVector<T,DEFAULT_ABI>;
     V _vec;
     FASTOR_INDEX i;
-    for (i = 0; i <src.size(); i+=Stride) {
+    for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
         _vec = V(_data+i) + fmadd(src.lhs.lhs.template eval<T>(i), src.lhs.rhs.template eval<T>(i), src.rhs.template eval<T>(i) );
         _vec.store(_data+i);
     }
@@ -642,7 +642,7 @@ FASTOR_INLINE void operator-=(const BinaryAddOp<BinaryMulOp<Derived0,Derived1,si
     using V = SIMDVector<T,DEFAULT_ABI>;
     V _vec;
     FASTOR_INDEX i;
-    for (i = 0; i <src.size(); i+=Stride) {
+    for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
         _vec = V(_data+i) - fmadd(src.lhs.lhs.template eval<T>(i), src.lhs.rhs.template eval<T>(i), src.rhs.template eval<T>(i) );
         _vec.store(_data+i);
     }
@@ -827,7 +827,7 @@ FASTOR_INLINE void operator*=(const BinaryAddOp<BinaryMulOp<Derived0,Derived1,si
     using V = SIMDVector<T,DEFAULT_ABI>;
     V _vec;
     FASTOR_INDEX i;
-    for (i = 0; i <src.size(); i+=Stride) {
+    for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
         _vec = V(_data+i) * fmadd(src.lhs.lhs.template eval<T>(i), src.lhs.rhs.template eval<T>(i), src.rhs.template eval<T>(i) );
         _vec.store(_data+i);
     }
@@ -1008,7 +1008,7 @@ FASTOR_INLINE void operator/=(const BinaryAddOp<BinaryMulOp<Derived0,Derived1,si
     using V = SIMDVector<T,DEFAULT_ABI>;
     V _vec;
     FASTOR_INDEX i;
-    for (i = 0; i <src.size(); i+=Stride) {
+    for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
         _vec = V(_data+i) / fmadd(src.lhs.lhs.template eval<T>(i), src.lhs.rhs.template eval<T>(i), src.rhs.template eval<T>(i) );
         _vec.store(_data+i);
     }

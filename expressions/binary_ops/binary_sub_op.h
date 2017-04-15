@@ -181,6 +181,14 @@ FASTOR_INLINE BinarySubOp<TLhs, TRhs, DIM0> operator-(const TLhs &bb, const Abst
   return BinarySubOp<TLhs, TRhs, DIM0>(bb,rhs.self());
 }
 
+template<typename TLhs, typename TRhs, size_t DIM0, size_t DIM1,
+         typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
+                                 !std::is_arithmetic<TRhs>::value,bool>::type = 0 >
+FASTOR_INLINE BinarySubOp<TLhs, TRhs, meta_min<DIM0,DIM1>::value> 
+operator-(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1> &rhs) {
+  return BinarySubOp<TLhs, TRhs, meta_min<DIM0,DIM1>::value>(lhs.self(), rhs.self());
+}
+
 }
 
 

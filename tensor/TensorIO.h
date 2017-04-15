@@ -72,7 +72,7 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,P,M,Rest...> &a) {
     for (size_t k=0; k<P; ++k) {
         os << "["<< k << ",:,:]\n";
         if (M>1) {
-            os << "[ " << w << a(k,0,0);
+            os << "[" << w << a(k,0,0);
             for (size_t j = 1; j < N; ++j) {
                 os << ", " << w << a(k,0,j);
             }
@@ -90,7 +90,7 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,P,M,Rest...> &a) {
             }
         }
         else {
-            os << "[ " << w << a(k,0,0);
+            os << "[" << w << a(k,0,0);
             for (size_t j = 1; j < N; ++j) {
                 os << ", " << w << a(k,0,j);
             }

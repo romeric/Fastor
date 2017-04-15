@@ -24,37 +24,37 @@ public:
     static constexpr FASTOR_INDEX Size = prod<Rest...>::value;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX Remainder = prod<Rest...>::value % sizeof(T);
+    static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return Dimension;}
+    FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX dim) const {
+#ifndef NDEBUG
+        FASTOR_ASSERT(dim>=0 && dim < sizeof...(Rest), "TENSOR SHAPE MISMATCH");
+#endif
+        const FASTOR_INDEX DimensionHolder[sizeof...(Rest)] = {Rest...};
+        return DimensionHolder[dim];
+    }
 
 
     // Classic constructors
     //----------------------------------------------------------------------------------------------------------//
     constexpr FASTOR_INLINE Tensor(){}
 
-    FASTOR_INLINE Tensor(T i) {
-        SIMDVector<T,DEFAULT_ABI> reg(i);
-        for (FASTOR_INDEX i=0; i<Size; i+=Stride) {
+    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    FASTOR_INLINE Tensor(U num) {
+        SIMDVector<T,DEFAULT_ABI> reg(static_cast<T>(num));
+        FASTOR_INDEX i;
+        for (i = 0; i< ROUND_DOWN(Size,Stride); i+=Stride) {
             reg.store(_data+i);
+        }
+        for (; i<Size; ++i) {
+            _data[i] = (T)num;
         }
     }
 
     FASTOR_INLINE Tensor(const Tensor<T,Rest...> &other) {
-#ifndef NDEBUG
-        FASTOR_ASSERT(other.Dimension==Dimension, "TENSOR RANK MISMATCH");
-        FASTOR_ASSERT(other.size()==Size, "TENSOR SIZE MISMATCH");
-#endif
-        std::copy(other.data(),other.data()+other.size(),_data);
-    }
-    
-    FASTOR_INLINE Tensor(Tensor<T,Rest...> &&other) = default;
-
-    FASTOR_INLINE Tensor<T,Rest...> operator=(const Tensor<T,Rest...> &other) {
-#ifndef NDEBUG
-        FASTOR_ASSERT(other.Dimension==Dimension, "TENSOR RANK MISMATCH");
-        FASTOR_ASSERT(other.size()==Size, "TENSOR SIZE MISMATCH");
-#endif
-        std::copy(other.data(),other.data()+other.Size,_data);
-        return *this;
-    }
+        // This constructor cannot be default
+        // Note that all other data members are static constexpr 
+        std::copy(other.data(),other.data()+Size,_data);
+    };
 
     // List initialisers
     FASTOR_INLINE Tensor(const std::initializer_list<T> &lst) {
@@ -140,111 +140,61 @@ public:
     // CRTP constructors
     //----------------------------------------------------------------------------------------------------------//
     //----------------------------------------------------------------------------------------------------------//
+    // template<typename Derived, size_t DIMS>
+    // FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
+    //     verify_dimensions(src_);
+    //     const Derived &src = src_.self();
+    //     FASTOR_INDEX i;
+    //     for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
+    //         src.template eval<T>(i).store(_data+i);
+    //     }
+    //     for (; i < src.size(); ++i) {
+    //         _data[i] = src.template eval_s<T>(i);
+    //     }
+    // }
+
+    template<typename Derived>
+    FASTOR_INLINE Tensor(const AbstractTensor<Derived,sizeof...(Rest)>& src_) {
+        verify_dimensions(src_);
+        const Derived &src = src_.self();
+        FASTOR_INDEX i;
+        for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
+            src.template eval<T>(i).store(_data+i);
+        }
+        for (; i < src.size(); ++i) {
+            _data[i] = src.template eval_s<T>(i);
+        }
+    }
+
+    // template<typename Derived, size_t DIMS>
+    // FASTOR_INLINE Tensor<T,Rest...>& operator=(const AbstractTensor<Derived,DIMS>& src_) {
+    //     verify_dimensions(src_);
+    //     const Derived &src = src_.self();
+    //     FASTOR_INDEX i;
+    //     for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
+    //         src.template eval<T>(i).store(_data+i);
+    //     }
+    //     for (; i < src.size(); ++i) {
+    //         _data[i] = src.template eval_s<T>(i);
+    //     }
+    //     return *this;
+    // }
+
+    // Generic AbstractTensors
     template<typename Derived, size_t DIMS>
     FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
-        verify_dimensions(src_);
         const Derived &src = src_.self();
+#ifndef NDEBUG
+        FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
             src.template eval<T>(i).store(_data+i);
         }
-        for (i = 0; i < src.size(); ++i) {
+        for (; i < src.size(); ++i) {
             _data[i] = src.template eval_s<T>(i);
         }
     }
-
-    template<typename Derived, size_t DIMS>
-    FASTOR_INLINE Tensor<T,Rest...>& operator=(const AbstractTensor<Derived,DIMS>& src_) {
-        verify_dimensions(src_);
-        const Derived &src = src_.self();
-        FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
-            src.template eval<T>(i).store(_data+i);
-        }
-        for (i = 0; i < src.size(); ++i) {
-            _data[i] = src.template eval_s<T>(i);
-        }
-        return *this;
-    }
-
-    // FMA overloads
-    //----------------------------------------------------------------------------------------------------------//
-#ifdef __FMA__
-    #include "FMAPlugin.h"
-#endif
-    //----------------------------------------------------------------------------------------------------------//
-
-    #include "AuxiliaryPlugin.h"
-
-    //----------------------------------------------------------------------------------------------------------//
-
-    // Expression templates evaluators
-    //----------------------------------------------------------------------------------------------------------//
-    template<typename U=T>
-    FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
-#ifdef BOUNDSCHECK
-        // This is a generic evaluator and not for 1D cases only
-        FASTOR_ASSERT((i>=0 && i<Size), "INDEX OUT OF BOUNDS");
-#endif
-        SIMDVector<T,DEFAULT_ABI> out;
-        out.load(_data+i);
-        return out;
-    }
-    template<typename U=T>
-    FASTOR_INLINE T eval_s(FASTOR_INDEX i) const {
-#ifdef BOUNDSCHECK
-        // This is a generic evaluator and not for 1D cases only
-        FASTOR_ASSERT((i>=0 && i<Size), "INDEX OUT OF BOUNDS");
-#endif
-        return _data[i];
-    }
-    template<typename U=T>
-    FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        constexpr int N = get_value<2,Rest...>::value;
-#ifdef BOUNDSCHECK
-        constexpr int M = get_value<1,Rest...>::value;
-        FASTOR_ASSERT((i>=0 && i<M && j>=0 && j<N), "INDEX OUT OF BOUNDS");
-#endif
-        return SIMDVector<T,DEFAULT_ABI>(&_data[i*N+j]);
-    }
-    template<typename U=T>
-    FASTOR_INLINE T eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
-#ifdef BOUNDSCHECK
-        constexpr int M = get_value<1,Rest...>::value;
-        constexpr int N = get_value<2,Rest...>::value;
-        FASTOR_ASSERT((i>=0 && i<M && j>=0 && j<N), "INDEX OUT OF BOUNDS");
-#endif
-        return _data[i*get_value<2,Rest...>::value+j];
-    }
-
-    constexpr FASTOR_INLINE T eval(T i, T j) const {
-        return _data[static_cast<FASTOR_INDEX>(i)*get_value<2,Rest...>::value+static_cast<FASTOR_INDEX>(j)];
-    }
-
-    constexpr FASTOR_INLINE const Tensor<T,Rest...>& evaluate() const {
-        return *this;
-    }
-    //----------------------------------------------------------------------------------------------------------//
-
-    #include "SmartExpressionsPlugin.h"
-
-    //----------------------------------------------------------------------------------------------------------//
-
-    // Raw pointer providers
-    //----------------------------------------------------------------------------------------------------------//
-    FASTOR_INLINE T* data() const {
-        return const_cast<T*>(this->_data);
-    }
-    FASTOR_INLINE T* data() {
-        return this->_data;
-    }
-    //----------------------------------------------------------------------------------------------------------//
-
-    // Scalar & block indexing
-    //----------------------------------------------------------------------------------------------------------//
-    #include "ScalarIndexing.h"
-    #include "BlockIndexing.h"
-    //----------------------------------------------------------------------------------------------------------//
 
     // In-place operators
     //----------------------------------------------------------------------------------------------------------//
@@ -305,9 +255,10 @@ public:
         }
     }
 
-    // CRTP Overloads
-    template<typename Derived, size_t DIMS>
-    FASTOR_INLINE void operator +=(const AbstractTensor<Derived,DIMS>& src_) {
+    // CRTP Overloads for same rank tensors
+    //---------------------------------------------------------------------------------------------//
+    template<typename Derived>
+    FASTOR_INLINE void operator +=(const AbstractTensor<Derived,sizeof...(Rest)>& src_) {
         verify_dimensions(src_);
         const Derived &src = src_.self();
         using V = SIMDVector<T,DEFAULT_ABI>;
@@ -322,8 +273,8 @@ public:
         }
     }
 
-    template<typename Derived, size_t DIMS>
-    FASTOR_INLINE void operator -=(const AbstractTensor<Derived,DIMS>& src_) {
+    template<typename Derived>
+    FASTOR_INLINE void operator -=(const AbstractTensor<Derived,sizeof...(Rest)>& src_) {
         verify_dimensions(src_);
         const Derived &src = src_.self();
         using V = SIMDVector<T,DEFAULT_ABI>;
@@ -338,8 +289,8 @@ public:
         }
     }
 
-    template<typename Derived, size_t DIMS>
-    FASTOR_INLINE void operator *=(const AbstractTensor<Derived,DIMS>& src_) {
+    template<typename Derived>
+    FASTOR_INLINE void operator *=(const AbstractTensor<Derived,sizeof...(Rest)>& src_) {
         verify_dimensions(src_);
         const Derived &src = src_.self();
         using V = SIMDVector<T,DEFAULT_ABI>;
@@ -354,8 +305,8 @@ public:
         }
     }
 
-    template<typename Derived, size_t DIMS>
-    FASTOR_INLINE void operator /=(const AbstractTensor<Derived,DIMS>& src_) {
+    template<typename Derived>
+    FASTOR_INLINE void operator /=(const AbstractTensor<Derived,sizeof...(Rest)>& src_) {
         verify_dimensions(src_);
         const Derived &src = src_.self();
         using V = SIMDVector<T,DEFAULT_ABI>;
@@ -369,8 +320,85 @@ public:
             _data[i] /= src.template eval_s<T>(i);
         }
     }
+    //---------------------------------------------------------------------------------------------//
+
+    // CRTP Overloads for nth rank Tensors
+    //---------------------------------------------------------------------------------------------//
+    template<typename Derived, size_t DIMS>
+    FASTOR_INLINE void operator +=(const AbstractTensor<Derived,DIMS>& src_) {
+        const Derived &src = src_.self();
+#ifdef NDEBUG
+        FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        using V = SIMDVector<T,DEFAULT_ABI>;
+        V _vec;
+        FASTOR_INDEX i;
+        for (i = 0; i <ROUND_DOWN(Size,V::Size); i+=V::Size) {
+            _vec = V(_data+i) + src.template eval<T>(i);
+            _vec.store(_data+i);
+        }
+        for (; i < Size; ++i) {
+            _data[i] += src.template eval_s<T>(i);
+        }
+    }
+
+    template<typename Derived, size_t DIMS>
+    FASTOR_INLINE void operator -=(const AbstractTensor<Derived,DIMS>& src_) {
+        const Derived &src = src_.self();
+#ifdef NDEBUG
+        FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        using V = SIMDVector<T,DEFAULT_ABI>;
+        V _vec;
+        FASTOR_INDEX i;
+        for (i = 0; i <ROUND_DOWN(Size,V::Size); i+=V::Size) {
+            _vec = V(_data+i) - src.template eval<T>(i);
+            _vec.store(_data+i);
+        }
+        for (; i < Size; ++i) {
+            _data[i] -= src.template eval_s<T>(i);
+        }
+    }
+
+    template<typename Derived, size_t DIMS>
+    FASTOR_INLINE void operator *=(const AbstractTensor<Derived,DIMS>& src_) {
+        const Derived &src = src_.self();
+#ifdef NDEBUG
+        FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        using V = SIMDVector<T,DEFAULT_ABI>;
+        V _vec;
+        FASTOR_INDEX i;
+        for (i = 0; i <ROUND_DOWN(Size,V::Size); i+=V::Size) {
+            _vec = V(_data+i) * src.template eval<T>(i);
+            _vec.store(_data+i);
+        }
+        for (; i < Size; ++i) {
+            _data[i] *= src.template eval_s<T>(i);
+        }
+    }
+
+    template<typename Derived, size_t DIMS>
+    FASTOR_INLINE void operator /=(const AbstractTensor<Derived,DIMS>& src_) {
+        const Derived &src = src_.self();
+#ifdef NDEBUG
+        FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        using V = SIMDVector<T,DEFAULT_ABI>;
+        V _vec;
+        FASTOR_INDEX i;
+        for (i = 0; i <ROUND_DOWN(Size,V::Size); i+=V::Size) {
+            _vec = V(_data+i) / src.template eval<T>(i);
+            _vec.store(_data+i);
+        }
+        for (; i < Size; ++i) {
+            _data[i] /= src.template eval_s<T>(i);
+        }
+    }
+    //---------------------------------------------------------------------------------------------//
 
     // Scalar overloads for in-place operators
+    //---------------------------------------------------------------------------------------------//
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     FASTOR_INLINE void operator +=(U num) {
         using V = SIMDVector<T,DEFAULT_ABI>;
@@ -424,20 +452,86 @@ public:
             _vec.store(_data+i);
         }
         for (; i<Size; ++i) {
-            _data[i] /= (U)(num);
+            _data[i] *= inum;
         }
     }
     //----------------------------------------------------------------------------------------------------------//
 
-    // Further member functions
+
+    // Expression templates evaluators
     //----------------------------------------------------------------------------------------------------------//
-    static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return Dimension;}
-    FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX dim) const {
-//        constexpr FASTOR_INDEX DimensionHolder[Dimension] = {Rest...}; // c++14
-        FASTOR_INDEX DimensionHolder[Dimension] = {Rest...};
-        return DimensionHolder[dim];
+    template<typename U=T>
+    FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
+#ifdef BOUNDSCHECK
+        // This is a generic evaluator and not for 1D cases only
+        FASTOR_ASSERT((i>=0 && i<Size), "INDEX OUT OF BOUNDS");
+#endif
+        SIMDVector<T,DEFAULT_ABI> out;
+        out.load(_data+i);
+        return out;
+    }
+    template<typename U=T>
+    FASTOR_INLINE T eval_s(FASTOR_INDEX i) const {
+#ifdef BOUNDSCHECK
+        // This is a generic evaluator and not for 1D cases only
+        FASTOR_ASSERT((i>=0 && i<Size), "INDEX OUT OF BOUNDS");
+#endif
+        return _data[i];
+    }
+    template<typename U=T>
+    FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
+        static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+        constexpr int N = get_value<2,Rest...>::value;
+#ifdef BOUNDSCHECK
+        constexpr int M = get_value<1,Rest...>::value;
+        FASTOR_ASSERT((i>=0 && i<M && j>=0 && j<N), "INDEX OUT OF BOUNDS");
+#endif
+        return SIMDVector<T,DEFAULT_ABI>(&_data[i*N+j]);
+    }
+    template<typename U=T>
+    FASTOR_INLINE T eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
+        static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+#ifdef BOUNDSCHECK
+        constexpr int M = get_value<1,Rest...>::value;
+        constexpr int N = get_value<2,Rest...>::value;
+        FASTOR_ASSERT((i>=0 && i<M && j>=0 && j<N), "INDEX OUT OF BOUNDS");
+#endif
+        return _data[i*get_value<2,Rest...>::value+j];
     }
 
+    constexpr FASTOR_INLINE T eval(T i, T j) const {
+        return _data[static_cast<FASTOR_INDEX>(i)*get_value<2,Rest...>::value+static_cast<FASTOR_INDEX>(j)];
+    }
+
+    constexpr FASTOR_INLINE const Tensor<T,Rest...>& evaluate() const {
+        return *this;
+    }
+    //----------------------------------------------------------------------------------------------------------//
+
+    // Raw pointer providers
+    //----------------------------------------------------------------------------------------------------------//
+    FASTOR_INLINE T* data() const { return const_cast<T*>(this->_data);}
+    FASTOR_INLINE T* data() {return this->_data;}
+    //----------------------------------------------------------------------------------------------------------//
+
+    // FMA overloads
+    //----------------------------------------------------------------------------------------------------------//
+#ifdef __FMA__
+    #include "FMAPlugin.h"
+#endif
+    //----------------------------------------------------------------------------------------------------------//
+    #include "AuxiliaryPlugin.h"
+    //----------------------------------------------------------------------------------------------------------//
+    #include "SmartExpressionsPlugin.h"
+    //----------------------------------------------------------------------------------------------------------//
+    // Scalar & block indexing
+    //----------------------------------------------------------------------------------------------------------//
+    #include "ScalarIndexing.h"
+    #include "BlockIndexing.h"
+    //----------------------------------------------------------------------------------------------------------//
+
+    // Further member functions
+    //----------------------------------------------------------------------------------------------------------//
     template<typename U=T>
     FASTOR_INLINE void fill(U num0) {
         T num = static_cast<T>(num0);
@@ -462,9 +556,7 @@ public:
     }
 
     template<typename U=T>
-    FASTOR_INLINE void arange(U num0=static_cast<U>(0)) {
-        iota(num0);
-    }
+    FASTOR_INLINE void arange(U num0=0) {iota(num0);}
 
     FASTOR_INLINE void zeros() {
         SIMDVector<T> _zeros;

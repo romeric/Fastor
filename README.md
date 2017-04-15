@@ -87,23 +87,24 @@ Fastor introduces powerful tensor views which make tensor indexing, slicing and 
 ~~~c++
 Tensor<double,4,3,10> A, B;
 A.random(); B.random();
+Tensor<double,2,2,5> C; Tensor<double,4,3,1> D;
 
 // Dynamic views -> seq(first,last,step)
-Tensor<double,2,2,5> C = A(seq(0,2),seq(0,2),seq(0,last,2));            // C = A[0:2,0:2,0::2]
-auto D = B(all,all,0) + A(all,all,last);                                // D = B[:,:,0] + A[:,:,-1]
-A(2,all,3) = 5.0;                                                       // A[2,:,3] = 5.0
+C = A(seq(0,2),seq(0,2),seq(0,last,2));                            // C = A[0:2,0:2,0::2]
+D = B(all,all,0) + A(all,all,last);                                // D = B[:,:,0] + A[:,:,-1]
+A(2,all,3) = 5.0;                                                  // A[2,:,3] = 5.0
 
 // Static views -> fseq<first,last,step>
-Tensor<double,2,2,5> C = A(fseq<0,2>(),fseq<0,2>(),fseq<0,last,2>());   // C = A[0:2,0:2,0::2]
-auto D = B(fall,fall,fix<0,1>()) + A(fall,fall,fseq<9,10>());           // D = B[:,:,0] + A[:,:,-1]
-A(2,fall,3) = 5.0;                                                      // A[2,:,3] = 5.0
+C = A(fseq<0,2>(),fseq<0,2>(),fseq<0,last,2>());                   // C = A[0:2,0:2,0::2]
+D = B(fall,fall,fseq<0,1>()) + A(fall,fall,fseq<9,10>());          // D = B[:,:,0] + A[:,:,-1]
+A(2,fall,3) = 5.0;                                                 // A[2,:,3] = 5.0
 
 // Overlapping is also allowed without having undefined behaviour
-A(seq(2,last),all,all).noalias() += A(seq(0,last-2),all,all);           // A[2::,:,:] += A[::-2,:,:]
+A(seq(2,last),all,all).noalias() += A(seq(0,last-2),all,all);      // A[2::,:,:] += A[::-2,:,:]
 
 // If instead of a tensor view, one needs an actual tensor the iseq could be used
 // iseq<first,last,step>
-Tensor<double,2,2,5> C = A(iseq<0,2>(),iseq<0,2>(),iseq<0,last,2>());   // C = A[0:2,0:2,0::2]
+C = A(iseq<0,2>(),iseq<0,2>(),iseq<0,last,2>());                   // C = A[0:2,0:2,0::2]
 // Note that iseq returns an immediate tensor rather than a tensor view and hence cannot appear
 // on the left hand side, for instance 
 A(iseq<0,2>(),iseq<0,2>(),iseq<0,last,2>()) = 2; // Will not compile, as left operand as an rvalue
@@ -115,9 +116,13 @@ Tensor<size_t,10,10> t_it; t_it.arange();
 E(it,0) = 2;
 E(it,seq(0,last,3)) /= -1000.;
 E(all,it) += E(all,it) * 15.;
-E(t_it) -= 42 + E;  
-// Aside from iseq, all other possible slicing and broadcasting types are possible
+E(t_it) -= 42 + E;
 ~~~
+Aside from `iseq` (which pretty much immediately returns another tensor), all other possible combination of slicing and broadcasting types are possible. For instance, one complex slicing and broadcasting example is given below
+~~~c++
+A(all,all) -= log(B(all,all,0)) + abs(B(all,fall,1)) + sin(C(all,0,all,0)) - 1 - cos(B(all,all,0));
+~~~
+
 It should be mentioned that since tensor views work on a view of (reference to) a tensor and do not copy any data in the background, the use of the keyword `auto` can be dangerous at times 
 ~~~c++
 auto B = A(all,all,seq(0,5),seq(0,3)); // the scope of view expressions ends with ; as view is a refrerence to an rvalue
@@ -128,7 +133,7 @@ To solve this issue, use immediate construction from a view
 Tensor<double,2,2,5,3> B = A(all,all,seq(0,5),seq(0,3)); // B is now permanent
 auto C = B + 2; // This will behave as expected
 ~~~
-Note that Fastor tries very hard to vectorise (read SIMD vectorisation) tensor views, but this heavily depends on the compilers ability to inline multiple recursive functions [as is the case for all expression templates]. If a view appears on the right hand side of an assignment, but not on the left, Fastor automatically vectorises the expression. However if a view appears on the left hand side of an assignment, Fastor does not by default vectorises the expression. To enable vectorisation across all tensor views use the compiler flag `-DFASTOR_USE_VECTORISE_EXPR_ASSIGN`. Also for performance reasons, it is beneficial to avoid assigning overlapping domains to each otherwise a copy will be made. If your code does not use any overlapping assignments, then this feature can be turned off completely by issusing `-DFASTOR_NO_ALIAS`. At this stage it is also beneficial to consider that while compiling a big project the inlining limit of the compiler should be increased i.e. `-finline-limit=<big number>` for GCC, `-mllvm -inline-threshold=<big number>` for Clang and `-inline-forceinline` for ICC. 
+From a performance point of view, Fastor tries very hard to vectorise (read SIMD vectorisation) tensor views, but this heavily depends on the compilers ability to inline multiple recursive functions [as is the case for all expression templates]. If a view appears on the right hand side of an assignment, but not on the left, Fastor automatically vectorises the expression. However if a view appears on the left hand side of an assignment, Fastor does not by default vectorise the expression. To enable vectorisation across all tensor views use the compiler flag `-DFASTOR_USE_VECTORISE_EXPR_ASSIGN`. Also for performance reasons, it is beneficial to avoid overlapping assignments, otherwise a copy will be made. If your code does not use any overlapping assignments, then this feature can be turned off completely by issusing `-DFASTOR_NO_ALIAS`. At this stage it is also beneficial to consider that while compiling a complex and big expressions the inlining limit of the compiler should be increased and tested i.e. `-finline-limit=<big number>` for GCC, `-mllvm -inline-threshold=<big number>` for Clang and `-inline-forceinline` for ICC. 
 
 As an example to see how efficiently tensor views can be vectorised, consider the following example   
 ~~~c++

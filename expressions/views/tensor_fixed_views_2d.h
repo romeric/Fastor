@@ -87,6 +87,10 @@ public:
     }
     static constexpr FASTOR_INDEX Padding = F0*N+F1;
 
+    FASTOR_INLINE TensorFixedViewExpr2D<Tensor<T,M,N>,fseq<F0,L0,S0>,fseq<F1,L1,S1>,2>& nolias() {
+        FASTOR_ASSERT(false,"FIXED 2D VIEWS DO NOT SUPPORT OVERLAPPING ASSIGNMENTS");
+    }
+
     constexpr FASTOR_INLINE TensorFixedViewExpr2D(Tensor<T,M,N> &_ex) : expr(_ex) {}
 
     //----------------------------------------------------------------------------------//
@@ -254,6 +258,7 @@ public:
 #endif
     }
 
+    // AbstractTensor binders - this is a special case for assigning another 2D expressions
     //----------------------------------------------------------------------------------//
     template<typename Derived>
     void operator=(const AbstractTensor<Derived,2> &other) {
@@ -413,6 +418,167 @@ public:
     //----------------------------------------------------------------------------------//
 
 
+    // AbstractTensor binders for other nth rank tensors
+    //----------------------------------------------------------------------------------//
+    template<typename Derived, size_t DIMS>
+    void operator=(const AbstractTensor<Derived,DIMS> &other) {
+        const Derived& other_src = other.self();
+#ifndef NDEBUG
+        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        T *__restrict__ _data = expr.data();
+        FASTOR_INDEX counter = 0;
+#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
+        constexpr FASTOR_INDEX UNROLL_UPTO = ROUND_DOWN(dimension(0),Stride);
+        for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
+            FASTOR_INDEX j;
+            for (j = 0; j <UNROLL_UPTO; j+=Stride) {
+                auto _vec = other_src.template eval<T>(counter);
+                data_setter(_data,_vec,S0*i*N+S1*j+Padding,S1);
+                counter += Stride;
+            }
+            for (; j <range_detector<F1,L1,S1>::value; ++j) {
+                expr(S0*i+F0,S1*j+F1) = other_src.template eval_s<T>(counter);
+                counter++;
+            }
+        }
+#else           
+        for (FASTOR_INDEX i = 0; i <range_detector<F0,L0,S0>::value; i++) {
+            for (FASTOR_INDEX j = 0; j <range_detector<F1,L1,S1>::value; j++) {
+                expr(S0*i+F0,S1*j+F1) = other_src.template eval_s<T>(counter);
+                counter++;
+            }
+        }
+#endif
+    }
+
+    template<typename Derived, size_t DIMS>
+    void operator+=(const AbstractTensor<Derived,DIMS> &other) {
+        const Derived& other_src = other.self();
+#ifndef NDEBUG
+        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        T *__restrict__ _data = expr.data();
+        FASTOR_INDEX counter = 0;
+#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
+        for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
+            FASTOR_INDEX j;
+            for (j = 0; j <ROUND_DOWN(dimension(1),Stride); j+=Stride) {
+                auto _vec = this->template eval<T>(counter) + other_src.template eval<T>(counter);
+                data_setter(_data,_vec,S0*i*N+S1*j+Padding,S1);
+                counter += Stride;
+            }
+            for (; j <dimension(1); ++j) {
+                expr(S0*i+F0,S1*j+F1) += other_src.template eval_s<T>(counter);
+                counter++;
+            }
+        }
+#else
+        for (FASTOR_INDEX i = 0; i <range_detector<F0,L0,S0>::value; i++) {
+            for (FASTOR_INDEX j = 0; j <range_detector<F1,L1,S1>::value; j++) {
+                expr(S0*i+F0,S1*j+F1) += other_src.template eval_s<T>(counter);
+                counter++;
+            }
+        }
+#endif
+    }
+
+    template<typename Derived, size_t DIMS>
+    void operator-=(const AbstractTensor<Derived,DIMS> &other) {
+        const Derived& other_src = other.self();
+#ifndef NDEBUG
+        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        T *__restrict__ _data = expr.data();
+        FASTOR_INDEX counter = 0;
+#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
+        for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
+            FASTOR_INDEX j;
+            for (j = 0; j <ROUND_DOWN(dimension(1),Stride); j+=Stride) {
+                auto _vec = this->template eval<T>(counter) - other_src.template eval<T>(counter);
+                data_setter(_data,_vec,S0*i*N+S1*j+Padding,S1);
+                counter += Stride;
+            }
+            for (; j <dimension(1); ++j) {
+                expr(S0*i+F0,S1*j+F1) -= other_src.template eval_s<T>(counter);
+                counter++;
+            }
+        }
+#else
+        for (FASTOR_INDEX i = 0; i <range_detector<F0,L0,S0>::value; i++) {
+            for (FASTOR_INDEX j = 0; j <range_detector<F1,L1,S1>::value; j++) {
+                expr(S0*i+F0,S1*j+F1) -= other_src.template eval_s<T>(counter);
+                counter++;
+            }
+        }
+#endif
+    }
+
+    template<typename Derived, size_t DIMS>
+    void operator*=(const AbstractTensor<Derived,DIMS> &other) {
+        const Derived& other_src = other.self();
+#ifndef NDEBUG
+        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        T *__restrict__ _data = expr.data();
+        FASTOR_INDEX counter = 0;
+#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
+        for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
+            FASTOR_INDEX j;
+            for (j = 0; j <ROUND_DOWN(dimension(1),Stride); j+=Stride) {
+                auto _vec = this->template eval<T>(counter) * other_src.template eval<T>(counter);
+                data_setter(_data,_vec,S0*i*N+S1*j+Padding,S1);
+                counter += Stride;
+            }
+            for (; j <dimension(1); ++j) {
+                expr(S0*i+F0,S1*j+F1) *= other_src.template eval_s<T>(counter);
+                counter++;
+            }
+        }
+#else
+        for (FASTOR_INDEX i = 0; i <range_detector<F0,L0,S0>::value; i++) {
+            for (FASTOR_INDEX j = 0; j <range_detector<F1,L1,S1>::value; j++) {
+                expr(S0*i+F0,S1*j+F1) *= other_src.template eval_s<T>(counter);
+                counter++;
+            }
+        }
+#endif
+    }
+
+    template<typename Derived, size_t DIMS>
+    void operator/=(const AbstractTensor<Derived,DIMS> &other) {
+        const Derived& other_src = other.self();
+#ifndef NDEBUG
+        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        T *__restrict__ _data = expr.data();
+        FASTOR_INDEX counter = 0;
+#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
+        for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
+            FASTOR_INDEX j;
+            for (j = 0; j <ROUND_DOWN(dimension(1),Stride); j+=Stride) {
+                auto _vec = this->template eval<T>(counter) / other_src.template eval<T>(counter);
+                data_setter(_data,_vec,S0*i*N+S1*j+Padding,S1);
+                counter += Stride;
+            }
+            for (; j <dimension(1); ++j) {
+                expr(S0*i+F0,S1*j+F1) /= other_src.template eval_s<T>(counter);
+                counter++;
+            }
+        }
+#else
+        for (FASTOR_INDEX i = 0; i <range_detector<F0,L0,S0>::value; i++) {
+            for (FASTOR_INDEX j = 0; j <range_detector<F1,L1,S1>::value; j++) {
+                expr(S0*i+F0,S1*j+F1) /= other_src.template eval_s<T>(counter);
+                counter++;
+            }
+        }
+#endif
+    }
+    //----------------------------------------------------------------------------------//
+
+
+    // Scalar binders
     //----------------------------------------------------------------------------------//
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator=(U num) {
