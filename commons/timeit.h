@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TIMEIT_H
+#define TIMEIT_H
 
 #include <iostream>
 #include <chrono>
@@ -7,7 +8,10 @@
 #include <utility>
 #include <tuple>
 
-namespace Fastor {
+#ifdef _WIN32 
+#include <intrin.h>
+#endif
+
 
 #ifndef _COLORS_
 #define _COLORS_
@@ -33,30 +37,31 @@ namespace Fastor {
 #define BOLD(x) "\x1B[1m" x RST
 #define UNDL(x) "\x1B[4m" x RST
 
+#ifndef NO_CYCLES
+#define CYCLES
+#endif
+
 #endif  
 /* _COLORS_ */
+
+namespace Fastor {
 
 // Get cpu cycle count
 
 //  Windows
 #ifdef _WIN32
-
-#include <intrin.h>
-uint64_t rdtsc(){
+inline uint64_t rdtsc(){
     return __rdtsc();
 }
 //  Linux/GCC
 #else
-uint64_t rdtsc(){
+inline uint64_t rdtsc(){
     unsigned int lo,hi;
     __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
     return ((uint64_t)hi << 32) | lo;
 }
 #endif
 
-#ifndef NO_CYCLES
-#define CYCLES
-#endif
 
 // #define USE_SYSTEM_CLOCK
 
@@ -229,7 +234,7 @@ struct timer
 
 
 // Define a no operation function
-void no_op(){}
+inline void no_op(){}
 
 //clobber
 template <typename T> void unused(T &&x) { asm("" ::"m"(x)); }
@@ -237,3 +242,6 @@ template <typename T, typename ... U> void unused(T&& x, U&& ...y) { unused(x); 
 
 
 } // end of namespace
+
+
+#endif

@@ -133,7 +133,7 @@ struct SIMDVector<int,256> {
     __m256i value;
 };
 
-std::ostream& operator<<(std::ostream &os, SIMDVector<int> a) {
+FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<int> a) {
     const int *value = (int*) &a.value;
     os << "[" << value[0] <<  " " << value[1] << " " << value[2] << " " << value[3]
        << " " << value[4] <<  " " << value[5] << " " << value[6] << " " << value[7] << "]\n";
@@ -340,7 +340,7 @@ struct SIMDVector<int,128> {
     __m128i value;
 };
 
-std::ostream& operator<<(std::ostream &os, SIMDVector<int,128> a) {
+FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<int,128> a) {
     const int *value = (int*) &a.value;
     os << "[" << value[0] <<  " " << value[1] << " " << value[2] << " " << value[3] << "]\n";
     return os;
@@ -509,7 +509,7 @@ struct SIMDVector<int, 32> {
 };
 
 
-std::ostream& operator<<(std::ostream &os, SIMDVector<int,32> a) {
+FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<int,32> a) {
     os << "[" << a.value << "]\n";
     return os;
 }

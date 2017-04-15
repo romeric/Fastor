@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PRINT_H
+#define PRINT_H
 
 #include <iostream>
 #include <iomanip>
@@ -16,25 +17,25 @@ namespace Fastor {
 
 
 #ifdef __SSE2__
-void print(__m128 a) {
+inline void print(__m128 a) {
     std::cout << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << '\n';
 }
-void print(__m128d a) {
+inline void print(__m128d a) {
     std::cout << a[0] << " " << a[1] << '\n';
 }
 #endif
 #ifdef __AVX__
-void print(__m256 a) {
+inline void print(__m256 a) {
     std::cout << a[0] << " " << a[1] << " " << a[2] << " " << a[3] <<  " " << 
     a[4] << " " << a[5] << " " << a[6] << " " << a[7] << "\n";
 }
-void print(__m256d a) {
+inline void print(__m256d a) {
     std::cout << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << '\n';
 }
 #endif
 
 template<typename T>
-void print(const std::vector<T> &v) {
+inline void print(const std::vector<T> &v) {
     for (auto &k: v) {
         std::cout << k << '\n';
     }
@@ -42,7 +43,7 @@ void print(const std::vector<T> &v) {
 }
 
 template<typename T, std::size_t N>
-void print(const std::array<T,N> &arr) {
+inline void print(const std::array<T,N> &arr) {
     for (std::size_t i=0; i<N; i++) {
         std::cout << arr[i] << '\n';
     }
@@ -50,7 +51,7 @@ void print(const std::array<T,N> &arr) {
 }
 
 template<typename T>
-void print(const std::vector<std::vector<T>> &arr) {
+inline void print(const std::vector<std::vector<T>> &arr) {
     for (std::size_t i=0; i<arr.size(); i++) {
         for (std::size_t j=0; j<arr[i].size(); j++) {
             std::cout << arr[i][j] << " ";
@@ -61,7 +62,7 @@ void print(const std::vector<std::vector<T>> &arr) {
 }
 
 template<typename T, std::size_t M, std::size_t N>
-void print(const std::array<std::array<T,M>,N> &arr) {
+inline void print(const std::array<std::array<T,M>,N> &arr) {
     for (std::size_t i=0; i<N; i++) {
         for (std::size_t j=0; j<M; j++) {
             std::cout << arr[i][j] << " ";
@@ -72,7 +73,7 @@ void print(const std::array<std::array<T,M>,N> &arr) {
 }
 
 template<typename T,std::size_t N>
-void print(const T *arr) {
+inline void print(const T *arr) {
     for (std::size_t i=0; i<N; i++) {
         std::cout << arr[i] << '\n';
     }
@@ -81,17 +82,17 @@ void print(const T *arr) {
 
 
 template<typename T>
-void print(const T &a) {
+inline void print(const T &a) {
     std::cout << a << '\n';
 }
 
 template<typename T, typename ... Rest>
-void print(const T &first, const Rest& ... rest) {
+inline void print(const T &first, const Rest& ... rest) {
     print(first);
     print(rest...);
 }
 
-void print() {
+inline void print() {
     std::cout << '\n';
 }
 /*--------------------------------------*/
@@ -102,7 +103,7 @@ void print() {
 // Print horizontally
 /*--------------------------------------*/
 template<typename T>
-void println(const std::vector<T> &v) {
+inline void println(const std::vector<T> &v) {
     for (auto &k: v) {
         std::cout << k << " ";
     }
@@ -110,7 +111,7 @@ void println(const std::vector<T> &v) {
 }
 
 template<typename T, std::size_t N>
-void println(const std::array<T,N> &arr) {
+inline void println(const std::array<T,N> &arr) {
     for (std::size_t i=0; i<N; i++) {
         std::cout << arr[i] << " ";
     }
@@ -118,7 +119,7 @@ void println(const std::array<T,N> &arr) {
 }
 
 template<typename T,std::size_t N>
-void println(const T *arr) {
+inline void println(const T *arr) {
     for (std::size_t i=0; i<N; i++) {
         std::cout << arr[i] << " ";
     }
@@ -127,17 +128,17 @@ void println(const T *arr) {
 
 
 template<typename T>
-void println(const T &a) {
+inline void println(const T &a) {
     std::cout << a << " ";
 }
 
 template<typename T, typename ... Rest>
-void println(const T &first, const Rest& ... rest) {
+inline void println(const T &first, const Rest& ... rest) {
     println(first);
     println(rest...);
 }
 
-void println() {
+inline void println() {
     std::cout << " ";
 }
 /*--------------------------------------*/
@@ -150,15 +151,17 @@ void println() {
 // Warn
 /*--------------------------------------*/
 template<typename T>
-void warn(const T &a) {
+inline void warn(const T &a) {
     std::cerr << a << '\n';
 }
 
 template<typename T, typename ... Rest>
-void warn(const T &first, const Rest& ... rest) {
+inline void warn(const T &first, const Rest& ... rest) {
     warn(first);
     warn(rest...);
 }
 
 
 } // end of namespace
+
+#endif

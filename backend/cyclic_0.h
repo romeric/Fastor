@@ -10,7 +10,7 @@ namespace Fastor {
 //! Version 0 of cyclic product of two second order tensors i.e. C_ijkl = A_ik * B_jl
 
 template<typename T, size_t M0, size_t N0, size_t M1, size_t N1>
-void _cyclic(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+FASTOR_HINT_INLINE void _cyclic(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
     for (size_t i=0; i<M0; ++i) {
         for (size_t j=0; j<N0; ++j) {
             for (size_t k=0; k<M1; ++k) {
@@ -24,7 +24,7 @@ void _cyclic(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 
 #ifdef __AVX__
 template<>
-void _cyclic<double,2,2,2,2>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
+FASTOR_HINT_INLINE void _cyclic<double,2,2,2,2>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
     __m256d as = _mm256_load_pd(a);
     __m256d bs = _mm256_load_pd(b);
 
@@ -55,7 +55,7 @@ void _cyclic<double,2,2,2,2>(const double * __restrict__ a, const double * __res
 }
 
 template<>
-void _cyclic<double,3,3,3,3>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
+FASTOR_HINT_INLINE void _cyclic<double,3,3,3,3>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
     //  34+ OPS
     __m256d a_low = _mm256_load_pd(a);
     __m256d a_high = _mm256_load_pd(a+4);

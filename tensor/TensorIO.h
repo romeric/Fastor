@@ -6,14 +6,14 @@
 namespace Fastor {
 
 template<typename T>
-std::ostream& operator<<(std::ostream &os, const Tensor<T> &a) {
+FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const Tensor<T> &a) {
     os.precision(9);
     os << *a.data();
     return os;
 }
 
 template<typename T, size_t M>
-std::ostream& operator<<(std::ostream &os, const Tensor<T,M> &a) {
+FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const Tensor<T,M> &a) {
 
     os.precision(9);
 //    auto &&w = std::setw(7);
@@ -29,7 +29,7 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,M> &a) {
 }
 
 template<typename T, size_t M, size_t N>
-std::ostream& operator<<(std::ostream &os, const Tensor<T,M,N> &a) {
+FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const Tensor<T,M,N> &a) {
 
     os.precision(9);
 //    auto &&w = std::setw(7);
@@ -65,20 +65,20 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,M,N> &a) {
 
 template<typename T, size_t P, size_t M, size_t ... Rest,
          typename std::enable_if<sizeof...(Rest)==1,bool>::type=0>
-std::ostream& operator<<(std::ostream &os, const Tensor<T,P,M,Rest...> &a) {
+FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const Tensor<T,P,M,Rest...> &a) {
     constexpr size_t N = get_value<3,P,M,Rest...>::value;
     os.precision(9);
     auto &&w = std::fixed;
     for (size_t k=0; k<P; ++k) {
         os << "["<< k << ",:,:]\n";
         if (M>1) {
-            os << "[" << w << a(k,0,0);
+            os << "[ " << w << a(k,0,0);
             for (size_t j = 1; j < N; ++j) {
                 os << ", " << w << a(k,0,j);
             }
             os << " ]\n";
             for (size_t i = 1; i + 1 < M; ++i) {
-                os << "[" << w << a(k,i,0);
+                os << "[ " << w << a(k,i,0);
                 for (size_t j = 1; j < N; ++j) {
                     os << ", " << w << a(k,i,j);
                 }
@@ -90,7 +90,7 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,P,M,Rest...> &a) {
             }
         }
         else {
-            os << "[" << w << a(k,0,0);
+            os << "[ " << w << a(k,0,0);
             for (size_t j = 1; j < N; ++j) {
                 os << ", " << w << a(k,0,j);
             }
@@ -104,7 +104,7 @@ std::ostream& operator<<(std::ostream &os, const Tensor<T,P,M,Rest...> &a) {
 
 template<typename T, size_t P, size_t Q, size_t ... Rest,
          typename std::enable_if<sizeof...(Rest)==2,bool>::type=0>
-std::ostream& operator<<(std::ostream &os, const Tensor<T,Q,P,Rest...> &a) {
+FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const Tensor<T,Q,P,Rest...> &a) {
     constexpr size_t M = get_value<3,P,Q,Rest...>::value;
     constexpr size_t N = get_value<4,P,Q,Rest...>::value;
     os.precision(9);
@@ -182,7 +182,7 @@ FASTOR_INLINE std::vector<std::vector<int>> index_generator() {
 
 template<typename T, size_t M, size_t N, size_t ... Rest,
          typename std::enable_if<sizeof...(Rest)>=3,bool>::type=0>
-std::ostream& operator<<(std::ostream &os, const Tensor<T,M,N,Rest...> &a) {
+FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const Tensor<T,M,N,Rest...> &a) {
 
     T *a_data = a.data();
 

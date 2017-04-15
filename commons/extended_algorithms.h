@@ -14,6 +14,8 @@
 #include <sys/resource.h>
 #endif
 
+namespace Fastor {
+
 template <typename T, size_t N>
 inline std::array<int,N> argsort(const std::array<T,N> &v) {
   std::array<int,N> idx;
@@ -55,6 +57,8 @@ inline int set_stack_size(int size) {
     return old;
 }
 #endif
+
+}
 
 
 #endif // EXTENDED_ALGORITHMS_H

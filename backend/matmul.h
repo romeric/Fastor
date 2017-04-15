@@ -1226,7 +1226,7 @@ void _matmul<float,2,2,1>(const float * __restrict__ a, const float * __restrict
 }
 
 template<>
-void _matmul<float,3,3,1>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
+FASTOR_INLINE void _matmul<float,3,3,1>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
     // 47 OPS
     __m128 a0 = _mm_load_ps(a);
     __m128 row0 = _mm_shift1_ps(a0);
@@ -1249,7 +1249,7 @@ void _matmul<float,3,3,1>(const float * __restrict__ a, const float * __restrict
 #endif
 #ifdef __AVX__
 template<>
-void _matmul<double,2,2,1>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
+FASTOR_INLINE void _matmul<double,2,2,1>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
     // IVY 15 OPS - HW 19 OPS
     __m256d a_reg = _mm256_load_pd(a);
     __m128d b_vec = _mm_load_pd(b);
@@ -1263,7 +1263,7 @@ void _matmul<double,2,2,1>(const double * __restrict__ a, const double * __restr
 
 
 template<>
-void _matmul<double,3,3,1>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
+FASTOR_INLINE void _matmul<double,3,3,1>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
     // IVY 58 OPS - HW 84 OPS
     __m128d a0 = _mm_load_pd(a);
     __m128d a1 = _mm_load_sd(a+2);

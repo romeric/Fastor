@@ -760,7 +760,7 @@ FASTOR_INLINE __m128d _hsub_pd(__m128d a) {
 
 #ifdef __AVX__
 // Similar to SSE4 _mm_dp_pd for dot product
-__m128d _mm256_dp_pd(__m256d __X, __m256d __Y) {
+FASTOR_INLINE __m128d _mm256_dp_pd(__m256d __X, __m256d __Y) {
     return _add_pd(_mm256_mul_pd(__X, __Y));
 }
 #endif

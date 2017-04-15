@@ -477,7 +477,7 @@ bool _inverse_4x4(const T m[16], T invOut[16])
     return true;
 }
 
-}
+} // end of namespace Fastor
 
 #endif // INVERSE_H
 

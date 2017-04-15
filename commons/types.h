@@ -1,4 +1,8 @@
-#pragma once
+#ifndef TYPE_NAMES_H
+#define TYPE_NAMES_H
+
+
+
 #include <string>
 #include <typeinfo>
 #include <type_traits>
@@ -35,3 +39,6 @@ std::string type_name()
 
 
 } // end of namespace
+
+
+#endif // TYPE_NAMES_H

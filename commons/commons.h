@@ -50,12 +50,18 @@
     #define __FMA__ 1
 #endif
 
+// Traditional inline which works will helps the compiler
+// eliminate a lot of code
+#define FASTOR_HINT_INLINE inline
 
-// Only for GCC & Clang, affects tensor divisions.
+
 // ICC's default option is fast anyway (i.e. -fp-model fast=1)
 // but it does not define the __FAST_MATH__ macro
 #if defined(__FAST_MATH__)
 #define FASTOR_FAST_MATH
+// Use the following for unsafe math
+// Only for GCC & Clang, affects tensor divisions.
+// #define FASTOR_UNSAFE_MATH
 #endif
 
 // Define this if hadd seems beneficial
@@ -160,6 +166,12 @@
 #define VTOWPD (_mm256_set1_pd(2.0))
 #endif
 
+
+#define ROUND_DOWN(x, s) ((x) & ~((s)-1))
+#define PRECI_TOL 1e-14
+
+namespace Fastor {
+
 using FASTOR_INDEX = size_t;
 using Int64 = long long int;
 using DEFAULT_FLOAT_TYPE = double;
@@ -167,11 +179,8 @@ using DFT = DEFAULT_FLOAT_TYPE;
 using FASTOR_VINDEX = volatile size_t;
 
 
-#define ROUND_DOWN(x, s) ((x) & ~((s)-1))
-#define PRECI_TOL 1e-14
-
 #ifndef NDEBUG
-void FASTOR_ASSERT(bool cond, const std::string &x) {
+inline void FASTOR_ASSERT(bool cond, const std::string &x) {
     if (cond==true) {
         return;
     }
@@ -181,10 +190,10 @@ void FASTOR_ASSERT(bool cond, const std::string &x) {
     }
 }
 #else
-void FASTOR_ASSERT(bool, const std::string&) {}
+inline void FASTOR_ASSERT(bool, const std::string&) {}
 #endif
 
-void FASTOR_WARN(bool cond, const std::string &x) {
+inline void FASTOR_WARN(bool cond, const std::string &x) {
     if (cond==true) {
         return;
     }
@@ -192,6 +201,8 @@ void FASTOR_WARN(bool cond, const std::string &x) {
         std::cout << x << std::endl;
     }
 }
+
+} // end of namespace Fastor
 
 #define _FASTOR_TOSTRING(X) #X
 #define FASTOR_TOSTRING(X) _FASTOR_TOSTRING(X)
@@ -208,6 +219,9 @@ void FASTOR_WARN(bool cond, const std::string &x) {
 #define PP_CAT(x,y) PP_CAT1(x,y)
 #define PP_CAT1(x,y) x##y
 
+
+namespace Fastor {
+
 namespace useless
 {
     struct true_type {};
@@ -223,7 +237,7 @@ struct PP_CAT(static_warning,__LINE__) { \
   PP_CAT(static_warning,__LINE__)() {_(::useless::converter<(cond)>());} \
 }
 
-
+} // end of namespace Fastor
 
 //
 #define FASTOR_ISALIGNED(POINTER, BYTE_COUNT) \

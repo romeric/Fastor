@@ -200,7 +200,7 @@ struct SIMDVector {
 };
 
 template<typename T, int ABI>
-std::ostream& operator<<(std::ostream &os, SIMDVector<T,ABI> a) {
+FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<T,ABI> a) {
     os << "[";
     for (FASTOR_INDEX i=0; i<a.size(); ++i)
         os << a.value[i] << " ";

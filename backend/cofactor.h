@@ -10,11 +10,13 @@ namespace Fastor {
 
 
 template<typename T, size_t M, size_t N>
-void _cofactor(const T * __restrict__ a, T * __restrict__ out);
+FASTOR_HINT_INLINE void _cofactor(const T * __restrict__ a, T * __restrict__ out) {
+    assert(false && "METHOD NOT YET IMPLEMENTED");
+}
 
 #ifdef __SSE4_2__
 template<>
-void _cofactor<float,2,2>(const float * __restrict__ a, float * __restrict__ out) {
+FASTOR_HINT_INLINE void _cofactor<float,2,2>(const float * __restrict__ a, float * __restrict__ out) {
     // 4 OPS
     __m128 a_reg = _mm_load_ps(a);
     __m128 a0 = _mm_shuffle_ps(a_reg,a_reg,_MM_SHUFFLE(0,3,2,1));
@@ -23,7 +25,7 @@ void _cofactor<float,2,2>(const float * __restrict__ a, float * __restrict__ out
 }
 
 template<>
-void _cofactor<float,3,3>(const float * __restrict__ a, float * __restrict__ out) {
+FASTOR_HINT_INLINE void _cofactor<float,3,3>(const float * __restrict__ a, float * __restrict__ out) {
     // 110 OPS
     __m128 a_low = _mm_load_ps(a);
     __m128 a_high = _mm_load_ps(a+4);
@@ -80,7 +82,7 @@ void _cofactor<float,3,3>(const float * __restrict__ a, float * __restrict__ out
 }
 
 template<>
-void _cofactor<double,2,2>(const double * __restrict__ a, double * __restrict__ out) {
+FASTOR_HINT_INLINE void _cofactor<double,2,2>(const double * __restrict__ a, double * __restrict__ out) {
     // 2 OPS
     _mm_store_sd(out+3,_mm_load_sd(a));
     _mm_store_sd(out,_mm_load_sd(a+3));
@@ -89,7 +91,7 @@ void _cofactor<double,2,2>(const double * __restrict__ a, double * __restrict__ 
 }
 
 template<>
-void _cofactor<double,3,3>(const double * __restrict__ a, double * __restrict__ out) {
+FASTOR_HINT_INLINE void _cofactor<double,3,3>(const double * __restrict__ a, double * __restrict__ out) {
     // 96 OPS
     __m128d a00 = _mm_load_sd(a);
     __m128d a01 = _mm_load_sd(a+1);

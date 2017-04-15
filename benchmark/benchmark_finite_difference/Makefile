@@ -1,5 +1,5 @@
 OPT = -O3
-CXXFLAGS = -std=c++14 $(OPT) -march=native -DNDEBUG
+CXXFLAGS = -std=c++14 $(OPT) -march=native -DNDEBUG 
 
 
 ifeq "$(CXX)" "g++"

@@ -4,10 +4,16 @@
 #include "commons/commons.h"
 #include "extended_intrinsics/extintrin.h"
 
+namespace Fastor {
+
 template<typename T, size_t M, size_t K, size_t N>
 void _crossproduct(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ c);
 
+}
+
 #ifdef __SSE4_2__
+
+namespace Fastor {
 template<>
 FASTOR_INLINE void _crossproduct<double,2,2,2>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
     // 25 OPS without HADD / 27 OPS with HADD
@@ -184,7 +190,7 @@ FASTOR_INLINE void _crossproduct<double,3,3,3>(const double *__restrict__ a, con
 
 
 template<>
-void _crossproduct<float,2,2,2>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
+FASTOR_INLINE void _crossproduct<float,2,2,2>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
     // 15 OPS + 4 extra shuffle to make aligned loading = 19 OPS
     __m128 a0 = _mm_load_ps(a);
     __m128 tmp0 = _mm_load_ps(a+4);
@@ -211,7 +217,7 @@ void _crossproduct<float,2,2,2>(const float *__restrict__ a, const float *__rest
 }
 
 template<>
-void _crossproduct<float,3,3,3>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
+FASTOR_INLINE void _crossproduct<float,3,3,3>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
     // 135 OPS + 6 extra shuffle to make aligned loading = 141 OPS
     // Don't unalign load - Bad performance on IVY
 
@@ -333,7 +339,7 @@ FASTOR_INLINE void _crossproduct<double,PlaneStrain>(const double *__restrict__ 
 
 
 template<>
-void _crossproduct<float,PlaneStrain>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
+FASTOR_INLINE void _crossproduct<float,PlaneStrain>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
     // For plane strain problems a and b need to be 3D with last element a[8]=b[8]=1
     // This is a cross product implementation not a cofactor so the result needs to multiplied by 0.5 explicitly
     // if the cofactor is desired
@@ -391,7 +397,7 @@ void _crossproduct<float,PlaneStrain>(const float *__restrict__ a, const float *
 
 // vectors and 2nd order tensors
 template<>
-inline void _crossproduct<float,3,1,3>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
+FASTOR_HINT_INLINE void _crossproduct<float,3,1,3>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
     // vector-tensor cross product - regitster based
     float A1 = a[0];
     float A2 = a[1];
@@ -423,7 +429,7 @@ inline void _crossproduct<float,3,1,3>(const float *__restrict__ a, const float 
 }
 
 template<>
-inline void _crossproduct<float,2,1,2>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
+FASTOR_HINT_INLINE void _crossproduct<float,2,1,2>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
     // vector-tensor cross product - regitster based
     float A1 = a[0];
     float A2 = a[1];
@@ -445,7 +451,7 @@ inline void _crossproduct<float,2,1,2>(const float *__restrict__ a, const float 
 }
 
 template<>
-inline void _crossproduct<double,3,1,3>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
+FASTOR_HINT_INLINE void _crossproduct<double,3,1,3>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
     // vector-tensor cross product - regitster based
     double A1 = a[0];
     double A2 = a[1];
@@ -477,7 +483,7 @@ inline void _crossproduct<double,3,1,3>(const double *__restrict__ a, const doub
 }
 
 template<>
-inline void _crossproduct<double,2,1,2>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
+FASTOR_HINT_INLINE void _crossproduct<double,2,1,2>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
     // vector-tensor cross product - regitster based
     double A1 = a[0];
     double A2 = a[1];
@@ -500,7 +506,7 @@ inline void _crossproduct<double,2,1,2>(const double *__restrict__ a, const doub
 
 //
 template<>
-void _crossproduct<float,3,3,1>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
+FASTOR_HINT_INLINE void _crossproduct<float,3,3,1>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
     // tensor-vector cross product - regitster based
     float B1 = b[0];
     float B2 = b[1];
@@ -533,7 +539,7 @@ void _crossproduct<float,3,3,1>(const float *__restrict__ a, const float *__rest
 
 
 template<>
-void _crossproduct<float,2,2,1>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
+FASTOR_HINT_INLINE void _crossproduct<float,2,2,1>(const float *__restrict__ a, const float *__restrict__ b, float *__restrict__ c) {
     // tensor-vector cross product - regitster based
     float B1 = b[0];
     float B2 = b[1];
@@ -555,7 +561,7 @@ void _crossproduct<float,2,2,1>(const float *__restrict__ a, const float *__rest
 }
 
 template<>
-void _crossproduct<double,3,3,1>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
+FASTOR_HINT_INLINE void _crossproduct<double,3,3,1>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
     // tensor-vector cross product - regitster based
     double B1 = b[0];
     double B2 = b[1];
@@ -587,7 +593,7 @@ void _crossproduct<double,3,3,1>(const double *__restrict__ a, const double *__r
 }
 
 template<>
-void _crossproduct<double,2,2,1>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
+FASTOR_HINT_INLINE void _crossproduct<double,2,2,1>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
     // tensor-vector cross product - regitster based
     double B1 = b[0];
     double B2 = b[1];
@@ -618,7 +624,7 @@ void _crossproduct<double,2,2,1>(const double *__restrict__ a, const double *__r
 //(AxB)_{PiIQ} = E_{ijk}E_{IJK}A_{PjJ}B_{kKQ}
 // tensor cross product of 3rd order tensors
 template<typename T, size_t I, size_t J, size_t K, size_t L, size_t M, size_t N>
-void _crossproduct(const T *__restrict__ A, const T *__restrict__ B, T *__restrict__ C) {
+FASTOR_HINT_INLINE void _crossproduct(const T *__restrict__ A, const T *__restrict__ B, T *__restrict__ C) {
 
     T A000 = A[0];
     T A001 = A[1];
@@ -768,7 +774,7 @@ void _crossproduct(const T *__restrict__ A, const T *__restrict__ B, T *__restri
 //(AxB)_{pPiIqQ} = E_{ijk}E_{IJK}A_{pPjJ}B_{kKqQ}
 // tensor cross product of 4th order tensors
 template<typename T, size_t I, size_t J, size_t K, size_t L, size_t M, size_t N, size_t O, size_t P>
-void _crossproduct(const T *__restrict__ A, const T *__restrict__ B, T *__restrict__ C) {
+FASTOR_HINT_INLINE void _crossproduct(const T *__restrict__ A, const T *__restrict__ B, T *__restrict__ C) {
 
     T A0000 = A[0];
     T A0001 = A[1];
@@ -1668,6 +1674,7 @@ void _crossproduct(const T *__restrict__ A, const T *__restrict__ B, T *__restri
 }
 
 
+}
 
 
 #endif // TENSOR_CROSS_H

@@ -146,7 +146,7 @@ struct SIMDVector<float,256> {
 };
 
 
-std::ostream& operator<<(std::ostream &os, SIMDVector<float> a) {
+FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<float> a) {
     // ICC crashes without a copy
     const __m256 value = a.value;
     os << "[" << value[0] <<  " " << value[1] << " "
@@ -390,7 +390,7 @@ struct SIMDVector<float,128> {
 };
 
 
-std::ostream& operator<<(std::ostream &os, SIMDVector<float,128> a) {
+FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<float,128> a) {
     // ICC crashes without a copy
     const __m128 value = a.value;
     os << "[" << value[0] <<  " " << value[1] << " "
@@ -601,7 +601,7 @@ struct SIMDVector<float, 32> {
 };
 
 
-std::ostream& operator<<(std::ostream &os, SIMDVector<float,32> a) {
+FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<float,32> a) {
     os << "[" << a.value << "]\n";
     return os;
 }

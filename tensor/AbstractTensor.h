@@ -14,7 +14,7 @@ class Tensor;
 template<class Derived, size_t Rank>
 class AbstractTensor {
 public:
-    AbstractTensor() = default;
+    constexpr FASTOR_INLINE AbstractTensor() = default;
     FASTOR_INLINE const Derived& self() const {return *static_cast<const Derived*>(this);}
     FASTOR_INLINE Derived& self() {return *static_cast<Derived*>(this);}
 

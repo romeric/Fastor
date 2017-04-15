@@ -59,7 +59,7 @@ struct BinaryDivOp: public AbstractTensor<BinaryDivOp<TLhs, TRhs, DIM0>,DIM0> {
            typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
                                    !std::is_arithmetic<RExpr>::value,bool>::type = 0>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> helper(FASTOR_INDEX i) const {
-#ifndef FASTOR_FAST_MATH
+#ifndef FASTOR_UNSAFE_MATH
         return lhs.template eval<U>(i) / rhs.template eval<U>(i);
 #else
         return lhs.template eval<U>(i) * rcp(rhs.template eval<U>(i));
@@ -69,7 +69,7 @@ struct BinaryDivOp: public AbstractTensor<BinaryDivOp<TLhs, TRhs, DIM0>,DIM0> {
            typename std::enable_if<std::is_arithmetic<LExpr>::value &&
                                    !std::is_arithmetic<RExpr>::value,bool>::type = 0>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> helper(FASTOR_INDEX i) const {
-#ifndef FASTOR_FAST_MATH
+#ifndef FASTOR_UNSAFE_MATH
         return lhs / rhs.template eval<U>(i);
 #else
         return lhs * rcp(rhs.template eval<U>(i));
@@ -79,7 +79,7 @@ struct BinaryDivOp: public AbstractTensor<BinaryDivOp<TLhs, TRhs, DIM0>,DIM0> {
            typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
                                    std::is_arithmetic<RExpr>::value,bool>::type = 0>
     FASTOR_INLINE SIMDVector<U> helper(FASTOR_INDEX i) const {
-#ifndef FASTOR_FAST_MATH
+#ifndef FASTOR_UNSAFE_MATH
         return lhs.template eval<U>(i) / rhs;
 #else
         return lhs.template eval<U>(i) * rcp(SIMDVector<U,DEFAULT_ABI>(rhs));   
@@ -122,7 +122,7 @@ struct BinaryDivOp: public AbstractTensor<BinaryDivOp<TLhs, TRhs, DIM0>,DIM0> {
            typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
                                    !std::is_arithmetic<RExpr>::value,bool>::type = 0>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> helper(FASTOR_INDEX i, FASTOR_INDEX j) const {
-#ifndef FASTOR_FAST_MATH
+#ifndef FASTOR_UNSAFE_MATH
         return lhs.template eval<U>(i,j) / rhs.template eval<U>(i,j);
 #else
         return lhs.template eval<U>(i,j) * rcp(rhs.template eval<U>(i,j));
@@ -132,7 +132,7 @@ struct BinaryDivOp: public AbstractTensor<BinaryDivOp<TLhs, TRhs, DIM0>,DIM0> {
            typename std::enable_if<std::is_arithmetic<LExpr>::value &&
                                    !std::is_arithmetic<RExpr>::value,bool>::type = 0>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> helper(FASTOR_INDEX i, FASTOR_INDEX j) const {
-#ifndef FASTOR_FAST_MATH
+#ifndef FASTOR_UNSAFE_MATH
         return lhs / rhs.template eval<U>(i,j);
 #else
         return lhs * rcp(rhs.template eval<U>(i,j));
@@ -142,7 +142,7 @@ struct BinaryDivOp: public AbstractTensor<BinaryDivOp<TLhs, TRhs, DIM0>,DIM0> {
            typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
                                    std::is_arithmetic<RExpr>::value,bool>::type = 0>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> helper(FASTOR_INDEX i, FASTOR_INDEX j) const {
-#ifndef FASTOR_FAST_MATH
+#ifndef FASTOR_UNSAFE_MATH
         return lhs.template eval<U>(i,j) / rhs;
 #else
         return lhs.template eval<U>(i,j) * rcp(SIMDVector<U,DEFAULT_ABI>(rhs));   
