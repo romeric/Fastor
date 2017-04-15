@@ -276,7 +276,7 @@ is_identity();
 ~~~
 
 ### Basic SIMD optimised linear algebra routines for small tensors
-All basic numerical linear algebra subroutines for small tensors are completely SIMD optimised as Fastor is all about small stack-allocated (on cache tensors), where the overhead of calling vendor/optimised `BLAS` is typically not worth it 
+All basic numerical linear algebra subroutines for small tensors (where the overhead of calling vendor/optimised `BLAS` is typically not worth it) are fully SIMD optimised and efficiently implemented
 ~~~c++
 Tensor<double,3,3> A,B; 
 // fill A and B                 
