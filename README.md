@@ -90,17 +90,19 @@ A.random(); B.random();
 Tensor<double,2,2,5> C; Tensor<double,4,3,1> D;
 
 // Dynamic views -> seq(first,last,step)
-C = A(seq(0,2),seq(0,2),seq(0,last,2));                            // C = A[0:2,0:2,0::2]
-D = B(all,all,0) + A(all,all,last);                                // D = B[:,:,0] + A[:,:,-1]
-A(2,all,3) = 5.0;                                                  // A[2,:,3] = 5.0
+C = A(seq(0,2),seq(0,2),seq(0,last,2));                              // C = A[0:2,0:2,0::2]
+D = B(all,all,0) + A(all,all,last);                                  // D = B[:,:,0] + A[:,:,-1]
+A(2,all,3) = 5.0;                                                    // A[2,:,3] = 5.0
 
 // Static views -> fseq<first,last,step>
-C = A(fseq<0,2>(),fseq<0,2>(),fseq<0,last,2>());                   // C = A[0:2,0:2,0::2]
-D = B(fall,fall,fseq<0,1>()) + A(fall,fall,fseq<9,10>());          // D = B[:,:,0] + A[:,:,-1]
-A(2,fall,3) = 5.0;                                                 // A[2,:,3] = 5.0
+C = A(fseq<0,2>(),fseq<0,2>(),fseq<0,last,2>());                     // C = A[0:2,0:2,0::2]
+D = B(fall,fall,fseq<0,1>()) + A(fall,fall,fseq<9,10>());            // D = B[:,:,0] + A[:,:,-1]
+A(2,fall,3) = 5.0;                                                   // A[2,:,3] = 5.0
 
 // Overlapping is also allowed without having undefined behaviour
-A(seq(2,last),all,all).noalias() += A(seq(0,last-2),all,all);      // A[2::,:,:] += A[::-2,:,:]
+A(seq(2,last),all,all).noalias() += A(seq(0,last-2),all,all);        // A[2::,:,:] += A[::-2,:,:]
+// Note that in case of perfect overlapping noalias is not required
+A(seq(0,last-2),all,all).noalias() += A(seq(0,last-2),all,all);      // A[::2,:,:] += A[::2,:,:]
 
 // If instead of a tensor view, one needs an actual tensor the iseq could be used
 // iseq<first,last,step>
@@ -220,8 +222,8 @@ For tensor networks comprising of many higher rank tensors, a full generalisatio
 The X-axis shows the number FLOPS saved/reduced over single expression evaluation scheme. Certainly, the bigger the size of tensors the more reduction in FLOPs is necessary to compensate for the temporaries created during by-pair evalution. 
 
 
-### Performance benchmark
-Consider the dyadic product `A_ik*B_jl`, that can be computed in Fastor like 
+### Domain-aware numerical analysis
+In nonlinear mechanics, it is customary to transform high order tensors to low rank tensors using Voigt transformation. Fastor has domain-specific features for such tensorial operations. For example, consider the dyadic product `A_ik*B_jl`, that can be computed in Fastor like 
 ~~~c++
 Tensor<double,3,3> A,B;
 A.random(); B.random();
@@ -241,7 +243,7 @@ As you notice, all indices are resolved and the Voigt transformation is performe
 
 Notice that by compiling with the same flags, it is meant that the compiler is permitted to auto-vectorise the C/tran code as well. The real performance of Fastor comes from the fact, that when a Voigt transformation is requested, Fastor does not compute the elements which are not needed.
 ### The tensor cross product and its associated algebra
-If not the main, one of the main motivations behind developing Fastor has been the recently introduced tensor cross product by [Bonet et. al.](http://dx.doi.org/10.1016/j.ijsolstr.2015.12.030) and its associated algebra, in the context of nonlinear solid mechanics which can significantly reduce the amount algebra involved in consistent linearisation of functionals which are forbiddingly complex to derive using the classical approach. The tensor cross product of two second order tensors is defined as `C_iI = e_ijk*e_IJK*A_jJ*b_kK` where `e` is the third order permutation tensor. As can be seen this product is O(n^6) in computational complexity (furthermore a cross product is essentially defined in 3-dimensional space i.e. perfectly suitable for stack allocation). Using Fastor the equivalent code is only 81 SSE intrinsics
+Building upon its domain specific features, Fastor implements the tensor cross product family of algebra recently introduced by [Bonet et. al.](http://dx.doi.org/10.1016/j.ijsolstr.2015.12.030) in the context of nonlinear solid mechanics which can significantly reduce the amount algebra involved in consistent linearisation of functionals which are forbiddingly complex to derive using the classical approach. The tensor cross product of two second order tensors is defined as `C_iI = e_ijk*e_IJK*A_jJ*b_kK` where `e` is the third order permutation tensor. As can be seen this product is O(n^6) in computational complexity (furthermore a cross product is essentially defined in 3-dimensional space i.e. perfectly suitable for stack allocation). Using Fastor the equivalent code is only 81 SSE intrinsics
 ~~~c++
 // A and B are second order tensors
 using Fastor::LeviCivita_pd;
