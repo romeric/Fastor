@@ -135,7 +135,7 @@ auto C = B + 2; // This will behave as expected
 ~~~
 From a performance point of view, Fastor tries very hard to vectorise (read SIMD vectorisation) tensor views, but this heavily depends on the compilers ability to inline multiple recursive functions [as is the case for all expression templates]. If a view appears on the right hand side of an assignment, but not on the left, Fastor automatically vectorises the expression. However if a view appears on the left hand side of an assignment, Fastor does not by default vectorise the expression. To enable vectorisation across all tensor views use the compiler flag `-DFASTOR_USE_VECTORISE_EXPR_ASSIGN`. Also for performance reasons, it is beneficial to avoid overlapping assignments, otherwise a copy will be made. If your code does not use any overlapping assignments, then this feature can be turned off completely by issusing `-DFASTOR_NO_ALIAS`. At this stage it is also beneficial to consider that while compiling a complex and big expressions the inlining limit of the compiler should be increased and tested i.e. `-finline-limit=<big number>` for GCC, `-mllvm -inline-threshold=<big number>` for Clang and `-inline-forceinline` for ICC. 
 
-As an example to see how efficiently tensor views can be vectorised, consider the following example   
+As an example to see how efficiently tensor views can be vectorised, consider the following 4th finite difference example for Laplace equation  
 ~~~c++
 Tensor<double,100,100> u, v;
 // fill u and v
@@ -183,7 +183,7 @@ L128:
   cmpq  %r13, %rcx
   jne L129
 ~~~
-As can be observed, the compiler emits unaligned load and store instructions, but the rest of the generated code is extremely efficient (it does not get more efficient than this). For stack allocated and small tensors the unaligned load/store operations should not be a bottleneck, as the data would potentially fit in L1 cache. 
+As can be observed, the compiler emits unaligned load and store instructions, but the rest of the generated code is extremely efficient (it does not get more efficient than this). For stack allocated and small tensors the unaligned load/store operations should not be a bottleneck either, as the data would potentially fit in L1 cache. With the help of an optimising compiler, Fastor's functionalities come closest to the ideal metal performance for numerical tensor algebra code.
 
 ### Performance benchmark
 Consider the dyadic product `A_ik*B_jl`, that can be computed in Fastor like 
