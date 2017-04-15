@@ -338,5 +338,5 @@ Similar projects exist with varying levels of functionality, in particular
 
 - Some of Fastor's routines do not fall back to scalar code on non-SIMD architectures. This is only true for some basic BLAS type routines and not for tensor contraction procedures. In particular you need to have an AVX enabled micro-architecture for it to run, i.e. starting from Intel Sandy-Bridge or AMD Bulldozer generation onwards. Extension to support more vector enabled archetictures such as AVX-512, MIC and GPUs is planned and should be in fact straight-forward to plug them in, by using the [Vc](https://github.com/VcDevel/Vc) library. Fastor's underlying vector type APIs are purposely kept very close to `Vc`, so that in eventual case of porting, a change of namespace would suffice.  
 - Fastor is for small and on-cache tensors. 
-- Most of the points mentioned above, like compile time graph search optimisation, Voigt transformation and the einsum feature is specific to Fastor. Some of these design principles certainly make Fastor less flexible.
+- Most of the points mentioned above, like compile time graph search optimisation, Voigt transformation and the einsum feature is specific to Fastor. 
 - While stable, Fastor is in its infancy, whereas most of the aforementioned projects have reached a certain level maturity. 
