@@ -102,7 +102,7 @@ A(2,fall,3) = 5.0;                                                   // A[2,:,3]
 // Overlapping is also allowed without having undefined behaviour
 A(seq(2,last),all,all).noalias() += A(seq(0,last-2),all,all);        // A[2::,:,:] += A[::-2,:,:]
 // Note that in case of perfect overlapping noalias is not required
-A(seq(0,last-2),all,all).noalias() += A(seq(0,last-2),all,all);      // A[::2,:,:] += A[::2,:,:]
+A(seq(0,last-2),all,all) += A(seq(0,last-2),all,all);                // A[::2,:,:] += A[::2,:,:]
 
 // If instead of a tensor view, one needs an actual tensor the iseq could be used
 // iseq<first,last,step>
