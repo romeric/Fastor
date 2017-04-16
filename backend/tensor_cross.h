@@ -7,13 +7,12 @@
 namespace Fastor {
 
 template<typename T, size_t M, size_t K, size_t N>
-void _crossproduct(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ c);
-
+inline void _crossproduct(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ c) {
+    assert(false && "CROSS PRODUCT IS ONLY A 3D OPERATOR");
 }
 
 #ifdef __SSE4_2__
 
-namespace Fastor {
 template<>
 FASTOR_INLINE void _crossproduct<double,2,2,2>(const double *__restrict__ a, const double *__restrict__ b, double *__restrict__ c) {
     // 25 OPS without HADD / 27 OPS with HADD
