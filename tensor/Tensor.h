@@ -617,7 +617,7 @@ public:
 
         if ((Size==0) || (Size==1)) return _data[0];
 
-        using V = SIMDVector<T>;
+        using V = SIMDVector<T,DEFAULT_ABI>;
         constexpr int unroll_upto = V::unroll_size(Size);
         constexpr int stride = V::Size;
         int i = 0;
@@ -627,8 +627,8 @@ public:
             vec += V(_data+i);
         }
         T scalar = static_cast<T>(0);
-        for (int j=i; j< Size; j++) {
-            scalar += _data[j];
+        for (; i< Size; ++i) {
+            scalar += _data[i];
         }
         return vec.sum() + scalar;
     }
@@ -637,7 +637,7 @@ public:
 
         if ((Size==0) || (Size==1)) return _data[0];
 
-        using V = SIMDVector<T>;
+        using V = SIMDVector<T,DEFAULT_ABI>;
         constexpr int unroll_upto = V::unroll_size(Size);
         constexpr int stride = V::Size;
         int i = 0;
@@ -647,10 +647,40 @@ public:
             vec *= V(_data+i);
         }
         T scalar = static_cast<T>(0);
-        for (int j=i; j< Size; j++) {
-            scalar *= _data[j];
+        for (; i< Size; ++i) {
+            scalar *= _data[i];
         }
         return vec.product()*scalar;
+    }
+
+    FASTOR_INLINE void reverse() {
+        // in-place reverse
+        if ((Size==0) || (Size==1)) return;
+        // std::reverse(_data,_data+Size); return;
+
+        // This requires copying the data to avoid aliasing
+        // Despite that this method seems to be faster than
+        // std::reverse for big _data both on GCC and Clang
+        T FASTOR_ALIGN tmp[Size];
+        std::copy(_data,_data+Size,tmp);
+
+        // Although SSE register reversing is faster
+        // The AVX one outperforms it
+        using V = SIMDVector<T,DEFAULT_ABI>;
+        // using V = SIMDVector<T,SSE>; 
+        constexpr int unroll_upto = V::unroll_size(Size);
+        constexpr int stride = V::Size;
+        int i = 0;
+
+        V vec;
+        for (; i< unroll_upto; i+=stride) {
+            vec.load(&tmp[Size - i - stride]);
+            vec.reverse().store(_data+i);
+        }
+        T scalar = static_cast<T>(0);
+        for (; i< Size; ++i) {
+            _data[i] = tmp[Size-i-1];
+        }
     }
 
 

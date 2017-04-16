@@ -10,6 +10,42 @@ namespace Fastor {
 // Fastor expression. Note that all the mathematical functions (sin, cos etc) are
 // Fastor expressions
 
+
+template<class Derived, size_t DIMS>
+FASTOR_INLINE typename Derived::scalar_type sum(const AbstractTensor<Derived,DIMS> &_src) {
+    using T = typename Derived::scalar_type;
+    using V = SIMDVector<T,DEFAULT_ABI>;
+    const Derived &src = _src.self();
+    FASTOR_INDEX i;
+    T _scal=0; V _vec(_scal);
+    for (i = 0; i < ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
+        _vec += src.template eval<T>(i);
+    }
+    for (; i < src.size(); ++i) {
+        _scal += src.template eval_s<T>(i);
+    }
+    return _vec.sum() + _scal;
+}
+
+template<class Derived, size_t DIMS>
+FASTOR_INLINE typename Derived::scalar_type product(const AbstractTensor<Derived,DIMS> &_src) {
+    using T = typename Derived::scalar_type;
+    using V = SIMDVector<T,DEFAULT_ABI>;
+    const Derived &src = _src.self();
+    FASTOR_INDEX i;
+    T _scal=0; V _vec(_scal);
+    for (i = 0; i < ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
+        _vec *= src.template eval<T>(i);
+    }
+    for (; i < src.size(); ++i) {
+        _scal *= src.template eval_s<T>(i);
+    }
+    return _vec.product() * _scal;
+}
+
+
+
+
 template<class Derived, size_t DIMS>
 FASTOR_INLINE typename Derived::scalar_type norm(const AbstractTensor<Derived,DIMS> &_src) {
     using T = typename Derived::scalar_type;
@@ -33,7 +69,6 @@ FASTOR_INLINE typename Derived::scalar_type norm(const AbstractTensor<Derived,DI
     }
     return sqrts(_vec.sum() + _scal);
 }
-
 
 
 template<class Derived0, typename Derived1, size_t DIMS,

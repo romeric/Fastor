@@ -383,7 +383,11 @@ struct SIMDVector<float,128> {
     FASTOR_INLINE float maximum() {return _mm_hmax_ps(value);}
 
     FASTOR_INLINE float dot(const SIMDVector<float,128> &other) {
+#ifdef __SSE4_1__
         return _mm_cvtss_f32(_mm_dp_ps(value,other.value,0xff));
+#else
+        return _mm_sum_ps(_mm_mul_ps(value,other.value));
+#endif
     }
 
     __m128 value;

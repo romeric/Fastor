@@ -169,10 +169,10 @@ struct SIMDVector {
         return quan;
     }
     FASTOR_INLINE SIMDVector<T,ABI> reverse() {
-        T FASTOR_ALIGN tmp[Size];
-        std::copy(value,value+Size,tmp);
-        for (FASTOR_INDEX i=0; i<Size;++i)
-            value[i] = tmp[Size-1-i];
+        SIMDVector<T,ABI> out;
+        std::copy(value,value+Size,out.value);
+        std::reverse(out.value,out.value+Size);
+        return out;
     }
     FASTOR_INLINE T minimum() {
         T quan = 0;

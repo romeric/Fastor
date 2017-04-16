@@ -156,6 +156,14 @@ FASTOR_INLINE __m128d _mm_reverse_pd(__m128d a) {
     // 1OP
     return _mm_shuffle_pd(a,a,0x1);
 }
+FASTOR_INLINE __m128i _mm_reverse_epi32(__m128i v) {
+    // 1 OP
+    return _mm_shuffle_epi32(v, 0x1b);
+}
+FASTOR_INLINE __m128i _mm_reverse_epi64(__m128i v) {
+    // 1 OP
+    return _mm_castpd_si128(_mm_reverse_pd(_mm_castsi128_pd(v)));
+}
 #endif
 #ifdef __AVX__
 FASTOR_INLINE __m256 _mm256_reverse_ps(__m256 a) {
@@ -167,6 +175,22 @@ FASTOR_INLINE __m256d _mm256_reverse_pd(__m256d a) {
     // IVY 2OPS / HW 4OPS
     __m256d r1 = _mm256_permute2f128_pd(a,a,0x1);
     return _mm256_shuffle_pd(r1,r1,5);
+}
+FASTOR_INLINE __m256i _mm256_reverse_epi32(__m256i v) {
+    // IVY 2OPS / HW 4OPS
+    return _mm256_castps_si256(_mm256_reverse_ps(_mm256_castsi256_ps(v)));
+    /*
+    // 8 OPS
+    __m128i lo = _mm_shuffle_epi32(_mm256_castsi256_si128(_a));
+    __m128i hi = _mm_shuffle_epi32(_mm256_extractf128_si256(_a,1));
+    __m256i out = _mm256_castsi128_si256(lo);
+    out = _mm256_insertf128_si256(out,hi,1);
+    return out;
+    */
+}
+FASTOR_INLINE __m256i _mm256_reverse_epi64(__m256i v) {
+    // IVY 2OPS / HW 4OPS
+    return _mm256_castpd_si256(_mm256_reverse_pd(_mm256_castsi256_pd(v)));
 }
 #endif
 //!---------------------------------------------------------------//

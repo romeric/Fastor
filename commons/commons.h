@@ -97,10 +97,12 @@
 #ifdef __SSE2__
 #include <emmintrin.h>
 #endif
+#ifdef __SSE4_1__
+#include <smmintrin.h> 
+#endif
 #ifdef __AVX__
 #include <immintrin.h>
 #endif
-
 
 // FASTOR CONSTRUCTS
 #define Symmetric -100

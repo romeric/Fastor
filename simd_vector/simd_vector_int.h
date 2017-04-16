@@ -112,6 +112,11 @@ struct SIMDVector<int,256> {
                 quan = vals[i];
         return quan;
     }
+    FASTOR_INLINE SIMDVector<int> reverse() {
+        SIMDVector<int> out;
+        out.value = _mm256_reverse_epi32(value);
+        return out;
+    }
 
     FASTOR_INLINE int sum() {
         int *vals = (int*)&value;
@@ -319,6 +324,11 @@ struct SIMDVector<int,128> {
                 quan = vals[i];
         return quan;
     }
+    FASTOR_INLINE SIMDVector<int,128> reverse() {
+        SIMDVector<int,128> out;
+        out.value = _mm_reverse_epi32(value);
+        return out;
+    }
 
     FASTOR_INLINE int sum() {
         int *vals = (int*)&value;
@@ -494,13 +504,11 @@ struct SIMDVector<int, 32> {
     FASTOR_INLINE SIMDVector<int,32> shift(FASTOR_INDEX) {
         return *this;
     }
-    FASTOR_INLINE int sum() {return value;}
-    FASTOR_INLINE SIMDVector<int,32> reverse() {
-        return *this;
-    }
     FASTOR_INLINE int minimum() {return value;}
     FASTOR_INLINE int maximum() {return value;}
+    FASTOR_INLINE SIMDVector<int,32> reverse() {SIMDVector<int,32> out; out.value = value; return out;}
 
+    FASTOR_INLINE int sum() {return value;}
     FASTOR_INLINE int dot(const SIMDVector<int,32> &other) {
         return value*other.value;
     }

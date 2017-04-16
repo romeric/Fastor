@@ -93,17 +93,17 @@ FASTOR_INLINE void _inverse<double,3>(const double *__restrict__ src, double *__
 
 }
 
-#if defined(__SSE4_2__) && defined(__SSE4_1__)
+#ifdef __SSE4_2__
 
-//FASTOR_INLINE __m128 _mm_dot_ps(__m128 v1, __m128 v2)
-//{
-//    __m128 mul0 = _mm_mul_ps(v1, v2);
-//    __m128 swp0 = _mm_shuffle_ps(mul0, mul0, _MM_SHUFFLE(2, 3, 0, 1));
-//    __m128 add0 = _mm_add_ps(mul0, swp0);
-//    __m128 swp1 = _mm_shuffle_ps(add0, add0, _MM_SHUFFLE(0, 1, 2, 3));
-//    __m128 add1 = _mm_add_ps(add0, swp1);
-//    return add1;
-//}
+FASTOR_INLINE __m128 _mm_dot_ps(__m128 v1, __m128 v2)
+{
+   __m128 mul0 = _mm_mul_ps(v1, v2);
+   __m128 swp0 = _mm_shuffle_ps(mul0, mul0, _MM_SHUFFLE(2, 3, 0, 1));
+   __m128 add0 = _mm_add_ps(mul0, swp0);
+   __m128 swp1 = _mm_shuffle_ps(add0, add0, _MM_SHUFFLE(0, 1, 2, 3));
+   __m128 add1 = _mm_add_ps(add0, swp1);
+   return add1;
+}
 
 template<typename T, size_t N>
 FASTOR_INLINE void _inverse(T const in[N], T out[N]);
@@ -331,8 +331,13 @@ FASTOR_INLINE void _inverse<__m128,4>(__m128 const in[4], __m128 out[4])
     //                      + m[0][1] * Inverse[1][0]
     //                      + m[0][2] * Inverse[2][0]
     //                      + m[0][3] * Inverse[3][0];
-//    __m128 Det0 = _mm_dot_ps(in[0], Row2);
+#ifdef __SSE4_1__
     __m128 Det0 = _mm_dp_ps(in[0], Row2, 0xff);
+#else
+    __m128 Det0 = _mm_dot_ps(in[0], Row2);
+#endif
+    // Avoid compilation error by using _mm_dot_ps instead
+    // __m128 Det0 = _mm_dot_ps(in[0], Row2);
     __m128 Rcp0 = _mm_div_ps(ONEPS, Det0);
     //__m128 Rcp0 = _mm_rcp_ps(Det0);
 

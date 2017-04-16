@@ -112,6 +112,11 @@ struct SIMDVector<Int64,256> {
                 quan = vals[i];
         return quan;
     }
+    FASTOR_INLINE SIMDVector<Int64> reverse() {
+        SIMDVector<Int64> out;
+        out.value = _mm256_reverse_epi64(value);
+        return out;
+    }
 
     FASTOR_INLINE Int64 sum() {
         Int64 *vals = (Int64*)&value;
@@ -319,6 +324,11 @@ struct SIMDVector<Int64,128> {
                 quan = vals[i];
         return static_cast<Int64>(quan);
     }
+    FASTOR_INLINE SIMDVector<Int64,128> reverse() {
+        SIMDVector<Int64,128> out;
+        out.value = _mm_reverse_epi64(value);
+        return out;
+    }
 
     FASTOR_INLINE Int64 sum() {
         int *vals = (int*)&value;
@@ -501,13 +511,11 @@ struct SIMDVector<Int64, 64> {
     FASTOR_INLINE SIMDVector<Int64,64> shift(FASTOR_INDEX) {
         return *this;
     }
-    FASTOR_INLINE Int64 sum() {return value;}
-    FASTOR_INLINE SIMDVector<Int64,64> reverse() {
-        return *this;
-    }
     FASTOR_INLINE Int64 minimum() {return value;}
     FASTOR_INLINE Int64 maximum() {return value;}
+    FASTOR_INLINE SIMDVector<Int64,64> reverse() {SIMDVector<Int64,64> out; out.value = value; return out;}
 
+    FASTOR_INLINE Int64 sum() {return value;}
     FASTOR_INLINE Int64 dot(const SIMDVector<Int64,64> &other) {
         return value*other.value;
     }
