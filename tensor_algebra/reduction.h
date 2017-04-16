@@ -146,7 +146,7 @@ T inner(const Tensor<T,Rest...> &a, const Tensor<T,Rest...> &b, const Tensor<T,R
     //! No Einstein summation in here as indices get repeated more than twice.
     //! This is just reducing three tensors to a scalar like a[i]*b[i]*c[i]
 
-    using V = SIMDVector<T>;
+    using V = SIMDVector<T,DEFAULT_ABI>;
 
     const T *a_data = a.data();
     const T *b_data = b.data();
@@ -175,9 +175,9 @@ T inner(const Tensor<T,Rest...> &a, const Tensor<T,Rest...> &b, const Tensor<T,R
 template<typename T, size_t ... Rest>
 T inner(const Tensor<T,Rest...> &a, const Tensor<T,Rest...> &b, const Tensor<T,Rest...> &c, const Tensor<T,Rest...> &d) {
     //! No Einstein summation in here as indices get repeated more than twice.
-    //! This is just reducing three tensors to a scalar like a[i]*b[i]*c[i]
+    //! This is just reducing four tensors to a scalar like a[i]*b[i]*c[i]*d[i]
 
-    using V = SIMDVector<T>;
+    using V = SIMDVector<T,DEFAULT_ABI>;
 
     const T *a_data = a.data();
     const T *b_data = b.data();

@@ -537,7 +537,7 @@ public:
         T num = static_cast<T>(num0);
         FASTOR_INDEX i=0;
         for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
-            SIMDVector<T> _vec = num;
+            SIMDVector<T,DEFAULT_ABI> _vec = num;
             _vec.store(_data+i);
         }
         for (; i<Size; ++i) _data[i] = num0;
@@ -546,7 +546,7 @@ public:
     template<typename U=T>
     FASTOR_INLINE void iota(U num0=static_cast<U>(0)) {
         T num = static_cast<T>(num0);
-        SIMDVector<T> _vec;
+        SIMDVector<T,DEFAULT_ABI> _vec;
         FASTOR_INDEX i=0;
         for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
             _vec.set_sequential(i+num);
@@ -559,7 +559,7 @@ public:
     FASTOR_INLINE void arange(U num0=0) {iota(num0);}
 
     FASTOR_INLINE void zeros() {
-        SIMDVector<T> _zeros;
+        SIMDVector<T,DEFAULT_ABI> _zeros;
         FASTOR_INDEX i=0;
         for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
             _zeros.store(_data+i);

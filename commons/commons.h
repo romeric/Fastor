@@ -136,8 +136,8 @@
         #define DEFAULT_ABI SSE
     #endif
 #else
-    // Define the largest float size as vector size
-    #define DEFAULT_ABI Double
+    // Define the largest floating point size as vector size
+    #define DEFAULT_ABI Scalar
 #endif
 
 

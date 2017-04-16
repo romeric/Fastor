@@ -78,7 +78,7 @@ struct BinaryDivOp: public AbstractTensor<BinaryDivOp<TLhs, TRhs, DIM0>,DIM0> {
     template<typename LExpr, typename RExpr, typename U,
            typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
                                    std::is_arithmetic<RExpr>::value,bool>::type = 0>
-    FASTOR_INLINE SIMDVector<U> helper(FASTOR_INDEX i) const {
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> helper(FASTOR_INDEX i) const {
 #ifndef FASTOR_UNSAFE_MATH
         return lhs.template eval<U>(i) / rhs;
 #else

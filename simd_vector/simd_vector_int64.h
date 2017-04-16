@@ -113,6 +113,11 @@ struct SIMDVector<Int64,256> {
         return quan;
     }
     FASTOR_INLINE SIMDVector<Int64> reverse() {
+        // Reversing a 64 bit vector seems really expensive regardless
+        // of which of the following methods being used 
+        // SIMDVector<Int64> out(_mm256_set_epi64x(value[0],value[1],value[2],value[3]));
+        // SIMDVector<Int64> out; out.set(value[3],value[2],value[1],value[0]);
+        // return out;
         SIMDVector<Int64> out;
         out.value = _mm256_reverse_epi64(value);
         return out;

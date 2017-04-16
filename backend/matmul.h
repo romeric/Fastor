@@ -11,11 +11,11 @@ namespace Fastor {
 
 // For square matrices
 template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<M==N && M==K && N % SIMDVector<T>::Size ==0,bool>::type = 0>
+         typename std::enable_if<M==N && M==K && N % SIMDVector<T,DEFAULT_ABI>::Size ==0,bool>::type = 0>
 FASTOR_INLINE
 void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ c) {
 
-    using V = SIMDVector<T>;
+    using V = SIMDVector<T,DEFAULT_ABI>;
     constexpr size_t UnrollOuterloop = V::size();
 
     // The row index (for a and c) is unrolled using the UnrollOuterloop stride. Therefore
@@ -403,7 +403,7 @@ void _matmul_3x3xn(const T * __restrict__ a, const T * __restrict__ b, T * __res
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<(M==K && K!=N) || (M!=K && K==N) || (M!=K && K!=N && M!=N)
                                  || (M!=K && M==N && M!=2 && M!=3 && M!=4)
-                                 || ((M==N && M==K) && N % SIMDVector<T>::Size !=0),bool>::type = 0>
+                                 || ((M==N && M==K) && N % SIMDVector<T,DEFAULT_ABI>::Size !=0),bool>::type = 0>
 FASTOR_INLINE
 void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
 

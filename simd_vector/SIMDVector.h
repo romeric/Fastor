@@ -12,93 +12,93 @@
 namespace Fastor {
 
 template<typename T>
-FASTOR_INLINE SIMDVector<T> exp(const SIMDVector<T> &a) {
-    SIMDVector<T> out;
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> exp(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_exp(a.value);
     return out;
 }
 
 template<typename T>
-FASTOR_INLINE SIMDVector<T> log(const SIMDVector<T> &a) {
-    SIMDVector<T> out;
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> log(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_log(a.value);
     return out;
 }
 
 template<typename T, typename U>
-FASTOR_INLINE SIMDVector<T> pow(const SIMDVector<T> &a, const SIMDVector<U> &b) {
-    SIMDVector<T> out;
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> pow(const SIMDVector<T,DEFAULT_ABI> &a, const SIMDVector<U,DEFAULT_ABI> &b) {
+    SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_pow(a.value, b.value);
     return out;
 }
 
 template<typename T, typename U>
-FASTOR_INLINE SIMDVector<T> pow(const SIMDVector<T> &a, U bb) {
-    SIMDVector<T> out;
-    SIMDVector<T> b = static_cast<T>(bb);
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> pow(const SIMDVector<T,DEFAULT_ABI> &a, U bb) {
+    SIMDVector<T,DEFAULT_ABI> out;
+    SIMDVector<T,DEFAULT_ABI> b = static_cast<T>(bb);
     out.value = internal_pow(a.value, b.value);
     return out;
 }
 
 template<typename T>
-FASTOR_INLINE SIMDVector<T> sin(const SIMDVector<T> &a) {
-    SIMDVector<T> out;
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> sin(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_sin(a.value);
     return out;
 }
 
 template<typename T>
-FASTOR_INLINE SIMDVector<T> cos(const SIMDVector<T> &a) {
-    SIMDVector<T> out;
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> cos(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_cos(a.value);
     return out;
 }
 
 template<typename T>
-FASTOR_INLINE SIMDVector<T> tan(const SIMDVector<T> &a) {
-    SIMDVector<T> out;
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> tan(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_tan(a.value);
     return out;
 }
 
 template<typename T>
-FASTOR_INLINE SIMDVector<T> asin(const SIMDVector<T> &a) {
-    SIMDVector<T> out;
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> asin(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_asin(a.value);
     return out;
 }
 
 template<typename T>
-FASTOR_INLINE SIMDVector<T> acos(const SIMDVector<T> &a) {
-    SIMDVector<T> out;
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> acos(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_acos(a.value);
     return out;
 }
 
 template<typename T>
-FASTOR_INLINE SIMDVector<T> atan(const SIMDVector<T> &a) {
-    SIMDVector<T> out;
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> atan(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_atan(a.value);
     return out;
 }
 
 template<typename T>
-FASTOR_INLINE SIMDVector<T> sinh(const SIMDVector<T> &a) {
-    SIMDVector<T> out;
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> sinh(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_sinh(a.value);
     return out;
 }
 
 template<typename T>
-FASTOR_INLINE SIMDVector<T> cosh(const SIMDVector<T> &a) {
-    SIMDVector<T> out;
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> cosh(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_cosh(a.value);
     return out;
 }
 
 template<typename T>
-FASTOR_INLINE SIMDVector<T> tanh(const SIMDVector<T> &a) {
-    SIMDVector<T> out;
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> tanh(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_tanh(a.value);
     return out;
 }
