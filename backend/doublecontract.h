@@ -9,20 +9,24 @@ namespace Fastor {
 template<typename T, size_t M, size_t N>
 FASTOR_INLINE T _doublecontract(const T* __restrict__ a, const T* __restrict__ b) {
 
+    using V = SIMDVector<T,DEFAULT_ABI>;
     constexpr int size = M*N;
-    constexpr int unroll_upto = SIMDVector<T>::unroll_size(size);
-    constexpr int stride = SIMDVector<T>::Size;
+    constexpr int stride = V::Size;
     int i = 0;
 
-    SIMDVector<T> vec_a=static_cast<T>(0), vec_b=static_cast<T>(0), vec_out=static_cast<T>(0);
-    for (; i< unroll_upto; i+=stride) {
+    V vec_a, vec_b, vec_out;
+    for (; i< ROUND_DOWN(size,stride); i+=stride) {
         vec_a.load(a+i);
         vec_b.load(b+i);
+#ifndef __FMA__
         vec_out += vec_a*vec_b;
+#else
+        vec_out = fmadd(vec_a,vec_b,vec_out);
+#endif
     }
     T scalar = static_cast<T>(0);
-    for (int j=i; j< size; j++) {
-        scalar += a[j]*b[j];
+    for (; i < size; ++i) {
+        scalar += a[i]*b[i];
     }
     return vec_out.sum() + scalar;
 }

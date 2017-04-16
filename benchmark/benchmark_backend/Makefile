@@ -52,5 +52,4 @@ run:
 	./benchmark_matmul.exe
 
 clean:
-	rm -rf benchmark_transpose.exe benchmark_trace.exe benchmark_norm.exe benchmark_doublecontract.exe \
-	benchmark_crossproduct.exe benchmark_outer.exe benchmark_cyclic.exe benchmark_matmul.exe
+	rm -rf *.exe

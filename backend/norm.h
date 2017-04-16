@@ -10,21 +10,21 @@ namespace Fastor {
 template<typename T, size_t N>
 FASTOR_INLINE double _norm_nonfloating(const T* __restrict__ a) {
 
+    using V = SIMDVector<T,DEFAULT_ABI>;
     constexpr int size = N;
-    constexpr int unroll_upto = SIMDVector<T>::unroll_size(size);
-    constexpr int stride = SIMDVector<T>::Size;
+    constexpr int stride = V::Size;
     int i = 0;
 
     // Unroll upto register size
-    SIMDVector<T> vec_a=static_cast<T>(0), vec_out=static_cast<T>(0);
-    for (; i< unroll_upto; i+=stride) {
+    V vec_a, vec_out;
+    for (; i< ROUND_DOWN(size,stride); i+=stride) {
         vec_a.load(a+i);
         vec_out += vec_a*vec_a;
     }
     // Take care of the remainder
     T scalar = static_cast<T>(0);
-    for (FASTOR_INDEX j=i; j< size; j++) {
-        scalar += a[j]*a[j];
+    for (; i< size; ++i) {
+        scalar += a[i]*a[i];
     }
     return sqrts(static_cast<double>(vec_out.sum() + scalar));
 }
@@ -33,14 +33,14 @@ FASTOR_INLINE double _norm_nonfloating(const T* __restrict__ a) {
 template<typename T, size_t N>
 FASTOR_INLINE T _norm(const T* __restrict__ a) {
 
+    using V = SIMDVector<T,DEFAULT_ABI>;
     constexpr int size = N;
-    constexpr int unroll_upto = SIMDVector<T>::unroll_size(size);
-    constexpr int stride = SIMDVector<T>::Size;
+    constexpr int stride = V::Size;
     int i = 0;
 
     // Unroll upto register size
-    SIMDVector<T> vec_a=static_cast<T>(0), vec_out=static_cast<T>(0);
-    for (; i< unroll_upto; i+=stride) {
+    V vec_a, vec_out;
+    for (; i< ROUND_DOWN(size,stride); i+=stride) {
         vec_a.load(a+i);
 #ifdef __FMA__
         vec_out = fmadd(vec_a,vec_a,vec_out);
@@ -50,8 +50,8 @@ FASTOR_INLINE T _norm(const T* __restrict__ a) {
     }
     // Take care of the remainder
     T scalar = static_cast<T>(0);
-    for (FASTOR_INDEX j=i; j< size; j++) {
-        scalar += a[j]*a[j];
+    for (; i< size; ++i) {
+        scalar += a[i]*a[i];
     }
     return sqrts(vec_out.sum() + scalar);
 }
