@@ -317,9 +317,110 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
     _mm_store_ps(out+4,out_row1);
     _mm_store_ps(out+8,out_row2);
     _mm_store_ps(out+12,out_row3);
+
+
+    /* 
+    // AVX version - process two rows in one AVX register - doesn't pay off
+    // as on FMA based architecture increases the cycle count by 4
+    __m256 out_row01 = VZEROPS;
+    __m256 out_row23 = VZEROPS;
+
+    for (size_t i=0; i<K; ++i) {
+        __m128 br = _mm_load_ps(&b[i*4]);
+        __m256 brow = _mm256_castps128_ps256(br);
+        brow = _mm256_insertf128_ps(brow,br,0x1);
+        // row  0 & 1
+        __m128 a_vec0 = _mm_set1_ps(a[i]);
+        __m128 a_vec1 = _mm_set1_ps(a[K+i]);
+        __m256 a_vec01 = _mm256_castps128_ps256(a_vec0);
+        a_vec01 = _mm256_insertf128_ps(a_vec01,a_vec1,0x1);
+#ifndef __FMA__
+        out_row01 = _mm256_add_ps(out_row01,_mm256_mul_ps(a_vec01,brow));
+#else
+        out_row01 = _mm256_fmadd_ps(a_vec01,brow,out_row01);
+#endif
+        // row 2 & 3
+        __m128 a_vec2 = _mm_set1_ps(a[2*K+i]);
+        __m128 a_vec3 = _mm_set1_ps(a[3*K+i]);
+        __m256 a_vec23 = _mm256_castps128_ps256(a_vec2);
+        a_vec23 = _mm256_insertf128_ps(a_vec23,a_vec3,0x1);
+#ifndef __FMA__
+        out_row23 = _mm256_add_ps(out_row23,_mm256_mul_ps(a_vec23,brow));
+#else
+        out_row23 = _mm256_fmadd_ps(a_vec23,brow,out_row23);
+#endif
+    }
+    _mm256_store_ps(out,out_row01);
+    _mm256_store_ps(out+8,out_row23);
+    */
 }
 
 #endif
+
+
+// (2x2) x (2xn) matrices
+template<typename T, size_t M, size_t N>
+FASTOR_INLINE
+void _matmul_2x2xn(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+
+
+    using V256 = SIMDVector<T,256>;
+    using V128 = SIMDVector<T,128>;
+
+    constexpr int SIZE_AVX = V256::Size;
+    constexpr int SIZE_SSE = V128::Size;
+    constexpr int ROUND_AVX = ROUND_DOWN(N,(int)SIZE_AVX);
+    constexpr int ROUND_SSE = ROUND_DOWN(N,(int)SIZE_SSE);
+
+    size_t k=0;
+    for (; k<ROUND_AVX; k+=SIZE_AVX) {
+
+        V256 out_row0, out_row1, vec_a0, vec_a1;
+        for (size_t i=0; i<M; ++i) {
+            V256 brow; brow.load(&b[i*N+k],false);
+            vec_a0.set(a[i]);
+            vec_a1.set(a[i+M]);
+#ifndef __FMA__
+            out_row0 += vec_a0*brow;
+            out_row1 += vec_a1*brow;
+#else
+            out_row0 = fmadd(vec_a0,brow,out_row0);
+            out_row1 = fmadd(vec_a1,brow,out_row1);
+#endif            
+        }
+        out_row0.store(out+k,false);
+        out_row1.store(out+N+k,false);
+    }
+
+    for (; k<ROUND_SSE; k+=SIZE_SSE) {
+        V128 out_row0, out_row1, vec_a0, vec_a1, brow;
+        for (size_t i=0; i<M; ++i) {
+            V128 brow; brow.load(&b[i*N+k],false);
+            vec_a0.set(a[i]);
+            vec_a1.set(a[i+M]);
+#ifndef __FMA__
+            out_row0 += vec_a0*brow;
+            out_row1 += vec_a1*brow;
+#else
+            out_row0 = fmadd(vec_a0,brow,out_row0);
+            out_row1 = fmadd(vec_a1,brow,out_row1);
+#endif 
+        }
+        out_row0.store(out+k,false);
+        out_row1.store(out+N+k,false);
+    }
+
+    for (; k<N; k++) {
+        T out_row0=0., out_row1=0.;
+        for (size_t i=0; i<M; ++i) {
+            T brow = b[i*N+k];
+            out_row0 += a[i]*brow;
+            out_row1 += a[i+M]*brow;
+        }
+        out[k] = out_row0;
+        out[N+k] = out_row1;
+    }
+}
 
 
 // (3x3) x (3xn) matrices
@@ -407,8 +508,14 @@ template<typename T, size_t M, size_t K, size_t N,
 FASTOR_INLINE
 void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
 
+    // The following specialisations don't make much of a difference (at least for SP)
+    // Need thorough performance checks
     if (M==3 && K==3 && N!=K) {
         _matmul_3x3xn<T,M,N>(a,b,out);
+        return;
+    }
+    else if (M==2 && K==2 && N!=K) {
+        _matmul_2x2xn<T,M,N>(a,b,out);
         return;
     }
 

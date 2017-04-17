@@ -106,10 +106,10 @@ A(seq(0,last-2),all,all) += A(seq(0,last-2),all,all);                // A[::2,:,
 
 // If instead of a tensor view, one needs an actual tensor the iseq could be used
 // iseq<first,last,step>
-C = A(iseq<0,2>(),iseq<0,2>(),iseq<0,last,2>());                   // C = A[0:2,0:2,0::2]
+C = A(iseq<0,2>(),iseq<0,2>(),iseq<0,last,2>());                     // C = A[0:2,0:2,0::2]
 // Note that iseq returns an immediate tensor rather than a tensor view and hence cannot appear
 // on the left hand side, for instance 
-A(iseq<0,2>(),iseq<0,2>(),iseq<0,last,2>()) = 2; // Will not compile, as left operand as an rvalue
+A(iseq<0,2>(),iseq<0,2>(),iseq<0,last,2>()) = 2; // Will not compile, as left operand is an rvalue
 
 // One can also index a tensor with another tensor(s)
 Tensor<float,10,10> E; E.fill(2);
@@ -122,7 +122,7 @@ E(t_it) -= 42 + E;
 ~~~
 Aside from `iseq` (which pretty much immediately returns another tensor), all other possible combination of slicing and broadcasting types are possible. For instance, one complex slicing and broadcasting example is given below
 ~~~c++
-A(all,all) -= log(B(all,all,0)) + abs(B(all,fall,1)) + sin(C(all,0,all,0)) - 1 - cos(B(all,all,0));
+A(all,all) -= log(B(all,all,0)) + abs(B(all,fall,1)) + sin(C(all,0,all,0)) - 102. - cos(B(all,all,0));
 ~~~
 
 It should be mentioned that since tensor views work on a view of (reference to) a tensor and do not copy any data in the background, the use of the keyword `auto` can be dangerous at times 

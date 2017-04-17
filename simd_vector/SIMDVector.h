@@ -279,14 +279,14 @@ FASTOR_INLINE void data_setter(T *__restrict__ data, const SIMDVector<T,ABI> &ve
     data[idx+5*general_stride] = vec[5];
     data[idx+6*general_stride] = vec[6];
     data[idx+7*general_stride] = vec[7];
-    data[idx+2*general_stride] = vec[8];
-    data[idx+3*general_stride] = vec[9];
-    data[idx+4*general_stride] = vec[10];
-    data[idx+5*general_stride] = vec[11];
-    data[idx+6*general_stride] = vec[12];
-    data[idx+7*general_stride] = vec[13];
-    data[idx+6*general_stride] = vec[14];
-    data[idx+7*general_stride] = vec[15];
+    data[idx+8*general_stride] = vec[8];
+    data[idx+9*general_stride] = vec[9];
+    data[idx+10*general_stride] = vec[10];
+    data[idx+11*general_stride] = vec[11];
+    data[idx+12*general_stride] = vec[12];
+    data[idx+13*general_stride] = vec[13];
+    data[idx+14*general_stride] = vec[14];
+    data[idx+15*general_stride] = vec[15];
 }
 
 // 8 word scalar
