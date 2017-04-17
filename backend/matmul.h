@@ -328,8 +328,8 @@ FASTOR_INLINE
 void _matmul_3x3xn(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
 
 
-    using V256 = SIMDVector<double,256>;
-    using V128 = SIMDVector<double,128>;
+    using V256 = SIMDVector<T,256>;
+    using V128 = SIMDVector<T,128>;
 
     constexpr int SIZE_AVX = V256::Size;
     constexpr int SIZE_SSE = V128::Size;
@@ -412,8 +412,8 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
         return;
     }
 
-    using V256 = SIMDVector<double,256>;
-    using V128 = SIMDVector<double,128>;
+    using V256 = SIMDVector<T,256>;
+    using V128 = SIMDVector<T,128>;
 
     constexpr int SIZE_AVX = V256::Size;
     constexpr int SIZE_SSE = V128::Size;

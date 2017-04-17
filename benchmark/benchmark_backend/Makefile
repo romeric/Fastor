@@ -1,4 +1,4 @@
-CXX_FLAGS = -std=c++11 -O3 -mavx 
+CXX_FLAGS = -std=c++11 -O3 -march=native -DNDEBUG
 INCLUDES = -I../../
 
 
