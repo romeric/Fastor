@@ -9,9 +9,9 @@
 # ICC = /media/MATLAB/intel_2017/bin/icpc -fp-model=strict
 
 # Xeon
-GCC = g++-6 -fabi-version=6 -fno-fast-math -fno-associative-math -D_GLIBCXX_USE_CXX11_ABI=0 
-CLANG = clang++-3.9 -fno-fast-math -fno-associative-math
-ICC = /home/roman/intel_2017/bin/icpc -fp-model=strict
+GCC = g++-6 -fabi-version=6 -fno-fast-math -fno-associative-math -D_GLIBCXX_USE_CXX11_ABI=0 -DNDEBUG
+CLANG = clang++-3.9 -fno-fast-math -fno-associative-math -DNDEBUG
+ICC = /home/roman/intel_2017/bin/icpc -fp-model=strict -DNDEBUG
 
 GCC_FLAGS_Fastor = -std=c++11 -O3 -mavx -DFASTOR_USE_OLD_OUTER
 GCC_FLAGS_Scalar = -std=c++11 -O3 -mavx -fno-tree-vectorize -DFASTOR_USE_OLD_OUTER

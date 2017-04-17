@@ -154,7 +154,7 @@ inline double timeit(T (*func)(Params...), Args...args)
         }
     }
 
-    return best_time;
+    return mean_time;
 }
 
 

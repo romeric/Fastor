@@ -2,9 +2,9 @@
 # ENSURE THE SCALAR CODE IS COMPILED AS REQUIRED BY THE BENCHMARK BY PASSING 
 # APPROPRIATE FLAGS
 
-GCC = g++ -fabi-version=6 -D_GLIBCXX_USE_CXX11_ABI=0 -fno-fast-math
-CLANG = clang++ -fno-fast-math
-ICC = icpc -fp-model=strict
+GCC = g++ -fabi-version=6 -D_GLIBCXX_USE_CXX11_ABI=0 -fno-fast-math -DNDEBUG
+CLANG = clang++ -fno-fast-math -DNDEBUG
+ICC = icpc -fp-model=strict -DNDEBUG
 
 GCC_FLAGS_Fastor = -std=c++11 -O3 -mavx 
 CLANG_FLAGS_Fastor = -std=c++11 -O3 -mavx 
