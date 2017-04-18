@@ -3,7 +3,7 @@
 
 - **Operation minimisation/Low FLOP/Complexity reducing Algorithms:** Fastor relies on an extremely smart and domain-aware Expression Template (ET) engine that can not only perform lazy evaluations and operator chaining but can also perform sophisticated mathematical transformation or *compile time* graph optimisation or both to reduce the complexity of evaluation of expressions by orders of magnitude. Some of these functionalities are almost non-existing in other available C++ ET linear algebra frameworks. 
 - **SIMD/Data parallelism/Stream computing** Fastor utilises explicit SIMD (SSE/SSE2/SSE3/SSE4/AVX/AVX2/AVX512/FMA) instructions
-- **Zero overhead tensor algebraic functions** via statically dispatched (zero-overhead) bespoke kernels for a variety of tensor products using a priori knowledge of tensors through topological studies 
+- **Zero overhead tensor algebraic functions** statically dispatched bespoke kernels for a variety of tensor products using a priori knowledge of tensors either through template specialisation or advanced topological studies or both 
 
 ### High-level API
 Fastor provides a high level interface for tensor algebra. As a first example consider the following

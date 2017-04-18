@@ -251,6 +251,8 @@ struct no_of_unique<T, UU...> : std::integral_constant<size_t, is_unique<T, UU..
 
 
 //---------------------------------------------------------------------------------
+// Note that Intel's ICC 2017 does not support make_index_sequence and the following
+// version also seems faster than c++14's built-in (for clang) on Linux systems
 namespace std_ext  // back port to c++11
 {
     template <size_t... Ints>
