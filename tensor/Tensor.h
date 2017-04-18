@@ -9,8 +9,6 @@
 #include "ForwardDeclare.h"
 #include "expressions/smart_ops/smart_ops.h"
 
-#include <initializer_list>
-
 namespace Fastor {
 
 

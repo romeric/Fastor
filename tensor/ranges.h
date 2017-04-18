@@ -2,6 +2,7 @@
 #define RANGE_H
 
 #include "commons/commons.h"
+#include <initializer_list>
 
 namespace Fastor {
 
@@ -38,6 +39,12 @@ struct seq {
     template<int F, int L, int S=1>
     constexpr FASTOR_INLINE seq(fseq<F,L,S>) : _first(F), _last(L), _step(S) {}
 
+    // Do not allow construction of seq using std::initializer_list, as it happens
+    // implicitly. Overloading operator() with std::initializer_list should imply
+    // TensorRandomView, not TensorView
+    template<typename T>
+    constexpr FASTOR_INLINE seq(std::initializer_list<T> _s1) = delete;
+
     // Do not provide this overload as it is meaningless [iseq stands for immediate evaluation]
     // template<size_t F, size_t L, size_t S=1>
     // constexpr FASTOR_INLINE seq(iseq<F,L,S>) : _first(F), _last(L), _step(S) {}
@@ -50,6 +57,7 @@ struct seq {
     constexpr FASTOR_INLINE bool operator==(seq other) const {
         return (_first==other._first && _last==other._last && _step==other._step) ? true : false;
     }
+
 };
 
 constexpr int first = 0;
