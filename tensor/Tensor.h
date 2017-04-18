@@ -489,7 +489,9 @@ public:
         constexpr int M = get_value<1,Rest...>::value;
         FASTOR_ASSERT((i>=0 && i<M && j>=0 && j<N), "INDEX OUT OF BOUNDS");
 #endif
-        return SIMDVector<T,DEFAULT_ABI>(&_data[i*N+j]);
+        // return SIMDVector<T,DEFAULT_ABI>(&_data[i*N+j]); // Careful, causes segfaults
+        SIMDVector<T,DEFAULT_ABI> _vec; _vec.load(&_data[i*N+j],false);
+        return _vec;
     }
     template<typename U=T>
     FASTOR_INLINE T eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {

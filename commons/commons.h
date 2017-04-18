@@ -169,7 +169,8 @@
 #endif
 
 
-#define ROUND_DOWN(x, s) ((x) & ~((s)-1))
+#define ROUND_DOWN2(x, s) ((x) & ~((s)-1))
+#define ROUND_DOWN(x, s) ROUND_DOWN2(x,s)
 #define PRECI_TOL 1e-14
 
 namespace Fastor {
