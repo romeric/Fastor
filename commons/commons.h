@@ -211,6 +211,8 @@ inline void FASTOR_WARN(bool cond, const std::string &x) {
 #define FASTOR_TOSTRING(X) _FASTOR_TOSTRING(X)
 
 
+#ifndef FASTOR_NO_STATIC_WARNING
+// Note that some versions of GCC define DEPRECATE macro
 #if defined(__GNUC__)
     #define DEPRECATE(foo, msg) foo __attribute__((deprecated(msg)))
 #elif defined(_MSC_VER)
@@ -241,6 +243,7 @@ struct PP_CAT(static_warning,__LINE__) { \
 }
 
 } // end of namespace Fastor
+#endif
 
 //
 #define FASTOR_ISALIGNED(POINTER, BYTE_COUNT) \
