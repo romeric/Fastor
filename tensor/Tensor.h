@@ -168,7 +168,7 @@ public:
     }
 
     // Generic AbstractTensors
-    template<typename Derived, size_t DIMS>
+    template<typename Derived, size_t DIMS, typename std::enable_if<DIMS!=sizeof...(Rest),bool>::type=0>
     FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
         const Derived &src = src_.self();
 #ifndef NDEBUG
@@ -183,7 +183,7 @@ public:
         }
     }
 
-    template<typename Derived, size_t DIMS>
+    template<typename Derived, size_t DIMS, typename std::enable_if<DIMS!=sizeof...(Rest),bool>::type=0>
     FASTOR_INLINE Tensor<T,Rest...>& operator=(const AbstractTensor<Derived,DIMS>& src_) {
         const Derived &src = src_.self();
 #ifndef NDEBUG
@@ -257,73 +257,6 @@ public:
             _data[i] /= a_data[i];
         }
     }
-
-    // CRTP Overloads for same rank tensors
-    //---------------------------------------------------------------------------------------------//
-    template<typename Derived>
-    FASTOR_INLINE void operator +=(const AbstractTensor<Derived,sizeof...(Rest)>& src_) {
-        verify_dimensions(src_);
-        const Derived &src = src_.self();
-        using V = SIMDVector<T,DEFAULT_ABI>;
-        V _vec;
-        FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(Size,V::Size); i+=V::Size) {
-            _vec = V(_data+i) + src.template eval<T>(i);
-            _vec.store(_data+i);
-        }
-        for (; i < Size; ++i) {
-            _data[i] += src.template eval_s<T>(i);
-        }
-    }
-
-    template<typename Derived>
-    FASTOR_INLINE void operator -=(const AbstractTensor<Derived,sizeof...(Rest)>& src_) {
-        verify_dimensions(src_);
-        const Derived &src = src_.self();
-        using V = SIMDVector<T,DEFAULT_ABI>;
-        V _vec;
-        FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(Size,V::Size); i+=V::Size) {
-            _vec = V(_data+i) - src.template eval<T>(i);
-            _vec.store(_data+i);
-        }
-        for (; i < Size; ++i) {
-            _data[i] -= src.template eval_s<T>(i);
-        }
-    }
-
-    template<typename Derived>
-    FASTOR_INLINE void operator *=(const AbstractTensor<Derived,sizeof...(Rest)>& src_) {
-        verify_dimensions(src_);
-        const Derived &src = src_.self();
-        using V = SIMDVector<T,DEFAULT_ABI>;
-        V _vec;
-        FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(Size,V::Size); i+=V::Size) {
-            _vec = V(_data+i) * src.template eval<T>(i);
-            _vec.store(_data+i);
-        }
-        for (; i < Size; ++i) {
-            _data[i] *= src.template eval_s<T>(i);
-        }
-    }
-
-    template<typename Derived>
-    FASTOR_INLINE void operator /=(const AbstractTensor<Derived,sizeof...(Rest)>& src_) {
-        verify_dimensions(src_);
-        const Derived &src = src_.self();
-        using V = SIMDVector<T,DEFAULT_ABI>;
-        V _vec;
-        FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(Size,V::Size); i+=V::Size) {
-            _vec = V(_data+i) / src.template eval<T>(i);
-            _vec.store(_data+i);
-        }
-        for (; i < Size; ++i) {
-            _data[i] /= src.template eval_s<T>(i);
-        }
-    }
-    //---------------------------------------------------------------------------------------------//
 
     // CRTP Overloads for nth rank Tensors
     //---------------------------------------------------------------------------------------------//
@@ -521,11 +454,17 @@ public:
 
     // FMA overloads
     //----------------------------------------------------------------------------------------------------------//
-#ifdef __FMA__
-    #include "FMAPlugin.h"
-#endif
+    // Disable this as these are not treated as specialisations and
+    // hence lead to compilation errors concerning ambiguoity. 
+    // Ultimately -ffp-contract=fast should achieve the same thing
+// #ifdef __FMA__
+//     #include "FMAPlugin.h"
+// #endif
     //----------------------------------------------------------------------------------------------------------//
-    #include "AuxiliaryPlugin.h"
+    // Disable this as these are not treated as specialisations and
+    // hence lead to compilation errors concerning ambiguoity. 
+    // Ultimately -ffp-contract=fast should achieve the same thing
+    // #include "AuxiliaryPlugin.h"
     //----------------------------------------------------------------------------------------------------------//
     #include "SmartExpressionsPlugin.h"
     //----------------------------------------------------------------------------------------------------------//
