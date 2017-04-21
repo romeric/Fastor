@@ -5,18 +5,18 @@
 #include "meta/tensor_post_meta.h"
 
 
-namespace Fastor {
+// namespace Fastor {
 
-template<typename T, typename std::enable_if<std::is_arithmetic<T>::value,bool>::type=0>
-T forward_evaluate(const T &a) {
-    return a;
-}
-template<typename T, typename std::enable_if<!std::is_arithmetic<T>::value,bool>::type=0>
-auto forward_evaluate(const T &a) -> decltype(a.evaluate()) {
-    return a.evaluate();
-}
+// template<typename T, typename std::enable_if<std::is_arithmetic<T>::value,bool>::type=0>
+// T forward_evaluate(const T &a) {
+//     return a;
+// }
+// template<typename T, typename std::enable_if<!std::is_arithmetic<T>::value,bool>::type=0>
+// auto forward_evaluate(const T &a) -> decltype(a.evaluate()) {
+//     return a.evaluate();
+// }
 
-}
+// }
 
 
 
@@ -24,13 +24,19 @@ namespace Fastor {
 
 template<typename TLhs, typename TRhs, size_t DIM0>
 struct BinaryAddOp: public AbstractTensor<BinaryAddOp<TLhs, TRhs, DIM0>,DIM0> {
-
-    BinaryAddOp(const TLhs& lhs, const TRhs& rhs) : lhs(lhs), rhs(rhs) {
-    }
-
+// private:
+    // const TLhs &lhs;
+    // const TRhs &rhs;
+    typename ExprBinderType<TLhs>::type lhs;
+    typename ExprBinderType<TRhs>::type rhs;
+public:
+    
     static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX rank() {return DIM0;}
     using scalar_type = typename scalar_type_finder<BinaryAddOp<TLhs, TRhs, DIM0>>::type;
+
+    // BinaryAddOp(const TLhs& lhs, const TRhs& rhs) : lhs(lhs), rhs(rhs) {}
+    BinaryAddOp(typename ExprBinderType<TLhs>::type lhs, typename ExprBinderType<TRhs>::type rhs) : lhs(lhs), rhs(rhs) {}
 
     FASTOR_INLINE FASTOR_INDEX size() const {return helper_size<TLhs,TRhs>();}
     template<class LExpr, class RExpr,
@@ -173,12 +179,6 @@ struct BinaryAddOp: public AbstractTensor<BinaryAddOp<TLhs, TRhs, DIM0>,DIM0> {
     // constexpr FASTOR_INLINE TLhs evaluate() const {
     //     return forward_evaluate(lhs) + forward_evaluate(rhs);
     // }
-
-// private:
-    // const TLhs &lhs;
-    // const TRhs &rhs;
-    typename ExprBinderType<TLhs>::type lhs;
-    typename ExprBinderType<TRhs>::type rhs;
 };
 
 template<typename TLhs, typename TRhs, size_t DIM0,
@@ -190,16 +190,15 @@ FASTOR_INLINE BinaryAddOp<TLhs, TRhs, DIM0> operator+(const AbstractTensor<TLhs,
 template<typename TLhs, typename TRhs, size_t DIM0,
          typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
                                  std::is_arithmetic<TRhs>::value,bool>::type = 0 >
-FASTOR_INLINE BinaryAddOp<TLhs, TRhs, DIM0> operator+(const AbstractTensor<TLhs,DIM0> &lhs, const TRhs &bb) {
+FASTOR_INLINE BinaryAddOp<TLhs, TRhs, DIM0> operator+(const AbstractTensor<TLhs,DIM0> &lhs, TRhs bb) {
   return BinaryAddOp<TLhs, TRhs, DIM0>(lhs.self(), bb);
 }
 template<typename TLhs, typename TRhs, size_t DIM0,
          typename std::enable_if<std::is_arithmetic<TLhs>::value &&
                                  !std::is_arithmetic<TRhs>::value,bool>::type = 0 >
-FASTOR_INLINE BinaryAddOp<TLhs, TRhs, DIM0> operator+(const TLhs &bb, const AbstractTensor<TRhs,DIM0> &rhs) {
+FASTOR_INLINE BinaryAddOp<TLhs, TRhs, DIM0> operator+(TLhs bb, const AbstractTensor<TRhs,DIM0> &rhs) {
   return BinaryAddOp<TLhs, TRhs, DIM0>(bb,rhs.self());
 }
-
 
 template<typename TLhs, typename TRhs, size_t DIM0, size_t DIM1,
          typename std::enable_if<!std::is_arithmetic<TLhs>::value &&

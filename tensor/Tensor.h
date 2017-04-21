@@ -146,7 +146,7 @@ public:
         const Derived &src = src_.self();
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
-            src.template eval<T>(i).store(_data+i);
+            src.template eval<T>(i).store(_data+i, IS_ALIGNED);
         }
         for (; i < src.size(); ++i) {
             _data[i] = src.template eval_s<T>(i);
@@ -159,7 +159,7 @@ public:
         const Derived &src = src_.self();
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
-            src.template eval<T>(i).store(_data+i);
+            src.template eval<T>(i).store(_data+i, IS_ALIGNED);
         }
         for (; i < src.size(); ++i) {
             _data[i] = src.template eval_s<T>(i);
@@ -176,7 +176,7 @@ public:
 #endif
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
-            src.template eval<T>(i).store(_data+i);
+            src.template eval<T>(i).store(_data+i, IS_ALIGNED);
         }
         for (; i < src.size(); ++i) {
             _data[i] = src.template eval_s<T>(i);
@@ -191,7 +191,7 @@ public:
 #endif
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
-            src.template eval<T>(i).store(_data+i);
+            src.template eval<T>(i).store(_data+i, IS_ALIGNED);
         }
         for (; i < src.size(); ++i) {
             _data[i] = src.template eval_s<T>(i);

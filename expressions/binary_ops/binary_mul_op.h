@@ -8,12 +8,18 @@ namespace Fastor {
 
 template<typename TLhs, typename TRhs, size_t DIM0>
 struct BinaryMulOp: public AbstractTensor<BinaryMulOp<TLhs, TRhs, DIM0>,DIM0> {
-
-    BinaryMulOp(const TLhs& lhs, const TRhs& rhs) : lhs(lhs), rhs(rhs) {}
+// private:
+    typename ExprBinderType<TLhs>::type lhs;
+    typename ExprBinderType<TRhs>::type rhs;
+public:
 
     static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX rank() {return DIM0;}
     using scalar_type = typename scalar_type_finder<BinaryMulOp<TLhs, TRhs, DIM0>>::type;
+
+    // BinaryMulOp(const TLhs& lhs, const TRhs& rhs) : lhs(lhs), rhs(rhs) {}
+    BinaryMulOp(typename ExprBinderType<TLhs>::type lhs, typename ExprBinderType<TRhs>::type rhs) : lhs(lhs), rhs(rhs) {}
+
 
     FASTOR_INLINE FASTOR_INDEX size() const {return helper_size<TLhs,TRhs>();}
     template<class LExpr, class RExpr,
@@ -152,13 +158,6 @@ struct BinaryMulOp: public AbstractTensor<BinaryMulOp<TLhs, TRhs, DIM0>,DIM0> {
     FASTOR_INLINE U helper_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return lhs.template eval_s<U>(i,j) * (U)rhs;
     }
-
-// private:
-    // const TLhs &lhs;
-    // const TRhs &rhs;
-
-    typename ExprBinderType<TLhs>::type lhs;
-    typename ExprBinderType<TRhs>::type rhs;
 };
 
 template<typename TLhs, typename TRhs, size_t DIM0,
@@ -170,13 +169,13 @@ FASTOR_INLINE BinaryMulOp<TLhs, TRhs, DIM0> operator*(const AbstractTensor<TLhs,
 template<typename TLhs, typename TRhs, size_t DIM0,
          typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
                                  std::is_arithmetic<TRhs>::value,bool>::type = 0 >
-FASTOR_INLINE BinaryMulOp<TLhs, TRhs, DIM0> operator*(const AbstractTensor<TLhs,DIM0> &lhs, const TRhs &bb) {
+FASTOR_INLINE BinaryMulOp<TLhs, TRhs, DIM0> operator*(const AbstractTensor<TLhs,DIM0> &lhs, TRhs bb) {
   return BinaryMulOp<TLhs, TRhs, DIM0>(lhs.self(), bb);
 }
 template<typename TLhs, typename TRhs, size_t DIM0,
          typename std::enable_if<std::is_arithmetic<TLhs>::value &&
                                  !std::is_arithmetic<TRhs>::value,bool>::type = 0 >
-FASTOR_INLINE BinaryMulOp<TLhs, TRhs, DIM0> operator*(const TLhs &bb, const AbstractTensor<TRhs,DIM0> &rhs) {
+FASTOR_INLINE BinaryMulOp<TLhs, TRhs, DIM0> operator*(TLhs bb, const AbstractTensor<TRhs,DIM0> &rhs) {
   return BinaryMulOp<TLhs, TRhs, DIM0>(bb,rhs.self());
 }
 

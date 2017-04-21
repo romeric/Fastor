@@ -140,6 +140,21 @@
     #define DEFAULT_ABI Scalar
 #endif
 
+// Conservative alignment for SIMD
+#ifdef __SSE4_2__
+    #ifdef __AVX__
+        #ifdef FASTOR_CONSERVATIVE_ALIGN
+            #define IS_ALIGNED false
+        #else
+            #define IS_ALIGNED true
+        #endif
+    #else
+        #define IS_ALIGNED true
+    #endif
+#else
+    #define IS_ALIGNED true
+#endif
+
 
 #ifdef __SSE4_2__
 #define ZEROPS (_mm_set1_ps(0.f))

@@ -138,7 +138,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
-    UnarySqrtOp(const Expr& expr) : expr(expr) {}
+    UnarySqrtOp(const Expr& _expr) : expr(_expr) {}
 
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
@@ -154,7 +154,7 @@ public:
     }
     template<typename U=scalar_type>
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        return std::sqrt(expr.template eval_s<U>(i,j));
+        return sqrts(expr.template eval_s<U>(i,j));
     }
 };
 
