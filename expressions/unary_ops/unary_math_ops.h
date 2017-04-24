@@ -11,7 +11,8 @@ namespace Fastor {
 template<typename Expr, size_t DIM0>
 struct UnaryAddOp: public AbstractTensor<UnaryAddOp<Expr, DIM0>,DIM0> {
 private:
-    const Expr &expr;
+    // const Expr &expr;
+    typename ExprBinderType<Expr>::type expr;
 public:
     using scalar_type = typename scalar_type_finder<Expr>::type;
     static constexpr FASTOR_INDEX Dimension = DIM0;
@@ -19,7 +20,8 @@ public:
     FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
-    UnaryAddOp(const Expr& expr) : expr(expr) {}
+    // UnaryAddOp(const Expr& expr) : expr(expr) {}
+    UnaryAddOp(typename ExprBinderType<Expr>::type _expr) : expr(_expr) {}
 
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
@@ -50,7 +52,7 @@ FASTOR_INLINE UnaryAddOp<Expr, DIM0> operator+(const AbstractTensor<Expr,DIM0> &
 template<typename Expr, size_t DIM0>
 struct UnarySubOp: public AbstractTensor<UnarySubOp<Expr, DIM0>,DIM0> {
 private:
-    const Expr &expr;
+    typename ExprBinderType<Expr>::type expr;
 public:
     using scalar_type = typename scalar_type_finder<Expr>::type;
     static constexpr FASTOR_INDEX Dimension = DIM0;
@@ -58,7 +60,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
-    UnarySubOp(const Expr& expr) : expr(expr) {}
+    UnarySubOp(typename ExprBinderType<Expr>::type _expr) : expr(_expr) {}
 
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
@@ -89,7 +91,7 @@ FASTOR_INLINE UnarySubOp<Expr, DIM0> operator-(const AbstractTensor<Expr,DIM0> &
 template<typename Expr, size_t DIM0>
 struct UnaryAbsOp: public AbstractTensor<UnaryAbsOp<Expr, DIM0>,DIM0> {
 private:
-    const Expr &expr;
+    typename ExprBinderType<Expr>::type expr;
 public:
     using scalar_type = typename scalar_type_finder<Expr>::type;
     static constexpr FASTOR_INDEX Dimension = DIM0;
@@ -97,7 +99,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
-    UnaryAbsOp(const Expr& expr) : expr(expr) {}
+    UnaryAbsOp(typename ExprBinderType<Expr>::type _expr) : expr(_expr) {}
 
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
@@ -130,7 +132,7 @@ FASTOR_INLINE UnaryAbsOp<Expr, DIM0> abs(const AbstractTensor<Expr,DIM0> &expr) 
 template<typename Expr, size_t DIM0>
 struct UnarySqrtOp: public AbstractTensor<UnarySqrtOp<Expr, DIM0>,DIM0> {
 private:
-    const Expr &expr;
+    typename ExprBinderType<Expr>::type expr;
 public:
     using scalar_type = typename scalar_type_finder<Expr>::type;
     static constexpr FASTOR_INDEX Dimension = DIM0;
@@ -138,7 +140,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
-    UnarySqrtOp(const Expr& _expr) : expr(_expr) {}
+    UnarySqrtOp(typename ExprBinderType<Expr>::type _expr) : expr(_expr) {}
 
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
@@ -171,7 +173,7 @@ FASTOR_INLINE UnarySqrtOp<Expr, DIM0> sqrt(const AbstractTensor<Expr,DIM0> &expr
 template<typename Expr, size_t DIM0>
 struct UnaryExpOp: public AbstractTensor<UnaryExpOp<Expr, DIM0>,DIM0> {
 private:
-    const Expr &expr;
+    typename ExprBinderType<Expr>::type expr;
 public:
     using scalar_type = typename scalar_type_finder<Expr>::type;
     static constexpr FASTOR_INDEX Dimension = DIM0;
@@ -179,7 +181,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
-    UnaryExpOp(const Expr& expr) : expr(expr) {}
+    UnaryExpOp(typename ExprBinderType<Expr>::type _expr) : expr(_expr) {}
 
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
@@ -209,7 +211,7 @@ FASTOR_INLINE UnaryExpOp<Expr, DIM0> exp(const AbstractTensor<Expr,DIM0> &expr) 
 template<typename Expr, size_t DIM0>
 struct UnaryLogOp: public AbstractTensor<UnaryLogOp<Expr, DIM0>,DIM0> {
 private:
-    const Expr &expr;
+    typename ExprBinderType<Expr>::type expr;
 public:
     using scalar_type = typename scalar_type_finder<Expr>::type;
     static constexpr FASTOR_INDEX Dimension = DIM0;
@@ -217,7 +219,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
-    UnaryLogOp(const Expr& expr) : expr(expr) {}
+    UnaryLogOp(typename ExprBinderType<Expr>::type _expr) : expr(_expr) {}
 
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
@@ -249,7 +251,7 @@ FASTOR_INLINE UnaryLogOp<Expr, DIM0> log(const AbstractTensor<Expr,DIM0> &expr) 
 template<typename Expr, size_t DIM0>
 struct UnarySinOp: public AbstractTensor<UnarySinOp<Expr, DIM0>,DIM0> {
 private:
-    const Expr &expr;
+    typename ExprBinderType<Expr>::type expr;
 public:
     using scalar_type = typename scalar_type_finder<Expr>::type;
     static constexpr FASTOR_INDEX Dimension = DIM0;
@@ -257,7 +259,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
-    UnarySinOp(const Expr& expr) : expr(expr) {}
+    UnarySinOp(typename ExprBinderType<Expr>::type _expr) : expr(_expr) {}
 
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
@@ -289,7 +291,7 @@ FASTOR_INLINE UnarySinOp<Expr, DIM0> sin(const AbstractTensor<Expr,DIM0> &expr) 
 template<typename Expr, size_t DIM0>
 struct UnaryCosOp: public AbstractTensor<UnaryCosOp<Expr, DIM0>,DIM0> {
 private:
-    const Expr &expr;
+    typename ExprBinderType<Expr>::type expr;
 public:
     using scalar_type = typename scalar_type_finder<Expr>::type;
     static constexpr FASTOR_INDEX Dimension = DIM0;
@@ -297,7 +299,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
-    UnaryCosOp(const Expr& expr) : expr(expr) {}
+    UnaryCosOp(typename ExprBinderType<Expr>::type _expr) : expr(_expr) {}
 
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
@@ -329,7 +331,7 @@ FASTOR_INLINE UnaryCosOp<Expr, DIM0> cos(const AbstractTensor<Expr,DIM0> &expr) 
 template<typename Expr, size_t DIM0>
 struct UnaryTanOp: public AbstractTensor<UnaryTanOp<Expr, DIM0>,DIM0> {
 private:
-    const Expr &expr;
+    typename ExprBinderType<Expr>::type expr;
 public:
     using scalar_type = typename scalar_type_finder<Expr>::type;
     static constexpr FASTOR_INDEX Dimension = DIM0;
@@ -337,7 +339,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
-    UnaryTanOp(const Expr& expr) : expr(expr) {}
+    UnaryTanOp(typename ExprBinderType<Expr>::type _expr) : expr(_expr) {}
 
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
@@ -369,7 +371,7 @@ FASTOR_INLINE UnaryTanOp<Expr, DIM0> tan(const AbstractTensor<Expr,DIM0> &expr) 
 template<typename Expr, size_t DIM0>
 struct UnaryAsinOp: public AbstractTensor<UnaryAsinOp<Expr, DIM0>,DIM0> {
 private:
-    const Expr &expr;
+    typename ExprBinderType<Expr>::type expr;
 public:
     using scalar_type = typename scalar_type_finder<Expr>::type;
     static constexpr FASTOR_INDEX Dimension = DIM0;
@@ -377,7 +379,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
-    UnaryAsinOp(const Expr& expr) : expr(expr) {}
+    UnaryAsinOp(typename ExprBinderType<Expr>::type _expr) : expr(_expr) {}
 
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
@@ -409,7 +411,7 @@ FASTOR_INLINE UnaryAsinOp<Expr, DIM0> asin(const AbstractTensor<Expr,DIM0> &expr
 template<typename Expr, size_t DIM0>
 struct UnaryAcosOp: public AbstractTensor<UnaryAcosOp<Expr, DIM0>,DIM0> {
 private:
-    const Expr &expr;
+    typename ExprBinderType<Expr>::type expr;
 public:
     using scalar_type = typename scalar_type_finder<Expr>::type;
     static constexpr FASTOR_INDEX Dimension = DIM0;
@@ -417,7 +419,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
-    UnaryAcosOp(const Expr& expr) : expr(expr) {}
+    UnaryAcosOp(typename ExprBinderType<Expr>::type _expr) : expr(_expr) {}
 
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
@@ -449,7 +451,7 @@ FASTOR_INLINE UnaryAcosOp<Expr, DIM0> acos(const AbstractTensor<Expr,DIM0> &expr
 template<typename Expr, size_t DIM0>
 struct UnaryAtanOp: public AbstractTensor<UnaryAtanOp<Expr, DIM0>,DIM0> {
 private:
-    const Expr &expr;
+    typename ExprBinderType<Expr>::type expr;
 public:
     using scalar_type = typename scalar_type_finder<Expr>::type;
     static constexpr FASTOR_INDEX Dimension = DIM0;
@@ -457,7 +459,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
-    UnaryAtanOp(const Expr& expr) : expr(expr) {}
+    UnaryAtanOp(typename ExprBinderType<Expr>::type _expr) : expr(_expr) {}
 
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
@@ -489,7 +491,7 @@ FASTOR_INLINE UnaryAtanOp<Expr, DIM0> atan(const AbstractTensor<Expr,DIM0> &expr
 template<typename Expr, size_t DIM0>
 struct UnarySinhOp: public AbstractTensor<UnarySinhOp<Expr, DIM0>,DIM0> {
 private:
-    const Expr &expr;
+    typename ExprBinderType<Expr>::type expr;
 public:
     using scalar_type = typename scalar_type_finder<Expr>::type;
     static constexpr FASTOR_INDEX Dimension = DIM0;
@@ -497,7 +499,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
-    UnarySinhOp(const Expr& expr) : expr(expr) {}
+    UnarySinhOp(typename ExprBinderType<Expr>::type _expr) : expr(_expr) {}
 
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
@@ -529,7 +531,7 @@ FASTOR_INLINE UnarySinhOp<Expr, DIM0> sinh(const AbstractTensor<Expr,DIM0> &expr
 template<typename Expr, size_t DIM0>
 struct UnaryCoshOp: public AbstractTensor<UnaryCoshOp<Expr, DIM0>,DIM0> {
 private:
-    const Expr &expr;
+    typename ExprBinderType<Expr>::type expr;
 public:
     using scalar_type = typename scalar_type_finder<Expr>::type;
     static constexpr FASTOR_INDEX Dimension = DIM0;
@@ -537,7 +539,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
-    UnaryCoshOp(const Expr& expr) : expr(expr) {}
+    UnaryCoshOp(typename ExprBinderType<Expr>::type _expr) : expr(_expr) {}
 
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
@@ -569,7 +571,7 @@ FASTOR_INLINE UnaryCoshOp<Expr, DIM0> cosh(const AbstractTensor<Expr,DIM0> &expr
 template<typename Expr, size_t DIM0>
 struct UnaryTanhOp: public AbstractTensor<UnaryTanhOp<Expr, DIM0>,DIM0> {
 private:
-    const Expr &expr;
+    typename ExprBinderType<Expr>::type expr;
 public:
     using scalar_type = typename scalar_type_finder<Expr>::type;
     static constexpr FASTOR_INDEX Dimension = DIM0;
@@ -577,7 +579,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}
 
-    UnaryTanhOp(const Expr& expr) : expr(expr) {}
+    UnaryTanhOp(typename ExprBinderType<Expr>::type _expr) : expr(_expr) {}
 
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {

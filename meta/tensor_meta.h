@@ -101,7 +101,11 @@ struct range_detector {
 //-----------
 template<class T>
 struct ExprBinderType {
+#ifndef FASTOR_COPY_EXPR
     using type = typename std::conditional<std::is_arithmetic<T>::value, T, const T&>::type;
+#else
+    using type = T;
+#endif
 };
 //-----------
 

@@ -179,6 +179,7 @@ FASTOR_INLINE BinaryMulOp<TLhs, TRhs, DIM0> operator*(TLhs bb, const AbstractTen
   return BinaryMulOp<TLhs, TRhs, DIM0>(bb,rhs.self());
 }
 
+
 template<typename TLhs, typename TRhs, size_t DIM0, size_t DIM1,
          typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
                                  !std::is_arithmetic<TRhs>::value &&

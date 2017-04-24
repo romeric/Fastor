@@ -621,7 +621,6 @@ public:
             vec.load(&tmp[Size - i - stride]);
             vec.reverse().store(_data+i);
         }
-        T scalar = static_cast<T>(0);
         for (; i< Size; ++i) {
             _data[i] = tmp[Size-i-1];
         }
