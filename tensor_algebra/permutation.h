@@ -119,6 +119,139 @@ typename permute_impl<T,Index_I, Tensor<T,Rest...>,
     return extractor_perm<Index_I>::permutation_impl(a);
 }
 
+
+// Specialised dispatcher as the above generic version can be expensive
+
+// IKJL
+template<class Ind,
+         typename T, size_t I, size_t J, size_t K, size_t L,
+         typename std::enable_if<Ind::NoIndices==4 &&
+                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[1]>::value && 
+                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[2]>::value && 
+                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[3]>::value &&
+
+                                 is_greater<Ind::_IndexHolder[1], Ind::_IndexHolder[2]>::value && 
+                                 is_less<Ind::_IndexHolder[1], Ind::_IndexHolder[3]>::value &&
+
+                                 is_less<Ind::_IndexHolder[2], Ind::_IndexHolder[3]>::value,bool>::type = 0>
+FASTOR_INLINE Tensor<T,I,K,J,L>
+permutation(const Tensor<T,I,J,K,L> &a) {
+
+    Tensor<T,I,K,J,L> out;
+    for (size_t i=0; i<I; ++i) {
+        for (size_t j=0; j<J; ++j) {
+            for (size_t k=0; k<K; ++k) {
+                for (size_t l=0; l<L; ++l) {
+                    out(i,k,j,l) = a(i,j,k,l);
+                }
+            }
+        }
+    }
+    return out;
+}
+
+// ILJK
+#ifdef FASTOR_USE_BREAKING_PERMUTATION
+template<class Ind,
+         typename T, size_t I, size_t J, size_t K, size_t L,
+         typename std::enable_if<Ind::NoIndices==4 &&
+                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[1]>::value && 
+                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[2]>::value && 
+                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[3]>::value &&
+
+                                 is_greater<Ind::_IndexHolder[1], Ind::_IndexHolder[2]>::value && 
+                                 is_greater<Ind::_IndexHolder[1], Ind::_IndexHolder[3]>::value &&
+
+                                 is_less<Ind::_IndexHolder[2], Ind::_IndexHolder[3]>::value,bool>::type = 0>
+FASTOR_INLINE Tensor<T,I,L,J,K>
+permutation(const Tensor<T,I,J,K,L> &a) {
+
+    Tensor<T,I,L,J,K> out;
+    for (size_t i=0; i<I; ++i) {
+        for (size_t j=0; j<J; ++j) {
+            for (size_t k=0; k<K; ++k) {
+                for (size_t l=0; l<L; ++l) {
+                    out(i,l,j,k) = a(i,j,k,l);
+                }
+            }
+        }
+    }
+    return out;
+}
+#endif
+
+
+// IKJ
+template<class Ind,
+         typename T, size_t I, size_t J, size_t K,
+         typename std::enable_if<Ind::NoIndices==3 &&
+                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[1]>::value && 
+                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[2]>::value && 
+
+                                 is_greater<Ind::_IndexHolder[1], Ind::_IndexHolder[2]>::value,bool>::type = 0>
+FASTOR_INLINE Tensor<T,I,K,J>
+permutation(const Tensor<T,I,J,K> &a) {
+
+    Tensor<T,I,K,J> out;
+    for (size_t i=0; i<I; ++i) {
+        for (size_t j=0; j<J; ++j) {
+            for (size_t k=0; k<K; ++k) {
+                out(i,k,j) = a(i,j,k);
+            }
+        }
+    }
+    return out;
+}
+
+
+// JKI
+#ifdef FASTOR_USE_BREAKING_PERMUTATION
+template<class Ind,
+         typename T, size_t I, size_t J, size_t K,
+         typename std::enable_if<Ind::NoIndices==3 &&
+                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[1]>::value && 
+                                 is_greater<Ind::_IndexHolder[0], Ind::_IndexHolder[2]>::value && 
+
+                                 is_greater<Ind::_IndexHolder[1], Ind::_IndexHolder[2]>::value,bool>::type = 0>
+FASTOR_INLINE Tensor<T,J,K,I>
+permutation(const Tensor<T,I,J,K> &a) {
+
+    Tensor<T,J,K,I> out;
+    for (size_t i=0; i<I; ++i) {
+        for (size_t j=0; j<J; ++j) {
+            for (size_t k=0; k<K; ++k) {
+                out(j,k,i) = a(i,j,k);
+            }
+        }
+    }
+    return out;
+}
+#endif
+
+
+// KJI
+template<class Ind,
+         typename T, size_t I, size_t J, size_t K,
+         typename std::enable_if<Ind::NoIndices==3 &&
+                                 is_greater<Ind::_IndexHolder[0], Ind::_IndexHolder[1]>::value && 
+                                 is_greater<Ind::_IndexHolder[0], Ind::_IndexHolder[2]>::value && 
+
+                                 is_greater<Ind::_IndexHolder[1], Ind::_IndexHolder[2]>::value,bool>::type = 0>
+FASTOR_INLINE Tensor<T,K,J,I>
+permutation(const Tensor<T,K,J,I> &a) {
+
+    Tensor<T,K,J,I> out;
+    for (size_t i=0; i<I; ++i) {
+        for (size_t j=0; j<J; ++j) {
+            for (size_t k=0; k<K; ++k) {
+                out(k,j,i) = a(i,j,k);
+            }
+        }
+    }
+    return out;
+}
+
+
 }
 #endif // PERMUTATION_H
 

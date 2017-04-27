@@ -485,7 +485,7 @@ FASTOR_INLINE double _mm256_get3_pd(__m256d a) {
 
 //!----------------------------------------------------------------
 #ifdef __AVX__
-// Equivalent ot _MM_TRANSPOSE_PS
+// Equivalent to _MM_TRANSPOSE4_PS
 #define _MM_TRANSPOSE4_PD(row0,row1,row2,row3)                                 \
 {                                                                \
     __m256d tmp3, tmp2, tmp1, tmp0;                              \
@@ -532,8 +532,6 @@ FASTOR_INLINE void _MM_TRANSPOSE8_PS(__m256 &row0, __m256 &row1, __m256 &row2,
     row7 = _mm256_permute2f128_ps(__tt3, __tt7, 0x31);
 }
 #endif
-
-
 
 
 //!------------------------------------------------------------------

@@ -216,6 +216,17 @@ inline void FASTOR_ASSERT(bool cond, const std::string &x) {
 #else
 inline void FASTOR_ASSERT(bool, const std::string&) {}
 #endif
+// The following assert is provided for cases where despite
+// the DNDEBUG one might want the code to stop at failure
+inline void FASTOR_EXIT_ASSERT(bool cond, const std::string &x) {
+    if (cond==true) {
+        return;
+    }
+    else {
+        std::cout << x << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
 
 inline void FASTOR_WARN(bool cond, const std::string &x) {
     if (cond==true) {

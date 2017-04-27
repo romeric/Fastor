@@ -68,6 +68,8 @@ void run() {
         assert(abs(norm(bD_ikj) - 17777.8111) < HugeTol);
         auto bD_jki = permutation<Index<j,k,i>>(bD_ijk);
         assert(abs(norm(bD_jki) - 17777.8111) < HugeTol);
+        auto bD_kji = permutation<Index<k,j,i>>(bD_ijk);
+        assert(abs(norm(bD_kji) - 17777.8111) < HugeTol);
 
 
         auto invA = inverse(A);
