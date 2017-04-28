@@ -36,7 +36,8 @@ public:
     using scalar_type = typename scalar_type_finder<BinaryAddOp<TLhs, TRhs, DIM0>>::type;
 
     // BinaryAddOp(const TLhs& lhs, const TRhs& rhs) : lhs(lhs), rhs(rhs) {}
-    BinaryAddOp(typename ExprBinderType<TLhs>::type lhs, typename ExprBinderType<TRhs>::type rhs) : lhs(lhs), rhs(rhs) {}
+    FASTOR_INLINE BinaryAddOp(typename ExprBinderType<TLhs>::type lhs, typename ExprBinderType<TRhs>::type rhs) : lhs(lhs), rhs(rhs) {}
+
 
     FASTOR_INLINE FASTOR_INDEX size() const {return helper_size<TLhs,TRhs>();}
     template<class LExpr, class RExpr,
