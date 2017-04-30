@@ -120,6 +120,8 @@ typename permute_impl<T,Index_I, Tensor<T,Rest...>,
 }
 
 
+
+
 // Specialised dispatcher as the above generic version can be expensive
 
 // IKJL
@@ -142,7 +144,7 @@ permutation(const Tensor<T,I,J,K,L> &a) {
         for (size_t j=0; j<J; ++j) {
             for (size_t k=0; k<K; ++k) {
                 for (size_t l=0; l<L; ++l) {
-                    out(i,k,j,l) = a(i,j,k,l);
+                    out(i,j,k,l) = a(i,k,j,l);
                 }
             }
         }
@@ -151,7 +153,6 @@ permutation(const Tensor<T,I,J,K,L> &a) {
 }
 
 // ILJK
-#ifdef FASTOR_USE_BREAKING_PERMUTATION
 template<class Ind,
          typename T, size_t I, size_t J, size_t K, size_t L,
          typename std::enable_if<Ind::NoIndices==4 &&
@@ -171,14 +172,13 @@ permutation(const Tensor<T,I,J,K,L> &a) {
         for (size_t j=0; j<J; ++j) {
             for (size_t k=0; k<K; ++k) {
                 for (size_t l=0; l<L; ++l) {
-                    out(i,l,j,k) = a(i,j,k,l);
+                    out(i,j,k,l) = a(i,l,j,k);
                 }
             }
         }
     }
     return out;
 }
-#endif
 
 
 // IKJ
@@ -196,7 +196,7 @@ permutation(const Tensor<T,I,J,K> &a) {
     for (size_t i=0; i<I; ++i) {
         for (size_t j=0; j<J; ++j) {
             for (size_t k=0; k<K; ++k) {
-                out(i,k,j) = a(i,j,k);
+                out(i,j,k) = a(i,k,j);
             }
         }
     }
@@ -205,7 +205,6 @@ permutation(const Tensor<T,I,J,K> &a) {
 
 
 // JKI
-#ifdef FASTOR_USE_BREAKING_PERMUTATION
 template<class Ind,
          typename T, size_t I, size_t J, size_t K,
          typename std::enable_if<Ind::NoIndices==3 &&
@@ -220,13 +219,12 @@ permutation(const Tensor<T,I,J,K> &a) {
     for (size_t i=0; i<I; ++i) {
         for (size_t j=0; j<J; ++j) {
             for (size_t k=0; k<K; ++k) {
-                out(j,k,i) = a(i,j,k);
+                out(i,j,k) = a(j,k,i);
             }
         }
     }
     return out;
 }
-#endif
 
 
 // KJI
@@ -244,7 +242,7 @@ permutation(const Tensor<T,K,J,I> &a) {
     for (size_t i=0; i<I; ++i) {
         for (size_t j=0; j<J; ++j) {
             for (size_t k=0; k<K; ++k) {
-                out(k,j,i) = a(i,j,k);
+                out(i,j,k) = a(k,j,i);
             }
         }
     }

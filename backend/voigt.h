@@ -100,12 +100,14 @@ template<typename T, size_t ... Rest,
                                  ,bool>::type=0>
 FASTOR_INLINE void _voigt(const T * __restrict__ e, T * __restrict__ VoigtA) {
 
+    // 3rd order tensor to 2nd order tensor
+    // 3rd order tensor should be symmetric in the first two indices
     VoigtA[0] = e[0];
-    VoigtA[1] = e[4];
-    VoigtA[2] = e[3];
+    VoigtA[1] = e[1];
+    VoigtA[2] = e[6];
     VoigtA[3] = e[7];
-    VoigtA[4] = 0.5*(e[1]+e[2]);
-    VoigtA[5] = 0.5*(e[5]+e[6]);
+    VoigtA[4] = 0.5*(e[2]+e[4]);
+    VoigtA[5] = 0.5*(e[3]+e[5]);
 }
 
 
@@ -114,24 +116,26 @@ template<typename T, size_t ... Rest,
                                  ,bool>::type=0>
 FASTOR_INLINE void _voigt(const T * __restrict__ e, T * __restrict__ VoigtA) {
 
-    VoigtA[0] = e[0];
-    VoigtA[1] = e[9];
-    VoigtA[2] = e[18];
-    VoigtA[3] = e[4];
-    VoigtA[4] = e[13];
-    VoigtA[5] = e[22];
-    VoigtA[6] = e[8];
-    VoigtA[7] = e[17];
-    VoigtA[8] = e[26];
-    VoigtA[9] = 0.5*(e[1]+e[3]);
-    VoigtA[10] = 0.5*(e[10]+e[12]);
-    VoigtA[11] = 0.5*(e[19]+e[21]);
-    VoigtA[12] = 0.5*(e[2]+e[6]);
-    VoigtA[13] = 0.5*(e[11]+e[15]);
-    VoigtA[14] = 0.5*(e[20]+e[24]);
-    VoigtA[15] = 0.5*(e[5]+e[7]);
-    VoigtA[16] = 0.5*(e[14]+e[16]);
-    VoigtA[17] = 0.5*(e[23]+e[25]);
+    // 3rd order tensor to 2nd order tensor
+    // 3rd order tensor should be symmetric in the first two indices
+    VoigtA[0]  = e[0];
+    VoigtA[1]  = e[1];
+    VoigtA[2]  = e[2];
+    VoigtA[3]  = e[12];
+    VoigtA[4]  = e[13];
+    VoigtA[5]  = e[14];
+    VoigtA[6]  = e[24];
+    VoigtA[7]  = e[25];
+    VoigtA[8]  = e[26];
+    VoigtA[9]  = 0.5*(e[3]+e[9]);
+    VoigtA[10] = 0.5*(e[4]+e[10]);
+    VoigtA[11] = 0.5*(e[5]+e[11]);
+    VoigtA[12] = 0.5*(e[6]+e[18]);
+    VoigtA[13] = 0.5*(e[7]+e[19]);
+    VoigtA[14] = 0.5*(e[8]+e[20]);
+    VoigtA[15] = 0.5*(e[15]+e[21]);
+    VoigtA[16] = 0.5*(e[16]+e[22]);
+    VoigtA[17] = 0.5*(e[17]+e[23]);
 }
 
 
