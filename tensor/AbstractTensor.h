@@ -11,7 +11,7 @@ template<typename T, size_t ... Rest>
 class Tensor;
 
 
-template<class Derived, size_t Rank>
+template<class Derived, FASTOR_INDEX Rank>
 class AbstractTensor {
 public:
     constexpr FASTOR_INLINE AbstractTensor() = default;
