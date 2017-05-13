@@ -9,7 +9,7 @@ template<typename T, size_t M, size_t N>
 inline void transpose_scalar(const T *__restrict__ in, T *__restrict__ out) {
     for (size_t i=0; i<M; ++i)
         for (size_t j=0; j<N; ++j)
-            out[i*N+j] = in[j*M+i];
+            out[j*M+i] = in[i*N+j];
 }
 
 template<typename T, size_t M, size_t N>
