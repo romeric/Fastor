@@ -173,6 +173,22 @@ void run() {
         assert(abs((outer(D,D)).sum() - 8589.5824) < HugeTol);
     }
 
+
+
+    {
+        Tensor<T,5,5,5> A; Tensor<T,5> B;
+        A.iota(1); B.iota(2);
+
+        auto C = einsum<Index<i,j,k>,Index<j>>(A,B);
+        assert(abs(C.sum() - 32750) < Tol); 
+        auto D = einsum<Index<j>,Index<i,j,k>>(B,A);
+        assert(abs(D.sum() - 32750) < Tol); 
+        auto E = einsum<Index<i,j,k>,Index<i,j,l>>(A,A);
+        assert(abs(E.sum() - 3293125) < Tol); 
+        auto F = einsum<Index<i>,Index<k>>(B,B);
+        assert(abs(F.sum() - 400) < Tol); 
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 }
 
@@ -182,7 +198,6 @@ int main() {
     run<float>();
     print(FBLU(BOLD("Testing all einsum features (contractions, permutations, reductions): double precision")));
     run<double>();
-
 
     return 0;
 }

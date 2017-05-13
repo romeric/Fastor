@@ -424,17 +424,22 @@ struct is_single_reduction<Index<Idx0...>> {
 
 //--------------------------------------------------------------------------------------------------------------//
 template<size_t N>
-constexpr int contain_prod(const size_t (&ind)[N], const size_t (&seq)[N], size_t num){
-    return (ind[num]==0) ? static_cast<int>(seq[num]) : -1;
+constexpr int contain_prod(const size_t (&ind)[N], const size_t (&sseq)[N], size_t num){
+    return (ind[num]==0) ? static_cast<int>(sseq[num]) : -1;
 }
 
 template<size_t N>
-constexpr int last_indices_prod(const int (&seq)[N], int num){
-    return (seq[num-1]!=-1) ? seq[num-1]*last_indices_prod(seq,num-1) : 1;
+constexpr int last_indices_prod(const int (&sseq)[N], int num){
+    return (sseq[num-1]!=-1) ? sseq[num-1]*last_indices_prod(sseq,num-1) : 1;
+}
+// Terminating condition
+template<>
+constexpr int last_indices_prod<1>(const int (&sseq)[1], int num){
+    return (sseq[0]!=-1) ? sseq[0] : 1;
 }
 
 
-template<class Idx0, class Idx1, class Tens0, class Tens1, class Seq>
+template<class Idx0, class Idx1, class Tens0, class Tens1, class SSeq>
 struct general_stride_finder;
 
 template<typename T, size_t ...Idx0, size_t ...Idx1, size_t...Rest0, size_t...Rest1, size_t ... ss>
