@@ -430,12 +430,7 @@ constexpr int contain_prod(const size_t (&ind)[N], const size_t (&sseq)[N], size
 
 template<size_t N>
 constexpr int last_indices_prod(const int (&sseq)[N], int num){
-    return (sseq[num-1]!=-1) ? sseq[num-1]*last_indices_prod(sseq,num-1) : 1;
-}
-// Terminating condition
-template<>
-constexpr int last_indices_prod<1>(const int (&sseq)[1], int num){
-    return (sseq[0]!=-1) ? sseq[0] : 1;
+    return  num > 0 ? ( (sseq[num-1]!=-1) ? sseq[num-1]*last_indices_prod(sseq,num-1) : 1) : 1;
 }
 
 

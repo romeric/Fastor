@@ -189,6 +189,13 @@ void run() {
         assert(abs(F.sum() - 400) < Tol); 
     }
 
+    {
+        Tensor<double,5,5> A; Tensor<double,5,5,5,5> B; Tensor<double,5> C;
+        A.iota(); B.iota(); C.iota();
+        auto D = einsum<Index<k,j>,Index<k,i,l,j>,Index<l>>(A,B,C);
+        assert(abs(D.sum() - 6.32e+06) < BigTol); 
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 }
 
