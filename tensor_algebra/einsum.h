@@ -523,5 +523,7 @@ einsum(const Tensor<T,I,J,K> &a, const Tensor<T,K,L,M> &b) {
 
 } // end of namespace
 
+#include "abstract_contraction.h"
+
 #endif // EINSUM_H
 

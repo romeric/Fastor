@@ -3,6 +3,7 @@
 
 #include "tensor/Tensor.h"
 #include "indicial.h"
+#include "meta/tensor_post_meta.h"
 
 namespace Fastor {
 
@@ -23,6 +24,29 @@ struct permute_impl<T,Index<ls...>, Tensor<T, fs...>, std_ext::index_sequence<ss
     constexpr static size_t fvals[sizeof...(ls)] = {fs...};
     using type = Tensor<T,fvals[count_less(lst, lst[ss])]...>;
 };
+
+
+
+
+// Return dimensions of tensor as a std::array
+template<class X>
+struct get_tensor_dims;
+
+template<typename T, size_t ... Rest>
+struct get_tensor_dims<Tensor<T,Rest...>> {
+    static constexpr std::array<size_t,sizeof...(Rest)> dims = {Rest...};
+    static constexpr std::array<int,sizeof...(Rest)> dims_int = {Rest...};
+};
+
+template<typename T, size_t ... Rest>
+constexpr std::array<size_t,sizeof...(Rest)> get_tensor_dims<Tensor<T,Rest...>>::dims;
+template<typename T, size_t ... Rest>
+constexpr std::array<int,sizeof...(Rest)> get_tensor_dims<Tensor<T,Rest...>>::dims_int;
+
+
+
+
+
 
 
 
@@ -109,6 +133,88 @@ struct extractor_perm<Index<Idx...> > {
 
         return out;
     }
+
+
+
+// Generic abstract permute
+  template<typename Derived, size_t DIMS>
+    static typename permute_impl<typename scalar_type_finder<Derived>::type,
+        Index<Idx...>, typename tensor_type_finder<Derived>::type,
+        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type
+    permutation_impl(const AbstractTensor<Derived,DIMS> &a) {
+
+        using T = typename scalar_type_finder<Derived>::type;
+        using tensor_type = typename tensor_type_finder<Derived>::type;
+
+        typename permute_impl<T,Index<Idx...>, tensor_type,
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type out;
+        out.zeros();
+        T *out_data = out.data();
+
+        const Derived & a_src = a.self();
+
+        constexpr int a_dim = DIMS;
+        constexpr int out_dim = a_dim;
+        constexpr std::array<int,a_dim> maxes_a = get_tensor_dims<tensor_type>::dims_int;
+        constexpr std::array<int,a_dim> idx = {Idx...};
+        std::array<int,out_dim> maxes_idx = argsort(idx);
+        std::array<int,out_dim> maxes_out;
+        for (int i=0; i<out_dim; ++i) {
+            maxes_out[i] = maxes_a[maxes_idx[i]];
+        }
+
+        std::array<int,a_dim> products_a;
+        std::fill(products_a.begin(),products_a.end(),0);
+        for (int j=a_dim-1; j>0; --j) {
+            int num = maxes_a[a_dim-1];
+            for (int k=0; k<j-1; ++k) {
+                num *= maxes_a[a_dim-1-k-1];
+            }
+            products_a[j] = num;
+        }
+        std::array<int,out_dim> products_out;
+        std::fill(products_out.begin(),products_out.end(),0);
+        for (int j=out_dim-1; j>0; --j) {
+            int num = maxes_out[out_dim-1];
+            for (int k=0; k<j-1; ++k) {
+                num *= maxes_out[out_dim-1-k-1];
+            }
+            products_out[j] = num;
+        }
+
+        std::reverse(products_a.begin(),products_a.end());
+        std::reverse(products_out.begin(),products_out.end());
+
+        int as[out_dim];
+        std::fill(as,as+out_dim,0);
+        int it,jt;
+
+        while(true)
+        {
+            int index_a = as[a_dim-1];
+            for(it = 0; it< a_dim; it++) {
+                index_a += products_a[it]*as[it];
+            }
+            int index_out = as[maxes_idx[out_dim-1]];
+            for(it = 0; it< out_dim-1; it++) {
+                index_out += products_out[it]*as[maxes_idx[it]];
+            }
+
+            out_data[index_out] = a_src.template eval_s<T>(index_a);
+
+            for(jt = out_dim-1 ; jt>=0 ; jt--)
+            {
+                if(++as[jt]<maxes_a[jt])
+                    break;
+                else
+                    as[jt]=0;
+            }
+            if(jt<0)
+                break;
+        }
+
+        return out;
+    }
 };
 
 
@@ -116,6 +222,14 @@ struct extractor_perm<Index<Idx...> > {
 template<class Index_I, typename T, size_t ... Rest>
 typename permute_impl<T,Index_I, Tensor<T,Rest...>,
     typename std_ext::make_index_sequence<sizeof...(Rest)>::type>::type permutation(const Tensor<T, Rest...> &a) {
+    return extractor_perm<Index_I>::permutation_impl(a);
+}
+
+
+template<class Index_I, typename Derived, size_t DIMS>
+typename permute_impl<typename scalar_type_finder<Derived>::type,Index_I,
+        typename tensor_type_finder<Derived>::type,
+    typename std_ext::make_index_sequence<DIMS>::type>::type permutation(const AbstractTensor<Derived, DIMS> &a) {
     return extractor_perm<Index_I>::permutation_impl(a);
 }
 

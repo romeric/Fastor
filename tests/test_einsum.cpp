@@ -196,6 +196,40 @@ void run() {
         assert(abs(D.sum() - 6.32e+06) < BigTol); 
     }
 
+    // Test generic tensors
+    {
+        Tensor<T,5,5,5> A; Tensor<T,5> B;
+        A.iota(1); B.iota(2);
+
+        auto C = einsum<Index<i,j,k>,Index<j>>(A-0,1+B-1);
+        assert(abs(C.sum() - 32750) < Tol); 
+        auto D = einsum<Index<j>,Index<i,j,k>>(B*1,-A+A+A);
+        assert(abs(D.sum() - 32750) < Tol); 
+        auto E = einsum<Index<i,j,k>,Index<i,j,l>>(1*A,A*1);
+        assert(abs(E.sum() - 3293125) < Tol); 
+        auto F = einsum<Index<i>,Index<k>>(2*B-B+B-B,sqrt(B)+B-sqrt(B));
+        assert(abs(F.sum() - 400) < BigTol); 
+    }
+
+    {
+        Tensor<double,5,5> A; Tensor<double,5,5,5,5> B; Tensor<double,5> C;
+        A.iota(); B.iota(); C.iota();
+        auto D = einsum<Index<k,j>,Index<k,i,l,j>,Index<l>>(2*sin(A)+A-sin(A)-sin(A),B,C+0);
+        assert(abs(D.sum() - 6.32e+06) < BigTol); 
+    }
+
+    {
+        Tensor<T,2,3,4,5> As; As.iota();
+        auto Bs1 = permutation<Index<k,i,j,l>>(As);
+        auto Bs2 = permutation<Index<k,i,j,l>>(As-0);
+        auto Bs3 = permutation<Index<k,i,j,l>>(1+As-1);
+        auto Bs4 = permutation<Index<k,i,j,l>>(2*As-As-sqrt(As)+sqrt(As));
+        assert(abs(As.sum() - Bs1.sum()) < BigTol); 
+        assert(abs(As.sum() - Bs2.sum()) < BigTol); 
+        assert(abs(As.sum() - Bs3.sum()) < BigTol); 
+        assert(abs(As.sum() - Bs4.sum()) < BigTol); 
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 }
 
