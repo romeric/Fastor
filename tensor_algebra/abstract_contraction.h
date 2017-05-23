@@ -157,8 +157,7 @@ struct extractor_abstract_contract<Index<Idx0...>, Index<Idx1...>> {
         //         index_out += products_out[it]*as[idx_out[it]];
         //     }
 
-        //     SIMDVector<T,DEFAULT_ABI> _vec_out = a_src.template eval<T>((FASTOR_INDEX)index_a)*b_src.template eval<T>((FASTOR_INDEX)index_b) \
-        //         +  SIMDVector<T,DEFAULT_ABI>(out_data+index_out);
+        //     SIMDVector<T,DEFAULT_ABI> _vec_out = a_src.template eval<T>((FASTOR_INDEX)index_a)*b_src.template eval<T>((FASTOR_INDEX)index_b) +  SIMDVector<T,DEFAULT_ABI>(out_data+index_out);
         //     _vec_out.store(out_data+index_out);
         //     print(type_name<SIMDVector<T,DEFAULT_ABI>>());
         // }
