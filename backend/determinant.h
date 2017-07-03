@@ -62,6 +62,27 @@ FASTOR_INLINE double _det<double,3,3>(const double* __restrict__ a) {
     return _mm_cvtsd_f64(_mm_sub_sd(_add_pd(out0),_add_pd(out1)));
 }
 
+#else
+
+template<>
+FASTOR_INLINE float _det<float,2,2>(const float* __restrict__ a) {
+    return a[0] * a[3] - a[1] * a[2];
+}
+template<>
+FASTOR_INLINE float _det<float,3,3>(const float* __restrict__ a) {
+    return a[0]*a[4]*a[8] + a[1]*a[5]*a[6] + a[2]*a[3]*a[7] - a[2]*a[4]*a[6] - a[1]*a[3]*a[8] - a[0]*a[5]*a[7];
+}
+
+
+template<>
+FASTOR_INLINE double _det<double,2,2>(const double* __restrict__ a) {
+    return a[0] * a[3] - a[1] * a[2];
+}
+template<>
+FASTOR_INLINE double _det<double,3,3>(const double* __restrict__ a) {
+    return a[0]*a[4]*a[8] + a[1]*a[5]*a[6] + a[2]*a[3]*a[7] - a[2]*a[4]*a[6] - a[1]*a[3]*a[8] - a[0]*a[5]*a[7];
+}
+
 #endif
 
 }
