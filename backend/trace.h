@@ -12,6 +12,7 @@ FASTOR_INLINE T _trace(const T * __restrict__ a) {
     T sum = static_cast<T>(0);
     for (FASTOR_INDEX i=0; i<M; ++i)
         sum +=a[i*N+i];
+    return sum;
 }
 
 #ifdef __SSE4_2__
