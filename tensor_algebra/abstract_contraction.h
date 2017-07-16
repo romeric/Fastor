@@ -200,6 +200,7 @@ auto einsum(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived
 }
 
 
+#ifndef FASTOR_DONT_PERFORM_OP_MIN
 
 // Network
 template<class T, class U, class V>
@@ -239,10 +240,11 @@ struct extractor_abstract_contract_3<Index<Idx0...>, Index<Idx1...>, Index<Idx2.
             auto tmp = einsum<Index<Idx0...>,Index<Idx1...>>(a,b);
             return einsum<resulting_index_0,Index<Idx2...>>(tmp,c);
         }
-        else if (which_variant == 1) {
-            auto tmp = einsum<Index<Idx0...>,Index<Idx2...>>(a,c);
-            return einsum<Index<Idx1...>,resulting_index_1>(b,tmp);
-        }
+        // leads to incorrect results
+        // else if (which_variant == 1) {
+        //     auto tmp = einsum<Index<Idx0...>,Index<Idx2...>>(a,c);
+        //     return einsum<Index<Idx1...>,resulting_index_1>(b,tmp);
+        // }
         else if (which_variant == 2) {
             auto tmp = einsum<Index<Idx1...>,Index<Idx2...>>(b,c);
             return einsum<Index<Idx0...>,resulting_index_2>(a,tmp);
@@ -267,7 +269,7 @@ auto einsum(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived
     return extractor_abstract_contract_3<Index_I,Index_J,Index_K>::contract_impl(a,b,c);
 }
 
-
+#endif
 
 }
 

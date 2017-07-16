@@ -43,10 +43,11 @@ struct extractor_contract<Index<Idx0...>, Index<Idx1...>, Index<Idx2...> > {
             auto tmp = contraction<Index<Idx0...>,Index<Idx1...>>(a,b);
             return contraction<resulting_index_0,Index<Idx2...>>(tmp,c);
         }
-        else if (which_variant == 1) {
-            auto tmp = contraction<Index<Idx0...>,Index<Idx2...>>(a,c);
-            return contraction<Index<Idx1...>,resulting_index_1>(b,tmp);
-        }
+        // leads to incorrect results
+        // else if (which_variant == 1) {
+        //     auto tmp = contraction<Index<Idx0...>,Index<Idx2...>>(a,c);
+        //     return contraction<Index<Idx1...>,resulting_index_1>(b,tmp);
+        // }
         else if (which_variant == 2) {
             auto tmp = contraction<Index<Idx1...>,Index<Idx2...>>(b,c);
             return contraction<Index<Idx0...>,resulting_index_2>(a,tmp);
