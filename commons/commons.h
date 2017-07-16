@@ -127,9 +127,11 @@
 #define SSE 128
 #define AVX 256
 #define AVX512 512
-#define Scalar 64
 #define Double 64
 #define Single 32
+#ifndef Scalar
+#define Scalar 64
+#endif
 
 #ifdef __SSE4_2__
     #ifdef __AVX__
