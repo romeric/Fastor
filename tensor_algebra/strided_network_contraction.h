@@ -27,7 +27,7 @@ struct extractor_strided_contract<Index<Idx0...>, Index<Idx1...>, Index<Idx2...>
             Tensor<T,Rest0...>,Tensor<T,Rest1...>,Tensor<T,Rest2...>>;
 
         using resulting_index_0 = typename cost_model::resulting_index_0;
-        using resulting_index_1 = typename cost_model::resulting_index_1;
+        // using resulting_index_1 = typename cost_model::resulting_index_1;
         using resulting_index_2 = typename cost_model::resulting_index_2;
         constexpr int which_variant = cost_model::which_variant;
 

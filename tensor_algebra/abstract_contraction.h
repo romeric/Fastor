@@ -226,7 +226,7 @@ struct extractor_abstract_contract_3<Index<Idx0...>, Index<Idx1...>, Index<Idx2.
             tensor_type_0,tensor_type_1,tensor_type_2>;
 
         using resulting_index_0 = typename cost_model::resulting_index_0;
-        using resulting_index_1 = typename cost_model::resulting_index_1;
+        // using resulting_index_1 = typename cost_model::resulting_index_1;
         using resulting_index_2 = typename cost_model::resulting_index_2;
 
         constexpr int which_variant = cost_model::which_variant;
