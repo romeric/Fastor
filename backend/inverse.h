@@ -7,10 +7,10 @@
 namespace Fastor {
 
 template<typename T, size_t N>
-FASTOR_INLINE void _inverse(const T *__restrict__ src, T *__restrict__ dst);
+FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst);
 
 template<>
-FASTOR_INLINE void _inverse<double,2>(const double *__restrict__ src, double *__restrict__ dst)
+FASTOR_INLINE void _inverse<double,2>(const double *FASTOR_RESTRICT src, double *FASTOR_RESTRICT dst)
 {
     double det;
 
@@ -42,7 +42,7 @@ FASTOR_INLINE void _inverse<double,2>(const double *__restrict__ src, double *__
 
 
 template<>
-FASTOR_INLINE void _inverse<double,3>(const double *__restrict__ src, double *__restrict__ dst)
+FASTOR_INLINE void _inverse<double,3>(const double *FASTOR_RESTRICT src, double *FASTOR_RESTRICT dst)
 {
     double det;
 

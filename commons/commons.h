@@ -41,6 +41,12 @@
 #endif
 
 #if defined(__GNUC__) || defined(__GNUG__)
+#define FASTOR_RESTRICT __restrict__
+#elif defined(_MSC_VER)
+#define FASTOR_RESTRICT __restrict
+#endif
+
+#if defined(__GNUC__) || defined(__GNUG__)
     #define FASTOR_ALIGN __attribute__((aligned(0x20)))
 #elif defined(_MSC_VER)
     #define FASTOR_ALIGN __declspec(align(32))

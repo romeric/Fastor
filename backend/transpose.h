@@ -8,7 +8,7 @@
 namespace Fastor {
 
 template<typename T, size_t M, size_t N>
-FASTOR_INLINE void _transpose(const T * __restrict__ a, T * __restrict__ out) {
+FASTOR_INLINE void _transpose(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT out) {
     for (size_t i=0; i< M; ++i)
         for (size_t j=0; j<N; ++j)
             out[j*M+i] = a[i*N+j];
@@ -16,13 +16,13 @@ FASTOR_INLINE void _transpose(const T * __restrict__ a, T * __restrict__ out) {
 
 #ifdef __SSE4_2__
 template<>
-FASTOR_INLINE void _transpose<float,2,2>(const float * __restrict__ a, float * __restrict__ out) {
+FASTOR_INLINE void _transpose<float,2,2>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
     __m128 a_reg = _mm_load_ps(a);
     _mm_store_ps(out,_mm_shuffle_ps(a_reg,a_reg,_MM_SHUFFLE(3,1,2,0)));
 }
 
 template<>
-FASTOR_INLINE void _transpose<float,3,3>(const float * __restrict__ a, float * __restrict__ out) {
+FASTOR_INLINE void _transpose<float,3,3>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
     __m128 a_low = _mm_load_ps(a);
     __m128 a_high = _mm_load_ps(a+4);
     __m128 a_end = _mm_load_ss(a+8);
@@ -38,7 +38,7 @@ FASTOR_INLINE void _transpose<float,3,3>(const float * __restrict__ a, float * _
 }
 
 template<>
-FASTOR_INLINE void _transpose<float,4,4>(const float * __restrict__ a, float * __restrict__ out) {
+FASTOR_INLINE void _transpose<float,4,4>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
     __m128 row1 = _mm_load_ps(a);
     __m128 row2 = _mm_load_ps(a+4);
     __m128 row3 = _mm_load_ps(a+8);
@@ -53,7 +53,7 @@ FASTOR_INLINE void _transpose<float,4,4>(const float * __restrict__ a, float * _
 
 #ifdef __AVX__
 template<>
-FASTOR_INLINE void _transpose<float,8,8>(const float * __restrict__ a, float * __restrict__ out) {
+FASTOR_INLINE void _transpose<float,8,8>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
     __m256 row1 = _mm256_load_ps(a);
     __m256 row2 = _mm256_load_ps(a+8);
     __m256 row3 = _mm256_load_ps(a+16);
@@ -75,7 +75,7 @@ FASTOR_INLINE void _transpose<float,8,8>(const float * __restrict__ a, float * _
 
 
 template<>
-FASTOR_INLINE void _transpose<double,2,2>(const double* __restrict__ a, double* __restrict__ out) {
+FASTOR_INLINE void _transpose<double,2,2>(const double* FASTOR_RESTRICT a, double* FASTOR_RESTRICT out) {
     // IVY 4 OPS / HW 8 OPS
     __m256d a1 =  _mm256_load_pd(a);
     __m128d a2 =  _mm256_castpd256_pd128(a1);
@@ -90,7 +90,7 @@ FASTOR_INLINE void _transpose<double,2,2>(const double* __restrict__ a, double* 
 
 #ifdef __SSE4_2__
 template<>
-FASTOR_INLINE void _transpose<double,3,3>(const double* __restrict__ a, double* __restrict__ out) {
+FASTOR_INLINE void _transpose<double,3,3>(const double* FASTOR_RESTRICT a, double* FASTOR_RESTRICT out) {
     /*-------------------------------------------------------*/
     // SSE VERSION - Requires 32byte alignment
     // all loads are 16 byte aligned if a is 32byte aligned
@@ -133,7 +133,7 @@ FASTOR_INLINE void _transpose<double,3,3>(const double* __restrict__ a, double* 
 
 #ifdef __AVX__
 template<>
-FASTOR_INLINE void _transpose<double,4,4>(const double * __restrict__ a, double * __restrict__ out) {
+FASTOR_INLINE void _transpose<double,4,4>(const double * FASTOR_RESTRICT a, double * FASTOR_RESTRICT out) {
     __m256d row1 = _mm256_load_pd(a);
     __m256d row2 = _mm256_load_pd(a+4);
     __m256d row3 = _mm256_load_pd(a+8);
