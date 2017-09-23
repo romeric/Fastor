@@ -242,13 +242,13 @@ FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const st
 // 4 word scalar
 template<typename T, int ABI, typename Int,
          typename std::enable_if<sizeof(T)==4 && ABI==32,bool>::type=0>
-FASTOR_INLINE void data_setter(T *__restrict__ data, const SIMDVector<T,ABI> &vec, Int idx, int ) {
+FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int ) {
     data[idx] = vec.value;
 }
 // 4 word SSE
 template<typename T, int ABI, typename Int,
          typename std::enable_if<sizeof(T)==4 && ABI==128,bool>::type=0>
-FASTOR_INLINE void data_setter(T *__restrict__ data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride=1) {
+FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride=1) {
     data[idx] = vec[0];
     data[idx+general_stride] = vec[1];
     data[idx+2*general_stride] = vec[2];
@@ -257,7 +257,7 @@ FASTOR_INLINE void data_setter(T *__restrict__ data, const SIMDVector<T,ABI> &ve
 // 4 word AVX
 template<typename T, int ABI, typename Int,
          typename std::enable_if<sizeof(T)==4 && ABI==256,bool>::type=0>
-FASTOR_INLINE void data_setter(T *__restrict__ data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride=1) {
+FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride=1) {
     data[idx] = vec[0];
     data[idx+general_stride] = vec[1];
     data[idx+2*general_stride] = vec[2];
@@ -270,7 +270,7 @@ FASTOR_INLINE void data_setter(T *__restrict__ data, const SIMDVector<T,ABI> &ve
 // 4 word AVX 512
 template<typename T, int ABI, typename Int,
          typename std::enable_if<sizeof(T)==4 && ABI==512,bool>::type=0>
-FASTOR_INLINE void data_setter(T *__restrict__ data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride=1) {
+FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride=1) {
     data[idx] = vec[0];
     data[idx+general_stride] = vec[1];
     data[idx+2*general_stride] = vec[2];
@@ -292,20 +292,20 @@ FASTOR_INLINE void data_setter(T *__restrict__ data, const SIMDVector<T,ABI> &ve
 // 8 word scalar
 template<typename T, int ABI, typename Int,
          typename std::enable_if<sizeof(T)==8 && ABI==64,bool>::type=0>
-FASTOR_INLINE void data_setter(T *__restrict__ data, const SIMDVector<T,ABI> &vec, Int idx, int ) {
+FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int ) {
     data[idx] = vec.value;
 }
 // 8 word SSE
 template<typename T, int ABI, typename Int,
          typename std::enable_if<sizeof(T)==8 && ABI==128,bool>::type=0>
-FASTOR_INLINE void data_setter(T *__restrict__ data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride) {
+FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride) {
     data[idx] = vec[0];
     data[idx+general_stride] = vec[1];
 }
 // 8 word AVX
 template<typename T, int ABI, typename Int,
          typename std::enable_if<sizeof(T)==8 && ABI==256,bool>::type=0>
-FASTOR_INLINE void data_setter(T *__restrict__ data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride) {
+FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride) {
     data[idx] = vec[0];
     data[idx+general_stride] = vec[1];
     data[idx+2*general_stride] = vec[2];
@@ -314,7 +314,7 @@ FASTOR_INLINE void data_setter(T *__restrict__ data, const SIMDVector<T,ABI> &ve
 // 8 word AVX 512
 template<typename T, int ABI, typename Int,
          typename std::enable_if<sizeof(T)==8 && ABI==512,bool>::type=0>
-FASTOR_INLINE void data_setter(T *__restrict__ data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride) {
+FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride) {
     data[idx] = vec[0];
     data[idx+general_stride] = vec[1];
     data[idx+2*general_stride] = vec[2];

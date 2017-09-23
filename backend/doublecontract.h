@@ -7,7 +7,7 @@
 namespace Fastor {
 
 template<typename T, size_t M, size_t N>
-FASTOR_INLINE T _doublecontract(const T* __restrict__ a, const T* __restrict__ b) {
+FASTOR_INLINE T _doublecontract(const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b) {
 
     using V = SIMDVector<T,DEFAULT_ABI>;
     constexpr int size = M*N;
@@ -34,24 +34,24 @@ FASTOR_INLINE T _doublecontract(const T* __restrict__ a, const T* __restrict__ b
 #ifdef __AVX__
 
 template<>
-FASTOR_INLINE float _doublecontract<float,2,2>(const float* __restrict__ a, const float* __restrict__ b) {
+FASTOR_INLINE float _doublecontract<float,2,2>(const float* FASTOR_RESTRICT a, const float* FASTOR_RESTRICT b) {
     return _mm_sum_ps(_mm_mul_ps(_mm_load_ps(a),_mm_load_ps(b)));
 }
 
 template<>
-FASTOR_INLINE float _doublecontract<float,3,3>(const float* __restrict__ a, const float* __restrict__ b) {
+FASTOR_INLINE float _doublecontract<float,3,3>(const float* FASTOR_RESTRICT a, const float* FASTOR_RESTRICT b) {
     float r1 = _mm256_sum_ps(_mm256_mul_ps(_mm256_load_ps(a),_mm256_load_ps(b)));
     float r2 = _mm_sum_ps(_mm_mul_ss(_mm_load_ss(a+8),_mm_load_ss(b+8)));
     return r1+r2;
 }
 
 template<>
-FASTOR_INLINE double _doublecontract<double,2,2>(const double* __restrict__ a, const double* __restrict__ b) {
+FASTOR_INLINE double _doublecontract<double,2,2>(const double* FASTOR_RESTRICT a, const double* FASTOR_RESTRICT b) {
     return _mm256_sum_pd(_mm256_mul_pd(_mm256_load_pd(a),_mm256_load_pd(b)));
 }
 
 template<>
-FASTOR_INLINE double _doublecontract<double,3,3>(const double* __restrict__ a, const double* __restrict__ b) {
+FASTOR_INLINE double _doublecontract<double,3,3>(const double* FASTOR_RESTRICT a, const double* FASTOR_RESTRICT b) {
     __m256d r1 = _mm256_mul_pd(_mm256_load_pd(a),_mm256_load_pd(b));
     __m256d r2 = _mm256_mul_pd(_mm256_load_pd(a+4),_mm256_load_pd(b+4));
     __m128d r3 = _mm_mul_sd(_mm_load_sd(a+8),_mm_load_sd(b+8));
@@ -65,7 +65,7 @@ FASTOR_INLINE double _doublecontract<double,3,3>(const double* __restrict__ a, c
 
 // doublecontract and transpose
 template<typename T, size_t M, size_t N>
-FASTOR_INLINE T _doublecontract_transpose(const T* __restrict__ a, const T* __restrict__ b) {
+FASTOR_INLINE T _doublecontract_transpose(const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b) {
     T dc = static_cast<T>(0);
     for (FASTOR_INDEX i=0; i<M; ++i)
         for (FASTOR_INDEX j=0; j<N; ++j)

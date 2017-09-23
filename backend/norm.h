@@ -8,7 +8,7 @@
 namespace Fastor {
 
 template<typename T, size_t N>
-FASTOR_INLINE double _norm_nonfloating(const T* __restrict__ a) {
+FASTOR_INLINE double _norm_nonfloating(const T* FASTOR_RESTRICT a) {
 
     using V = SIMDVector<T,DEFAULT_ABI>;
     constexpr int size = N;
@@ -31,7 +31,7 @@ FASTOR_INLINE double _norm_nonfloating(const T* __restrict__ a) {
 
 
 template<typename T, size_t N>
-FASTOR_INLINE T _norm(const T* __restrict__ a) {
+FASTOR_INLINE T _norm(const T* FASTOR_RESTRICT a) {
 
     using V = SIMDVector<T,DEFAULT_ABI>;
     constexpr int size = N;
@@ -58,7 +58,7 @@ FASTOR_INLINE T _norm(const T* __restrict__ a) {
 
 #ifdef __SSE4_2__
 template<>
-FASTOR_INLINE float _norm<float,4>(const float * __restrict__ a) {
+FASTOR_INLINE float _norm<float,4>(const float * FASTOR_RESTRICT a) {
     // IVY 33 OPS / HW 31 OPS
     __m128 a_reg = _mm_load_ps(a);
     return _mm_cvtss_f32(_mm_sqrt_ps(_add_ps(_mm_mul_ps(a_reg,a_reg))));
@@ -66,7 +66,7 @@ FASTOR_INLINE float _norm<float,4>(const float * __restrict__ a) {
 #endif
 #ifdef __AVX__
 template<>
-FASTOR_INLINE float _norm<float,9>(const float * __restrict__ a) {
+FASTOR_INLINE float _norm<float,9>(const float * FASTOR_RESTRICT a) {
     // IVY & HW 61 OPS
     __m256 a_reg = _mm256_load_ps(a);
     __m128 a_end = _mm_load_ss(a+8);
@@ -77,14 +77,14 @@ FASTOR_INLINE float _norm<float,9>(const float * __restrict__ a) {
 
 
 template<>
-FASTOR_INLINE double _norm<double,4>(const double * __restrict__ a) {
+FASTOR_INLINE double _norm<double,4>(const double * FASTOR_RESTRICT a) {
     // IVY 34 OPS / HW 36 OPS
     __m256d a_reg = _mm256_load_pd(a);
     return _mm_cvtsd_f64(_mm_sqrt_pd(_add_pd(_mm256_mul_pd(a_reg,a_reg))));
 }
 
 template<>
-FASTOR_INLINE double _norm<double,9>(const double * __restrict__ a) {
+FASTOR_INLINE double _norm<double,9>(const double * FASTOR_RESTRICT a) {
     // IVY 63 OPS / HW 67 OPS
     __m256d a_low = _mm256_load_pd(a);
     __m256d a_high = _mm256_load_pd(a+4);

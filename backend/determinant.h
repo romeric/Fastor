@@ -7,11 +7,11 @@
 namespace Fastor {
 
 template<typename T, size_t M, size_t N>
-FASTOR_INLINE T _det(const T* __restrict__ a);
+FASTOR_INLINE T _det(const T* FASTOR_RESTRICT a);
 
 #ifdef __AVX__
 template<>
-FASTOR_INLINE float _det<float,2,2>(const float* __restrict__ a) {
+FASTOR_INLINE float _det<float,2,2>(const float* FASTOR_RESTRICT a) {
     // 10 OPS
     __m128 a1 = _mm_load_ps(a);
     __m128 a2 = _mm_shuffle_ps(a1,a1,_MM_SHUFFLE(0,1,2,3));
@@ -20,7 +20,7 @@ FASTOR_INLINE float _det<float,2,2>(const float* __restrict__ a) {
 }
 
 template<>
-FASTOR_INLINE float _det<float,3,3>(const float* __restrict__ a) {
+FASTOR_INLINE float _det<float,3,3>(const float* FASTOR_RESTRICT a) {
     // ?? OPS
     __m128 r0 = {a[2],a[1],a[0],0.};
     __m128 r1 = {a[3],a[5],a[4],0.};
@@ -37,7 +37,7 @@ FASTOR_INLINE float _det<float,3,3>(const float* __restrict__ a) {
 }
 
 template<>
-FASTOR_INLINE double _det<double,2,2>(const double* __restrict__ a) {
+FASTOR_INLINE double _det<double,2,2>(const double* FASTOR_RESTRICT a) {
     // 10 OPS
     __m128d a1 = _mm_load_pd(a);
     __m128d a2 = _mm_load_pd(a+2);
@@ -46,7 +46,7 @@ FASTOR_INLINE double _det<double,2,2>(const double* __restrict__ a) {
 }
 
 template<>
-FASTOR_INLINE double _det<double,3,3>(const double* __restrict__ a) {
+FASTOR_INLINE double _det<double,3,3>(const double* FASTOR_RESTRICT a) {
     // ?? OPS
     __m256d r0 = {a[2],a[1],a[0],0.};
     __m256d r1 = {a[3],a[5],a[4],0.};
@@ -65,21 +65,21 @@ FASTOR_INLINE double _det<double,3,3>(const double* __restrict__ a) {
 #else
 
 template<>
-FASTOR_INLINE float _det<float,2,2>(const float* __restrict__ a) {
+FASTOR_INLINE float _det<float,2,2>(const float* FASTOR_RESTRICT a) {
     return a[0] * a[3] - a[1] * a[2];
 }
 template<>
-FASTOR_INLINE float _det<float,3,3>(const float* __restrict__ a) {
+FASTOR_INLINE float _det<float,3,3>(const float* FASTOR_RESTRICT a) {
     return a[0]*a[4]*a[8] + a[1]*a[5]*a[6] + a[2]*a[3]*a[7] - a[2]*a[4]*a[6] - a[1]*a[3]*a[8] - a[0]*a[5]*a[7];
 }
 
 
 template<>
-FASTOR_INLINE double _det<double,2,2>(const double* __restrict__ a) {
+FASTOR_INLINE double _det<double,2,2>(const double* FASTOR_RESTRICT a) {
     return a[0] * a[3] - a[1] * a[2];
 }
 template<>
-FASTOR_INLINE double _det<double,3,3>(const double* __restrict__ a) {
+FASTOR_INLINE double _det<double,3,3>(const double* FASTOR_RESTRICT a) {
     return a[0]*a[4]*a[8] + a[1]*a[5]*a[6] + a[2]*a[3]*a[7] - a[2]*a[4]*a[6] - a[1]*a[3]*a[8] - a[0]*a[5]*a[7];
 }
 

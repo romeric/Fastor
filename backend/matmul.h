@@ -13,7 +13,7 @@ namespace Fastor {
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<M==N && M==K && N % SIMDVector<T,DEFAULT_ABI>::Size ==0,bool>::type = 0>
 FASTOR_INLINE
-void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ c) {
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
 
     using V = SIMDVector<T,DEFAULT_ABI>;
     constexpr size_t UnrollOuterloop = V::size();
@@ -73,7 +73,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<(M!=K && M==N && M==2 && std::is_same<T,double>::value),bool>::type = 0>
 FASTOR_INLINE
-void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
     __m128d out_row0 = ZEROPD;
     __m128d out_row1 = ZEROPD;
@@ -105,7 +105,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<(M!=K && M==N && M==2 && std::is_same<T,float>::value),bool>::type = 0>
 FASTOR_INLINE
-void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
     __m128 out_row0 = ZEROPS;
     __m128 out_row1 = ZEROPS;
@@ -139,7 +139,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<(M!=K && M==N && M==3 && std::is_same<T,double>::value),bool>::type = 0>
 FASTOR_INLINE
-void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
     __m256d out_row0 = VZEROPD;
     __m256d out_row1 = VZEROPD;
@@ -182,7 +182,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<(M!=K && M==N && M==3 && std::is_same<T,float>::value),bool>::type = 0>
 FASTOR_INLINE
-void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
     __m128 out_row0 = ZEROPS;
     __m128 out_row1 = ZEROPS;
@@ -226,7 +226,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<(M!=K && M==N && M==4 && std::is_same<T,double>::value),bool>::type = 0>
 FASTOR_INLINE
-void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
     __m256d out_row0 = VZEROPD;
     __m256d out_row1 = VZEROPD;
@@ -276,7 +276,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<(M!=K && M==N && M==4 && std::is_same<T,float>::value),bool>::type = 0>
 FASTOR_INLINE
-void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
     __m128 out_row0 = ZEROPS;
     __m128 out_row1 = ZEROPS;
@@ -361,7 +361,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 // (2x2) x (2xn) matrices
 template<typename T, size_t M, size_t N>
 FASTOR_INLINE
-void _matmul_2x2xn(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+void _matmul_2x2xn(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
 
     using V256 = SIMDVector<T,256>;
@@ -426,7 +426,7 @@ void _matmul_2x2xn(const T * __restrict__ a, const T * __restrict__ b, T * __res
 // (3x3) x (3xn) matrices
 template<typename T, size_t M, size_t N>
 FASTOR_INLINE
-void _matmul_3x3xn(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+void _matmul_3x3xn(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
 
     using V256 = SIMDVector<T,256>;
@@ -506,7 +506,7 @@ template<typename T, size_t M, size_t K, size_t N,
                                  || (M!=K && M==N && M!=2 && M!=3 && M!=4)
                                  || ((M==N && M==K) && N % SIMDVector<T,DEFAULT_ABI>::Size !=0),bool>::type = 0>
 FASTOR_INLINE
-void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
     // The following specialisations don't make much of a difference (at least for SP)
     // Need thorough performance checks
@@ -856,7 +856,7 @@ void _matmul(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 
 template<>
 FASTOR_INLINE
-void _matmul<float,2,2,2>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
+void _matmul<float,2,2,2>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
 
 #ifndef USE_OLD_VERSION
     // 17 OPS
@@ -887,7 +887,7 @@ void _matmul<float,2,2,2>(const float * __restrict__ a, const float * __restrict
 
 template<>
 FASTOR_INLINE
-void _matmul<float,3,3,3>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
+void _matmul<float,3,3,3>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
 
 #ifndef USE_OLD_VERSION
     // 63 OPS + 3 OPS
@@ -1055,7 +1055,7 @@ void _matmul<float,3,3,3>(const float * __restrict__ a, const float * __restrict
 #ifdef __AVX__
 template<>
 FASTOR_INLINE
-void _matmul<double,2,2,2>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
+void _matmul<double,2,2,2>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
 
 #ifndef USE_OLD_VERSION
 
@@ -1106,7 +1106,7 @@ void _matmul<double,2,2,2>(const double * __restrict__ a, const double * __restr
 
 template<>
 FASTOR_INLINE
-void _matmul<double,3,3,3>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
+void _matmul<double,3,3,3>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
 
 
 #ifndef USE_OLD_VERSION
@@ -1215,7 +1215,7 @@ void _matmul<double,3,3,3>(const double * __restrict__ a, const double * __restr
 
 #ifdef __SSE4_2__
 template<>
-FASTOR_INLINE void _matmul<float,4,4,4>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
+FASTOR_INLINE void _matmul<float,4,4,4>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
 
     __m128 a0 = _mm_load_ps(a);
     __m128 a1 = _mm_load_ps(a+4);
@@ -1319,7 +1319,7 @@ FASTOR_INLINE void _matmul<float,4,4,4>(const float * __restrict__ a, const floa
 #ifdef __SSE4_2__
 template<>
 FASTOR_INLINE
-void _matmul<float,2,2,1>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
+void _matmul<float,2,2,1>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
     // 11 OPS
     __m128 a_reg = _mm_load_ps(a);
     __m128 vec_b = _mm_load_ps(b);
@@ -1333,7 +1333,7 @@ void _matmul<float,2,2,1>(const float * __restrict__ a, const float * __restrict
 }
 
 template<>
-FASTOR_INLINE void _matmul<float,3,3,1>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
+FASTOR_INLINE void _matmul<float,3,3,1>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
     // 47 OPS
     __m128 a0 = _mm_load_ps(a);
     __m128 row0 = _mm_shift1_ps(a0);
@@ -1356,7 +1356,7 @@ FASTOR_INLINE void _matmul<float,3,3,1>(const float * __restrict__ a, const floa
 #endif
 #ifdef __AVX__
 template<>
-FASTOR_INLINE void _matmul<double,2,2,1>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
+FASTOR_INLINE void _matmul<double,2,2,1>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
     // IVY 15 OPS - HW 19 OPS
     __m256d a_reg = _mm256_load_pd(a);
     __m128d b_vec = _mm_load_pd(b);
@@ -1370,7 +1370,7 @@ FASTOR_INLINE void _matmul<double,2,2,1>(const double * __restrict__ a, const do
 
 
 template<>
-FASTOR_INLINE void _matmul<double,3,3,1>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
+FASTOR_INLINE void _matmul<double,3,3,1>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
     // IVY 58 OPS - HW 84 OPS
     __m128d a0 = _mm_load_pd(a);
     __m128d a1 = _mm_load_sd(a+2);

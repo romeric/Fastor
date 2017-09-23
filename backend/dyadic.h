@@ -13,7 +13,7 @@ namespace Fastor {
 
 template<typename T, size_t size0, size_t size1>
 FASTOR_INLINE
-void _dyadic(const T * __restrict__ a, const T * __restrict__ b, T * __restrict__ out) {
+void _dyadic(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
     using V  = SIMDVector<T,256>;
     constexpr int VSIZE = static_cast<int>(V::Size);
@@ -103,7 +103,7 @@ void _dyadic(const T * __restrict__ a, const T * __restrict__ b, T * __restrict_
 // Outer product (2x2) x (2x2)
 template<>
 FASTOR_INLINE
-void _dyadic<float,4,4>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
+void _dyadic<float,4,4>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
 
     __m128 vec_a = _mm_load_ps(a);
     __m128 vec_b = _mm_load_ps(b);
@@ -129,7 +129,7 @@ void _dyadic<float,4,4>(const float * __restrict__ a, const float * __restrict__
 // Outer product (2x2) x (2x2)
 template<>
 FASTOR_INLINE
-void _dyadic<double,4,4>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
+void _dyadic<double,4,4>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
 
     __m256d vec_b = _mm256_load_pd(b);
 
@@ -149,7 +149,7 @@ void _dyadic<double,4,4>(const double * __restrict__ a, const double * __restric
 // Outer product (1x2) x (1x2) [for vectors]
 template<>
 FASTOR_INLINE
-void _dyadic<float,2,2>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
+void _dyadic<float,2,2>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
     // 7 OPS
     __m128 vec_a = _mm_load_ps(a);
     __m128 vec_b = _mm_load_ps(b);
@@ -164,7 +164,7 @@ void _dyadic<float,2,2>(const float * __restrict__ a, const float * __restrict__
 // Outer product (1x2) x (1x2) [for vectors]
 template<>
 FASTOR_INLINE
-void _dyadic<double,2,2>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
+void _dyadic<double,2,2>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
     // IVY 9 OPS / HW 13 OPS
     __m128d vec_a = _mm_load_pd(a);
     __m128d vec_b = _mm_load_pd(b);
@@ -184,7 +184,7 @@ void _dyadic<double,2,2>(const double * __restrict__ a, const double * __restric
 // Outer product (1x3) x (1x3) [for vectors]
 template<>
 FASTOR_INLINE
-void _dyadic<float,3,3>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
+void _dyadic<float,3,3>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
     // 18 OPS
     __m128 vec_a = _mm_load_ps(a);
     __m128 vec_b = _mm_load_ps(b);
@@ -202,7 +202,7 @@ void _dyadic<float,3,3>(const float * __restrict__ a, const float * __restrict__
 // Outer product (1x3) x (1x3) [for vectors]
 template<>
 FASTOR_INLINE
-void _dyadic<double,3,3>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
+void _dyadic<double,3,3>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
     // 15 OPS + set OPS
     __m256d vec_b = _mm256_load_pd(b);
     __m256d a0 = _mm256_set1_pd(a[0]);
@@ -221,12 +221,12 @@ void _dyadic<double,3,3>(const double * __restrict__ a, const double * __restric
 // Outer product of scalars
 template<>
 FASTOR_INLINE
-void _dyadic<double,1,1>(const double * __restrict__ a, const double * __restrict__ b, double * __restrict__ out) {
+void _dyadic<double,1,1>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
     out[0] = a[0]*b[0];
 }
 template<>
 FASTOR_INLINE
-void _dyadic<float,1,1>(const float * __restrict__ a, const float * __restrict__ b, float * __restrict__ out) {
+void _dyadic<float,1,1>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
     out[0] = a[0]*b[0];
 }
 
