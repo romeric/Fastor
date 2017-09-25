@@ -1,9 +1,9 @@
 # Fastor
 **Fastor** [**FA**st **S**IMD op**T**imised tens**OR** algebra framework]: is a smart stack-based high performance tensor (multi-dimensional array) library written in modern C++ [C++11/14/17] with powerful in-built tensor algebraic functionalities (tensor contraction, permutation, reductions, special tensor groups and much more). Designed as a generic multi-dimensional tensor algebra library, Fastor also incorporates domain specific features for tensor contraction algorithms typically arising in classical mechanics, in particular, in finite element analysis of nonlinear solids, fluids and coupled continua. There are multiple paradigms that Fastor exploits:
 
-- **Operation minimisation/Low FLOP/Complexity reducing Algorithms:** Fastor relies on an extremely smart and domain-aware Expression Template (ET) engine that can not only perform lazy evaluations and operator chaining but can also perform sophisticated mathematical transformation or *compile time* graph optimisation or both to reduce the complexity of evaluation of expressions by orders of magnitude. Some of these functionalities are almost non-existing in other available C++ ET linear algebra frameworks. 
+- **Operation minimisation/Low FLOP/Complexity reducing Algorithms:** Fastor relies on an extremely smart and domain-aware Expression Template (ET) engine that can not only perform lazy evaluations and operator chaining but can also perform sophisticated mathematical transformation or *compile time* graph optimisation or both to reduce the complexity of evaluation of expressions by orders of magnitude. Some of these functionalities are  non-existent in other available C++ ET linear algebra libraries.
 - **SIMD/Data parallelism/Stream computing** Fastor utilises explicit SIMD (SSE/SSE2/SSE3/SSE4/AVX/AVX2/AVX512/FMA) instructions
-- **Zero overhead tensor algebraic functions** statically dispatched bespoke kernels for a variety of tensor products using a priori knowledge of tensors either through template specialisation or advanced topological studies or both 
+- **Zero overhead tensor algebraic functions** statically dispatched bespoke kernels for a variety of tensor products using a priori knowledge of tensors either through template specialisation or advanced topological studies or both
 
 ### High-level API
 Fastor provides a high level interface for tensor algebra. As a first example consider the following
@@ -11,13 +11,13 @@ Fastor provides a high level interface for tensor algebra. As a first example co
 Tensor<double> scalar; // A scalar
 Tensor<double,6> vector6; //  A vector
 Tensor<double,4,5> matrix; // A second order tensor
-Tensor<double,3,3,3> tensor_3; // A third order tensor with dimension 3x3x3 
+Tensor<double,3,3,3> tensor_3; // A third order tensor with dimension 3x3x3
 tensor_3.arange(0); // fill tensor with sequentially ascending numbers
 print(tensor_3); // print out the tensor
 tensor_3(0,2,1); // index a tensor
 tensor_3(all,last,seq(0,2)); // slice a tensor
 tensor_3.rank(); // get rank of tensor, 3 in this case
-Tensor<float,2,2,2,2,1,2,2,4,3,2,3,3,6> tensor_13; // A 13th order tensor 
+Tensor<float,2,2,2,2,1,2,2,4,3,2,3,3,6> tensor_13; // A 13th order tensor
 ~~~
 will output the following
 ~~~bash
@@ -34,7 +34,7 @@ will output the following
 ⎢     21,      22,      23 ⎥
 ⎣     24,      25,      26 ⎦
 ~~~
-Einstein summation as well as summing over multiple (i.e. more than two) indices are supported. As a complete example, for instance, consider 
+Einstein summation as well as summing over multiple (i.e. more than two) indices are supported. As a complete example, for instance, consider
 ~~~c++
 #include <Fastor.h>
 using namespace Fastor;
@@ -42,7 +42,7 @@ enum {I,J,K,L,M,N};
 
 int main() {
     // An example of Einstein summation
-    Tensor<double,2,3,5> A; Tensor<double,3,5,2,4> B; 
+    Tensor<double,2,3,5> A; Tensor<double,3,5,2,4> B;
     // fill A and B
     A.random(); B.random();
     auto C = einsum<Index<I,J,K>,Index<J,L,M,N>>(A,B);
@@ -64,14 +64,14 @@ int main() {
 You can compile and run this by providing the following (or equivalent) flags to your compiler `-std=c++14 -O3 -mavx -DNDEBUG`.
 
 ### No heap allocation
-Fastor is essentially designed for small mutlidimensional tensors (for instance, tensors appearing during numerical integration in a finite element framework such as stresses, work conjugates, Hessian or small multi-dimensional arrays useful for 2D/3D graphics). As can be seen from the above examples, Fastor is based on fixed size static arrays (entirely stack allocation). The dimensions of the tensors must be known at compile time, which is typically the case for the use-cases it is designed for. However one of the strongest features of Fastor is in its in-built template meta-programming engine, in that, it can automatically determine at *compile time*, the dimensions of the tensors resulting from a complex operation yet to be performed, hence it can always allocate exactly the right amount of stack memory required. This is in contrast to static arrays in `C` or `Fortran` where one has to allocate a huge block of memory before hand to avoid stack overflow.   
+Fastor is essentially designed for small mutlidimensional tensors (for instance, tensors appearing during numerical integration in a finite element framework such as stresses, work conjugates, Hessian or small multi-dimensional arrays useful for 2D/3D graphics). As can be seen from the above examples, Fastor is based on fixed size static arrays (entirely stack allocation). The dimensions of the tensors must be known at compile time, which is typically the case for the use-cases it is designed for. However one of the strongest features of Fastor is in its in-built template meta-programming engine, in that, it can automatically determine at *compile time*, the dimensions of the tensors resulting from a complex operation yet to be performed, hence it can always allocate exactly the right amount of stack memory required. This is in contrast to static arrays in `C` or `Fortran` where one has to allocate a huge block of memory before hand to avoid stack overflow.
 
 ### Static disptaching for absolute branchless code
-This is a strong statement to make, but Fastor strives to generate optimised SIMD code by utilising the static nature of tensors and the `SFINAE` (Substitution Failure Is Not an Error) feature of `C++11` to statically dispatch calls to bespoke kernels, which completely avoids the need for runtime branching. For example the double contraction of two second order double precision tensors  `A` and `B`, `A_ij*B_ij` with dimensions `2x2`, is statically dispatched to 
+This is a strong statement to make, but Fastor strives to generate optimised SIMD code by utilising the static nature of tensors and the `SFINAE` (Substitution Failure Is Not an Error) feature of `C++11` to statically dispatch calls to bespoke kernels, which completely avoids the need for runtime branching. For example the double contraction of two second order double precision tensors  `A` and `B`, `A_ij*B_ij` with dimensions `2x2`, is statically dispatched to
 ~~~c++
 return _mm256_sum_pd(_mm256_mul_pd(_mm256_load_pd(A._data),_mm256_load_pd(B._data)));
 ~~~
-(Notice that the double contraction of two second order tensors of `2x2` requires `4 multiplication + 3 addition` which using SIMD lanes can be reduced to `1 multiplication + 1 addition`. Also `_mm256_sum_pd` is Fastor's in-built extension to SIMD intrinsics.) while for `3x3` double precision second order tensors the call is dispatched to 
+(Notice that the double contraction of two second order tensors of `2x2` requires `4 multiplication + 3 addition` which using SIMD lanes can be reduced to `1 multiplication + 1 addition`. Also `_mm256_sum_pd` is Fastor's in-built extension to SIMD intrinsics.) while for `3x3` double precision second order tensors the call is dispatched to
 ~~~c++
 __m256d r1 = _mm256_mul_pd(_mm256_load_pd(A._data),_mm256_load_pd(B._data));
 __m256d r2 = _mm256_mul_pd(_mm256_load_pd(A._data+4),_mm256_load_pd(B._data+4));
@@ -79,7 +79,7 @@ __m128d r3 = _mm_mul_sd(_mm_load_sd(A._data+8),_mm_load_sd(B._data+8));
 __m128d summ = _mm_add_pd(_add_pd(r3),_add_pd(_mm256_add_pd(r1,r2)));
 return _mm_cvtsd_f64(summ);
 ~~~
-without the need for a branch or a potential `jmp` instruction in assembly (again note that `9 multiplication + 8 addition` is reduced to `3 multiplication + 3 addition`). The main motivation behind customising/optimising these operations for such small tensors is that they are typically needed in the critical hotspots of finite element implementations (i.e. they almost always happen to appear at every quadrature point).  
+without the need for a branch or a potential `jmp` instruction in assembly (again note that `9 multiplication + 8 addition` is reduced to `3 multiplication + 3 addition`). The main motivation behind customising/optimising these operations for such small tensors is that they are typically needed in the critical hotspots of finite element implementations (i.e. they almost always happen to appear at every quadrature point).
 
 
 ### Tensor views: A powerful indexing, slicing and broadcasting mechanism
@@ -108,7 +108,7 @@ A(seq(0,last-2),all,all) += A(seq(0,last-2),all,all);                // A[::2,:,
 // iseq<first,last,step>
 C = A(iseq<0,2>(),iseq<0,2>(),iseq<0,last,2>());                     // C = A[0:2,0:2,0::2]
 // Note that iseq returns an immediate tensor rather than a tensor view and hence cannot appear
-// on the left hand side, for instance 
+// on the left hand side, for instance
 A(iseq<0,2>(),iseq<0,2>(),iseq<0,last,2>()) = 2; // Will not compile, as left operand is an rvalue
 
 // One can also index a tensor with another tensor(s)
@@ -125,7 +125,7 @@ Aside from `iseq` (which pretty much immediately returns another tensor), all ot
 A(all,all) -= log(B(all,all,0)) + abs(B(all,fall,1)) + sin(C(all,0,all,0)) - 102. - cos(B(all,all,0));
 ~~~
 
-It should be mentioned that since tensor views work on a view of (reference to) a tensor and do not copy any data in the background, the use of the keyword `auto` can be dangerous at times 
+It should be mentioned that since tensor views work on a view of (reference to) a tensor and do not copy any data in the background, the use of the keyword `auto` can be dangerous at times
 ~~~c++
 auto B = A(all,all,seq(0,5),seq(0,3)); // the scope of view expressions ends with ; as view is a refrerence to an rvalue
 auto C = B + 2; // Hence this will sigfault as B refers to a non-existing piece of memory
@@ -135,14 +135,14 @@ To solve this issue, use immediate construction from a view
 Tensor<double,2,2,5,3> B = A(all,all,seq(0,5),seq(0,3)); // B is now permanent
 auto C = B + 2; // This will behave as expected
 ~~~
-From a performance point of view, Fastor tries very hard to vectorise (read SIMD vectorisation) tensor views, but this heavily depends on the compilers ability to inline multiple recursive functions [as is the case for all expression templates]. If a view appears on the right hand side of an assignment, but not on the left, Fastor automatically vectorises the expression. However if a view appears on the left hand side of an assignment, Fastor does not by default vectorise the expression. To enable vectorisation across all tensor views use the compiler flag `-DFASTOR_USE_VECTORISE_EXPR_ASSIGN`. Also for performance reasons, it is beneficial to avoid overlapping assignments, otherwise a copy will be made. If your code does not use any overlapping assignments, then this feature can be turned off completely by issusing `-DFASTOR_NO_ALIAS`. At this stage it is also beneficial to consider that while compiling a complex and big expressions the inlining limit of the compiler should be increased and tested i.e. `-finline-limit=<big number>` for GCC, `-mllvm -inline-threshold=<big number>` for Clang and `-inline-forceinline` for ICC. 
+From a performance point of view, Fastor tries very hard to vectorise (read SIMD vectorisation) tensor views, but this heavily depends on the compilers ability to inline multiple recursive functions [as is the case for all expression templates]. If a view appears on the right hand side of an assignment, but not on the left, Fastor automatically vectorises the expression. However if a view appears on the left hand side of an assignment, Fastor does not by default vectorise the expression. To enable vectorisation across all tensor views use the compiler flag `-DFASTOR_USE_VECTORISE_EXPR_ASSIGN`. Also for performance reasons, it is beneficial to avoid overlapping assignments, otherwise a copy will be made. If your code does not use any overlapping assignments, then this feature can be turned off completely by issusing `-DFASTOR_NO_ALIAS`. At this stage it is also beneficial to consider that while compiling a complex and big expressions the inlining limit of the compiler should be increased and tested i.e. `-finline-limit=<big number>` for GCC, `-mllvm -inline-threshold=<big number>` for Clang and `-inline-forceinline` for ICC.
 
-As an example to see how efficiently tensor views can be vectorised, consider the following 4th order finite difference example for Laplace equation  
+As an example to see how efficiently tensor views can be vectorised, consider the following 4th order finite difference example for Laplace equation
 ~~~c++
 Tensor<double,100,100> u, v;
 // fill u and v
 // A complex assignment expression involving multiple tensor views
-u(seq(1,last-1),seq(1,last-1)) = 
+u(seq(1,last-1),seq(1,last-1)) =
     ((  v(seq(0,last-2),seq(1,last-1)) + v(seq(2,last),seq(1,last-1)) +
         v(seq(1,last-1),seq(0,last-2)) + v(seq(1,last-1),seq(2,last)) )*4.0 +
         v(seq(0,last-2),seq(0,last-2)) + v(seq(0,last-2),seq(2,last)) +
@@ -211,19 +211,19 @@ ltranspose(ladjoint(A));   // transformed to lcofactor(A), O(n^2) reduction in m
 lmatmul(lmatmul(A,B),b);   // transformed to lmatmul(A,lmatmul(B,b)), O(n) reduction in computation
 // and many more
 ~~~
-Note that there are situations that the user may write a complex chain of operations in the most verbose way, perhaps for readibility purposes, but Fastor delays the evaluation of the expression and checks if an equivalent but efficient expression can be computed. The computed expression always binds back to the base tensor, overhead free without a runtime (virtual table/pointer) penalty.  
+Note that there are situations that the user may write a complex chain of operations in the most verbose way, perhaps for readibility purposes, but Fastor delays the evaluation of the expression and checks if an equivalent but efficient expression can be computed. The computed expression always binds back to the base tensor, overhead free without a runtime (virtual table/pointer) penalty.
 
-For tensor networks comprising of many higher rank tensors, a full generalisation of the above mathematical transformation can be performed through a constructive graph search optimisation. This typically involves finding the most optimal pattern of tensor contraction by studying the indices of contraction wherein tensor pairs are multiplied, summed over and factorised out in all possible combinations in order to come up with a cost model. Once again, knowing the dimensions of the tensor and the contraction pattern, Fastor performs this operation minimisation step at *compile time* and further checks the SIMD vectorisability of the tensor contraction loop nest (i.e. full/partial/broadcast vectorisation). In nutshell, it not only minimises the the number of floating point operations but also generates the most optimum vectorisable loop nest for computing those FLOPs. The following figures show the run time benefit of operation minimisation (FLOP optimal) over a single expression evaluation (Memory-saving) approach in contracting a three-tensor-network fitting in `L1`, `L2` and `L3` caches, respectively 
+For tensor networks comprising of many higher rank tensors, a full generalisation of the above mathematical transformation can be performed through a constructive graph search optimisation. This typically involves finding the most optimal pattern of tensor contraction by studying the indices of contraction wherein tensor pairs are multiplied, summed over and factorised out in all possible combinations in order to come up with a cost model. Once again, knowing the dimensions of the tensor and the contraction pattern, Fastor performs this operation minimisation step at *compile time* and further checks the SIMD vectorisability of the tensor contraction loop nest (i.e. full/partial/broadcast vectorisation). In nutshell, it not only minimises the the number of floating point operations but also generates the most optimum vectorisable loop nest for computing those FLOPs. The following figures show the run time benefit of operation minimisation (FLOP optimal) over a single expression evaluation (Memory-saving) approach in contracting a three-tensor-network fitting in `L1`, `L2` and `L3` caches, respectively
 <p align="left">
   <img src="docs/imgs/05l1.png" width="280">
   <img src="docs/imgs/05l2.png" width="280">
   <img src="docs/imgs/05l3.png" width="280">
 </p>
-The X-axis shows the number FLOPS saved/reduced over single expression evaluation scheme. Certainly, the bigger the size of tensors the more reduction in FLOPs is necessary to compensate for the temporaries created during by-pair evalution. 
+The X-axis shows the number FLOPS saved/reduced over single expression evaluation scheme. Certainly, the bigger the size of tensors the more reduction in FLOPs is necessary to compensate for the temporaries created during by-pair evalution.
 
 
 ### Domain-aware numerical analysis
-In nonlinear mechanics, it is customary to transform high order tensors to low rank tensors using Voigt transformation. Fastor has domain-specific features for such tensorial operations. For example, consider the dyadic product `A_ik*B_jl`, that can be computed in Fastor like 
+In nonlinear mechanics, it is customary to transform high order tensors to low rank tensors using Voigt transformation. Fastor has domain-specific features for such tensorial operations. For example, consider the dyadic product `A_ik*B_jl`, that can be computed in Fastor like
 ~~~c++
 Tensor<double,3,3> A,B;
 A.random(); B.random();
@@ -233,7 +233,7 @@ enum {I,J,K,L};
 Tensor<double,6,6> D = einsum<Index<I,K>,Index<J,L>,Voigt>(A,B);
 ~~~
 
-As you notice, all indices are resolved and the Voigt transformation is performed at compile time, keeping only the cost of computation at runtime. Equivalent implementation of this in C/Fortran requires either low-level for loop style programming that has an O(n^4) computational complexity and non-contiguous memory access, or if a function like einsum is desired the indices will need to be passed requiring potentially extra register allocation. Here is performance benchmark between Ctran (C/Fortran) for loop code and the equivalent Fastor implementation for the above example, run over a million times (both compiled using `-O3 -mavx`, on `Intel(R) Xeon(R) CPU E5-2650 v2 @2.60GHz` running `Ubuntu 14.04`):       
+As you notice, all indices are resolved and the Voigt transformation is performed at compile time, keeping only the cost of computation at runtime. Equivalent implementation of this in C/Fortran requires either low-level for loop style programming that has an O(n^4) computational complexity and non-contiguous memory access, or if a function like einsum is desired the indices will need to be passed requiring potentially extra register allocation. Here is performance benchmark between Ctran (C/Fortran) for loop code and the equivalent Fastor implementation for the above example, run over a million times (both compiled using `-O3 -mavx`, on `Intel(R) Xeon(R) CPU E5-2650 v2 @2.60GHz` running `Ubuntu 14.04`):
 
 
 <p align="center">
@@ -264,22 +264,22 @@ Notice the almost two orders of magnitude performance gain using Fastor. Again t
 
 
 ### Boolean tensor algebra
-A set of boolean tensor routines are available in Fastor. Note that, whenever possible most of these operations are performed at compile time 
+A set of boolean tensor routines are available in Fastor. Note that, whenever possible most of these operations are performed at compile time
 ~~~c++
 is_uniform();   // does the tensor span equally in all spatial dimensions, generalisation of square matrices
 is_orthogonal();
 does_belong_to_sl3(); // does the tensor belong to special linear 3D group
 does_belong_to_so3(); // does the tensor belong to special orthogonal 3D group
 is_symmetric(int axis_1, int axis_2); // is the tensor symmetric in the axis_1 x axis_2 plane
-is_equal(B); // equality check with another tensor 
-is_identity(); 
+is_equal(B); // equality check with another tensor
+is_identity();
 ~~~
 
 ### Basic SIMD optimised linear algebra routines for small tensors
 All basic numerical linear algebra subroutines for small tensors (where the overhead of calling vendor/optimised `BLAS` is typically not worth it) are fully SIMD optimised and efficiently implemented
 ~~~c++
-Tensor<double,3,3> A,B; 
-// fill A and B                 
+Tensor<double,3,3> A,B;
+// fill A and B
 auto ab = matmul(A,B);          // matrix matrix multiplication of A*B
 auto a_norm = norm(A);          // Frobenious norm of A
 auto b_det = determinant(B);    // determinant of B
@@ -305,7 +305,7 @@ reduction(G,H); // double contraction of G and H i.e. G_IJ*H_IJ
 As you can observe with combination of `permutation`, `contraction`, `reduction` and `einsum` (which itself is a glorified wrapper over the first three) any type of tensor contraction, and permutation that you can percieve of, is possible, and using meta-programming the right amount of stack memory to be allocated is deduced at compile time.
 
 ### A minimal framework
-Fastor is extremely light weight, it is a *header-only* library, requires no build or compilation process and has no external dependencies. It is written in pure C++11 from the foundation.  
+Fastor is extremely light weight, it is a *header-only* library, requires no build or compilation process and has no external dependencies. It is written in pure C++11 from the foundation.
 
 ### Tested Compilers
 Fastor has been tested against the following compilers (on Ubuntu 14.04 and Ubuntu 16.04 and macOS). While compiling on macOS with Clang, `-std=c++14` is necessary
@@ -332,11 +332,11 @@ Similar projects exist with varying levels of functionality, in particular
 - [LTensor](https://code.google.com/archive/p/ltensor/): Dense tensor algebra framework for up to rank 4 tensors
 - [libtensor](https://github.com/juanjosegarciaripoll/tensor): Dense tensor algebra framework for up to rank 6 tensors
 - [Eigen's tensor algebra package](http://eigen.tuxfamily.org/index.php?title=Tensor_support): Arbitrary rank dense tensor algebra module
-- [Blitz++'s tensor module](http://blitz.sourceforge.net/): Dense linear algebra framework for up to rank 11 tensors 
+- [Blitz++'s tensor module](http://blitz.sourceforge.net/): Dense linear algebra framework for up to rank 11 tensors
 - [TiledArray](https://github.com/ValeevGroup/tiledarray): Massively parallel arbitrary rank block sparse tensor algebra framework based on Eigen
 - [Cyclops Tensor Framework](https://github.com/solomonik/ctf): Distributed memory arbitrary rank sparse tensor algebra framework
 
-- Some of Fastor's routines do not fall back to scalar code on non-SIMD architectures. This is only true for some basic BLAS type routines and not for tensor contraction procedures. In particular you need to have an AVX enabled micro-architecture for it to run, i.e. starting from Intel Sandy-Bridge or AMD Bulldozer generation onwards. Extension to support more vector enabled archetictures such as AVX-512, MIC and GPUs is planned and should be in fact straight-forward to plug them in, by using the [Vc](https://github.com/VcDevel/Vc) library. Fastor's underlying vector type APIs are purposely kept very close to `Vc`, so that in eventual case of porting, a change of namespace would suffice.  
-- Fastor is for small and on-cache tensors. 
-- Most of the points mentioned above, like compile time graph search optimisation, Voigt transformation and the einsum feature is specific to Fastor. 
-- While stable, Fastor is in its infancy, whereas most of the aforementioned projects have reached a certain level maturity. 
+- Some of Fastor's routines do not fall back to scalar code on non-SIMD architectures. This is only true for some basic BLAS type routines and not for tensor contraction procedures. In particular you need to have an AVX enabled micro-architecture for it to run, i.e. starting from Intel Sandy-Bridge or AMD Bulldozer generation onwards. Extension to support more vector enabled archetictures such as AVX-512, MIC and GPUs is planned and should be in fact straight-forward to plug them in, by using the [Vc](https://github.com/VcDevel/Vc) library. Fastor's underlying vector type APIs are purposely kept very close to `Vc`, so that in eventual case of porting, a change of namespace would suffice.
+- Fastor is for small and on-cache tensors.
+- Most of the points mentioned above, like compile time graph search optimisation, Voigt transformation and the einsum feature is specific to Fastor.
+- While stable, Fastor is in its infancy, whereas most of the aforementioned projects have reached a certain level maturity.
