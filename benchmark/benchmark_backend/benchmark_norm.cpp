@@ -5,7 +5,7 @@ using namespace Fastor;
 #define NITER 1000000UL
 
 template<typename T, size_t M, size_t N>
-inline T norm_scalar(const T *__restrict__ in) {
+inline T norm_scalar(const T *FASTOR_RESTRICT in) {
     T sum = 0;
     for (size_t i=0; i<M; ++i)
         for (size_t j=0; j<N; ++j)
@@ -14,7 +14,7 @@ inline T norm_scalar(const T *__restrict__ in) {
 }
 
 template<typename T, size_t M, size_t N>
-void iterate_over_scalar(const T *__restrict__ in) {
+void iterate_over_scalar(const T *FASTOR_RESTRICT in) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         T out = norm_scalar<T,M,N>(in);
@@ -23,12 +23,12 @@ void iterate_over_scalar(const T *__restrict__ in) {
 }
 
 template<typename T, size_t M, size_t N>
-void iterate_over_fastor(const T *__restrict__ in) {
+void iterate_over_fastor(const T *FASTOR_RESTRICT in) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         T out = _norm<T,M*N>(in);
         unused(out);
-    } 
+    }
 
     // manual unrolling of iterations, helps GCC for smaller arrays
     // for (; iter<NITER; iter+=4) {
@@ -38,7 +38,7 @@ void iterate_over_fastor(const T *__restrict__ in) {
     //     T out3 = _norm<T,M*N>(in);
     //     unused(out0); unused(out1);
     //     unused(out2); unused(out3);
-    // }    
+    // }
 }
 
 
@@ -57,7 +57,7 @@ void run() {
 
     int64_t saved_cycles = int64_t((double)cycles_scalar/(double)(NITER) - (double)cycles_fastor/(double)(NITER));
     auto &&w = std::fixed;
-    println(FGRN(BOLD("Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor, 
+    println(FGRN(BOLD("Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor,
         FGRN(BOLD("[saved CPU cycles]")), saved_cycles);
     print();
 

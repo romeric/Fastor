@@ -25,7 +25,7 @@ public:
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return i==0 ? _seq0.size() : _seq1.size();}
 
     FASTOR_INLINE TensorConstViewExpr(const Tensor<T,M,N> &_ex, seq _s0, seq _s1) : expr(_ex), _seq0(std::move(_s0)), _seq1(std::move(_s1)) {
-        if (_seq0._last < 0 && _seq0._first >= 0) {_seq0._last += M + 1;} 
+        if (_seq0._last < 0 && _seq0._first >= 0) {_seq0._last += M + 1;}
         else if (_seq0._last==0 && _seq0._first==-1) {_seq0._first=M-1; _seq0._last=M;}
         else if (_seq0._last < 0 && _seq0._first < 0) {_seq0._first += M +1; _seq0._last += M+1;}
         if (_seq1._last < 0 && _seq1._first >= 0) {_seq1._last += N + 1;}
@@ -34,12 +34,12 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(_seq0._last <= M && _seq0._first<M,"INDEX OUT OF BOUNDS");
         FASTOR_ASSERT(_seq1._last <= N && _seq1._first<N,"INDEX OUT OF BOUNDS");
-#endif   
+#endif
     }
 
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX idx) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
+        SIMDVector<U,DEFAULT_ABI> _vec;
         std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
         for (auto j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
             auto it = (idx+j) / _seq1.size(), jt = (idx+j) % _seq1.size();
@@ -59,7 +59,7 @@ public:
 
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
+        SIMDVector<U,DEFAULT_ABI> _vec;
         vector_setter(_vec,expr.data(),_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,_seq1._step);
         return _vec;
     }
@@ -108,10 +108,10 @@ public:
         return *this;
     }
 
-    FASTOR_INLINE TensorViewExpr(Tensor<T,M,N> &_ex, seq _s0, seq _s1) : 
+    FASTOR_INLINE TensorViewExpr(Tensor<T,M,N> &_ex, seq _s0, seq _s1) :
         expr(_ex), _seq0(std::move(_s0)), _seq1(std::move(_s1)) {
 
-        if (_seq0._last < 0 && _seq0._first >= 0) {_seq0._last += M + 1;} 
+        if (_seq0._last < 0 && _seq0._first >= 0) {_seq0._last += M + 1;}
         else if (_seq0._last==0 && _seq0._first==-1) {_seq0._first=M-1; _seq0._last=M;}
         else if (_seq0._last < 0 && _seq0._first < 0) {_seq0._first += M +1; _seq0._last += M+1;}
         if (_seq1._last < 0 && _seq1._first >= 0) {_seq1._last += N + 1;}
@@ -120,7 +120,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(_seq0._last <= M && _seq0._first<M,"INDEX OUT OF BOUNDS");
         FASTOR_ASSERT(_seq1._last <= N && _seq1._first<N,"INDEX OUT OF BOUNDS");
-#endif   
+#endif
     }
 
     // View evalution operators
@@ -147,7 +147,7 @@ public:
             // this->operator=(tmp_this_tensor(_seq0,_seq1));
             // return;
         }
-#endif 
+#endif
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -201,11 +201,11 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,M,N>,2>(tmp_this_tensor,_seq0,_seq1);
             // Assign other to temporary
             tmp = other_src;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator+=(tmp);
             return;
         }
-#endif 
+#endif
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -243,11 +243,11 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,M,N>,2>(tmp_this_tensor,_seq0,_seq1);
             // Assign other to temporary
             tmp = other_src;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator-=(tmp);
             return;
         }
-#endif        
+#endif
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -285,11 +285,11 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,M,N>,2>(tmp_this_tensor,_seq0,_seq1);
             // Assign other to temporary
             tmp = other_src;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator*=(tmp);
             return;
         }
-#endif       
+#endif
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -327,11 +327,11 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,M,N>,2>(tmp_this_tensor,_seq0,_seq1);
             // Assign other to temporary
             tmp = other_src;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator/=(tmp);
             return;
         }
-#endif        
+#endif
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -375,7 +375,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,M,N>,2>(tmp_this_tensor,_seq0,_seq1);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator=(tmp);
             return;
         }
@@ -388,7 +388,7 @@ public:
             FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
-        T *__restrict__ _data = expr.data();
+        T *FASTOR_RESTRICT _data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
             FASTOR_INDEX j;
@@ -420,11 +420,11 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,M,N>,2>(tmp_this_tensor,_seq0,_seq1);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator+=(tmp);
             return;
         }
-#endif       
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -464,11 +464,11 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,M,N>,2>(tmp_this_tensor,_seq0,_seq1);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator-=(tmp);
             return;
         }
-#endif       
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -508,11 +508,11 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,M,N>,2>(tmp_this_tensor,_seq0,_seq1);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator*=(tmp);
             return;
         }
-#endif     
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -552,11 +552,11 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,M,N>,2>(tmp_this_tensor,_seq0,_seq1);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator/=(tmp);
             return;
         }
-#endif       
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -600,7 +600,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,M,N>,2>(tmp_this_tensor,_seq0,_seq1);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator=(tmp);
             return;
         }
@@ -609,7 +609,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *__restrict__ _data = expr.data();
+        T *FASTOR_RESTRICT _data = expr.data();
         FASTOR_INDEX counter = 0;
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
@@ -644,16 +644,16 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,M,N>,2>(tmp_this_tensor,_seq0,_seq1);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator+=(tmp);
             return;
         }
-#endif       
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *__restrict__ _data = expr.data();
+        T *FASTOR_RESTRICT _data = expr.data();
         FASTOR_INDEX counter = 0;
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
@@ -688,16 +688,16 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,M,N>,2>(tmp_this_tensor,_seq0,_seq1);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator-=(tmp);
             return;
         }
-#endif       
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *__restrict__ _data = expr.data();
+        T *FASTOR_RESTRICT _data = expr.data();
         FASTOR_INDEX counter = 0;
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
@@ -732,16 +732,16 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,M,N>,2>(tmp_this_tensor,_seq0,_seq1);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator*=(tmp);
             return;
         }
-#endif       
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *__restrict__ _data = expr.data();
+        T *FASTOR_RESTRICT _data = expr.data();
         FASTOR_INDEX counter = 0;
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
@@ -776,16 +776,16 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,M,N>,2>(tmp_this_tensor,_seq0,_seq1);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator/=(tmp);
             return;
         }
-#endif       
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *__restrict__ _data = expr.data();
+        T *FASTOR_RESTRICT _data = expr.data();
         FASTOR_INDEX counter = 0;
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
@@ -937,7 +937,7 @@ public:
 
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX idx) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
+        SIMDVector<U,DEFAULT_ABI> _vec;
         std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
         for (auto j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
             // auto it = (idx+j) / _seq0.size(), jt = (idx+j) % _seq0.size();
@@ -950,8 +950,8 @@ public:
 
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
-        if (_seq1._step==1) _vec.load(expr.data()+_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,false);       
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        if (_seq1._step==1) _vec.load(expr.data()+_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,false);
         else vector_setter(_vec,expr.data(),_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,_seq1._step);
         return _vec;
     }
@@ -967,7 +967,7 @@ public:
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first);
     }
-    
+
 };
 
 

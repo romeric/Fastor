@@ -6,7 +6,7 @@ using namespace Fastor;
 
 
 template<typename T, size_t N>
-inline void cyclic_scalar(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+inline void cyclic_scalar(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     constexpr size_t size = N;
     for (size_t i=0; i<N; ++i)
         for (size_t j=0; j<N; ++j)
@@ -17,7 +17,7 @@ inline void cyclic_scalar(const T *__restrict__ a, const T *__restrict__ b, T *_
 
 
 template<typename T, size_t N>
-void iterate_over_scalar(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+void iterate_over_scalar(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     T tmp[N*N*N*N];
     for (; iter<NITER; ++iter) {
@@ -28,12 +28,12 @@ void iterate_over_scalar(const T *__restrict__ a, const T *__restrict__ b, T *__
 }
 
 template<typename T, size_t N>
-void iterate_over_fastor(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+void iterate_over_fastor(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         _cyclic<T,N,N,N,N>(a,b,out);
         unused(out);
-    }    
+    }
 }
 
 template<typename T, size_t M, size_t N>
@@ -41,7 +41,7 @@ void run() {
 
     T *a  = static_cast<T*>(_mm_malloc(sizeof(T) * M*N, 32));
     T *b  = static_cast<T*>(_mm_malloc(sizeof(T) * M*N, 32));
-    T *out; 
+    T *out;
     if (M*N==4) out = static_cast<T*>(_mm_malloc(sizeof(T) *9, 32));
     else if (M*N==9) out = static_cast<T*>(_mm_malloc(sizeof(T) *36, 32));
 
@@ -56,7 +56,7 @@ void run() {
 
     int64_t saved_cycles = int64_t((double)cycles_scalar/(double)(NITER) - (double)cycles_fastor/(double)(NITER));
     auto &&w = std::fixed;
-    println(FGRN(BOLD("Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor, 
+    println(FGRN(BOLD("Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor,
         FGRN(BOLD("[saved CPU cycles]")), saved_cycles);
     print();
 

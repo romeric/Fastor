@@ -6,7 +6,7 @@ using namespace Fastor;
 
 
 template<typename T, size_t N>
-inline T trace_scalar(const T *__restrict__ in) {
+inline T trace_scalar(const T *FASTOR_RESTRICT in) {
     T sum = 0;
     for (size_t i=0; i<N; ++i)
             sum += in[i*N+i];
@@ -14,7 +14,7 @@ inline T trace_scalar(const T *__restrict__ in) {
 }
 
 template<typename T, size_t N>
-void iterate_over_scalar(const T *__restrict__ in) {
+void iterate_over_scalar(const T *FASTOR_RESTRICT in) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         T trace = trace_scalar<T,N>(in);
@@ -23,12 +23,12 @@ void iterate_over_scalar(const T *__restrict__ in) {
 }
 
 template<typename T, size_t N>
-void iterate_over_fastor(const T *__restrict__ in) {
+void iterate_over_fastor(const T *FASTOR_RESTRICT in) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         T trace = _trace<T,N,N>(in);
         unused(trace);
-    }    
+    }
 }
 
 
@@ -46,7 +46,7 @@ void run() {
 
     int64_t saved_cycles = int64_t((double)cycles_scalar/(double)(NITER) - (double)cycles_fastor/(double)(NITER));
     auto &&w = std::fixed;
-    println(FGRN(BOLD("Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor, 
+    println(FGRN(BOLD("Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor,
         FGRN(BOLD("[saved CPU cycles]")), saved_cycles);
     print();
 

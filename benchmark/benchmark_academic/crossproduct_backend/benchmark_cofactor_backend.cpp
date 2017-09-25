@@ -5,11 +5,11 @@ using namespace Fastor;
 #define NITER 1000000UL
 
 template<typename T, size_t N>
-void iterate_over_classical(const T *__restrict__ a, T *__restrict__ out) {
+void iterate_over_classical(const T *FASTOR_RESTRICT a, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
 
-        // Dynamic version - not to be used  
+        // Dynamic version - not to be used
         // T det = _det<T,N,N>(a);
         // T *adj = static_cast<T*>(_mm_malloc(sizeof(T) * N*N, 32));
         // _adjoint<T,N,N>(a,adj);
@@ -17,13 +17,13 @@ void iterate_over_classical(const T *__restrict__ a, T *__restrict__ out) {
         // _transpose<T,N,N>(adj,trans);
         // for (int i=0; i<N*N; ++i)
         //     out[i] = trans[i]/det;
-        
+
         // _mm_free(adj);
         // _mm_free(trans);
 
         // unused(a); unused(out);
 
-        // // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
+        // // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct
         // out[1] += out[2];
 
         // static version
@@ -37,47 +37,47 @@ void iterate_over_classical(const T *__restrict__ a, T *__restrict__ out) {
 
         unused(a); unused(out);
 
-        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
+        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct
         out[1] += out[2];
     }
 }
 
 template<typename T, size_t N,
     typename std::enable_if<N==3,bool>::type = 0>
-void iterate_over_fastor_cross(const T *__restrict__ a, T *__restrict__ out) {
+void iterate_over_fastor_cross(const T *FASTOR_RESTRICT a, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         _crossproduct<T,N,N,N>(a,a,out);
         unused(a); unused(out);
 
-        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
-        out[1] += out[2]; 
-    }    
+        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct
+        out[1] += out[2];
+    }
 }
 
 template<typename T, size_t N,
     typename std::enable_if<N==2,bool>::type = 0>
-void iterate_over_fastor_cross(const T *__restrict__ a, T *__restrict__ out) {
+void iterate_over_fastor_cross(const T *FASTOR_RESTRICT a, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         _crossproduct<T,PlaneStrain>(a,a,out);
         unused(a); unused(out);
 
-        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
-        out[1] += out[2]; 
-    }    
+        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct
+        out[1] += out[2];
+    }
 }
 
 template<typename T, size_t N>
-void iterate_over_fastor_cof(const T *__restrict__ a, T *__restrict__ out) {
+void iterate_over_fastor_cof(const T *FASTOR_RESTRICT a, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         _cofactor<T,N,N>(a,out);
         unused(a); unused(out);
 
-        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
-        out[1] += out[2]; 
-    }    
+        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct
+        out[1] += out[2];
+    }
 }
 
 

@@ -5,7 +5,7 @@ using namespace Fastor;
 #define NITER 1000000UL
 
 template<typename T, size_t M, size_t N>
-inline T doublecontract_scalar(const T *__restrict__ in, T *__restrict__ out) {
+inline T doublecontract_scalar(const T *FASTOR_RESTRICT in, T *FASTOR_RESTRICT out) {
     T sum = 0;
     for (size_t i=0; i<M; ++i)
         for (size_t j=0; j<N; ++j)
@@ -14,7 +14,7 @@ inline T doublecontract_scalar(const T *__restrict__ in, T *__restrict__ out) {
 }
 
 template<typename T, size_t M, size_t N>
-void iterate_over_scalar(const T *__restrict__ in, T *__restrict__ out) {
+void iterate_over_scalar(const T *FASTOR_RESTRICT in, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         T dc = doublecontract_scalar<T,M,N>(in,out);
@@ -23,12 +23,12 @@ void iterate_over_scalar(const T *__restrict__ in, T *__restrict__ out) {
 }
 
 template<typename T, size_t M, size_t N>
-void iterate_over_fastor(const T *__restrict__ in, T *__restrict__ out) {
+void iterate_over_fastor(const T *FASTOR_RESTRICT in, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         T dc = _doublecontract<T,M,N>(in,out);
         unused(dc);
-    }    
+    }
 }
 
 
@@ -48,7 +48,7 @@ void run() {
 
     int64_t saved_cycles = int64_t((double)cycles_scalar/(double)(NITER) - (double)cycles_fastor/(double)(NITER));
     auto &&w = std::fixed;
-    println(FGRN(BOLD("Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor, 
+    println(FGRN(BOLD("Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor,
         FGRN(BOLD("[saved CPU cycles]")), saved_cycles);
     print();
 

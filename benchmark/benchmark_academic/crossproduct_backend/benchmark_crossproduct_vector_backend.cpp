@@ -6,7 +6,7 @@ using namespace Fastor;
 
 
 template<typename T, size_t N>
-inline void crossproduct_scalar_vt(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+inline void crossproduct_scalar_vt(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     constexpr T levi_civita[27] = { 0.,  0.,  0.,  0.,  0., -1.,  0.,  1.,  0.,  0.,  0.,  1.,  0.,  0.,
                                 0., -1.,  0.,  0.,  0., -1.,  0.,  1.,  0.,  0.,  0.,  0.,  0.};
     constexpr size_t size = N;
@@ -18,7 +18,7 @@ inline void crossproduct_scalar_vt(const T *__restrict__ a, const T *__restrict_
 }
 
 template<typename T, size_t N>
-inline void crossproduct_scalar_tv(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+inline void crossproduct_scalar_tv(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     constexpr T levi_civita[27] = { 0.,  0.,  0.,  0.,  0., -1.,  0.,  1.,  0.,  0.,  0.,  1.,  0.,  0.,
                                 0., -1.,  0.,  0.,  0., -1.,  0.,  1.,  0.,  0.,  0.,  0.,  0.};
     constexpr size_t size = N;
@@ -31,51 +31,51 @@ inline void crossproduct_scalar_tv(const T *__restrict__ a, const T *__restrict_
 
 
 template<typename T, size_t N>
-void iterate_over_scalar_vt(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+void iterate_over_scalar_vt(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         crossproduct_scalar_vt<T,N>(a,b,out);
         unused(a); unused(b); unused(out);
 
-        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
+        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct
         out[1] += out[2];
     }
 }
 
 template<typename T, size_t N>
-void iterate_over_scalar_tv(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+void iterate_over_scalar_tv(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         crossproduct_scalar_tv<T,N>(a,b,out);
         unused(a); unused(b); unused(out);
 
-        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
+        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct
         out[1] += out[2];
     }
 }
 
 template<typename T, size_t N>
-void iterate_over_fastor_vt(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+void iterate_over_fastor_vt(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         _crossproduct<T,N,1,N>(a,b,out);
         unused(a); unused(b); unused(out);
 
-        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
-        out[1] += out[2]; 
-    }    
+        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct
+        out[1] += out[2];
+    }
 }
 
 template<typename T, size_t N>
-void iterate_over_fastor_tv(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+void iterate_over_fastor_tv(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         _crossproduct<T,N,N,1>(a,b,out);
         unused(a); unused(b); unused(out);
 
-        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
-        out[1] += out[2]; 
-    }    
+        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct
+        out[1] += out[2];
+    }
 }
 
 

@@ -6,7 +6,7 @@ using namespace Fastor;
 
 
 template<typename T, size_t N>
-inline void crossproduct_scalar(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+inline void crossproduct_scalar(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     constexpr T levi_civita[27] = { 0.,  0.,  0.,  0.,  0., -1.,  0.,  1.,  0.,  0.,  0.,  1.,  0.,  0.,
                                 0., -1.,  0.,  0.,  0., -1.,  0.,  1.,  0.,  0.,  0.,  0.,  0.};
     constexpr size_t size = N;
@@ -20,27 +20,27 @@ inline void crossproduct_scalar(const T *__restrict__ a, const T *__restrict__ b
 }
 
 template<typename T, size_t N>
-void iterate_over_scalar(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+void iterate_over_scalar(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         crossproduct_scalar<T,N>(a,b,out);
         unused(a); unused(b); unused(out);
 
-        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
+        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct
         out[1] += out[2];
     }
 }
 
 template<typename T, size_t N>
-void iterate_over_fastor(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+void iterate_over_fastor(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         _crossproduct<T,N,N,N>(a,b,out);
         unused(a); unused(b); unused(out);
 
-        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
-        out[1] += out[2]; 
-    }    
+        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct
+        out[1] += out[2];
+    }
 }
 
 
@@ -62,7 +62,7 @@ void run() {
 
     int64_t saved_cycles = int64_t((double)cycles_scalar/(double)(NITER) - (double)cycles_fastor/(double)(NITER));
     auto &&w = std::fixed;
-    println(FGRN(BOLD("Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor, 
+    println(FGRN(BOLD("Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor,
         FGRN(BOLD("[saved CPU cycles]")), saved_cycles);
     print();
 

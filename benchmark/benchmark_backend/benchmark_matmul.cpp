@@ -6,7 +6,7 @@ using namespace Fastor;
 
 
 template<typename T, size_t M, size_t K, size_t N>
-inline void matmul_scalar(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+inline void matmul_scalar(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     std::fill(out,out+M*N,0.);
     for (size_t i=0; i<M; ++i) {
         for (size_t j=0; j<K; ++j) {
@@ -18,7 +18,7 @@ inline void matmul_scalar(const T *__restrict__ a, const T *__restrict__ b, T *_
 }
 
 template<typename T, size_t M, size_t K, size_t N>
-void iterate_over_scalar(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+void iterate_over_scalar(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         matmul_scalar<T,M,K,N>(a,b,out);
@@ -27,12 +27,12 @@ void iterate_over_scalar(const T *__restrict__ a, const T *__restrict__ b, T *__
 }
 
 template<typename T, size_t M, size_t K, size_t N>
-void iterate_over_fastor(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+void iterate_over_fastor(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         _matmul<T,M,K,N>(a,b,out);
         unused(out);
-    }    
+    }
 }
 
 
@@ -55,7 +55,7 @@ void run() {
     int64_t saved_cycles = int64_t((double)cycles_scalar/(double)(NITER) - (double)cycles_fastor/(double)(NITER));
     auto &&w = std::fixed;
     println(FBLU(BOLD("Matrices size (M, K, N)")), M, K, N);
-    println(FGRN(BOLD("Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor, 
+    println(FGRN(BOLD("Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor,
         FGRN(BOLD("[saved CPU cycles]")), saved_cycles);
     print();
 

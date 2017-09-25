@@ -17,7 +17,7 @@ struct TensorConstFixedViewExpr2D<Tensor<T,M,N>,fseq<F0,L0,S0>,fseq<F1,L1,S1>,2>
     public AbstractTensor<TensorConstFixedViewExpr2D<Tensor<T,M,N>,fseq<F0,L0,S0>,fseq<F1,L1,S1>,2>,2> {
 private:
     const Tensor<T,M,N> &expr;
-public: 
+public:
     using scalar_type = T;
     static constexpr FASTOR_INDEX Dimension = 2;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
@@ -33,7 +33,7 @@ public:
 
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX idx) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
+        SIMDVector<U,DEFAULT_ABI> _vec;
         std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
         for (FASTOR_INDEX j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
             auto it = (idx+j) / range_detector<F1,L1,S1>::value, jt = (idx+j) % range_detector<F1,L1,S1>::value;
@@ -52,7 +52,7 @@ public:
 
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
+        SIMDVector<U,DEFAULT_ABI> _vec;
         vector_setter(_vec,expr.data(),S0*i*N+S1*j + Padding,S1);
         return _vec;
     }
@@ -75,7 +75,7 @@ struct TensorFixedViewExpr2D<Tensor<T,M,N>,fseq<F0,L0,S0>,fseq<F1,L1,S1>,2> :
 
 private:
     Tensor<T,M,N> &expr;
-public: 
+public:
     using scalar_type = T;
     static constexpr FASTOR_INDEX Dimension = 2;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
@@ -102,7 +102,7 @@ public:
             FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
-        T *__restrict__ _data = expr.data();
+        T *FASTOR_RESTRICT _data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         // FASTOR_INDEX i;
         // for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
@@ -270,7 +270,7 @@ public:
             FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
-        T *__restrict__ _data = expr.data();
+        T *FASTOR_RESTRICT _data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         constexpr FASTOR_INDEX UNROLL_UPTO = ROUND_DOWN(dimension(0),Stride);
         for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
@@ -283,7 +283,7 @@ public:
                 expr(S0*i+F0,S1*j+F1) = other_src.template eval_s<T>(i,j);
             }
         }
-#else           
+#else
         for (FASTOR_INDEX i = 0; i <range_detector<F0,L0,S0>::value; i++) {
             for (FASTOR_INDEX j = 0; j <range_detector<F1,L1,S1>::value; j++) {
                 expr(S0*i+F0,S1*j+F1) = other_src.template eval_s<T>(i,j);
@@ -426,7 +426,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *__restrict__ _data = expr.data();
+        T *FASTOR_RESTRICT _data = expr.data();
         FASTOR_INDEX counter = 0;
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         constexpr FASTOR_INDEX UNROLL_UPTO = ROUND_DOWN(dimension(0),Stride);
@@ -442,7 +442,7 @@ public:
                 counter++;
             }
         }
-#else           
+#else
         for (FASTOR_INDEX i = 0; i <range_detector<F0,L0,S0>::value; i++) {
             for (FASTOR_INDEX j = 0; j <range_detector<F1,L1,S1>::value; j++) {
                 expr(S0*i+F0,S1*j+F1) = other_src.template eval_s<T>(counter);
@@ -458,7 +458,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *__restrict__ _data = expr.data();
+        T *FASTOR_RESTRICT _data = expr.data();
         FASTOR_INDEX counter = 0;
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
@@ -489,7 +489,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *__restrict__ _data = expr.data();
+        T *FASTOR_RESTRICT _data = expr.data();
         FASTOR_INDEX counter = 0;
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
@@ -520,7 +520,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *__restrict__ _data = expr.data();
+        T *FASTOR_RESTRICT _data = expr.data();
         FASTOR_INDEX counter = 0;
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
@@ -551,7 +551,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *__restrict__ _data = expr.data();
+        T *FASTOR_RESTRICT _data = expr.data();
         FASTOR_INDEX counter = 0;
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
@@ -703,7 +703,7 @@ public:
 
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX idx) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
+        SIMDVector<U,DEFAULT_ABI> _vec;
         std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
         for (FASTOR_INDEX j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
             auto it = (idx+j) / range_detector<F1,L1,S1>::value, jt = (idx+j) % range_detector<F1,L1,S1>::value;
@@ -722,7 +722,7 @@ public:
 
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
+        SIMDVector<U,DEFAULT_ABI> _vec;
         if (S1==1) _vec.load(expr.data()+S0*i*N+S1*j + Padding, false);
         else vector_setter(_vec,expr.data(),S0*i*N+S1*j + Padding,S1);
         return _vec;
@@ -735,7 +735,7 @@ public:
 };
 
 
-} 
+}
 
 
 #endif // TENSOR_FIXED_VIEWS_2D_H

@@ -7,7 +7,7 @@ using namespace Fastor;
 
 template<typename T, size_t N,
     typename std::enable_if<N==3,bool>::type=0>
-inline void crossproduct_scalar(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+inline void crossproduct_scalar(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     constexpr T levi_civita[27] = { 0.,  0.,  0.,  0.,  0., -1.,  0.,  1.,  0.,  0.,  0.,  1.,  0.,  0.,
                                 0., -1.,  0.,  0.,  0., -1.,  0.,  1.,  0.,  0.,  0.,  0.,  0.};
     constexpr size_t size = N;
@@ -22,7 +22,7 @@ inline void crossproduct_scalar(const T *__restrict__ a, const T *__restrict__ b
 
 template<typename T, size_t N,
     typename std::enable_if<N==2,bool>::type=0>
-inline void crossproduct_scalar(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+inline void crossproduct_scalar(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     constexpr T levi_civita[27] = { 0.,  0.,  0.,  0.,  0., -1.,  0.,  1.,  0.,  0.,  0.,  1.,  0.,  0.,
                                 0., -1.,  0.,  0.,  0., -1.,  0.,  1.,  0.,  0.,  0.,  0.,  0.};
 
@@ -51,27 +51,27 @@ inline void crossproduct_scalar(const T *__restrict__ a, const T *__restrict__ b
 }
 
 template<typename T, size_t N>
-void iterate_over_scalar(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+void iterate_over_scalar(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         crossproduct_scalar<T,N>(a,b,out);
         unused(a); unused(b); unused(out);
 
-        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
+        // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct
         out[1] += out[2];
     }
 }
 
 template<typename T, size_t N>
-void iterate_over_fastor(const T *__restrict__ a, const T *__restrict__ b, T *__restrict__ out) {
+void iterate_over_fastor(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
         _crossproduct<T,N,N,N>(a,b,out);
         unused(a); unused(b); unused(out);
 
-        // // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct 
-        out[1] += out[2]; 
-    }    
+        // // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct
+        out[1] += out[2];
+    }
 }
 
 
