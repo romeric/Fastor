@@ -414,7 +414,7 @@ template<class Index_I, class Index_J, class Index_K, class Index_L,
          class Index_M, class Index_N, class Index_O, class Index_P,
          typename T, size_t ... Rest0, size_t ... Rest1,
          size_t ... Rest2, size_t ... Rest3, size_t ... Rest4, size_t ... Rest5, size_t ... Rest6, size_t ... Rest7>
-auto contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b,
+auto strided_contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b,
                  const Tensor<T,Rest2...> &c, const Tensor<T,Rest3...> &d,
                  const Tensor<T,Rest4...> &e, const Tensor<T,Rest5...> &f,
                  const Tensor<T,Rest6...> &g, const Tensor<T,Rest7...> &h)
