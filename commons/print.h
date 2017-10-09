@@ -17,19 +17,23 @@ namespace Fastor {
 
 
 #ifdef __SSE2__
-inline void print(__m128 a) {
+inline void print(__m128 b) {
+	const float* a = (const float*)&b;
     std::cout << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << '\n';
 }
-inline void print(__m128d a) {
+inline void print(__m128d b) {
+	const double* a = (const double*)&b;
     std::cout << a[0] << " " << a[1] << '\n';
 }
 #endif
 #ifdef __AVX__
-inline void print(__m256 a) {
+inline void print(__m256 b) {
+	const float* a = (const float*)&b;
     std::cout << a[0] << " " << a[1] << " " << a[2] << " " << a[3] <<  " " << 
     a[4] << " " << a[5] << " " << a[6] << " " << a[7] << "\n";
 }
-inline void print(__m256d a) {
+inline void print(__m256d b) {
+	const double* a = (const double*)&b;
     std::cout << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << '\n';
 }
 #endif

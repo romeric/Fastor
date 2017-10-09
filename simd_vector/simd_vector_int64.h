@@ -51,8 +51,8 @@ struct SIMDVector<Int64,256> {
             _mm256_storeu_si256((__m256i*)data,value);
     }
 
-    FASTOR_INLINE Int64 operator[](FASTOR_INDEX i) const {return value[i];}
-    FASTOR_INLINE Int64 operator()(FASTOR_INDEX i) const {return value[i];}
+    FASTOR_INLINE Int64 operator[](FASTOR_INDEX i) const { return reinterpret_cast<const Int64*>(&value)[i]; }
+    FASTOR_INLINE Int64 operator()(FASTOR_INDEX i) const { return reinterpret_cast<const Int64*>(&value)[i]; }
 
     FASTOR_INLINE void set(Int64 num) {
         value = _mm256_set1_epi64x(num);
@@ -260,8 +260,8 @@ struct SIMDVector<Int64,128> {
             _mm_storeu_si128((__m128i*)data,value);
     }
 
-    FASTOR_INLINE Int64 operator[](FASTOR_INDEX i) const {return value[i];}
-    FASTOR_INLINE Int64 operator()(FASTOR_INDEX i) const {return value[i];}
+    FASTOR_INLINE Int64 operator[](FASTOR_INDEX i) const { return reinterpret_cast<const Int64*>(&value)[i]; }
+    FASTOR_INLINE Int64 operator()(FASTOR_INDEX i) const { return reinterpret_cast<const Int64*>(&value)[i]; }
 
     FASTOR_INLINE void set(Int64 num) {
         value = _mm_set_epi64((__m64)num,(__m64)num);

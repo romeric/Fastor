@@ -48,8 +48,8 @@ struct SIMDVector<double, 256> {
             _mm256_storeu_pd(data,value);
     }
 
-    FASTOR_INLINE double operator[](FASTOR_INDEX i) const {return value[i];}
-    FASTOR_INLINE double operator()(FASTOR_INDEX i) const {return value[i];}
+    FASTOR_INLINE double operator[](FASTOR_INDEX i) const { return reinterpret_cast<const double*>(&value)[i]; }
+    FASTOR_INLINE double operator()(FASTOR_INDEX i) const { return reinterpret_cast<const double*>(&value)[i]; }
 
     FASTOR_INLINE void set(double num) {
         value = _mm256_set1_pd(num);
@@ -137,10 +137,11 @@ struct SIMDVector<double, 256> {
 FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<double> a) {
 #ifdef FASTOR_INTEL
     // ICC crashes without a copy
-    const __m256d value = a.value;
+    const __m256d v = a.value;
 #else
-    const auto &value = a.value;
+    const auto &v = a.value;
 #endif
+	const double* value = reinterpret_cast<const double*>(&v);
     os << "[" << value[0] <<  " " << value[1] << " " << value[2] << " " << value[3] << "]\n";
     return os;
 }
@@ -302,8 +303,8 @@ struct SIMDVector<double, 128> {
             _mm_storeu_pd(data,value);
     }
 
-    FASTOR_INLINE double operator[](FASTOR_INDEX i) const {return value[i];}
-    FASTOR_INLINE double operator()(FASTOR_INDEX i) const {return value[i];}
+    FASTOR_INLINE double operator[](FASTOR_INDEX i) const { return reinterpret_cast<const double*>(&value)[i]; }
+    FASTOR_INLINE double operator()(FASTOR_INDEX i) const { return reinterpret_cast<const double*>(&value)[i]; }
 
     FASTOR_INLINE void set(double num) {
         value = _mm_set1_pd(num);
@@ -390,7 +391,8 @@ struct SIMDVector<double, 128> {
 
 FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<double,128> a) {
     // ICC crashes without a copy
-    const __m128d value = a.value;
+    const __m128d v = a.value;
+	const double* value = reinterpret_cast<const double*>(&v);
     os << "[" << value[0] <<  " " << value[1] << "]\n";
     return os;
 }

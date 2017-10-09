@@ -50,8 +50,8 @@ struct SIMDVector<float,256> {
             _mm256_storeu_ps(data,value);
     }
 
-    FASTOR_INLINE float operator[](FASTOR_INDEX i) const {return value[i];}
-    FASTOR_INLINE float operator()(FASTOR_INDEX i) const {return value[i];}
+	FASTOR_INLINE float operator[](FASTOR_INDEX i) const { return reinterpret_cast<const float*>(&value)[i]; }
+    FASTOR_INLINE float operator()(FASTOR_INDEX i) const { return reinterpret_cast<const float*>(&value)[i]; }
 
     FASTOR_INLINE void set(float num) {
         value = _mm256_set1_ps(num);
@@ -148,7 +148,8 @@ struct SIMDVector<float,256> {
 
 FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<float> a) {
     // ICC crashes without a copy
-    const __m256 value = a.value;
+    const __m256 v = a.value;
+	const float* value = reinterpret_cast<const float*>(&v);
     os << "[" << value[0] <<  " " << value[1] << " "
        << value[2] << " " << value[3] << " "
        << value[4] << " " << value[5] << " "
@@ -304,8 +305,8 @@ struct SIMDVector<float,128> {
             _mm_storeu_ps(data,value);
     }
 
-    FASTOR_INLINE float operator[](FASTOR_INDEX i) const {return value[i];}
-    FASTOR_INLINE float operator()(FASTOR_INDEX i) const {return value[i];}
+    FASTOR_INLINE float operator[](FASTOR_INDEX i) const { return reinterpret_cast<const float*>(&value)[i]; }
+    FASTOR_INLINE float operator()(FASTOR_INDEX i) const { return reinterpret_cast<const float*>(&value)[i]; }
 
     FASTOR_INLINE void set(float num) {
         value = _mm_set1_ps(num);
@@ -396,7 +397,8 @@ struct SIMDVector<float,128> {
 
 FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<float,128> a) {
     // ICC crashes without a copy
-    const __m128 value = a.value;
+	const __m128 v = a.value;
+	const float* value = reinterpret_cast<const float*>(&v);
     os << "[" << value[0] <<  " " << value[1] << " "
        << value[2] << " " << value[3] << "]\n";
     return os;

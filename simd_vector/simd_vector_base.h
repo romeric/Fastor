@@ -296,14 +296,14 @@ template<typename U, typename T, int ABI>
 FASTOR_INLINE SIMDVector<T,ABI> operator/(const SIMDVector<T,ABI> &a, U b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
-        out.value[i] = a.value[i] / static_cast<T>(b);
+        reinterpret_cast<T*>(&out.value)[i] = reinterpret_cast<const T*>(&a.value)[i] / static_cast<T>(b);
     return out;
 }
 template<typename U, typename T, int ABI>
 FASTOR_INLINE SIMDVector<T,ABI> operator/(U a, const SIMDVector<T,ABI> &b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
-        out.value[i] = static_cast<T>(a) / b.value[i];
+		reinterpret_cast<T*>(&out.value)[i] = static_cast<T>(a) / reinterpret_cast<const T*>(&b.value)[i];
     return out;
 }
 

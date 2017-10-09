@@ -231,6 +231,98 @@ T internal_atan(T a) {
    return out;
 }
 
+
+template<>
+__m256d internal_exp(__m256d a) {
+   __m256d out;
+
+   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+       ((double*)&out)[i] = std::exp(((double*)&a)[i]);
+   }
+   return out;
+}
+template<>
+__m256d internal_log(__m256d a) {
+   __m256d out;
+
+   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+       ((double*)&out)[i] = std::log(((double*)&a)[i]);
+   }
+   return out;
+}
+template<>
+__m256d internal_sin(__m256d a) {
+   __m256d out;
+
+   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+       ((double*)&out)[i] = std::sin(((double*)&a)[i]);
+   }
+   return out;
+}
+template<>
+__m256d internal_cos(__m256d a) {
+   __m256d out;
+
+   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+       ((double*)&out)[i] = std::cos(((double*)&a)[i]);
+   }
+   return out;
+}
+template<>
+__m256d internal_tan(__m256d a) {
+   __m256d out;
+
+   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+       ((double*)&out)[i] = std::tan(((double*)&a)[i]);
+   }
+   return out;
+}
+
+template<>
+__m256 internal_exp(__m256 a) {
+   __m256 out;
+
+   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+       ((float*)&out)[i] = std::exp(((float*)&a)[i]);
+   }
+   return out;
+}
+template<>
+__m256 internal_log(__m256 a) {
+   __m256 out;
+
+   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+       ((float*)&out)[i] = std::log(((float*)&a)[i]);
+   }
+   return out;
+}
+template<>
+__m256 internal_sin(__m256 a) {
+   __m256 out;
+
+   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+       ((float*)&out)[i] = std::sin(((float*)&a)[i]);
+   }
+   return out;
+}
+template<>
+__m256 internal_cos(__m256 a) {
+   __m256 out;
+
+   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+       ((float*)&out)[i] = std::cos(((float*)&a)[i]);
+   }
+   return out;
+}
+template<>
+__m256 internal_tan(__m256 a) {
+   __m256 out;
+
+   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+       ((float*)&out)[i] = std::tan(((float*)&a)[i]);
+   }
+   return out;
+}
 #endif
 
 
