@@ -237,7 +237,7 @@ struct timer
 inline void no_op(){}
 
 //clobber
-template <typename T> void unused(T &&x) { asm("" ::"m"(x)); }
+template <typename T> void unused(T &&x) { /*asm("" : :"m"(x));*/ }
 template <typename T, typename ... U> void unused(T&& x, U&& ...y) { unused(x); unused(y...); }
 
 
