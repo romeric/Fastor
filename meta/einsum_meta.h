@@ -88,17 +88,17 @@ struct contraction_impl<Index<Ind...>, Tensor<T, Dim...>, std_ext::index_sequenc
 //------------------------------------------------------------------------------------------------------------//
 // products generator
 template<int N>
-constexpr int products(const size_t (&seq)[N], int i = N-1) {
+constexpr size_t products(const size_t (&seq)[N], int i = N-1) {
     return i == (N-1) ? seq[N-1] : products(seq, i+1)*seq[i];
 }
 
 template<int N>
-constexpr int shifter(const size_t (&seq)[N], int i) {
+constexpr size_t shifter(const size_t (&seq)[N], int i) {
     return i < N-1 ? seq[i+1] : shifter(seq, i-1);
 }
 
 template<int N>
-constexpr int zeroer(const size_t (&seq)[N], int i) {
+constexpr size_t zeroer(const size_t (&seq)[N], int i) {
     return i == N-1 ? 0 : seq[i];
 }
 
@@ -127,36 +127,45 @@ constexpr std::array<size_t,sizeof...(Rest)> nprods<Index<Rest...>,std_ext::inde
 //------------------------------------------------------------------------------------------------------------//
 // this is a meta-function equivalent to numpy's "where"
 template<size_t N>
-constexpr int find_index(const size_t (&ind)[N], int num, size_t i=0){
-    return (i==N) ? N : (static_cast<int>(ind[i])==num ? i : find_index(ind,num,i+1));
+constexpr size_t find_index(const std::array<size_t, N> ind, size_t num, size_t i=0){
+    return (i==N) ? N : (ind[i]==num ? i : find_index(ind,num,i+1));
+}
+
+template<size_t N>
+constexpr size_t find_index(const size_t (&ind)[N], size_t num, size_t i = 0) {
+	return (i == N) ? N : (ind[i] == num ? i : find_index(ind, num, i + 1));
 }
 
 // check if a given value is ind1 and not ind0
 template<size_t M, size_t N>
-constexpr bool check_diff(const size_t (&ind0)[M], const size_t (&ind1)[N], int num){
-    return (find_index(ind0,num) == static_cast<int>(M)) & (find_index(ind1,num) < static_cast<int>(N));
+constexpr bool check_diff(const std::array<size_t, M> ind0, const std::array<size_t, N> ind1, size_t num){
+    return (find_index(ind0,num) == M) & (find_index(ind1,num) < N);
 }
 
 // this is a meta-function somewhat equivalent to numpy's "setdiff1d"
 // if a given value is in ind1 and not in ind0, then it returns the index in to the array ind1 such that
 // ind1[index] = value (num)
 template<size_t M, size_t N>
-constexpr int find_index_diff(const size_t (&ind0)[M], const size_t (&ind1)[N], int num){
+constexpr int find_index_diff(const size_t (&ind0)[M], const size_t (&ind1)[N], size_t num){
     return check_diff(ind0,ind1,num) ? find_index(ind1,num) : N;
 }
 
 // based on index from find_index_diff retrieve the actual value
 template<size_t M, size_t N>
-constexpr int retrieve_value(const size_t (&ind0)[M], const size_t (&ind1)[N], const int (&nums1)[N], size_t i=0){
-    return find_index_diff(ind0,ind1,ind1[i]) == static_cast<int>(N)
+constexpr int retrieve_value(const std::array<size_t, M> ind0, const std::array<size_t, N> ind1, const std::array<size_t, N> nums1, size_t i=0){
+    return find_index_diff(ind0,ind1,ind1[i]) == N
             ? 1 : nums1[find_index(ind1,ind1[i])];
 }
 
 
 // does an array ind contain a number num (bool equivalent of find_index)
 template<size_t N>
-constexpr bool contains(const size_t (&ind)[N], int num){
+constexpr bool contains(const std::array<size_t, N> ind, size_t num){
     return find_index(ind,num)!=N;
+}
+template<size_t N>
+constexpr bool contains(const size_t(&ind)[N], size_t num) {
+	return find_index(ind, num) != N;
 }
 
 
@@ -209,7 +218,7 @@ struct is_vectorisable<Index<Idx0...>,Index<Idx1...>,Tensor<float,Rest...>> {
 template<size_t ...Idx0, size_t ...Idx1, size_t...Rest>
 struct is_vectorisable<Index<Idx0...>,Index<Idx1...>,Tensor<double,Rest...>> {
     static constexpr size_t fastest_changing_index = get_value<sizeof...(Rest),Rest...>::value;
-    static constexpr size_t idx[sizeof...(Idx0)] = {Idx0...};
+    static constexpr std::array<size_t,sizeof...(Idx0)> idx = {Idx0...};
     static constexpr bool last_index_contracted = contains(idx,get_value<sizeof...(Idx1),Idx1...>::value);
     static constexpr bool value = (!last_index_contracted) && (fastest_changing_index % 2==0);
     static constexpr bool sse_vectorisability = (!last_index_contracted) && (fastest_changing_index % 2==0 && fastest_changing_index % 4!=0);
@@ -616,8 +625,8 @@ struct loop_setter<Index<Idx...>,Tensor<T,Rest...>,std_ext::index_sequence<ss...
     using index_temp = apply_typelist_t<quote_c<size_t, Index>,
                     uniq_t<typelist_c<size_t, Idx...>>>;
 
-    static constexpr size_t concat_idx[sizeof...(Idx)] = {Idx...};
-    static constexpr size_t concat_nums[sizeof...(Rest)] = {Rest...};
+    static constexpr std::array<size_t,sizeof...(Idx)>  concat_idx = {Idx...};
+    static constexpr std::array<size_t,sizeof...(Rest)> concat_nums = {Rest...};
     static constexpr std::array<size_t,sizeof...(ss)> idx_in_concat = {find_index(concat_idx,index_temp::_IndexHolder[ss])...};
     static constexpr std::array<size_t,sizeof...(ss)> dims = {concat_nums[idx_in_concat[ss]]...};
     static constexpr int value = prod<dims[ss]...>::value;
@@ -645,7 +654,7 @@ struct IndexTensors<Index<Idx...>,Tensor<T,Rest...>,Index<Idx_t...>,Tensor<T,Res
     using index_temp = typename loop_setter<Index<Idx...>,Tensor<T,Rest...>,
             typename std_ext::make_index_sequence<no_of_unique<Idx...>::value>::type>::indices;
 
-    static constexpr size_t idx[sizeof...(Idx_t)] = {Idx_t...};
+    static constexpr std::array<size_t,sizeof...(Idx_t)> idx = {Idx_t...};
     static constexpr std::array<size_t,sizeof...(Idx_t)>
     indices = {find_index(index_temp::_IndexHolder, idx[ss])...};
 

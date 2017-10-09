@@ -37,9 +37,9 @@ T reduction(const Tensor<T,Rest...> &a) {
                 typename std_ext::make_index_sequence<ndim>::type>::values;
 
         T reductor = static_cast<T>(0);
-        for (int i=0; i<a.dimension(0); ++i) {
-            int index_a = i;
-            for(int it = 0; it< ndim; it++) {
+        for (size_t i=0; i<a.dimension(0); ++i) {
+			size_t index_a = i;
+            for(size_t it = 0; it< ndim; it++) {
                 index_a += products[it]*i;
             }
             reductor += a_data[index_a];
