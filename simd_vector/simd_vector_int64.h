@@ -97,16 +97,16 @@ struct SIMDVector<Int64,256> {
     }
 
     FASTOR_INLINE Int64 minimum() {
-        Int64 *vals = (Int64*)&value;
-        Int64 quan = 0;
+		auto vals = reinterpret_cast<const Int64*>(&value);
+		Int64 quan = 0;
         for (FASTOR_INDEX i=0; i<Size; ++i)
             if (vals[i]<quan)
                 quan = vals[i];
         return quan;
     }
     FASTOR_INLINE Int64 maximum() {
-        Int64 *vals = (Int64*)&value;
-        Int64 quan = 0;
+		auto vals = reinterpret_cast<const Int64*>(&value);
+		Int64 quan = 0;
         for (FASTOR_INDEX i=0; i<Size; ++i)
             if (vals[i]>quan)
                 quan = vals[i];
@@ -124,17 +124,17 @@ struct SIMDVector<Int64,256> {
     }
 
     FASTOR_INLINE Int64 sum() {
-        Int64 *vals = (Int64*)&value;
-        Int64 quan = 0;
+		auto vals = reinterpret_cast<const Int64*>(&value);
+		Int64 quan = 0;
         for (FASTOR_INDEX i=0; i<Size; ++i)
             quan += vals[i];
         return quan;
     }
 
     FASTOR_INLINE Int64 dot(const SIMDVector<Int64> &other) {
-        Int64 *vals0 = (Int64*)&value;
-        Int64 *vals1 = (Int64*)&other.value;
-        Int64 quan = 0;
+		auto vals0 = reinterpret_cast<const Int64*>(&value);
+		auto vals1 = reinterpret_cast<const Int64*>(&other.value);
+		Int64 quan = 0;
         for (FASTOR_INDEX i=0; i<Size; ++i)
             quan += vals0[i]*vals1[i];
         return quan;
@@ -144,8 +144,8 @@ struct SIMDVector<Int64,256> {
 };
 
 FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<Int64> a) {
-    const int *value = (int*) &a.value;
-    os << "[" << value[0] <<  " " << value[1] << " " << value[2] << " " << value[3] << "]\n";
+	auto value = reinterpret_cast<const Int64*>(&a.value);
+	os << "[" << value[0] <<  " " << value[1] << " " << value[2] << " " << value[3] << "]\n";
     return os;
 }
 
@@ -314,20 +314,20 @@ struct SIMDVector<Int64,128> {
     }
 
     FASTOR_INLINE Int64 minimum() {
-        int *vals = (int*)&value;
-        int quan = 0;
+		auto vals = reinterpret_cast<const Int64*>(&value);
+		Int64 quan = 0;
         for (FASTOR_INDEX i=0; i<Size; ++i)
             if (vals[i]<quan)
                 quan = vals[i];
-        return static_cast<Int64>(quan);
+        return quan;
     }
     FASTOR_INLINE Int64 maximum() {
-        int *vals = (int*)&value;
-        int quan = 0;
+		auto vals = reinterpret_cast<const Int64*>(&value);
+		Int64 quan = 0;
         for (FASTOR_INDEX i=0; i<Size; ++i)
             if (vals[i]>quan)
                 quan = vals[i];
-        return static_cast<Int64>(quan);
+        return quan;
     }
     FASTOR_INLINE SIMDVector<Int64,128> reverse() {
         SIMDVector<Int64,128> out;
@@ -336,28 +336,28 @@ struct SIMDVector<Int64,128> {
     }
 
     FASTOR_INLINE Int64 sum() {
-        int *vals = (int*)&value;
-        int quan = 0;
+		auto vals = reinterpret_cast<const Int64*>(&value);
+		Int64 quan = 0;
         for (FASTOR_INDEX i=0; i<2; ++i)
             quan += vals[i];
-        return static_cast<Int64>(quan);
+        return quan;
     }
 
     FASTOR_INLINE Int64 dot(const SIMDVector<Int64,128> &other) {
-        int *vals0 = (int*)&value;
-        int *vals1 = (int*)&other.value;
-        int quan = 0;
+		auto vals0 = reinterpret_cast<const Int64*>(&value);
+		auto vals1 = reinterpret_cast<const Int64*>(&other.value);
+		Int64 quan = 0;
         for (FASTOR_INDEX i=0; i<2; ++i)
             quan += vals0[i]*vals1[i];
-        return static_cast<Int64>(quan);
+        return quan;
     }
 
     __m128i value;
 };
 
 FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<Int64,128> a) {
-    const int *value = (int*) &a.value;
-    os << "[" << value[0] <<  " " << value[1] << "]\n";
+	auto value = reinterpret_cast<const Int64*>(&a.value);
+	os << "[" << value[0] <<  " " << value[1] << "]\n";
     return os;
 }
 
