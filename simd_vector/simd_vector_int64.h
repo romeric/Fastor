@@ -225,7 +225,7 @@ struct SIMDVector<Int64,128> {
 
     FASTOR_INLINE SIMDVector() : value(_mm_setzero_si128()) {}
     FASTOR_INLINE SIMDVector(Int64 num) {
-        value = _mm_set_epi64((__m64)num,(__m64)num);
+        value = _mm_set_epi64x(num,num);
         value = _mm_shuffle_epi32(value,0x8);
     }
     FASTOR_INLINE SIMDVector(__m128i regi) : value(regi) {}
@@ -234,8 +234,8 @@ struct SIMDVector<Int64,128> {
     FASTOR_INLINE SIMDVector(Int64 *data) : value(_mm_load_si128((__m128i*)data)) {}
 
     FASTOR_INLINE SIMDVector<Int64,128> operator=(Int64 num) {
-        value = _mm_set_epi64((__m64)num, (__m64)num);
-        value = _mm_shuffle_epi32(value,0x8);
+		value = _mm_set_epi64x(num, num);
+		value = _mm_shuffle_epi32(value,0x8);
         return *this;
     }
     FASTOR_INLINE SIMDVector<Int64,128> operator=(__m128i regi) {
@@ -264,21 +264,21 @@ struct SIMDVector<Int64,128> {
     FASTOR_INLINE Int64 operator()(FASTOR_INDEX i) const {return value[i];}
 
     FASTOR_INLINE void set(Int64 num) {
-        value = _mm_set_epi64((__m64)num,(__m64)num);
-        value = _mm_shuffle_epi32(value,0x8);
+		value = _mm_set_epi64x(num, num);
+		value = _mm_shuffle_epi32(value,0x8);
     }
     FASTOR_INLINE void set(Int64 num0, Int64 num1) {
-        value = _mm_set_epi64((__m64)num0,(__m64)num1);
+        value = _mm_set_epi64x(num0,num1);
         value = _mm_shuffle_epi32(value,0x8);
     }
     FASTOR_INLINE void set_sequential(Int64 num0) {
-        value = _mm_setr_epi64((__m64)num0,(__m64)(num0+1));
+        value = _mm_setr_epi64x(num0,num0+1);
         value = _mm_shuffle_epi32(value,0x8);
     }
 
     // In-place operators
     FASTOR_INLINE void operator+=(Int64 num) {
-        auto numb = _mm_set_epi64((__m64)num,(__m64)num);
+        auto numb = _mm_set_epi64x(num,num);
         numb = _mm_shuffle_epi32(numb,0x8);
         value = _mm_add_epi32(value,numb);
     }
@@ -290,7 +290,7 @@ struct SIMDVector<Int64,128> {
     }
 
     FASTOR_INLINE void operator-=(Int64 num) {
-        auto numb = _mm_set_epi64((__m64)num,(__m64)num);
+        auto numb = _mm_set_epi64x(num,num);
         numb = _mm_shuffle_epi32(numb,0x8);
         value = _mm_sub_epi32(value,numb);
     }
@@ -302,8 +302,8 @@ struct SIMDVector<Int64,128> {
     }
 
     FASTOR_INLINE void operator*=(Int64 num) {
-        auto numb = _mm_set_epi64((__m64)num,(__m64)num);
-        numb = _mm_shuffle_epi32(numb,0x8);
+		auto numb = _mm_set_epi64x(num, num);
+		numb = _mm_shuffle_epi32(numb,0x8);
         value = _mm_mul_epi64(value,numb);
     }
     FASTOR_INLINE void operator*=(__m128i regi) {
@@ -368,15 +368,15 @@ FASTOR_INLINE SIMDVector<Int64,128> operator+(const SIMDVector<Int64,128> &a, co
 }
 FASTOR_INLINE SIMDVector<Int64,128> operator+(const SIMDVector<Int64,128> &a, Int64 b) {
     SIMDVector<Int64,128> out;
-    auto numb = _mm_set_epi64((__m64)b,(__m64)b);
-    numb = _mm_shuffle_epi32(numb,0x8);
+	auto numb = _mm_set_epi64x(b, b);
+	numb = _mm_shuffle_epi32(numb,0x8);
     out.value = _mm_add_epi32(a.value,numb);
     return out;
 }
 FASTOR_INLINE SIMDVector<Int64,128> operator+(Int64 a, const SIMDVector<Int64,128> &b) {
     SIMDVector<Int64,128> out;
-    auto numb = _mm_set_epi64((__m64)a,(__m64)a);
-    numb = _mm_shuffle_epi32(numb,0x8);
+	auto numb = _mm_set_epi64x(a, a);
+	numb = _mm_shuffle_epi32(numb,0x8);
     out.value = _mm_add_epi32(numb,b.value);
     return out;
 }
@@ -391,15 +391,15 @@ FASTOR_INLINE SIMDVector<Int64,128> operator-(const SIMDVector<Int64,128> &a, co
 }
 FASTOR_INLINE SIMDVector<Int64,128> operator-(const SIMDVector<Int64,128> &a, Int64 b) {
     SIMDVector<Int64,128> out;
-    auto numb = _mm_set_epi64((__m64)b,(__m64)b);
-    numb = _mm_shuffle_epi32(numb,0x8);
+	auto numb = _mm_set_epi64x(b, b);
+	numb = _mm_shuffle_epi32(numb,0x8);
     out.value = _mm_sub_epi32(a.value,numb);
     return out;
 }
 FASTOR_INLINE SIMDVector<Int64,128> operator-(Int64 a, const SIMDVector<Int64,128> &b) {
     SIMDVector<Int64,128> out;
-    auto numb = _mm_set_epi64((__m64)a,(__m64)a);
-    numb = _mm_shuffle_epi32(numb,0x8);
+	auto numb = _mm_set_epi64x(a, a);
+	numb = _mm_shuffle_epi32(numb,0x8);
     out.value = _mm_sub_epi32(numb,b.value);
     return out;
 }
@@ -416,15 +416,15 @@ FASTOR_INLINE SIMDVector<Int64,128> operator*(const SIMDVector<Int64,128> &a, co
 }
 FASTOR_INLINE SIMDVector<Int64,128> operator*(const SIMDVector<Int64,128> &a, Int64 b) {
     SIMDVector<Int64,128> out;
-    auto numb = _mm_set_epi64((__m64)b,(__m64)b);
-    numb = _mm_shuffle_epi32(numb,0x8);
+	auto numb = _mm_set_epi64x(b, b);
+	numb = _mm_shuffle_epi32(numb,0x8);
     out.value = _mm_mul_epi64(a.value,numb);
     return out;
 }
 FASTOR_INLINE SIMDVector<Int64,128> operator*(Int64 a, const SIMDVector<Int64,128> &b) {
     SIMDVector<Int64,128> out;
-    auto numb = _mm_set_epi64((__m64)a,(__m64)a);
-    numb = _mm_shuffle_epi32(numb,0x8);
+	auto numb = _mm_set_epi64x(a, a);
+	numb = _mm_shuffle_epi32(numb,0x8);
     out.value = _mm_mul_epi64(numb,b.value);
     return out;
 }
