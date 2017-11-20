@@ -42,8 +42,7 @@ public:
         copy_numpy(E,Enp);
 
         // FIND THE KINEMATIC MEASURES
-        // auto I = EYE2<T,ndim>();
-        Tensor<T,ndim,ndim> I; I.eye();
+        Tensor<T,ndim,ndim> I; I.eye2();
         T J = determinant(F);
         // auto H = cofactor(F);
         auto b = matmul(F,transpose(F));

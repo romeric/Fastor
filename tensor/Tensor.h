@@ -50,7 +50,7 @@ public:
 
     FASTOR_INLINE Tensor(const Tensor<T,Rest...> &other) {
         // This constructor cannot be default
-        // Note that all other data members are static constexpr 
+        // Note that all other data members are static constexpr
         std::copy(other.data(),other.data()+Size,_data);
     };
 
@@ -455,14 +455,14 @@ public:
     // FMA overloads
     //----------------------------------------------------------------------------------------------------------//
     // Disable this as these are not treated as specialisations and
-    // hence lead to compilation errors concerning ambiguoity. 
+    // hence lead to compilation errors concerning ambiguoity.
     // Ultimately -ffp-contract=fast should achieve the same thing
 // #ifdef __FMA__
 //     #include "FMAPlugin.h"
 // #endif
     //----------------------------------------------------------------------------------------------------------//
     // Disable this as these are not treated as specialisations and
-    // hence lead to compilation errors concerning ambiguoity. 
+    // hence lead to compilation errors concerning ambiguoity.
     // Ultimately -ffp-contract=fast should achieve the same thing
     // #include "AuxiliaryPlugin.h"
     //----------------------------------------------------------------------------------------------------------//
@@ -515,7 +515,19 @@ public:
         this->fill(static_cast<T>(1));
     }
 
+    FASTOR_INLINE void eye2() {
+        // Second order identity tensor (identity matrices)
+        static_assert(sizeof...(Rest)==2, "CANNOT BUILD AN IDENTITY TENSOR");
+        static_assert(no_of_unique<Rest...>::value==1, "TENSOR MUST BE UNIFORM");
+        constexpr int N = get_value<2,Rest...>::value;
+        zeros();
+        for (FASTOR_INDEX i=0; i<N; ++i) {
+            _data[i*N+i] = (T)1;
+        }
+    }
+
     FASTOR_INLINE void eye() {
+        // Arbitrary order identity tensor
         static_assert(sizeof...(Rest)>=2, "CANNOT BUILD AN IDENTITY TENSOR");
         static_assert(no_of_unique<Rest...>::value==1, "TENSOR MUST BE UNIFORM");
         zeros();
@@ -611,7 +623,7 @@ public:
         // Although SSE register reversing is faster
         // The AVX one outperforms it
         using V = SIMDVector<T,DEFAULT_ABI>;
-        // using V = SIMDVector<T,SSE>; 
+        // using V = SIMDVector<T,SSE>;
         constexpr int unroll_upto = V::unroll_size(Size);
         constexpr int stride = V::Size;
         int i = 0;
@@ -769,7 +781,7 @@ protected:
         for (FASTOR_INDEX i=0; i<Dimension; ++i) {
             FASTOR_ASSERT(src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
-#endif        
+#endif
     }
     //----------------------------------------------------------------------------------------------------------//
 
