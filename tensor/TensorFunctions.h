@@ -185,6 +185,46 @@ FASTOR_INLINE Tensor<T,I,J,3,3,O,P> cross(const Tensor<T,I,J,K,L> &A, const Tens
 }
 
 
+// Tensor cross product of a 4th order tensor with 2nd order tensor
+template<typename T, size_t I, size_t J, size_t K, size_t L, size_t M, size_t N,
+         typename std::enable_if<I==3 && J==3 && K==3 && L==3 && M==3 && N==3,bool>::type=0>
+FASTOR_INLINE Tensor<T,I,J,K,L> cross(const Tensor<T,I,J,K,L> &A, const Tensor<T,M,N> &B) {
+    Tensor<T,I,J,K,L> C;
+    _crossproduct42<T,I,J,K,L,M,N>(A.data(),B.data(),C.data());
+    return C;
+}
+
+
+// Tensor cross product of a 2nd order tensor with 4th order tensor
+template<typename T, size_t I, size_t J, size_t K, size_t L, size_t M, size_t N,
+         typename std::enable_if<I==3 && J==3 && K==3 && L==3 && M==3 && N==3,bool>::type=0>
+FASTOR_INLINE Tensor<T,I,J,K,L> cross(const Tensor<T,M,N> &A, const Tensor<T,I,J,K,L> &B) {
+    Tensor<T,I,J,K,L> C;
+    _crossproduct24<T,I,J,K,L,M,N>(B.data(),A.data(),C.data());
+    return C;
+}
+
+
+// Tensor cross product of a 3rd order tensor with 2nd order tensor
+template<typename T, size_t I, size_t J, size_t K, size_t L, size_t M,
+         typename std::enable_if<I==3 && J==3 && K==3 && L==3 && M==3,bool>::type=0>
+FASTOR_INLINE Tensor<T,I,J,K> cross(const Tensor<T,I,J,K> &A, const Tensor<T,L,M> &B) {
+    Tensor<T,I,J,K> C;
+    _crossproduct32<T,I,J,K,L,M>(A.data(),B.data(),C.data());
+    return C;
+}
+
+
+// Tensor cross product of a 2nd order tensor with 3rd order tensor
+template<typename T, size_t I, size_t J, size_t K, size_t L, size_t M,
+         typename std::enable_if<I==3 && J==3 && K==3 && L==3 && M==3,bool>::type=0>
+FASTOR_INLINE Tensor<T,I,J,K> cross(const Tensor<T,L,M> &A, const Tensor<T,I,J,K> &B) {
+    Tensor<T,I,J,K> C;
+    _crossproduct23<T,I,J,K,L,M>(B.data(),A.data(),C.data());
+    return C;
+}
+
+
 
 
 
