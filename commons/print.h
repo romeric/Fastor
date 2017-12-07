@@ -17,19 +17,23 @@ namespace Fastor {
 
 
 #ifdef __SSE2__
-inline void print(__m128 a) {
+inline void print(__m128 b) {
+    const float* a = (const float*)&b;
     std::cout << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << '\n';
 }
-inline void print(__m128d a) {
+inline void print(__m128d b) {
+    const double* a = (const double*)&b;
     std::cout << a[0] << " " << a[1] << '\n';
 }
 #endif
 #ifdef __AVX__
-inline void print(__m256 a) {
-    std::cout << a[0] << " " << a[1] << " " << a[2] << " " << a[3] <<  " " << 
-    a[4] << " " << a[5] << " " << a[6] << " " << a[7] << "\n";
+inline void print(__m256 b) {
+    const float* a = (const float*)&b;
+    std::cout << a[0] << " " << a[1] << " " << a[2] << " " << a[3] <<  " " <<
+    a[4] << " " << a[5] << " " << a[6] << " " << a[7] << '\n';
 }
-inline void print(__m256d a) {
+inline void print(__m256d b) {
+    const double* a = (const double*)&b;
     std::cout << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << '\n';
 }
 #endif
@@ -96,6 +100,34 @@ inline void print() {
     std::cout << '\n';
 }
 /*--------------------------------------*/
+
+
+
+
+// IO for tensor expressions
+/*--------------------------------------*/
+// // forward declare
+// template<class Derived, size_t Rank>
+// class AbstractTensor;
+// template<class X>
+// struct tensor_type_finder;
+
+// template<class Expr, size_t DIM>
+// inline std::ostream& operator<<(std::ostream &os, const AbstractTensor<Expr,DIM> &src) {
+
+//     using OutTensor = typename tensor_type_finder<Expr>::type;
+//     OutTensor a = src;
+//     print(a);
+//     return os;
+// }
+
+// template<class Expr, size_t DIM>
+// inline void print(const AbstractTensor<Expr,DIM> &src) {
+//     using OutTensor = typename tensor_type_finder<Expr>::type;
+//     OutTensor a = src;
+//     print(a);
+// }
+// /*--------------------------------------*/
 
 
 

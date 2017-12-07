@@ -5,7 +5,7 @@
 // Scalar indexing
 //----------------------------------------------------------------------------------------------------------//
 template<typename... Args, typename std::enable_if<sizeof...(Args)==1
-                        && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
+                        && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
 FASTOR_INLINE T& operator()(Args ... args) {
     constexpr int M = get_value<1,Rest...>::value;
     const int i = get_index<0>(args...) < 0 ? M + get_index<0>(args...) : get_index<0>(args...);
@@ -16,7 +16,7 @@ FASTOR_INLINE T& operator()(Args ... args) {
 }
 
 template<typename... Args, typename std::enable_if<sizeof...(Args)==1
-                        && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
+                        && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
 FASTOR_INLINE const T& operator()(Args ... args) const {
     constexpr int M = get_value<1,Rest...>::value;
     const int i = get_index<0>(args...) < 0 ? M + get_index<0>(args...) : get_index<0>(args...);
@@ -27,7 +27,7 @@ FASTOR_INLINE const T& operator()(Args ... args) const {
 }
 
 template<typename... Args, typename std::enable_if<sizeof...(Args)==2
-                        && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
+                        && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
 FASTOR_INLINE T& operator()(Args ... args) {
     constexpr int M = get_value<1,Rest...>::value;
     constexpr int N = get_value<2,Rest...>::value;
@@ -40,7 +40,7 @@ FASTOR_INLINE T& operator()(Args ... args) {
 }
 
 template<typename... Args, typename std::enable_if<sizeof...(Args)==2
-                        && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
+                        && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
 FASTOR_INLINE const T& operator()(Args ... args) const {
     constexpr int M = get_value<1,Rest...>::value;
     constexpr int N = get_value<2,Rest...>::value;
@@ -53,7 +53,7 @@ FASTOR_INLINE const T& operator()(Args ... args) const {
 }
 
 template<typename... Args, typename std::enable_if<sizeof...(Args)==3
-                        && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
+                        && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
 FASTOR_INLINE T& operator()(Args ... args) {
     constexpr int M = get_value<1,Rest...>::value;
     constexpr int N = get_value<2,Rest...>::value;
@@ -68,7 +68,7 @@ FASTOR_INLINE T& operator()(Args ... args) {
 }
 
 template<typename... Args, typename std::enable_if<sizeof...(Args)==3
-                        && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
+                        && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
 FASTOR_INLINE const T&  operator()(Args ... args) const {
     constexpr int M = get_value<1,Rest...>::value;
     constexpr int N = get_value<2,Rest...>::value;
@@ -83,7 +83,7 @@ FASTOR_INLINE const T&  operator()(Args ... args) const {
 }
 
 template<typename... Args, typename std::enable_if<sizeof...(Args)==4
-                        && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
+                        && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
 FASTOR_INLINE T& operator()(Args ... args) {
     constexpr int M = get_value<1,Rest...>::value;
     constexpr int N = get_value<2,Rest...>::value;
@@ -101,7 +101,7 @@ FASTOR_INLINE T& operator()(Args ... args) {
 }
 
 template<typename... Args, typename std::enable_if<sizeof...(Args)==4
-                        && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
+                        && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
 FASTOR_INLINE const T& operator()(Args ... args) const {
     constexpr int M = get_value<1,Rest...>::value;
     constexpr int N = get_value<2,Rest...>::value;
@@ -119,7 +119,7 @@ FASTOR_INLINE const T& operator()(Args ... args) const {
 }
 
 template<typename... Args, typename std::enable_if<sizeof...(Args)>=5
-                        && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
+                        && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
 FASTOR_INLINE T& operator()(Args ... args) {
     int largs[sizeof...(Args)] = {args...};
     constexpr int DimensionHolder[Dimension] = {Rest...};
@@ -146,7 +146,7 @@ FASTOR_INLINE T& operator()(Args ... args) {
 }
 
 template<typename... Args, typename std::enable_if<sizeof...(Args)>=5
-                        && sizeof...(Args)==Dimension && is_arithmetic_pack<Args...>::value,bool>::type =0>
+                        && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
 FASTOR_INLINE const T& operator()(Args ... args) const {
     int largs[sizeof...(Args)] = {args...};
     constexpr int DimensionHolder[Dimension] = {Rest...};

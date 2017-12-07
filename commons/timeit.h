@@ -8,7 +8,7 @@
 #include <utility>
 #include <tuple>
 
-#ifdef _WIN32 
+#ifdef _WIN32
 #include <intrin.h>
 #endif
 
@@ -41,7 +41,7 @@
 #define CYCLES
 #endif
 
-#endif  
+#endif
 /* _COLORS_ */
 
 namespace Fastor {
@@ -108,7 +108,7 @@ inline double timeit(T (*func)(Params...), Args...args)
 #ifdef CYCLES
         cycle = rdtsc() - cycle;
 #endif
-#ifdef USE_SYSTEM_CLOCK        
+#ifdef USE_SYSTEM_CLOCK
         end = std::chrono::system_clock::now();
 #else
         end = std::chrono::high_resolution_clock::now();
@@ -118,7 +118,7 @@ inline double timeit(T (*func)(Params...), Args...args)
         mean_time += elapsed_seconds.count();
 #ifdef CYCLES
         cycles += cycle;
-#endif  
+#endif
 
         if (elapsed_seconds.count() < best_time) {
             best_time = elapsed_seconds.count();
@@ -132,22 +132,22 @@ inline double timeit(T (*func)(Params...), Args...args)
             if (mean_time >= 1.0e-3 && mean_time < 1.)
                 std::cout << static_cast<long int>(counter)
                           << FGRN(BOLD(" runs, average elapsed time is "))
-                          << mean_time/1.0e-03 << " ms" << ". " << FGRN(BOLD("No of CPU cycles ")) 
+                          << mean_time/1.0e-03 << " ms" << ". " << FGRN(BOLD("No of CPU cycles "))
                           << uint64_t(cycles/(1.0*counter)) << std::endl;
             else if (mean_time >= 1.0e-6 && mean_time < 1.0e-3)
                 std::cout << static_cast<long int>(counter)
                           << FGRN(BOLD(" runs, average elapsed time is "))
-                          << mean_time/1.0e-06 << " \xC2\xB5s" << ". " << FGRN(BOLD("No of CPU cycles ")) 
+                          << mean_time/1.0e-06 << " \xC2\xB5s" << ". " << FGRN(BOLD("No of CPU cycles "))
                           << uint64_t(cycles/(1.0*counter)) << std::endl; //\xE6
             else if (mean_time < 1.0e-6)
                 std::cout << static_cast<long int>(counter)
                           << FGRN(BOLD(" runs, average elapsed time is "))
-                          << mean_time/1.0e-09 << " ns" << ". " << FGRN(BOLD("No of CPU cycles ")) 
+                          << mean_time/1.0e-09 << " ns" << ". " << FGRN(BOLD("No of CPU cycles "))
                           << uint64_t(cycles/(1.0*counter)) << std::endl;
             else
                 std::cout << static_cast<long int>(counter)
-                          << FGRN(BOLD(" runs, average elapsed time is ")) 
-                          << mean_time << " s" << ". " << FGRN(BOLD("No of CPU cycles ")) 
+                          << FGRN(BOLD(" runs, average elapsed time is "))
+                          << mean_time << " s" << ". " << FGRN(BOLD("No of CPU cycles "))
                           << uint64_t(cycles/(1.0*counter)) << std::endl;
 
             break;
@@ -221,9 +221,9 @@ struct timer
         using namespace std::chrono;
         elapsed = high_resolution_clock::now() - t0;
         T elapsed_seconds = duration<T,seconds::period>(elapsed).count();
-        if (msg.empty()) std::cout << FGRN(BOLD("Elapsed time is: ")) << 
+        if (msg.empty()) std::cout << FGRN(BOLD("Elapsed time is: ")) <<
             elapsed_seconds << FGRN(BOLD(" seconds \n"));
-        else std::cout  << std::string("\x1B[32m ")+std::string("\x1B[1m")+msg+std::string("\x1B[0m")+" " 
+        else std::cout  << std::string("\x1B[32m ")+std::string("\x1B[1m")+msg+std::string("\x1B[0m")+" "
                         << elapsed_seconds << FGRN(BOLD(" seconds \n"));
         return elapsed_seconds;
     }
@@ -237,7 +237,11 @@ struct timer
 inline void no_op(){}
 
 //clobber
-template <typename T> void unused(T &&x) { asm("" ::"m"(x)); }
+template <typename T> void unused(T &&x) {
+#ifndef _WIN32
+    asm("" ::"m"(x));
+#endif
+}
 template <typename T, typename ... U> void unused(T&& x, U&& ...y) { unused(x); unused(y...); }
 
 

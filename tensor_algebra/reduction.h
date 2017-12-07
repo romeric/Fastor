@@ -37,9 +37,9 @@ T reduction(const Tensor<T,Rest...> &a) {
                 typename std_ext::make_index_sequence<ndim>::type>::values;
 
         T reductor = static_cast<T>(0);
-        for (int i=0; i<a.dimension(0); ++i) {
-            int index_a = i;
-            for(int it = 0; it< ndim; it++) {
+        for (size_t i=0; i<a.dimension(0); ++i) {
+            size_t index_a = i;
+            for(size_t it = 0; it< ndim; it++) {
                 index_a += products[it]*i;
             }
             reductor += a_data[index_a];
@@ -86,8 +86,8 @@ FASTOR_INLINE T inner(const Tensor<T,Rest...> &a, const Tensor<T,Rest...> &b) {
 }
 
 #ifdef __SSE4_2__
-// Specialisation for inner product of small vectors. 
-// This is similar to _doublecontract, but _doublecontract 
+// Specialisation for inner product of small vectors.
+// This is similar to _doublecontract, but _doublecontract
 // is specialised for 2nd order tensors
 template<>
 FASTOR_INLINE float inner<float,2>(const Tensor<float,2> &a, const Tensor<float,2> &b) {

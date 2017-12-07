@@ -8,7 +8,7 @@ using namespace Fastor;
 template<typename T, int ABI>
 void test_simd_vectors() {
 
-    SIMDVector<T,ABI> t1, t2; 
+    SIMDVector<T,ABI> t1, t2;
     t1.set_sequential(1); t2.set_sequential(100);
     auto t3 = t1+t2; auto tester = std::pow(t1.Size+50,2) - 2500;
     FASTOR_ASSERT((t3.sum() - tester)< Tol, "TEST FAILED");

@@ -622,7 +622,7 @@ FASTOR_INLINE __m256i _mm256_sub_epi64x(__m256i _a, __m256i _b) {
     return out;
 }
 // #else
-// Note that these instruction work on alternating bytes  
+// Note that these instruction work on alternating bytes
 // FASTOR_INLINE __m256i _mm256_add_epi32x(__m256i _a, __m256i _b) {
 //     return _mm256_add_epi32(_a,_b);
 // }
@@ -788,14 +788,14 @@ FASTOR_INLINE __m128d _mm256_dp_pd(__m256d __X, __m256d __Y) {
 #endif
 
 
-// Additional math functions for scalars -> the name sqrts is to sqrts ambiguity with libm sqrt 
-template<typename T, typename std::enable_if<std::is_arithmetic<T>::value,bool>::type=0> 
-FASTOR_INLINE auto sqrts(T a) -> decltype(std::sqrt(a)) {return std::sqrt(a);}
+// Additional math functions for scalars -> the name sqrts is to sqrts ambiguity with libm sqrt
+template<typename T, typename std::enable_if<std::is_arithmetic<T>::value,bool>::type=0>
+FASTOR_INLINE T sqrts(T a) {return std::sqrt(a);}
 #ifdef __SSE4_2__
 template<>
-FASTOR_INLINE float sqrts<float>(float a) {return _mm_cvtss_f32(_mm_sqrt_ps(_mm_set1_ps(a)));}
+FASTOR_INLINE float sqrts<>(float a) {return _mm_cvtss_f32(_mm_sqrt_ps(_mm_set1_ps(a)));}
 template<>
-FASTOR_INLINE double sqrts<double>(double a) {return _mm_cvtsd_f64(_mm_sqrt_pd(_mm_set1_pd(a)));}
+FASTOR_INLINE double sqrts<>(double a) {return _mm_cvtsd_f64(_mm_sqrt_pd(_mm_set1_pd(a)));}
 #endif
 
 #endif
