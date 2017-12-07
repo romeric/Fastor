@@ -106,27 +106,27 @@ inline void print() {
 
 // IO for tensor expressions
 /*--------------------------------------*/
-// // forward declare
-// template<class Derived, size_t Rank>
-// class AbstractTensor;
-// template<class X>
-// struct tensor_type_finder;
+// forward declare
+template<class Derived, size_t Rank>
+class AbstractTensor;
+template<class X>
+struct tensor_type_finder;
 
-// template<class Expr, size_t DIM>
-// inline std::ostream& operator<<(std::ostream &os, const AbstractTensor<Expr,DIM> &src) {
+template<class Expr, size_t DIM>
+inline std::ostream& operator<<(std::ostream &os, const AbstractTensor<Expr,DIM> &src) {
 
-//     using OutTensor = typename tensor_type_finder<Expr>::type;
-//     OutTensor a = src;
-//     print(a);
-//     return os;
-// }
+    using OutTensor = typename tensor_type_finder<Expr>::type;
+    OutTensor a = src;
+    print(a);
+    return os;
+}
 
-// template<class Expr, size_t DIM>
-// inline void print(const AbstractTensor<Expr,DIM> &src) {
-//     using OutTensor = typename tensor_type_finder<Expr>::type;
-//     OutTensor a = src;
-//     print(a);
-// }
+template<class Expr, size_t DIM>
+inline void print(const AbstractTensor<Expr,DIM> &src) {
+    using OutTensor = typename tensor_type_finder<Expr>::type;
+    OutTensor a = src;
+    print(a);
+}
 // /*--------------------------------------*/
 
 

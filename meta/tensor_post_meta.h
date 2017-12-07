@@ -11,21 +11,33 @@ struct scalar_type_finder {
     using type = T;
 };
 
+template<typename T, size_t ... Rest>
+struct scalar_type_finder<Tensor<T,Rest...>> {
+    using type = T;
+};
+// This specific specialisation is needed to avoid ambiguity for vectors
+template<typename T, size_t N>
+struct scalar_type_finder<Tensor<T,N>> {
+    using type = T;
+};
+template<template <class,size_t> class UnaryExpr, typename Expr, size_t DIMS>
+struct scalar_type_finder<UnaryExpr<Expr,DIMS>> {
+    using type = typename scalar_type_finder<Expr>::type;
+};
 template<template <class,class,size_t> class Expr, typename TLhs, typename TRhs, size_t DIMS>
 struct scalar_type_finder<Expr<TLhs,TRhs,DIMS>> {
     using type = typename std::conditional<std::is_arithmetic<TLhs>::value,
         typename scalar_type_finder<TRhs>::type, typename scalar_type_finder<TLhs>::type>::type;
 };
 
-template<template <class,size_t> class Expr, typename Nested, size_t DIMS>
-struct scalar_type_finder<Expr<Nested,DIMS>> {
-    using type = typename scalar_type_finder<Nested>::type;
-};
-
 template<typename T, size_t ... Rest>
-struct scalar_type_finder<Tensor<T,Rest...>> {
+struct scalar_type_finder<TensorRef<T,Rest...>> {
     using type = T;
 };
+
+
+
+
 
 
 
@@ -55,6 +67,10 @@ struct tensor_type_finder<BinaryExpr<TLhs,TRhs,DIMS>> {
         typename tensor_type_finder<TRhs>::type, typename tensor_type_finder<TLhs>::type>::type;
 };
 
+template<typename T, size_t ... Rest>
+struct tensor_type_finder<TensorRef<T,Rest...>> {
+    using type = Tensor<T,Rest...>;
+};
 
 
 

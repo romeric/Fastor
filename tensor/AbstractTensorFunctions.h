@@ -2,8 +2,16 @@
 #define ABSTRACT_TENSOR_FUNCTIONS_H
 
 #include "tensor/Tensor.h"
+#include "meta/tensor_post_meta.h"
 
 namespace Fastor {
+
+
+template<class Derived, size_t DIMS>
+FASTOR_INLINE typename tensor_type_finder<Derived>::type evaluate(const AbstractTensor<Derived,DIMS> &_src) {
+    typename tensor_type_finder<Derived>::type out = _src;
+    return out;
+}
 
 
 // These are the set of functions work on any expression without themselves being a

@@ -18,7 +18,7 @@ struct extractor_abstract_contract<Index<Idx0...>, Index<Idx1...>> {
 
     template<typename Derived0, typename Derived1, size_t DIM0, size_t DIM1>
       static
-      typename contraction_impl<Index<Idx0...,Idx1...>, 
+      typename contraction_impl<Index<Idx0...,Idx1...>,
                 typename concat_tensor<typename tensor_type_finder<Derived0>::type, typename tensor_type_finder<Derived1>::type>::type,
                 typename std_ext::make_index_sequence<DIM0+DIM1>::type>::type
       contract_impl(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b) {
@@ -210,7 +210,7 @@ template<size_t ... Idx0, size_t ... Idx1, size_t ... Idx2>
 struct extractor_abstract_contract_3<Index<Idx0...>, Index<Idx1...>, Index<Idx2...> > {
   template<typename Derived0, typename Derived1, typename Derived2, size_t DIM0, size_t DIM1, size_t DIM2>
     static
-    typename contraction_impl<Index<Idx0...,Idx1...,Idx2...>, 
+    typename contraction_impl<Index<Idx0...,Idx1...,Idx2...>,
             typename concat_tensor<
                 typename tensor_type_finder<Derived0>::type,
                 typename tensor_type_finder<Derived1>::type,
