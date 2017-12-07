@@ -2,6 +2,7 @@
 #define TENSOR_FUNCTIONS_H
 
 #include "tensor/Tensor.h"
+#include "meta/tensor_post_meta.h"
 
 namespace Fastor {
 
@@ -227,51 +228,152 @@ FASTOR_INLINE Tensor<T,I,J,K> cross(const Tensor<T,L,M> &A, const Tensor<T,I,J,K
 
 
 
+// Overloads for high order tensors
+// Only inverse, cofactor, adjoint, determinant and trace are overloaded
+// at the moment. In the future a generice overloads allowing for
+// optional axis/axes (like numpy) should be implemented for all high order
+// tensors. At the moment the last two dimensions of the tensors
+// (last matrix) are used as matrices to perform these operations.
+// Other functions like norm don't make sense to be overloaded
+// unless allowing for axis since norm of high order tensors is already
+// taken care of with _norm function
 
-// Overloads for third order tensors
-template<typename T, size_t I, size_t J>
-FASTOR_INLINE Tensor<T,I,J,J> adjoint(const Tensor<T,I,J,J> &a) {
+template<typename T, size_t ... Rest, typename std::enable_if<sizeof...(Rest)>=3,bool>::type=0>
+FASTOR_INLINE
+typename LastMatrixExtracter<Tensor<T,Rest...>, typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::type
+determinant(const Tensor<T,Rest...> &a) {
 
-    Tensor<T,I,J,J> out;
+    using OutTensor = typename LastMatrixExtracter<Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::type;
+    constexpr size_t remaining_product = LastMatrixExtracter<Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::remaining_product;
+
+    constexpr size_t I = get_value<sizeof...(Rest)-1,Rest...>::value;
+    constexpr size_t J = get_value<sizeof...(Rest),Rest...>::value;
+    static_assert(I==J,"THE LAST TWO DIMENSIONS OF TENSOR MUST BE THE SAME");
+
+    OutTensor out;
     T *a_data = a.data();
     T *out_data = out.data();
 
-    for (size_t i=0; i<I; ++i) {
+    for (size_t i=0; i<remaining_product; ++i) {
+        out_data[i] = _det<T,J,J>(static_cast<const T *>(a_data+i*J*J));
+    }
+
+    return out;
+}
+
+
+template<typename T, size_t ... Rest, typename std::enable_if<sizeof...(Rest)>=3,bool>::type=0>
+FASTOR_INLINE
+typename LastMatrixExtracter<Tensor<T,Rest...>, typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::type
+trace(const Tensor<T,Rest...> &a) {
+
+    using OutTensor = typename LastMatrixExtracter<Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::type;
+    constexpr size_t remaining_product = LastMatrixExtracter<Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::remaining_product;
+
+    constexpr size_t I = get_value<sizeof...(Rest)-1,Rest...>::value;
+    constexpr size_t J = get_value<sizeof...(Rest),Rest...>::value;
+    static_assert(I==J,"THE LAST TWO DIMENSIONS OF TENSOR MUST BE THE SAME");
+
+    OutTensor out;
+    T *a_data = a.data();
+    T *out_data = out.data();
+
+    for (size_t i=0; i<remaining_product; ++i) {
+        out_data[i] = _trace<T,J,J>(static_cast<const T *>(a_data+i*J*J));
+    }
+
+    return out;
+}
+
+
+template<typename T, size_t ... Rest, typename std::enable_if<sizeof...(Rest)>=3,bool>::type=0>
+FASTOR_INLINE Tensor<T,Rest...>
+transpose(const Tensor<T,Rest...> &a) {
+
+    constexpr size_t remaining_product = LastMatrixExtracter<Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::remaining_product;
+
+    constexpr size_t I = get_value<sizeof...(Rest)-1,Rest...>::value;
+    constexpr size_t J = get_value<sizeof...(Rest),Rest...>::value;
+    static_assert(I==J,"THE LAST TWO DIMENSIONS OF TENSOR MUST BE THE SAME");
+
+    Tensor<T,Rest...> out;
+    T *a_data = a.data();
+    T *out_data = out.data();
+
+    for (size_t i=0; i<remaining_product; ++i) {
+        _transpose<T,J,J>(a_data+i*J*J,out_data+i*J*J);
+    }
+
+    return out;
+}
+
+
+template<typename T, size_t ... Rest, typename std::enable_if<sizeof...(Rest)>=3,bool>::type=0>
+FASTOR_INLINE Tensor<T,Rest...>
+adjoint(const Tensor<T,Rest...> &a) {
+
+    constexpr size_t remaining_product = LastMatrixExtracter<Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::remaining_product;
+
+    constexpr size_t I = get_value<sizeof...(Rest)-1,Rest...>::value;
+    constexpr size_t J = get_value<sizeof...(Rest),Rest...>::value;
+    static_assert(I==J,"THE LAST TWO DIMENSIONS OF TENSOR MUST BE THE SAME");
+
+    Tensor<T,Rest...> out;
+    T *a_data = a.data();
+    T *out_data = out.data();
+
+    for (size_t i=0; i<remaining_product; ++i) {
         _adjoint<T,J,J>(a_data+i*J*J,out_data+i*J*J);
     }
 
     return out;
 }
 
-// Overloads for third order tensors
-// Only inverse, cofactor, adjoint and determinant are overloaded
-// at the moment. In the future a generice overloads allowing for
-// optional axis/axes (like numpy) need to be implemented for all high order
-// tensors. Other functions like norm don't make sense to be overloaded
-// unless allowing for axis since norm of high order tensors is already
-// taken care of with _norm function
-template<typename T, size_t I, size_t J>
-FASTOR_INLINE Tensor<T,I,J,J> cofactor(const Tensor<T,I,J,J> &a) {
 
-    Tensor<T,I,J,J> out;
+template<typename T, size_t ... Rest, typename std::enable_if<sizeof...(Rest)>=3,bool>::type=0>
+FASTOR_INLINE Tensor<T,Rest...>
+cofactor(const Tensor<T,Rest...> &a) {
+
+    constexpr size_t remaining_product = LastMatrixExtracter<Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::remaining_product;
+
+    constexpr size_t I = get_value<sizeof...(Rest)-1,Rest...>::value;
+    constexpr size_t J = get_value<sizeof...(Rest),Rest...>::value;
+    static_assert(I==J,"THE LAST TWO DIMENSIONS OF TENSOR MUST BE THE SAME");
+
+    Tensor<T,Rest...> out;
     T *a_data = a.data();
     T *out_data = out.data();
 
-    for (size_t i=0; i<I; ++i) {
+    for (size_t i=0; i<remaining_product; ++i) {
         _cofactor<T,J,J>(a_data+i*J*J,out_data+i*J*J);
     }
 
     return out;
 }
 
-template<typename T, size_t I, size_t J>
-FASTOR_INLINE Tensor<T,I,J,J> inverse(const Tensor<T,I,J,J> &a) {
+template<typename T, size_t ... Rest, typename std::enable_if<sizeof...(Rest)>=3,bool>::type=0>
+FASTOR_INLINE Tensor<T,Rest...>
+inverse(const Tensor<T,Rest...> &a) {
 
-    Tensor<T,I,J,J> out;
+    constexpr size_t remaining_product = LastMatrixExtracter<Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::remaining_product;
+
+    constexpr size_t I = get_value<sizeof...(Rest)-1,Rest...>::value;
+    constexpr size_t J = get_value<sizeof...(Rest),Rest...>::value;
+    static_assert(I==J,"THE LAST TWO DIMENSIONS OF TENSOR MUST BE THE SAME");
+
+    Tensor<T,Rest...> out;
     T *a_data = a.data();
     T *out_data = out.data();
 
-    for (size_t i=0; i<I; ++i) {
+    for (size_t i=0; i<remaining_product; ++i) {
         T det = _det<T,J,J>(static_cast<const T *>(a_data+i*J*J));
         _adjoint<T,J,J>(a_data+i*J*J,out_data+i*J*J);
 
@@ -282,22 +384,11 @@ FASTOR_INLINE Tensor<T,I,J,J> inverse(const Tensor<T,I,J,J> &a) {
 
     return out;
 }
-
-
-template<typename T, size_t I, size_t J>
-FASTOR_INLINE Tensor<T,I> determinant(const Tensor<T,I,J,J> &a) {
-
-    Tensor<T,I> out;
-    T *a_data = a.data();
-    T *out_data = out.data();
-
-    for (size_t i=0; i<I; ++i) {
-        out_data[i] = _det<T,J,J>(static_cast<const T *>(a_data+i*J*J));
-    }
-
-    return out;
-}
 //
+
+
+
+
 
 
 // Constant tensors

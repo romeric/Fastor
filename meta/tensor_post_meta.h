@@ -101,6 +101,29 @@ struct concat_tensor<Tensor<T,Rest0...>,Tensor<T,Rest1...>,Tensor<T,Rest2...>,Te
     using type = Tensor<T,Rest0...,Rest1...,Rest2...,Rest3...>;
 };
 
+
+
+
+// Extract a matrix from a high order tensor
+// this is used in places like determinant/inverse of high order tensors
+// where the last square matrix (last two dimensions) is needed
+template<class Tens, class Seq>
+struct LastMatrixExtracter;
+
+template<typename T, size_t ... Rest, size_t ... ss>
+struct LastMatrixExtracter<Tensor<T,Rest...>,std_ext::index_sequence<ss...>>
+{
+    static constexpr std::array<size_t,sizeof...(Rest)> dims = {Rest...};
+    static constexpr std::array<size_t,sizeof...(ss)> values = {dims[ss]...};
+    static constexpr size_t remaining_product = prod<dims[ss]...>::value;
+    // static constexpr size_t last_value = dims[sizeof...(Rest)-1];
+    using type = Tensor<T,dims[ss]...>;
+};
+
+template<typename T, size_t ... Rest, size_t ... ss>
+constexpr std::array<size_t,sizeof...(ss)>
+LastMatrixExtracter<Tensor<T,Rest...>,std_ext::index_sequence<ss...>>::values;
+
 }
 
 #endif // TENSOR_POST_META_H
