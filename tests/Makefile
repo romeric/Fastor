@@ -7,7 +7,7 @@ endif
 
 
 all: tests
-	tests: test_simd_vectors test_basics test_einsum test_linalg test_views test_complex_expressions
+tests: test_simd_vectors test_basics test_einsum test_linalg test_views test_complex_expressions
 
 test_simd_vectors:
 	$(CXX) test_simd_vectors.cpp -o test_simd_vectors.exe $(CXX_FLAGS) $(INCLUDES)
