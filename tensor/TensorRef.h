@@ -31,8 +31,8 @@ public:
         return DimensionHolder[dim];
     }
 
-    // TensorRef(const scalar_type* data) : _data(data) {}
-    TensorRef(scalar_type* data) : _data(data) {}
+    // constexpr TensorRef(const scalar_type* data) : _data(data) {}
+    constexpr TensorRef(scalar_type* data) : _data(data) {}
 
 
     // Expression templates evaluators
