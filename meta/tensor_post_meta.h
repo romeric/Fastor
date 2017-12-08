@@ -122,7 +122,9 @@ struct concat_tensor<Tensor<T,Rest0...>,Tensor<T,Rest1...>,Tensor<T,Rest2...>,Te
 
 // Extract a matrix from a high order tensor
 // this is used in places like determinant/inverse of high order tensors
-// where the last square matrix (last two dimensions) is needed
+// where the last square matrix (last two dimensions) is needed. If Seq is
+// is the same size as dimensions of tensor, this could also be used as
+// generic tensor dimension extractor
 template<class Tens, class Seq>
 struct LastMatrixExtracter;
 

@@ -106,6 +106,28 @@ FASTOR_INLINE typename Derived0::scalar_type inner(const AbstractTensor<Derived0
 }
 
 
+
+template<class Derived, size_t DIMS>
+FASTOR_INLINE typename Derived::scalar_type trace(const AbstractTensor<Derived,DIMS> &_src) {
+    using T = typename Derived::scalar_type;
+    using tensor_type = typename tensor_type_finder<Derived>::type;
+    constexpr std::array<size_t, DIMS> dims = LastMatrixExtracter<tensor_type,
+        typename std_ext::make_index_sequence<DIMS>::type>::values;
+    constexpr size_t M = dims[DIMS-2];
+    constexpr size_t N = dims[DIMS-1];
+    static_assert(DIMS==2,"TENSOR EXPRESSION SHOULD BE UNIFORM (SQUARE)");
+    static_assert(M==N,"TENSOR EXPRESSION SHOULD BE TWO DIMENSIONAL");
+
+    const Derived &src = _src.self();
+    FASTOR_INDEX i;
+    T _scal=0;
+    for (i = 0; i < M; ++i) {
+        _scal += src.template eval_s<T>(i*(N+1));
+    }
+    return _scal;
+}
+
+
 }
 
 
