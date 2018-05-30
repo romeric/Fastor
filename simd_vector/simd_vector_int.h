@@ -206,10 +206,16 @@ FASTOR_INLINE SIMDVector<int> abs(const SIMDVector<int> &a) {
 #ifdef __AVX2__
     out.value = _mm256_abs_epi32(a.value);
 #else
-    __m128i lo = _mm_abs_epi32(_mm256_castsi256_si128(a.value));
-    __m128i hi = _mm_abs_epi32(_mm256_extracti128_si256(a.value,0x1));
-    out.value = _mm256_castsi128_si256(lo);
-    out.value = _mm256_insertf128_si256(out.value,hi,0x1);
+    // THIS IS ALSO AVX2 VERSION!
+    // __m128i lo = _mm_abs_epi32(_mm256_castsi256_si128(a.value));
+    // __m128i hi = _mm_abs_epi32(_mm256_extracti128_si256(a.value,0x1));
+    // out.value = _mm256_castsi128_si256(lo);
+    // out.value = _mm256_insertf128_si256(out.value,hi,0x1);
+
+    const int *value = (int*) &a.value;
+    for (int i=0; i<8; ++i) {
+        value[i] = std::abs(value[i]);
+    }
 #endif
     return out;
 }
