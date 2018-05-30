@@ -212,7 +212,7 @@ FASTOR_INLINE SIMDVector<int> abs(const SIMDVector<int> &a) {
     // out.value = _mm256_castsi128_si256(lo);
     // out.value = _mm256_insertf128_si256(out.value,hi,0x1);
 
-    const int *value = (int*) &a.value;
+    int *value = (int*) &a.value;
     for (int i=0; i<8; ++i) {
         value[i] = std::abs(value[i]);
     }
