@@ -349,51 +349,59 @@ FASTOR_INLINE SIMDVector<T,ABI> fmsub(SIMDVector<T,ABI> a, SIMDVector<T,ABI> b, 
 #ifdef __FMA__
 
 template<>
-FASTOR_INLINE SIMDVector<float,SSE> fmadd<float,SSE>(SIMDVector<float,SSE> a, SIMDVector<float,SSE> b, SIMDVector<float,SSE> c) {
-    SIMDVector<float,SSE> out;
+FASTOR_INLINE SIMDVector<float,FASTOR_SSE> fmadd<float,FASTOR_SSE>(SIMDVector<float,FASTOR_SSE> a,
+    SIMDVector<float,FASTOR_SSE> b, SIMDVector<float,FASTOR_SSE> c) {
+    SIMDVector<float,FASTOR_SSE> out;
     out.value = _mm_fmadd_ps(a.value,b.value,c.value);
     return out;
 }
 template<>
-FASTOR_INLINE SIMDVector<float,AVX> fmadd<float,AVX>(SIMDVector<float,AVX> a, SIMDVector<float,AVX> b, SIMDVector<float,AVX> c) {
-    SIMDVector<float,AVX> out;
+FASTOR_INLINE SIMDVector<float,FASTOR_AVX> fmadd<float,FASTOR_AVX>(SIMDVector<float,FASTOR_AVX> a,
+    SIMDVector<float,FASTOR_AVX> b, SIMDVector<float,FASTOR_AVX> c) {
+    SIMDVector<float,FASTOR_AVX> out;
     out.value = _mm256_fmadd_ps(a.value,b.value,c.value);
     return out;
 }
 template<>
-FASTOR_INLINE SIMDVector<double,SSE> fmadd<double,SSE>(SIMDVector<double,SSE> a, SIMDVector<double,SSE> b, SIMDVector<double,SSE> c) {
-    SIMDVector<double,SSE> out;
+FASTOR_INLINE SIMDVector<double,FASTOR_SSE> fmadd<double,FASTOR_SSE>(SIMDVector<double,FASTOR_SSE> a,
+    SIMDVector<double,FASTOR_SSE> b, SIMDVector<double,FASTOR_SSE> c) {
+    SIMDVector<double,FASTOR_SSE> out;
     out.value = _mm_fmadd_pd(a.value,b.value,c.value);
     return out;
 }
 template<>
-FASTOR_INLINE SIMDVector<double,AVX> fmadd<double,AVX>(SIMDVector<double,AVX> a, SIMDVector<double,AVX> b, SIMDVector<double,AVX> c) {
-    SIMDVector<double,AVX> out;
+FASTOR_INLINE SIMDVector<double,FASTOR_AVX> fmadd<double,FASTOR_AVX>(SIMDVector<double,FASTOR_AVX> a,
+    SIMDVector<double,FASTOR_AVX> b, SIMDVector<double,FASTOR_AVX> c) {
+    SIMDVector<double,FASTOR_AVX> out;
     out.value = _mm256_fmadd_pd(a.value,b.value,c.value);
     return out;
 }
 
 template<>
-FASTOR_INLINE SIMDVector<float,SSE> fmsub<float,SSE>(SIMDVector<float,SSE> a, SIMDVector<float,SSE> b, SIMDVector<float,SSE> c) {
-    SIMDVector<float,SSE> out;
+FASTOR_INLINE SIMDVector<float,FASTOR_SSE> fmsub<float,FASTOR_SSE>(SIMDVector<float,FASTOR_SSE> a,
+    SIMDVector<float,FASTOR_SSE> b, SIMDVector<float,FASTOR_SSE> c) {
+    SIMDVector<float,FASTOR_SSE> out;
     out.value = _mm_fmadd_ps(a.value,b.value,c.value);
     return out;
 }
 template<>
-FASTOR_INLINE SIMDVector<float,AVX> fmsub<float,AVX>(SIMDVector<float,AVX> a, SIMDVector<float,AVX> b, SIMDVector<float,AVX> c) {
-    SIMDVector<float,AVX> out;
+FASTOR_INLINE SIMDVector<float,FASTOR_AVX> fmsub<float,FASTOR_AVX>(SIMDVector<float,FASTOR_AVX> a,
+    SIMDVector<float,FASTOR_AVX> b, SIMDVector<float,FASTOR_AVX> c) {
+    SIMDVector<float,FASTOR_AVX> out;
     out.value = _mm256_fmadd_ps(a.value,b.value,c.value);
     return out;
 }
 template<>
-FASTOR_INLINE SIMDVector<double,SSE> fmsub<double,SSE>(SIMDVector<double,SSE> a, SIMDVector<double,SSE> b, SIMDVector<double,SSE> c) {
-    SIMDVector<double,SSE> out;
+FASTOR_INLINE SIMDVector<double,FASTOR_SSE> fmsub<double,FASTOR_SSE>(SIMDVector<double,FASTOR_SSE> a,
+    SIMDVector<double,FASTOR_SSE> b, SIMDVector<double,FASTOR_SSE> c) {
+    SIMDVector<double,FASTOR_SSE> out;
     out.value = _mm_fmadd_pd(a.value,b.value,c.value);
     return out;
 }
 template<>
-FASTOR_INLINE SIMDVector<double,AVX> fmsub<double,AVX>(SIMDVector<double,AVX> a, SIMDVector<double,AVX> b, SIMDVector<double,AVX> c) {
-    SIMDVector<double,AVX> out;
+FASTOR_INLINE SIMDVector<double,FASTOR_AVX> fmsub<double,FASTOR_AVX>(SIMDVector<double,FASTOR_AVX> a,
+    SIMDVector<double,FASTOR_AVX> b, SIMDVector<double,FASTOR_AVX> c) {
+    SIMDVector<double,FASTOR_AVX> out;
     out.value = _mm256_fmadd_pd(a.value,b.value,c.value);
     return out;
 }

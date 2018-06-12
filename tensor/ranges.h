@@ -1,5 +1,5 @@
-#ifndef RANGE_H
-#define RANGE_H
+#ifndef RANGES_H
+#define RANGES_H
 
 #include "commons/commons.h"
 #include <initializer_list>
@@ -24,7 +24,7 @@ struct fseq {
     constexpr FASTOR_INLINE int size() const {return range_detector<F,L,S>::value;}
 };
 
-constexpr fseq<0,-1,1> fall; 
+constexpr fseq<0,-1,1> fall;
 
 
 struct seq {
@@ -48,7 +48,7 @@ struct seq {
     // Do not provide this overload as it is meaningless [iseq stands for immediate evaluation]
     // template<size_t F, size_t L, size_t S=1>
     // constexpr FASTOR_INLINE seq(iseq<F,L,S>) : _first(F), _last(L), _step(S) {}
-    
+
     FASTOR_INLINE int size() const {
         int range = _last - _first;
         return range % _step==0 ? range/_step : range/_step+1;
@@ -63,7 +63,7 @@ struct seq {
 constexpr int first = 0;
 constexpr int last = -1;
 
-static constexpr seq all = seq(0,-1,1); 
+static constexpr seq all = seq(0,-1,1);
 
 
 
@@ -88,5 +88,5 @@ struct to_positive<iseq<F,L,S>,N> {
 
 }
 
-#endif // RANGE_H
+#endif // RANGES_H
 

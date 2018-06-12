@@ -180,15 +180,15 @@ struct is_vectorisable<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest...>> {
     static constexpr size_t fastest_changing_index = get_value<sizeof...(Rest),Rest...>::value;
     static constexpr size_t idx[sizeof...(Idx0)] = {Idx0...};
     static constexpr bool last_index_contracted = contains(idx,get_value<sizeof...(Idx1),Idx1...>::value);
-    static constexpr bool value = (!last_index_contracted) && (fastest_changing_index % get_vector_size<T,SSE>::size==0);
+    static constexpr bool value = (!last_index_contracted) && (fastest_changing_index % get_vector_size<T,FASTOR_SSE>::size==0);
     static constexpr bool sse_vectorisability = (!last_index_contracted) &&
-            (fastest_changing_index % get_vector_size<T,SSE>::size==0 && fastest_changing_index % get_vector_size<T,AVX>::size!=0);
+            (fastest_changing_index % get_vector_size<T,FASTOR_SSE>::size==0 && fastest_changing_index % get_vector_size<T,FASTOR_AVX>::size!=0);
     static constexpr bool avx_vectorisability = (!last_index_contracted) &&
-            (fastest_changing_index % get_vector_size<T,SSE>::size==0 && fastest_changing_index % get_vector_size<T,AVX>::size==0);
-    static constexpr int stride = (avx_vectorisability ? get_vector_size<T,AVX>::size : (sse_vectorisability ? get_vector_size<T,SSE>::size : 1));
+            (fastest_changing_index % get_vector_size<T,FASTOR_SSE>::size==0 && fastest_changing_index % get_vector_size<T,FASTOR_AVX>::size==0);
+    static constexpr int stride = (avx_vectorisability ? get_vector_size<T,FASTOR_AVX>::size : (sse_vectorisability ? get_vector_size<T,FASTOR_SSE>::size : 1));
 
-    using type = typename std::conditional<avx_vectorisability,SIMDVector<T,AVX>,
-        typename std::conditional<sse_vectorisability,SIMDVector<T,SSE>,SIMDVector<T,sizeof(T)*8>>::type>::type;
+    using type = typename std::conditional<avx_vectorisability,SIMDVector<T,FASTOR_AVX>,
+        typename std::conditional<sse_vectorisability,SIMDVector<T,FASTOR_SSE>,SIMDVector<T,sizeof(T)*8>>::type>::type;
 };
 
 
@@ -231,16 +231,16 @@ struct is_reducibly_vectorisable;
 template<typename T, size_t ...Idx, size_t...Rest>
 struct is_reducibly_vectorisable<Index<Idx...>,Tensor<T,Rest...>> {
     static constexpr size_t fastest_changing_index = get_value<sizeof...(Rest),Rest...>::value;
-    static constexpr bool value = (fastest_changing_index % get_vector_size<T,SSE>::size==0);
-    static constexpr bool sse_vectorisability = (fastest_changing_index % get_vector_size<T,SSE>::size==0 &&
-                                                 fastest_changing_index % get_vector_size<T,AVX>::size!=0);
-    static constexpr bool avx_vectorisability = (fastest_changing_index % get_vector_size<T,SSE>::size==0 &&
-                                                 fastest_changing_index % get_vector_size<T,AVX>::size==0);
-    static constexpr int stride = (avx_vectorisability ? get_vector_size<T,AVX>::size :
-                                   (sse_vectorisability ? get_vector_size<T,SSE>::size : 1));
+    static constexpr bool value = (fastest_changing_index % get_vector_size<T,FASTOR_SSE>::size==0);
+    static constexpr bool sse_vectorisability = (fastest_changing_index % get_vector_size<T,FASTOR_SSE>::size==0 &&
+                                                 fastest_changing_index % get_vector_size<T,FASTOR_AVX>::size!=0);
+    static constexpr bool avx_vectorisability = (fastest_changing_index % get_vector_size<T,FASTOR_SSE>::size==0 &&
+                                                 fastest_changing_index % get_vector_size<T,FASTOR_AVX>::size==0);
+    static constexpr int stride = (avx_vectorisability ? get_vector_size<T,FASTOR_AVX>::size :
+                                   (sse_vectorisability ? get_vector_size<T,FASTOR_SSE>::size : 1));
 
-    using type = typename std::conditional<avx_vectorisability,SIMDVector<T,AVX>,
-        typename std::conditional<sse_vectorisability,SIMDVector<T,SSE>,SIMDVector<T,sizeof(T)*8>>::type>::type;
+    using type = typename std::conditional<avx_vectorisability,SIMDVector<T,FASTOR_AVX>,
+        typename std::conditional<sse_vectorisability,SIMDVector<T,FASTOR_SSE>,SIMDVector<T,sizeof(T)*8>>::type>::type;
 };
 //------------------------------------------------------------------------------------------------------------//
 

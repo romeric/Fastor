@@ -279,7 +279,8 @@ template<typename T, int ProblemType>
 void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c);
 
 template<>
-FASTOR_INLINE void _crossproduct<double,PlaneStrain>(const double *FASTOR_RESTRICT a, const double *FASTOR_RESTRICT b, double *FASTOR_RESTRICT c) {
+FASTOR_INLINE void _crossproduct<double,FASTOR_PlaneStrain>(const double *FASTOR_RESTRICT a,
+    const double *FASTOR_RESTRICT b, double *FASTOR_RESTRICT c) {
     // For plane strain problems a and b need to be 3D with last element a[8]=b[8]=1
     // This is a cross product implementation not a cofactor so the result needs to multiplied by 0.5 explicitly
     // if the cofactor is desired
@@ -338,7 +339,8 @@ FASTOR_INLINE void _crossproduct<double,PlaneStrain>(const double *FASTOR_RESTRI
 
 
 template<>
-FASTOR_INLINE void _crossproduct<float,PlaneStrain>(const float *FASTOR_RESTRICT a, const float *FASTOR_RESTRICT b, float *FASTOR_RESTRICT c) {
+FASTOR_INLINE void _crossproduct<float,FASTOR_PlaneStrain>(const float *FASTOR_RESTRICT a,
+    const float *FASTOR_RESTRICT b, float *FASTOR_RESTRICT c) {
     // For plane strain problems a and b need to be 3D with last element a[8]=b[8]=1
     // This is a cross product implementation not a cofactor so the result needs to multiplied by 0.5 explicitly
     // if the cofactor is desired

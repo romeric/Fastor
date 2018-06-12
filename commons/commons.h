@@ -90,8 +90,8 @@
 
 // This changes the behaviour of all expression templates (apart from views)
 #ifdef FASTOR_COPY_EXPR
-// ALL SMART EXPRESSION TEMPLATES WITH MAKE A COPY OF UNDERLYING TENSORS 
-#define COPY_SMART_EXPR 
+// ALL SMART EXPRESSION TEMPLATES WITH MAKE A COPY OF UNDERLYING TENSORS
+#define COPY_SMART_EXPR
 #endif
 
 
@@ -110,48 +110,48 @@
 #include <emmintrin.h>
 #endif
 #ifdef __SSE4_1__
-#include <smmintrin.h> 
+#include <smmintrin.h>
 #endif
 #ifdef __AVX__
 #include <immintrin.h>
 #endif
 
 // FASTOR CONSTRUCTS
-#define Symmetric -100
-#define NonSymmetric -101
-#define AntiSymmetric -102
-#define Identity -103
-#define One -104
-#define Zero -105
-#define Voigt -106
+#define FASTOR_Symmetric -100
+#define FASTOR_NonSymmetric -101
+#define FASTOR_AntiSymmetric -102
+#define FASTOR_Identity -103
+#define FASTOR_One -104
+#define FASTOR_Zero -105
 
-#define ThreeD -150
-#define TwoD -151
-#define PlaneStrain -152
-#define PlaneStress -153
+#define FASTOR_ThreeD -150
+#define FASTOR_TwoD -151
+#define FASTOR_PlaneStrain -152
+#define FASTOR_PlaneStress -153
+#define FASTOR_Voigt -106
 
-#define SSE 128
-#define AVX 256
-#define AVX512 512
-#define Double 64
-#define Single 32
-#ifndef Scalar
-#define Scalar 64
+#define FASTOR_SSE 128
+#define FASTOR_AVX 256
+#define FASTOR_AVX512 512
+#define FASTOR_Double 64
+#define FASTOR_Single 32
+#ifndef FASTOR_Scalar
+#define FASTOR_Scalar 64
 #endif
 
 #ifdef __SSE4_2__
     #ifdef __AVX__
         #ifdef __AVX512F__
-            #define DEFAULT_ABI AVX512
+            #define DEFAULT_ABI FASTOR_AVX512
         #else
-            #define DEFAULT_ABI AVX
+            #define DEFAULT_ABI FASTOR_AVX
         #endif
     #else
-        #define DEFAULT_ABI SSE
+        #define DEFAULT_ABI FASTOR_SSE
     #endif
 #else
     // Define the largest floating point size as vector size
-    #define DEFAULT_ABI Scalar
+    #define DEFAULT_ABI FASTOR_Scalar
 #endif
 
 // Conservative alignment for SIMD

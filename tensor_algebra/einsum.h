@@ -385,7 +385,7 @@ template<class Ind0, class Ind1, int Convert,
          typename T, size_t I, size_t J, size_t K, size_t L,
          typename std::enable_if<(std::is_same<T,float>::value || std::is_same<T,double>::value) &&
                                  I==J && J==K && K==L && (I==2 || I==3) &&
-                                 Ind0::NoIndices==2 && Ind1::NoIndices==2 && Convert==Voigt,bool>::type = 0>
+                                 Ind0::NoIndices==2 && Ind1::NoIndices==2 && Convert==FASTOR_Voigt,bool>::type = 0>
 FASTOR_INLINE typename VoigtType<T,I,J,K,L>::return_type
 einsum(const Tensor<T,I,J> & a, const Tensor<T,K,L> &b) {
 
@@ -417,7 +417,7 @@ template<class Ind0, class Ind1, int Convert,
          typename T, size_t I, size_t J, size_t K, size_t L,
          typename std::enable_if<(!std::is_same<T,float>::value && !std::is_same<T,double>::value) &&
                                  I==J && J==K && K==L && (I==2 || I==3) &&
-                                 Ind0::NoIndices==2 && Ind1::NoIndices==2 && Convert==Voigt,bool>::type = 0>
+                                 Ind0::NoIndices==2 && Ind1::NoIndices==2 && Convert==FASTOR_Voigt,bool>::type = 0>
 FASTOR_INLINE typename VoigtType<T,I,J,K,L>::return_type
 einsum(const Tensor<T,I,J> & a, const Tensor<T,K,L> &b) {
 
@@ -448,7 +448,7 @@ einsum(const Tensor<T,I,J> & a, const Tensor<T,K,L> &b) {
 template<class Ind0, class Ind1,
          typename T, size_t I, size_t J, size_t K,
          typename std::enable_if<Ind0::NoIndices==2 && Ind1::NoIndices==2 &&
-                                 Ind0::_IndexHolder[1] == Ind1::_IndexHolder[0] && 
+                                 Ind0::_IndexHolder[1] == Ind1::_IndexHolder[0] &&
                                  Ind0::_IndexHolder[1] != Ind0::_IndexHolder[0] &&
                                  Ind0::_IndexHolder[1] != Ind1::_IndexHolder[1] &&
                                  Ind0::_IndexHolder[0] != Ind1::_IndexHolder[1],bool>::type = 0>
@@ -467,16 +467,16 @@ template<class Ind0, class Ind1,
          typename T, size_t I, size_t J, size_t K, size_t L,
          typename std::enable_if<Ind0::NoIndices==3 && Ind1::NoIndices==2 &&
                                 Ind0::_IndexHolder[0] != Ind0::_IndexHolder[1] &&
-                                Ind0::_IndexHolder[0] != Ind0::_IndexHolder[2] && 
-                                Ind0::_IndexHolder[0] != Ind1::_IndexHolder[0] && 
-                                Ind0::_IndexHolder[0] != Ind1::_IndexHolder[1] && 
+                                Ind0::_IndexHolder[0] != Ind0::_IndexHolder[2] &&
+                                Ind0::_IndexHolder[0] != Ind1::_IndexHolder[0] &&
+                                Ind0::_IndexHolder[0] != Ind1::_IndexHolder[1] &&
 
-                                Ind0::_IndexHolder[1] != Ind0::_IndexHolder[2] && 
-                                Ind0::_IndexHolder[1] != Ind1::_IndexHolder[0] && 
-                                Ind0::_IndexHolder[1] != Ind1::_IndexHolder[1] && 
+                                Ind0::_IndexHolder[1] != Ind0::_IndexHolder[2] &&
+                                Ind0::_IndexHolder[1] != Ind1::_IndexHolder[0] &&
+                                Ind0::_IndexHolder[1] != Ind1::_IndexHolder[1] &&
 
-                                Ind0::_IndexHolder[2] == Ind1::_IndexHolder[0] && 
-                                Ind0::_IndexHolder[2] != Ind1::_IndexHolder[1] && 
+                                Ind0::_IndexHolder[2] == Ind1::_IndexHolder[0] &&
+                                Ind0::_IndexHolder[2] != Ind1::_IndexHolder[1] &&
 
                                 Ind1::_IndexHolder[0] != Ind1::_IndexHolder[1],bool>::type = 0>
 FASTOR_INLINE Tensor<T,I,J,L>
@@ -492,23 +492,23 @@ template<class Ind0, class Ind1,
          typename T, size_t I, size_t J, size_t K, size_t L, size_t M,
          typename std::enable_if<Ind0::NoIndices==3 && Ind1::NoIndices==3 &&
                                 Ind0::_IndexHolder[0] != Ind0::_IndexHolder[1] &&
-                                Ind0::_IndexHolder[0] != Ind0::_IndexHolder[2] && 
-                                Ind0::_IndexHolder[0] != Ind1::_IndexHolder[0] && 
-                                Ind0::_IndexHolder[0] != Ind1::_IndexHolder[1] && 
-                                Ind0::_IndexHolder[0] != Ind1::_IndexHolder[2] && 
+                                Ind0::_IndexHolder[0] != Ind0::_IndexHolder[2] &&
+                                Ind0::_IndexHolder[0] != Ind1::_IndexHolder[0] &&
+                                Ind0::_IndexHolder[0] != Ind1::_IndexHolder[1] &&
+                                Ind0::_IndexHolder[0] != Ind1::_IndexHolder[2] &&
 
-                                Ind0::_IndexHolder[1] != Ind0::_IndexHolder[2] && 
-                                Ind0::_IndexHolder[1] != Ind1::_IndexHolder[0] && 
+                                Ind0::_IndexHolder[1] != Ind0::_IndexHolder[2] &&
+                                Ind0::_IndexHolder[1] != Ind1::_IndexHolder[0] &&
                                 Ind0::_IndexHolder[1] != Ind1::_IndexHolder[1] &&
-                                Ind0::_IndexHolder[1] != Ind1::_IndexHolder[2] && 
+                                Ind0::_IndexHolder[1] != Ind1::_IndexHolder[2] &&
 
-                                Ind0::_IndexHolder[2] == Ind1::_IndexHolder[0] && 
+                                Ind0::_IndexHolder[2] == Ind1::_IndexHolder[0] &&
                                 Ind0::_IndexHolder[2] != Ind1::_IndexHolder[1] &&
-                                Ind0::_IndexHolder[2] != Ind1::_IndexHolder[2] && 
+                                Ind0::_IndexHolder[2] != Ind1::_IndexHolder[2] &&
 
                                 Ind1::_IndexHolder[0] != Ind1::_IndexHolder[1] &&
                                 Ind1::_IndexHolder[0] != Ind1::_IndexHolder[2] &&
-                                
+
                                 Ind1::_IndexHolder[1] != Ind1::_IndexHolder[2],bool>::type = 0>
 FASTOR_INLINE Tensor<T,I,J,L,M>
 einsum(const Tensor<T,I,J,K> &a, const Tensor<T,K,L,M> &b) {

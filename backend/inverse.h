@@ -10,6 +10,81 @@ template<typename T, size_t N>
 FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst);
 
 template<>
+FASTOR_INLINE void _inverse<float,2>(const float *FASTOR_RESTRICT src, float *FASTOR_RESTRICT dst)
+{
+    float det;
+
+    float src0 = src[0];
+    float src1 = src[1];
+    float src2 = src[2];
+    float src3 = src[3];
+
+    /* Compute adjoint: */
+    dst[0] = + src3;
+    dst[1] = - src1;
+    dst[2] = - src2;
+    dst[3] = + src0;
+
+    /* Compute determinant: */
+    det = src0 * dst[0] + src1 * dst[2];
+
+    /* Multiply adjoint with reciprocal of determinant: */
+    det = static_cast<float>(1.0) / det;
+    dst[0] *= det;
+    dst[1] *= det;
+    dst[2] *= det;
+    dst[3] *= det;
+#ifdef __AVX__
+    // This might hurt the performance as the data is already loaded
+//    _mm256_store_pd(dst,_mm256_mul_pd(_mm256_load_pd(dst),_mm256_set1_pd(det)));
+#endif
+}
+
+
+template<>
+FASTOR_INLINE void _inverse<float,3>(const float *FASTOR_RESTRICT src, float *FASTOR_RESTRICT dst)
+{
+    float det;
+
+    float src0 = src[0];
+    float src1 = src[1];
+    float src2 = src[2];
+    float src3 = src[3];
+    float src4 = src[4];
+    float src5 = src[5];
+    float src6 = src[6];
+    float src7 = src[7];
+    float src8 = src[8];
+
+    /* Compute adjoint: */
+    dst[0] = + src4 * src8 - src5 * src7;
+    dst[1] = - src1 * src8 + src2 * src7;
+    dst[2] = + src1 * src5 - src2 * src4;
+    dst[3] = - src3 * src8 + src5 * src6;
+    dst[4] = + src0 * src8 - src2 * src6;
+    dst[5] = - src0 * src5 + src2 * src3;
+    dst[6] = + src3 * src7 - src4 * src6;
+    dst[7] = - src0 * src7 + src1 * src6;
+    dst[8] = + src0 * src4 - src1 * src3;
+
+    /* Compute determinant: */
+    det = src0 * dst[0] + src1 * dst[3] + src2 * dst[6];
+
+    /* Multiply adjoint with reciprocal of determinant: */
+    det = static_cast<float>(1.0) / det;
+
+    dst[0] *= det;
+    dst[1] *= det;
+    dst[2] *= det;
+    dst[3] *= det;
+    dst[4] *= det;
+    dst[5] *= det;
+    dst[6] *= det;
+    dst[7] *= det;
+    dst[8] *= det;
+}
+
+template<>
 FASTOR_INLINE void _inverse<double,2>(const double *FASTOR_RESTRICT src, double *FASTOR_RESTRICT dst)
 {
     double det;

@@ -620,7 +620,6 @@ public:
         // Although SSE register reversing is faster
         // The AVX one outperforms it
         using V = SIMDVector<T,DEFAULT_ABI>;
-        // using V = SIMDVector<T,SSE>;
         constexpr int unroll_upto = V::unroll_size(Size);
         constexpr int stride = V::Size;
         int i = 0;
