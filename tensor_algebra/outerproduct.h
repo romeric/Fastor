@@ -22,6 +22,21 @@ outer(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
      return out;
 }
 
+template<typename T, size_t ...Rest0>
+FASTOR_INLINE Tensor<T,Rest0...>
+outer(const Tensor<T,Rest0...> &a, const Tensor<T,1> &b) {
+     Tensor<T,Rest0...> out = a*b.toscalar();
+     return out;
+}
+
+template<typename T, size_t ...Rest1>
+FASTOR_INLINE Tensor<T,Rest1...>
+outer(const Tensor<T,1> &a, const Tensor<T,Rest1...> &b) {
+     Tensor<T,Rest1...> out = a.toscalar()*b;
+     return out;
+}
+
+
 template<typename T>
 FASTOR_INLINE Tensor<T>
 outer(const Tensor<T> &a, const Tensor<T> &b) {
