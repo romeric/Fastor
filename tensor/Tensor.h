@@ -15,11 +15,12 @@ namespace Fastor {
 template<typename T, size_t ... Rest>
 class Tensor: public AbstractTensor<Tensor<T,Rest...>,sizeof...(Rest)> {
 private:
-    T FASTOR_ALIGN _data[prod<Rest...>::value];
+    T FASTOR_ALIGN _data[prod<Rest...>::value] = {};
 public:
     typedef T scalar_type;
     using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
     static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
+    static constexpr FASTOR_INDEX Dimensions {Rest...};
     static constexpr FASTOR_INDEX Size = prod<Rest...>::value;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX Remainder = prod<Rest...>::value % sizeof(T);
@@ -49,10 +50,9 @@ public:
         }
     }
 
-    FASTOR_INLINE Tensor(const Tensor<T,Rest...> &other) {
-        // This constructor cannot be default
-        // Note that all other data members are static constexpr
-        std::copy(other.data(),other.data()+Size,_data);
+    constexpr FASTOR_INLINE Tensor(const Tensor<T,Rest...> &other) {
+        for(auto i = 0UL; i<Size; ++i)
+            _data[i] = other.data()[i];
     };
 
     // List initialisers
@@ -445,8 +445,8 @@ public:
 
     // Raw pointer providers
     //----------------------------------------------------------------------------------------------------------//
-    FASTOR_INLINE T* data() const { return const_cast<T*>(this->_data);}
-    FASTOR_INLINE T* data() {return this->_data;}
+    constexpr FASTOR_INLINE T* data() const { return const_cast<T*>(this->_data);}
+    constexpr FASTOR_INLINE T* data() {return this->_data;}
     //----------------------------------------------------------------------------------------------------------//
 
     // FMA overloads
