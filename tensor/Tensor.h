@@ -20,7 +20,6 @@ public:
     typedef T scalar_type;
     using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
     static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
-    static constexpr FASTOR_INDEX Dimensions {Rest...};
     static constexpr FASTOR_INDEX Size = prod<Rest...>::value;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX Remainder = prod<Rest...>::value % sizeof(T);
