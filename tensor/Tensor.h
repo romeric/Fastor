@@ -49,9 +49,10 @@ public:
         }
     }
 
-    constexpr FASTOR_INLINE Tensor(const Tensor<T,Rest...> &other) {
-        for(auto i = 0UL; i<Size; ++i)
-            _data[i] = other.data()[i];
+    FASTOR_INLINE Tensor(const Tensor<T,Rest...> &other) {
+        // This constructor cannot be default
+        // Note that all other data members are static constexpr
+        std::copy(other.data(),other.data()+Size,_data);
     };
 
     // List initialisers
@@ -445,7 +446,7 @@ public:
     // Raw pointer providers
     //----------------------------------------------------------------------------------------------------------//
     constexpr FASTOR_INLINE T* data() const { return const_cast<T*>(this->_data);}
-    constexpr FASTOR_INLINE T* data() {return this->_data;}
+    FASTOR_INLINE T* data() {return this->_data;}
     //----------------------------------------------------------------------------------------------------------//
 
     // FMA overloads
