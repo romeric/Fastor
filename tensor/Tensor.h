@@ -15,7 +15,7 @@ namespace Fastor {
 template<typename T, size_t ... Rest>
 class Tensor: public AbstractTensor<Tensor<T,Rest...>,sizeof...(Rest)> {
 private:
-    T FASTOR_ALIGN _data[prod<Rest...>::value];
+    T FASTOR_ALIGN _data[prod<Rest...>::value] = {};
 public:
     typedef T scalar_type;
     using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
@@ -445,7 +445,7 @@ public:
 
     // Raw pointer providers
     //----------------------------------------------------------------------------------------------------------//
-    FASTOR_INLINE T* data() const { return const_cast<T*>(this->_data);}
+    constexpr FASTOR_INLINE T* data() const { return const_cast<T*>(this->_data);}
     FASTOR_INLINE T* data() {return this->_data;}
     //----------------------------------------------------------------------------------------------------------//
 
