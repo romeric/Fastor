@@ -23,18 +23,20 @@ FASTOR_INLINE void _transpose<float,2,2>(const float * FASTOR_RESTRICT a, float 
 
 template<>
 FASTOR_INLINE void _transpose<float,3,3>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
-    __m128 a_low = _mm_load_ps(a);
-    __m128 a_high = _mm_load_ps(a+4);
-    __m128 a_end = _mm_load_ss(a+8);
+    __m128 row0 = _mm_load_ps(a);
+    __m128 row1 = _mm_loadu_ps(a+3);
+    __m128 row2 = _mm_loadu_ps(a+6);
 
-    __m128 col0 = _mm_shuffle_ps(a_low,a_high,_MM_SHUFFLE(0,2,3,0));
-    __m128 col1 = _mm_shuffle_ps(a_high,a_low,_MM_SHUFFLE(2,2,0,3));
+    __m128 T0 = _mm_unpacklo_ps(row0,row1);
+    __m128 T1 = _mm_unpackhi_ps(row0,row1);
 
-    _mm_store_ps(out,col0);
-    _mm_store_ss(out+3,_mm_shuffle_ps(a_low,a_low,_MM_SHUFFLE(1,1,1,1)));
-    _mm_store_ps(out+4,col1);
-    _mm_store_ss(out+7,_mm_shuffle_ps(a_high,a_high,_MM_SHUFFLE(1,1,1,1)));
-    _mm_store_ss(out+8,a_end);
+    row0 = _mm_movelh_ps ( T0,row2 );
+    row1 = _mm_shuffle_ps( T0,row2, _MM_SHUFFLE(3,1,3,2) );
+    row2 = _mm_shuffle_ps( T1,row2, _MM_SHUFFLE(3,2,1,0) );
+
+    _mm_store_ps(out,row0);
+    _mm_storeu_ps(out+3,row1);
+    _mm_storeu_ps(out+6,row2);
 }
 
 template<>

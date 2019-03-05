@@ -87,6 +87,7 @@
 //#define FASTOR_USE_OLD_OUTER
 //#define USE_OLD_VERSION // TO USE SOME OLD VERSIONS OF INTRINSICS
 //#define FASTOR_USE_VECTORISED_EXPR_ASSIGN  // TO USE VECTORISED EXPRESSION ASSIGNMENT
+//#define FASTOR_ZERO_INITIALISE
 
 // This changes the behaviour of all expression templates (apart from views)
 #ifdef FASTOR_COPY_EXPR

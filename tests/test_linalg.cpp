@@ -10,7 +10,7 @@ using namespace Fastor;
 template<typename T>
 void test_linalg() {
 
-    // 2D 
+    // 2D
     {
         Tensor<T,2,2> t1; t1.iota(5);
         assert(std::abs(determinant(t1)+2.0)< BigTol);
@@ -48,6 +48,25 @@ void test_linalg() {
         Tensor<T,3> t2; t2.iota(102);
         assert(std::abs(norm(outer(t2,t2)) - 31829.0) < Tol);
         assert(std::abs(inner(t2,t2) - 31829.0) < Tol);
+    }
+
+    // Misc
+    {
+        Tensor<T,2,2> a0; a0.iota(3);
+        a0 = a0 + transpose(a0);
+        assert(a0.is_symmetric(Tol));
+
+        Tensor<T,3,3> a1; a1.iota(5);
+        a1 = a1 + transpose(a1);
+        assert(a1.is_symmetric(Tol));
+
+        Tensor<T,4,4> a2; a2.iota(55);
+        a2 = 0.5*(a2 + transpose(a2))+1;
+        assert(a2.is_symmetric(Tol));
+
+        assert(a0.is_equal(a0));
+        assert(a1.is_equal(a1,Tol));
+        assert(a2.is_equal(a2,BigTol));
     }
 
     print(FGRN(BOLD("All tests passed successfully")));

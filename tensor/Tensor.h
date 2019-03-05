@@ -15,7 +15,11 @@ namespace Fastor {
 template<typename T, size_t ... Rest>
 class Tensor: public AbstractTensor<Tensor<T,Rest...>,sizeof...(Rest)> {
 private:
+#ifdef FASTOR_ZERO_INITIALISE
     T FASTOR_ALIGN _data[prod<Rest...>::value] = {};
+#else
+    T FASTOR_ALIGN _data[prod<Rest...>::value];
+#endif
 public:
     typedef T scalar_type;
     using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
@@ -445,7 +449,12 @@ public:
 
     // Raw pointer providers
     //----------------------------------------------------------------------------------------------------------//
+#ifdef FASTOR_ZERO_INITIALISE
     constexpr FASTOR_INLINE T* data() const { return const_cast<T*>(this->_data);}
+#else
+    FASTOR_INLINE T* data() const { return const_cast<T*>(this->_data);}
+#endif
+
     FASTOR_INLINE T* data() {return this->_data;}
     //----------------------------------------------------------------------------------------------------------//
 
@@ -665,7 +674,7 @@ public:
     }
 
     template<typename U, size_t ... RestOther>
-    FASTOR_INLINE bool is_equal(const Tensor<U,RestOther...> &other) const {
+    FASTOR_INLINE bool is_equal(const Tensor<U,RestOther...> &other, const double Tol=PRECI_TOL) const {
         //! Two tensors are equal if they have the same type, rank, size and elements
         if(!std::is_same<T,U>::value) return false;
         if(sizeof...(Rest)!=sizeof...(RestOther)) return false;
@@ -674,7 +683,7 @@ public:
             bool out = true;
             T *other_data = other.data();
             for (size_t i=0; i<Size; ++i) {
-                if (std::fabs(_data[i]-other_data[i])>PRECI_TOL) {
+                if (std::fabs(_data[i]-other_data[i])>Tol) {
                     out = false;
                     break;
                 }
@@ -708,7 +717,7 @@ public:
         }
     }
 
-    FASTOR_INLINE bool does_belong_to_so3() const {
+    FASTOR_INLINE bool does_belong_to_so3(const double Tol=PRECI_TOL) const {
         //! A second order tensor belongs to special orthogonal 3D group if
         //! it is orthogonal and its determinant is +1
         if (is_orthogonal()) {
@@ -717,7 +726,7 @@ public:
                 return false;
             }
             T out = _det<T,Rest...>(_data);
-            if (std::fabs(out-1)>PRECI_TOL) {
+            if (std::fabs(out-1)>Tol) {
                 return false;
             }
             return true;
@@ -727,24 +736,24 @@ public:
         }
     }
 
-    FASTOR_INLINE bool does_belong_to_sl3() const {
+    FASTOR_INLINE bool does_belong_to_sl3(const double Tol=PRECI_TOL) const {
         //! A second order tensor belongs to special linear 3D group if
         //! its determinant is +1
         T out = _det<T,Rest...>(_data);
-        if (std::fabs(out-1.)>PRECI_TOL) {
+        if (std::fabs(out-1.)>Tol) {
             return false;
         }
         return true;
     }
 
-    FASTOR_INLINE bool is_symmetric() {
+    FASTOR_INLINE bool is_symmetric(const double Tol=PRECI_TOL) {
         if (is_uniform()) {
             bool bb = true;
             size_t M = dimension(0);
             size_t N = dimension(1);
             for (size_t i=0; i<M; ++i)
                 for (size_t j=0; j<N; ++j)
-                    if (std::fabs(_data[i*N+j] - _data[j*N+i])<PRECI_TOL) {
+                    if (std::fabs(_data[i*N+j] - _data[j*N+i])>Tol) {
                         bb = false;
                     }
             return bb;
@@ -758,8 +767,8 @@ public:
         return true;
     }
 
-    FASTOR_INLINE bool is_deviatoric() {
-        if (std::fabs(trace(*this))<PRECI_TOL)
+    FASTOR_INLINE bool is_deviatoric(const double Tol=PRECI_TOL) {
+        if (std::fabs(trace(*this))<Tol)
             return true;
         else
             return false;
