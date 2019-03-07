@@ -56,7 +56,7 @@ void test_basics() {
     assert(std::abs(norm(t8) - 46.4758001)<BigTol);
     assert(std::abs(norm(t9) - 46.4758001)<BigTol);
     assert(std::abs(norm(t10) - 7.7459667)<BigTol);
-    
+
 
     Tensor<T,2,2,2,2> t11; t11.fill(16);
     assert(std::abs(norm(static_cast<decltype(t11)>(sqrt(t11)))- 16)<BigTol);
@@ -68,6 +68,12 @@ void test_basics() {
 
     Tensor<T,2,2,2,2> t12 = sqrt(t11 + t11 - 2*t11 + t11/2 + 16/t11);
     assert(std::abs(norm(t12)- 12)<BigTol);
+
+    Tensor<T,10> t13;
+    t13.iota(1);
+    assert(std::abs(t13.product() - 3628800) < Tol);
+    t13.iota(0);
+    assert(std::abs(t13.product()) < Tol);
 
     print(FGRN(BOLD("All tests passed successfully")));
 

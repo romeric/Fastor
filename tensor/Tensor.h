@@ -604,11 +604,11 @@ public:
         constexpr int stride = V::Size;
         int i = 0;
 
-        V vec =static_cast<T>(1);
+        V vec = static_cast<T>(1);
         for (; i< unroll_upto; i+=stride) {
             vec *= V(_data+i);
         }
-        T scalar = static_cast<T>(0);
+        T scalar = static_cast<T>(1);
         for (; i< Size; ++i) {
             scalar *= _data[i];
         }
