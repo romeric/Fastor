@@ -21,9 +21,8 @@ CXX_FLAGS += -mfma
 endif
 
 
-# all: bench_transpose bench_trace bench_norm bench_doublecontract bench_crossproduct \
-# 	bench_outer bench_cyclic bench_matmul
-all: bench_matmul
+all: bench_transpose bench_trace bench_norm bench_doublecontract bench_crossproduct \
+	bench_outer bench_cyclic bench_matmul
 
 bench_transpose:
 	$(CXX) benchmark_transpose.cpp -o benchmark_transpose.exe $(CXX_FLAGS) $(INCLUDES)
