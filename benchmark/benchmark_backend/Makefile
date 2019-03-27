@@ -13,9 +13,17 @@ ifeq "$(CXX)" "icpc"
     CXX_FLAGS += -fp-model=strict
 endif
 
+# On some architectures -march=native does not define -mfma
+HAS_FMA := $(shell $(CXX) -march=native -dM -E - < /dev/null | egrep "AVX2" | sort)
+ifeq ($(HAS_FMA),)
+else
+CXX_FLAGS += -mfma
+endif
 
-all: bench_transpose bench_trace bench_norm bench_doublecontract bench_crossproduct \
-	bench_outer bench_cyclic bench_matmul
+
+# all: bench_transpose bench_trace bench_norm bench_doublecontract bench_crossproduct \
+# 	bench_outer bench_cyclic bench_matmul
+all: bench_matmul
 
 bench_transpose:
 	$(CXX) benchmark_transpose.cpp -o benchmark_transpose.exe $(CXX_FLAGS) $(INCLUDES)

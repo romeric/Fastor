@@ -1,5 +1,12 @@
-CXX_FLAGS = -std=c++11 -O3 -march=native
 INCLUDES = -I../
+CXX_FLAGS = -std=c++11 -O3 -march=native
+
+# On some architectures -march=native does not define -mfma
+HAS_FMA := $(shell $(CXX) -march=native -dM -E - < /dev/null | egrep "AVX2" | sort)
+ifeq ($(HAS_FMA),)
+else
+CXX_FLAGS += -mfma
+endif
 
 ifeq ($(CXX),g++)
 CXX_FLAGS += -fabi-version=6

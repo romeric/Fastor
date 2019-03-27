@@ -26,6 +26,13 @@ ifeq "$(CXX)" "/home/roman/intel_2017b/bin/icpc"
     CXXFLAGS += -inline-forceinline -fp-model fast=2
 endif
 
+# On some architectures -march=native does not define -mfma
+HAS_FMA := $(shell $(CXX) -march=native -dM -E - < /dev/null | egrep "AVX2" | sort)
+ifeq ($(HAS_FMA),)
+else
+CXXFLAGS += -mfma
+endif
+
 all:
 	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_loops.exe $(CXXFLAGS) -DUSE_LOOPS
 
