@@ -171,7 +171,11 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     }
     _mm256_store_pd(out,out_row0);
     _mm256_storeu_pd(out+3,out_row1);
-    _mm256_storeu_pd(out+6,out_row2);
+    // Causees crash for the last 8byte
+    // _mm256_storeu_pd(out+6,out_row2);
+
+    _mm_storeu_pd(out+6, _mm256_castpd256_pd128(out_row2));
+    _mm_store_sd (out+8, _mm256_extractf128_pd(out_row2, 1));
 }
 
 #endif
