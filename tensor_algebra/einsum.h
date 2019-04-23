@@ -444,7 +444,9 @@ einsum(const Tensor<T,I,J> & a, const Tensor<T,K,L> &b) {
 }
 
 
-// matmul dispatcher for 2nd order tensors
+// matmul dispatcher for 2nd order tensors (matrix-matrix)
+// also includes matrix-vector and vector-matrix when vector is of size
+// nx1 or 1xn
 template<class Ind0, class Ind1,
          typename T, size_t I, size_t J, size_t K,
          typename std::enable_if<Ind0::NoIndices==2 && Ind1::NoIndices==2 &&
@@ -454,9 +456,36 @@ template<class Ind0, class Ind1,
                                  Ind0::_IndexHolder[0] != Ind1::_IndexHolder[1],bool>::type = 0>
 FASTOR_INLINE Tensor<T,I,K>
 einsum(const Tensor<T,I,J> &a, const Tensor<T,J,K> &b) {
-
     Tensor<T,I,K> out;
     _matmul<T,I,J,K>(a.data(),b.data(),out.data());
+    return out;
+}
+
+
+// matmul dispatcher for matrix-vector
+template<class Ind0, class Ind1,
+         typename T, size_t I, size_t J,
+         typename std::enable_if<Ind0::NoIndices==2 && Ind1::NoIndices==1 &&
+                                 Ind0::_IndexHolder[1] == Ind1::_IndexHolder[0] &&
+                                 Ind0::_IndexHolder[1] != Ind0::_IndexHolder[0],bool>::type = 0>
+FASTOR_INLINE Tensor<T,I>
+einsum(const Tensor<T,I,J> &a, const Tensor<T,J> &b) {
+    Tensor<T,I> out;
+    _matmul<T,I,J,1>(a.data(),b.data(),out.data());
+    return out;
+}
+
+
+// matmul dispatcher for vector-matrix
+template<class Ind0, class Ind1,
+         typename T, size_t I, size_t J,
+         typename std::enable_if<Ind0::NoIndices==2 && Ind1::NoIndices==1 &&
+                                 Ind0::_IndexHolder[1] == Ind1::_IndexHolder[0] &&
+                                 Ind0::_IndexHolder[1] != Ind0::_IndexHolder[0],bool>::type = 0>
+FASTOR_INLINE Tensor<T,J>
+einsum(const Tensor<T,I> &a, const Tensor<T,I,J> &b) {
+    Tensor<T,J> out;
+    _matmul<T,I,J,1>(a.data(),b.data(),out.data());
     return out;
 }
 
