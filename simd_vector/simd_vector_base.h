@@ -48,6 +48,7 @@ struct SIMDVector {
     static constexpr FASTOR_INDEX Size = get_vector_size<T,ABI>::size;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return get_vector_size<T,ABI>::size;}
     static constexpr int unroll_size(FASTOR_INDEX size) {return (static_cast<int>(size) - static_cast<int>(Size));}
+    using value_type = T[Size];
 
     FASTOR_INLINE SIMDVector() {
         std::fill(value, value+Size, 0.);

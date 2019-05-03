@@ -11,17 +11,29 @@
 // Generic overloads
 namespace Fastor {
 
-template<typename T>
+template<typename T, typename std::enable_if<!std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
 FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> exp(const SIMDVector<T,DEFAULT_ABI> &a) {
     SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_exp(a.value);
     return out;
 }
+template<typename T, typename std::enable_if<std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> exp(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::exp(i);}
+    return out;
+}
 
-template<typename T>
+template<typename T, typename std::enable_if<!std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
 FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> log(const SIMDVector<T,DEFAULT_ABI> &a) {
     SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_log(a.value);
+    return out;
+}
+template<typename T, typename std::enable_if<std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> log(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::log(i);}
     return out;
 }
 
@@ -32,74 +44,134 @@ FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> pow(const SIMDVector<T,DEFAULT_ABI> &a, 
     return out;
 }
 
-template<typename T, typename U>
+template<typename T, typename U, typename std::enable_if<!std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
 FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> pow(const SIMDVector<T,DEFAULT_ABI> &a, U bb) {
     SIMDVector<T,DEFAULT_ABI> out;
     SIMDVector<T,DEFAULT_ABI> b = static_cast<T>(bb);
     out.value = internal_pow(a.value, b.value);
     return out;
 }
+template<typename T, typename U, typename std::enable_if<std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> pow(const SIMDVector<T,DEFAULT_ABI> &a, U bb) {
+    SIMDVector<T,DEFAULT_ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::pow(i, bb);}
+    return out;
+}
 
-template<typename T>
+template<typename T, typename std::enable_if<!std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
 FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> sin(const SIMDVector<T,DEFAULT_ABI> &a) {
     SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_sin(a.value);
     return out;
 }
+template<typename T, typename std::enable_if<std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> sin(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::sin(i);}
+    return out;
+}
 
-template<typename T>
+template<typename T, typename std::enable_if<!std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
 FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> cos(const SIMDVector<T,DEFAULT_ABI> &a) {
     SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_cos(a.value);
     return out;
 }
+template<typename T, typename std::enable_if<std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> cos(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::cos(i);}
+    return out;
+}
 
-template<typename T>
+template<typename T, typename std::enable_if<!std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
 FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> tan(const SIMDVector<T,DEFAULT_ABI> &a) {
     SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_tan(a.value);
     return out;
 }
+template<typename T, typename std::enable_if<std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> tan(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::tan(i);}
+    return out;
+}
 
-template<typename T>
+template<typename T, typename std::enable_if<!std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
 FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> asin(const SIMDVector<T,DEFAULT_ABI> &a) {
     SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_asin(a.value);
     return out;
 }
+template<typename T, typename std::enable_if<std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> asin(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::asin(i);}
+    return out;
+}
 
-template<typename T>
+template<typename T, typename std::enable_if<!std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
 FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> acos(const SIMDVector<T,DEFAULT_ABI> &a) {
     SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_acos(a.value);
     return out;
 }
+template<typename T, typename std::enable_if<std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> acos(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::acos(i);}
+    return out;
+}
 
-template<typename T>
+template<typename T, typename std::enable_if<!std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
 FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> atan(const SIMDVector<T,DEFAULT_ABI> &a) {
     SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_atan(a.value);
     return out;
 }
+template<typename T, typename std::enable_if<std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> atan(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::atan(i);}
+    return out;
+}
 
-template<typename T>
+template<typename T, typename std::enable_if<!std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
 FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> sinh(const SIMDVector<T,DEFAULT_ABI> &a) {
     SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_sinh(a.value);
     return out;
 }
+template<typename T, typename std::enable_if<std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> sinh(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::sinh(i);}
+    return out;
+}
 
-template<typename T>
+template<typename T, typename std::enable_if<!std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
 FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> cosh(const SIMDVector<T,DEFAULT_ABI> &a) {
     SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_cosh(a.value);
     return out;
 }
+template<typename T, typename std::enable_if<std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> cosh(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::cosh(i);}
+    return out;
+}
 
-template<typename T>
+template<typename T, typename std::enable_if<!std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
 FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> tanh(const SIMDVector<T,DEFAULT_ABI> &a) {
     SIMDVector<T,DEFAULT_ABI> out;
     out.value = internal_tanh(a.value);
+    return out;
+}
+template<typename T, typename std::enable_if<std::is_array<typename SIMDVector<T,DEFAULT_ABI>::value_type>::value,bool>::type=0>
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> tanh(const SIMDVector<T,DEFAULT_ABI> &a) {
+    SIMDVector<T,DEFAULT_ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::tanh(i);}
     return out;
 }
 
