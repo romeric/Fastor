@@ -244,6 +244,32 @@ FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx,
             data[idx+3*general_stride],data[idx+2*general_stride],
             data[idx+general_stride],data[idx]);
 }
+
+// // 16 word scalar
+// template<typename T, int ABI,
+//          typename std::enable_if<sizeof(T)==16 && ABI==64,bool>::type=0>
+// FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
+//     vec.set(data[idx]);
+// }
+// 16 word scalar/SSE
+template<typename T, int ABI,
+         typename std::enable_if<sizeof(T)==16 && ABI==128,bool>::type=0>
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
+    vec.set(data[idx]);
+}
+// 16 word AVX
+template<typename T, int ABI,
+         typename std::enable_if<sizeof(T)==16 && ABI==256,bool>::type=0>
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
+    vec.set(data[idx+general_stride],data[idx]);
+}
+// 16 word AVX 512
+template<typename T, int ABI,
+         typename std::enable_if<sizeof(T)==16 && ABI==512,bool>::type=0>
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
+    vec.set(data[idx+3*general_stride],data[idx+2*general_stride],
+            data[idx+general_stride],data[idx]);
+}
 //----------------------------------------------------------------------------------------------------------------
 
 
@@ -302,6 +328,25 @@ template<typename T, int ABI,
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,8> a) {
     vec.set(data[a[7]],data[a[6]],data[a[5]],data[a[4]],
             data[a[3]],data[a[2]],data[a[1]],data[a[0]]);
+}
+
+// 16 word scalar/SSE
+template<typename T, int ABI,
+         typename std::enable_if<sizeof(T)==16 && ABI==128,bool>::type=0>
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,1> &a) {
+    vec.set(data[a[0]]);
+}
+// 16 word AVX
+template<typename T, int ABI,
+         typename std::enable_if<sizeof(T)==16 && ABI==256,bool>::type=0>
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,2> a) {
+    vec.set(data[a[1]],data[a[0]]);
+}
+// 16 word AVX 512
+template<typename T, int ABI,
+         typename std::enable_if<sizeof(T)==16 && ABI==512,bool>::type=0>
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,4> a) {
+    vec.set(data[a[3]],data[a[2]],data[a[1]],data[a[0]]);
 }
 //----------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------
@@ -395,6 +440,29 @@ FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> 
     data[idx+5*general_stride] = vec[5];
     data[idx+6*general_stride] = vec[6];
     data[idx+7*general_stride] = vec[7];
+}
+
+// 16 word scalar/SSE
+template<typename T, int ABI, typename Int,
+         typename std::enable_if<sizeof(T)==16 && ABI==128,bool>::type=0>
+FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int ) {
+    data[idx] = vec.value;
+}
+// 16 word AVX
+template<typename T, int ABI, typename Int,
+         typename std::enable_if<sizeof(T)==16 && ABI==256,bool>::type=0>
+FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride) {
+    data[idx] = vec[0];
+    data[idx+general_stride] = vec[1];
+}
+// 16 word AVX 512
+template<typename T, int ABI, typename Int,
+         typename std::enable_if<sizeof(T)==16 && ABI==512,bool>::type=0>
+FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride) {
+    data[idx] = vec[0];
+    data[idx+general_stride] = vec[1];
+    data[idx+2*general_stride] = vec[2];
+    data[idx+3*general_stride] = vec[3];
 }
 //----------------------------------------------------------------------------------------------------------------
 

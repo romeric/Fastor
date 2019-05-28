@@ -4,6 +4,7 @@
 #include "commons/commons.h"
 #include "extended_intrinsics/extintrin.h"
 #include "math/internal_math.h"
+#include <complex>
 
 
 namespace Fastor {
@@ -23,9 +24,21 @@ struct get_vector_size<float,256> {
 };
 template<>
 struct get_vector_size<int,256> {
-    // Note that 256bit integer arithmatics were introduced under AVX2
     static const FASTOR_INDEX size = 8;
 };
+template<>
+struct get_vector_size<Int64,256> {
+    static const FASTOR_INDEX size = 4;
+};
+template<>
+struct get_vector_size<std::complex<double>,256> {
+    static const FASTOR_INDEX size = 2;
+};
+template<>
+struct get_vector_size<std::complex<float>,256> {
+    static const FASTOR_INDEX size = 4;
+};
+
 template<>
 struct get_vector_size<double,128> {
     static const FASTOR_INDEX size = 2;
@@ -37,6 +50,18 @@ struct get_vector_size<float,128> {
 template<>
 struct get_vector_size<int,128> {
     static const FASTOR_INDEX size = 4;
+};
+template<>
+struct get_vector_size<Int64,128> {
+    static const FASTOR_INDEX size = 2;
+};
+template<>
+struct get_vector_size<std::complex<double>,128> {
+    static const FASTOR_INDEX size = 1;
+};
+template<>
+struct get_vector_size<std::complex<float>,128> {
+    static const FASTOR_INDEX size = 2;
 };
 
 
