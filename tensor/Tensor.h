@@ -499,10 +499,10 @@ public:
         SIMDVector<T,DEFAULT_ABI> _vec;
         FASTOR_INDEX i=0;
         for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
-            _vec.set_sequential(i+num);
+            _vec.set_sequential(T(i)+T(num));
             _vec.store(_data+i);
         }
-        for (; i<Size; ++i) _data[i] = i+num0;
+        for (; i<Size; ++i) _data[i] = T(i)+T(num0);
     }
 
     template<typename U=T>

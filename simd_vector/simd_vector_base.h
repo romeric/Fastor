@@ -111,7 +111,7 @@ struct SIMDVector {
     }
     FASTOR_INLINE void set_sequential(T num0) {
         for (FASTOR_INDEX i=0; i<Size;++i)
-            value[i] = num0+i;
+            value[i] = num0+(T)i;
     }
 
     // In-place operators
