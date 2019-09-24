@@ -230,6 +230,17 @@ void run() {
         assert(abs(As.sum() - Bs4.sum()) < BigTol); 
     }
 
+    {
+        Tensor<T,3,2> As; As.iota(1);
+        Tensor<T,3> bs; bs.fill(1);
+        Tensor<T,2> cs; cs.fill(2);
+
+        assert((einsum<Index<i,j>,Index<j>>(As,cs)).sum() - 42. < Tol);
+        assert((einsum<Index<i,j>,Index<i>>(As,bs)).sum() - 21. < Tol);
+        assert((einsum<Index<i>,Index<i,j>>(bs,As)).sum() - 21. < Tol);
+        assert((einsum<Index<j>,Index<i,j>>(cs,As)).sum() - 42. < Tol);
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 }
 
