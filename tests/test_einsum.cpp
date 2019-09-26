@@ -241,6 +241,31 @@ void run() {
         assert((einsum<Index<j>,Index<i,j>>(cs,As)).sum() - 42. < Tol);
     }
 
+    {
+        // Test strided_contraction when second tensor disappears
+        Tensor<T,4,4,4> a; a.iota(1);
+        Tensor<T,4,4> b; b.iota(1);
+
+        Tensor<T,4> c1 = einsum<Index<i,j,k>,Index<j,k> >(a,b);
+        Tensor<T,4> c2 = einsum<Index<i,j,k>,Index<i,k> >(a,b);
+        Tensor<T,4> c3 = einsum<Index<i,j,k>,Index<i,j> >(a,b);
+
+        assert (abs(c1(0) - 1496.) < Tol);
+        assert (abs(c1(1) - 3672.) < Tol);
+        assert (abs(c1(2) - 5848.) < Tol);
+        assert (abs(c1(3) - 8024.) < Tol);
+
+        assert (abs(c2(0) - 4904.) < Tol);
+        assert (abs(c2(1) - 5448.) < Tol);
+        assert (abs(c2(2) - 5992.) < Tol);
+        assert (abs(c2(3) - 6536.) < Tol);
+
+        assert (abs(c3(0) - 5576.) < Tol);
+        assert (abs(c3(1) - 5712.) < Tol);
+        assert (abs(c3(2) - 5848.) < Tol);
+        assert (abs(c3(3) - 5984.) < Tol);
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 }
 

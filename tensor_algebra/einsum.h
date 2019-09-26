@@ -65,7 +65,8 @@ auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
 
     // Dispatch to the right routine
     using vectorisability = is_vectorisable<Index_I,Index_J,Tensor<T,Rest1...>>;
-    constexpr bool is_reducible = vectorisability::last_index_contracted;
+    // constexpr bool is_reducible = vectorisability::last_index_contracted;
+    constexpr bool is_reducible = vectorisability::is_reducible;
     if (is_reducible) {
         return extractor_reducible_contract<Index_I,Index_J>::contract_impl(a,b);
     }
@@ -94,7 +95,7 @@ auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b, const Tens
     // Dispatch to the right routine
     using Index0 = typename concat_<Index_I,Index_J>::type;
     using vectorisability = is_vectorisable<Index0,Index_K,Tensor<T,Rest2...>>;
-    constexpr bool is_reducible = vectorisability::last_index_contracted;
+    constexpr bool is_reducible = vectorisability::is_reducible;
     if (is_reducible) {
         return extractor_strided_contract<Index_I,Index_J,Index_K>::contract_impl(a,b,c);
     }
@@ -117,7 +118,7 @@ auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b, const Tens
     // Dispatch to the right routine
     using Index0 = typename concat_<Index_I,Index_J,Index_K>::type;
     using vectorisability = is_vectorisable<Index0,Index_L,Tensor<T,Rest3...>>;
-    constexpr bool is_reducible = vectorisability::last_index_contracted;
+    constexpr bool is_reducible = vectorisability::is_reducible;
     if (is_reducible) {
         return extractor_strided_contract_4<Index_I,Index_J,Index_K,Index_L>::contract_impl(a,b,c,d);
     }
@@ -142,7 +143,7 @@ auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b,
     // Dispatch to the right routine
     using Index0 = typename concat_<Index_I,Index_J,Index_K,Index_L>::type;
     using vectorisability = is_vectorisable<Index0,Index_M,Tensor<T,Rest4...>>;
-    constexpr bool is_reducible = vectorisability::last_index_contracted;
+    constexpr bool is_reducible = vectorisability::is_reducible;
     if (is_reducible) {
         return extractor_strided_contract_5<Index_I,Index_J,Index_K,Index_L,Index_M>::contract_impl(a,b,c,d,e);
     }
@@ -166,7 +167,7 @@ auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b,
     // Dispatch to the right routine
     using Index0 = typename concat_<Index_I,Index_J,Index_K,Index_L,Index_M>::type;
     using vectorisability = is_vectorisable<Index0,Index_N,Tensor<T,Rest5...>>;
-    constexpr bool is_reducible = vectorisability::last_index_contracted;
+    constexpr bool is_reducible = vectorisability::is_reducible;
     if (is_reducible) {
         return extractor_strided_contract_6<Index_I,Index_J,Index_K,Index_L,Index_M,Index_N>::contract_impl(a,b,c,d,e,f);
     }
@@ -192,7 +193,7 @@ auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b,
     // Dispatch to the right routine
     using Index0 = typename concat_<Index_I,Index_J,Index_K,Index_L,Index_M,Index_N>::type;
     using vectorisability = is_vectorisable<Index0,Index_O,Tensor<T,Rest6...>>;
-    constexpr bool is_reducible = vectorisability::last_index_contracted;
+    constexpr bool is_reducible = vectorisability::is_reducible;
     if (is_reducible) {
         return extractor_strided_contract_7<Index_I,Index_J,Index_K,Index_L,Index_M,Index_N,Index_O>::contract_impl(a,b,c,d,e,f,g);
     }
@@ -219,7 +220,7 @@ auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b,
     // Dispatch to the right routine
     using Index0 = typename concat_<Index_I,Index_J,Index_K,Index_L,Index_M,Index_N,Index_O>::type;
     using vectorisability = is_vectorisable<Index0,Index_P,Tensor<T,Rest7...>>;
-    constexpr bool is_reducible = vectorisability::last_index_contracted;
+    constexpr bool is_reducible = vectorisability::is_reducible;
     if (is_reducible) {
         return extractor_strided_contract_8<Index_I,Index_J,Index_K,Index_L,Index_M,Index_N,Index_O,Index_P>::contract_impl(a,b,c,d,e,f,g,h);
     }

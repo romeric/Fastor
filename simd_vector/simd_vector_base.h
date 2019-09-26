@@ -130,7 +130,8 @@ struct SIMDVector {
     }
     template<typename U, typename ... Args>
     FASTOR_INLINE void set(U first, Args ... args) {
-        unused(first);
+        T arr[Size] = {first,args...};
+        std::reverse_copy(arr, arr+Size, value);
         // Relax this restriction
         // static_assert(sizeof...(args)==1,"CANNOT SET VECTOR WITH VALUES DUE TO ABI CONSIDERATION");
     }

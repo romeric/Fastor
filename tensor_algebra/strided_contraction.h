@@ -282,7 +282,7 @@ struct extractor_reducible_contract<Index<Idx0...>, Index<Idx1...>> {
 
 template<class Index_I, class Index_J,
 typename T, size_t ... Rest0, size_t ... Rest1>
-auto strided_contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
+FASTOR_INLINE auto strided_contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
 -> decltype(extractor_reducible_contract<Index_I,Index_J>::contract_impl(a,b)) {
 return extractor_reducible_contract<Index_I,Index_J>::contract_impl(a,b);
 }

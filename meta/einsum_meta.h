@@ -179,7 +179,9 @@ template<typename T, size_t ...Idx0, size_t ...Idx1, size_t...Rest>
 struct is_vectorisable<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest...>> {
     static constexpr size_t fastest_changing_index = get_value<sizeof...(Rest),Rest...>::value;
     static constexpr size_t idx[sizeof...(Idx0)] = {Idx0...};
+    static constexpr bool does_2nd_tensor_disappear = ((int)no_of_unique<Idx0...,Idx1...>::value == (int)sizeof...(Idx0) - (int)sizeof...(Idx1));
     static constexpr bool last_index_contracted = contains(idx,get_value<sizeof...(Idx1),Idx1...>::value);
+    static constexpr bool is_reducible = does_2nd_tensor_disappear && last_index_contracted;
     static constexpr bool value = (!last_index_contracted) && (fastest_changing_index % get_vector_size<T,FASTOR_SSE>::size==0);
     static constexpr bool sse_vectorisability = (!last_index_contracted) &&
             (fastest_changing_index % get_vector_size<T,FASTOR_SSE>::size==0 && fastest_changing_index % get_vector_size<T,FASTOR_AVX>::size!=0);
@@ -196,7 +198,9 @@ template<size_t ...Idx0, size_t ...Idx1, size_t...Rest>
 struct is_vectorisable<Index<Idx0...>,Index<Idx1...>,Tensor<float,Rest...>> {
     static constexpr size_t fastest_changing_index = get_value<sizeof...(Rest),Rest...>::value;
     static constexpr size_t idx[sizeof...(Idx0)] = {Idx0...};
+    static constexpr bool does_2nd_tensor_disappear = ((int)no_of_unique<Idx0...,Idx1...>::value == (int)sizeof...(Idx0) - (int)sizeof...(Idx1));
     static constexpr bool last_index_contracted = contains(idx,get_value<sizeof...(Idx1),Idx1...>::value);
+    static constexpr bool is_reducible = does_2nd_tensor_disappear && last_index_contracted;
     static constexpr bool value = (!last_index_contracted) && (fastest_changing_index % 4==0);
     static constexpr bool sse_vectorisability = (!last_index_contracted) && (fastest_changing_index % 4==0 && fastest_changing_index % 8!=0);
     static constexpr bool avx_vectorisability = (!last_index_contracted) && (fastest_changing_index % 4==0 && fastest_changing_index % 8==0);
@@ -210,7 +214,9 @@ template<size_t ...Idx0, size_t ...Idx1, size_t...Rest>
 struct is_vectorisable<Index<Idx0...>,Index<Idx1...>,Tensor<double,Rest...>> {
     static constexpr size_t fastest_changing_index = get_value<sizeof...(Rest),Rest...>::value;
     static constexpr size_t idx[sizeof...(Idx0)] = {Idx0...};
+    static constexpr bool does_2nd_tensor_disappear = ((int)no_of_unique<Idx0...,Idx1...>::value == (int)sizeof...(Idx0) - (int)sizeof...(Idx1));
     static constexpr bool last_index_contracted = contains(idx,get_value<sizeof...(Idx1),Idx1...>::value);
+    static constexpr bool is_reducible = does_2nd_tensor_disappear && last_index_contracted;
     static constexpr bool value = (!last_index_contracted) && (fastest_changing_index % 2==0);
     static constexpr bool sse_vectorisability = (!last_index_contracted) && (fastest_changing_index % 2==0 && fastest_changing_index % 4!=0);
     static constexpr bool avx_vectorisability = (!last_index_contracted) && (fastest_changing_index % 2==0 && fastest_changing_index % 4==0);
