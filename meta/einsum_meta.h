@@ -469,6 +469,114 @@ struct general_stride_finder<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Te
 
 
 
+
+
+
+//--------------------------------------------------------------------------------------------------------------------//
+//! Given the einsum indices of two tensors, matches their indices to see
+//! if it is a genearalised matrix-vector multiplication. If either the indices
+//! of the first tensor or the second tensor disappears while matching indices
+//! from the end, then it is a genearalised matrix-vector multiplication.
+//! Note that this function matches indices from the end in that it can detect
+//! generalised matrix-vector product of the forms <ijk,jk> or <jk,ijk> (it can detect swapping)
+//! but it cannot detect <ij,ijk> or <ijk,ij> which is vector-matrix product
+template<class T, T N0, T N1>
+constexpr
+inline bool match_indices_from_end(const T (&ind0)[N0],
+    const T (&ind1)[N1], T num0=N0-1, T num1=N1-1) {
+    return ind1[num1] == ind0[num0] ? ( num1 == 0 ? ind1[num1] == ind0[num0] :
+        (num0 == 0 ? ind1[num1] == ind0[num0] : match_indices_from_end(ind0, ind1, num0 - 1, num1 - 1))) :
+        false;
+}
+
+//! Same as above but gives the index up to which the higher order tensor (generalised matrix)
+//! matches the lower order tensor (generalised vector) from the end. The index is for higher
+//! higher order tensor counting from the start including the index itself for instance
+//! <ij,j> will return 0 (i.e. index 0 does not match) and <ijk,k> will return 1 (i.e. indices 0 and 1 do no match)
+//! The function in essence gives the remainder indices that don't match the vector
+//!
+//! This function only works (gives the correct index) if the accompanying boolean
+//! function (match_indices_from_end) is true i.e. it only works if we have a true
+//! generalised matrix-vector product otherwise gives an incorrect index
+template<class T, T N0, T N1>
+constexpr
+inline T match_indices_from_end_index(const T (&ind0)[N0],
+    const T (&ind1)[N1], T num0=N0-1, T num1=N1-1) {
+    return ind1[num1] == ind0[num0] ? ( num1 == 0 ? (ind1[num1] == ind0[num0] ? num0-1 : num0) :
+        num0 == 0 ? (ind1[num1] == ind0[num0] ? num1-1 : num1) :
+        match_indices_from_end_index(ind0, ind1, num0 - 1, num1 - 1) ) : num0-1;
+}
+
+
+//! Given the einsum indices of two tensors, matches their indices to see
+//! if it is a genearalised vector-matrix multiplication. If either the indices
+//! of the first tensor or the second tensor disappears while matching indices
+//! from the beggining, then it is a genearalised vector-matrix multiplication.
+//! Note that this function matches indices from the beggingin in that it can detect
+//! generalised vector-matrix product of the forms <ijk,ij> or <ij,ijk> (it can detect swapping)
+//! but it cannot detect <jk,ijk> or <ijk,jk> which is matrix-vector product
+template<class T, T N0, T N1>
+constexpr
+inline bool match_indices_from_start(const T (&ind0)[N0],
+    const T (&ind1)[N1], T num0=0, T num1=0) {
+    return ind1[num1] == ind0[num0] ? ( num1 == N1-1 ? ind1[num1] == ind0[num0] :
+        (num0 == N0-1 ? ind1[num1] == ind0[num0] :  match_indices_from_start(ind0, ind1, num0 + 1, num1 + 1))) :
+        false;
+}
+
+//! Same as above but gives the index up to which the higher order tensor (generalised matrix)
+//! matches the lower order tensor (generalised vector) from the start. The index is for higher
+//! higher order tensor counting from the end excluding the index itself for instance
+//! <ij,i> will return 1 (only 0 matches) and <ijk,ij> will return 2 (i.e. indices 0 and 1 match)
+//! The function in essence gives the remainder indices that don't match the vector
+//!
+//! function (match_indices_from_start) is true i.e. it only works if we have a true
+//! generalised vector-matrix product otherwise gives an incorrect index
+template<class T, T N0, T N1>
+constexpr
+inline T match_indices_from_start_index(const T (&ind0)[N0],
+    const T (&ind1)[N1], T num0=0, T num1=0) {
+    return ind1[num1] == ind0[num0] ? ( num1 == N1-1  ?  (ind1[num1] == ind0[num0] ? num0+1 : num0) :
+        num0 == N0-1 ? (ind1[num1] == ind0[num0] ? num1+1 : num1) :
+        match_indices_from_start_index(ind0, ind1, num0 + 1, num1 + 1) ) : num0;
+}
+
+
+
+
+template<class Idx0, class Idx1>
+struct is_generalised_matrix_vector;
+
+template<size_t ... Idx0, size_t ... Idx1>
+struct is_generalised_matrix_vector<Index<Idx0...>,Index<Idx1...> > {
+    static constexpr size_t which_one_is_vector = sizeof...(Idx0) > sizeof...(Idx1) ? 1 : 0;
+    static constexpr size_t idx0[sizeof...(Idx0)] = {Idx0...};
+    static constexpr size_t idx1[sizeof...(Idx1)] = {Idx1...};
+    static constexpr bool value = match_indices_from_end(idx0, idx1) && sizeof...(Idx0) != sizeof...(Idx1);
+    static constexpr size_t matches_up_to = match_indices_from_end_index(idx0, idx1);
+};
+
+
+template<class Idx0, class Idx1>
+struct is_generalised_vector_matrix;
+
+template<size_t ... Idx0, size_t ... Idx1>
+struct is_generalised_vector_matrix<Index<Idx0...>,Index<Idx1...> > {
+    static constexpr size_t which_one_is_vector = sizeof...(Idx0) > sizeof...(Idx1) ? 1 : 0;
+    static constexpr size_t idx0[sizeof...(Idx0)] = {Idx0...};
+    static constexpr size_t idx1[sizeof...(Idx1)] = {Idx1...};
+    static constexpr bool value = match_indices_from_start(idx0, idx1) && sizeof...(Idx0) != sizeof...(Idx1);
+    static constexpr size_t matches_up_to = match_indices_from_start_index(idx0, idx1);
+};
+//--------------------------------------------------------------------------------------------------------------------//
+
+
+
+
+
+
+
+
 // A complete tensor contraction meta-engine
 //--------------------------------------------------------------------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------//

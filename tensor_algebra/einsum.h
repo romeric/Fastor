@@ -54,9 +54,33 @@ auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
 }
 
 
+// template<class Index_I, class Index_J,
+//          typename T, size_t ... Rest0, size_t ... Rest1,
+//          typename std::enable_if<!is_reduction<Index_I,Index_J>::value,bool>::type=0>
+// auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
+// -> decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
+
+//     static_assert(einsum_index_checker<typename concat_<Index_I,Index_J>::type>::value,
+//                   "INDICES FOR EINSUM FUNCTION CANNOT APPEAR MORE THAN TWICE. USE CONTRACTION INSTEAD");
+
+//     // Dispatch to the right routine
+//     using vectorisability = is_vectorisable<Index_I,Index_J,Tensor<T,Rest1...>>;
+//     // constexpr bool is_reducible = vectorisability::last_index_contracted;
+//     constexpr bool is_reducible = vectorisability::is_reducible;
+//     if (is_reducible) {
+//         return extractor_reducible_contract<Index_I,Index_J>::contract_impl(a,b);
+//     }
+//     else {
+//         return extractor_contract_2<Index_I,Index_J>::contract_impl(a,b);
+//     }
+// }
+
+
 template<class Index_I, class Index_J,
          typename T, size_t ... Rest0, size_t ... Rest1,
-         typename std::enable_if<!is_reduction<Index_I,Index_J>::value,bool>::type=0>
+         typename std::enable_if<!is_reduction<Index_I,Index_J>::value &&
+         !is_generalised_matrix_vector<Index_I,Index_J>::value &&
+         !is_generalised_vector_matrix<Index_I,Index_J>::value,bool>::type=0>
 auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
 -> decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
 
@@ -74,6 +98,53 @@ auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
         return extractor_contract_2<Index_I,Index_J>::contract_impl(a,b);
     }
 }
+
+
+template<class Index_I, class Index_J,
+         typename T, size_t ...Rest0, size_t ...Rest1,
+         typename std::enable_if<
+         is_generalised_matrix_vector<Index_I,Index_J>::value,
+         bool>::type = 0>
+FASTOR_INLINE
+auto
+einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
+-> decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
+
+    constexpr size_t which_one_is_vector = is_generalised_matrix_vector<Index_I,Index_J>::which_one_is_vector;
+    constexpr size_t matches_up_to = is_generalised_matrix_vector<Index_I,Index_J>::matches_up_to;
+    constexpr size_t rest0[sizeof...(Rest0)] = {Rest0...};
+    constexpr size_t rest1[sizeof...(Rest1)] = {Rest1...};
+    constexpr size_t product = which_one_is_vector == 1 ? partial_prod(rest0, matches_up_to) :  partial_prod(rest1, matches_up_to);
+    constexpr size_t vec_product = which_one_is_vector == 1 ? prod<Rest1...>::value : prod<Rest0...>::value;
+    decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) out;
+    which_one_is_vector == 1 ? _matmul<T,product,vec_product,1>(a.data(),b.data(),out.data()) :\
+      _matmul<T,product,vec_product,1>(b.data(),a.data(),out.data());
+    return out;
+}
+
+
+template<class Index_I, class Index_J,
+         typename T, size_t ...Rest0, size_t ...Rest1,
+         typename std::enable_if<
+         is_generalised_vector_matrix<Index_I,Index_J>::value,
+         bool>::type = 0>
+FASTOR_INLINE
+auto
+einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
+-> decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
+
+    constexpr size_t which_one_is_vector = is_generalised_vector_matrix<Index_I,Index_J>::which_one_is_vector;
+    constexpr size_t matches_up_to = is_generalised_vector_matrix<Index_I,Index_J>::matches_up_to;
+    constexpr size_t rest0[sizeof...(Rest0)] = {Rest0...};
+    constexpr size_t rest1[sizeof...(Rest1)] = {Rest1...};
+    constexpr size_t product = which_one_is_vector == 1 ? partial_prod_reverse(rest0, matches_up_to) :  partial_prod_reverse(rest1, matches_up_to);
+    constexpr size_t vec_product = which_one_is_vector == 1 ? prod<Rest1...>::value : prod<Rest0...>::value;
+    decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) out;
+    which_one_is_vector == 1 ? _matmul<T,1,vec_product,product>(b.data(),a.data(),out.data()) :\
+      _matmul<T,1,vec_product,product>(a.data(),b.data(),out.data());
+    return out;
+}
+
 
 
 

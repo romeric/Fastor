@@ -63,6 +63,20 @@ struct prod_nel<1, First, Rest...> {
     static const size_t value = prod<Rest...>::value;
 };
 
+//! Partial product of a sequence up to an index up_to
+template<class T, T N>
+constexpr
+inline T partial_prod(const T (&ind)[N], T up_to, T num=0) {
+    return num == up_to ? ind[num] : ind[num]*partial_prod(ind, up_to, num+1);
+}
+
+//! Partial product of a sequence up to an index num from the end
+template<class T, T N>
+constexpr
+inline T partial_prod_reverse(const T (&ind)[N], T up_to, T num=N-1) {
+    return num == up_to ? ind[num] : ind[num]*partial_prod_reverse(ind, up_to, num-1);
+}
+
 template<size_t Idx, size_t ... Rest>
 struct get_all {
     static const size_t indices[sizeof...(Rest)];

@@ -11,13 +11,13 @@ void test_simd_vectors() {
     SIMDVector<T,ABI> t1, t2;
     t1.set_sequential(1); t2.set_sequential(100);
     auto t3 = t1+t2; auto tester = std::pow(t1.Size+50,2) - 2500;
-    FASTOR_ASSERT((t3.sum() - tester)< Tol, "TEST FAILED");
+    FASTOR_EXIT_ASSERT((t3.sum() - tester)< Tol, "TEST FAILED");
 
     auto t4 = T(1)*t2-t1+(T)1-(T)0;
-    FASTOR_ASSERT((t4.sum() - 100*t4.Size)< Tol, "TEST FAILED");
+    FASTOR_EXIT_ASSERT((t4.sum() - 100*t4.Size)< Tol, "TEST FAILED");
 
     auto n = t1.Size;
-    FASTOR_ASSERT((t1.dot(t1) - n*(2*n*n+3*n+1)/6)< Tol, "TEST FAILED");
+    FASTOR_EXIT_ASSERT((t1.dot(t1) - n*(2*n*n+3*n+1)/6)< Tol, "TEST FAILED");
 
     print(FGRN(BOLD("All tests passed successfully")));
 

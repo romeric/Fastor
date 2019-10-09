@@ -13,60 +13,60 @@ void test_linalg() {
     // 2D
     {
         Tensor<T,2,2> t1; t1.iota(5);
-        assert(std::abs(determinant(t1)+2.0)< BigTol);
-        assert(std::abs(trace(t1)-13)< Tol);
-        assert(std::abs(norm(matmul(t1,t1)) - 173.4646938) < BigTol);
-        assert(std::abs(norm(cofactor(t1)) - 13.1909059) < BigTol);
-        assert(std::abs(norm(transpose(adjoint(t1))) - 13.1909059) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(determinant(t1)+2.0)< BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(trace(t1)-13)< Tol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(matmul(t1,t1)) - 173.4646938) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(cofactor(t1)) - 13.1909059) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(transpose(adjoint(t1))) - 13.1909059) < BigTol);
 
-        assert(std::abs(norm(static_cast<Tensor<T>>(ldeterminant(t1)))+2.)< Tol);
-        assert(std::abs(norm(static_cast<Tensor<T>>(ltrace(t1))) - 13)< Tol);
-        assert(std::abs(norm(static_cast<Tensor<T,2,2>>(lmatmul(t1,t1))) - 173.4646938)< BigTol);
-        assert(std::abs(norm(static_cast<Tensor<T,2,2>>(lcofactor(t1))) - 13.1909059)< BigTol);
-        assert(std::abs(norm(static_cast<Tensor<T,2,2>>(ltranspose(ladjoint(t1)))) - 13.1909059)< BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T>>(ldeterminant(t1)))+2.)< Tol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T>>(ltrace(t1))) - 13)< Tol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,2,2>>(lmatmul(t1,t1))) - 173.4646938)< BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,2,2>>(lcofactor(t1))) - 13.1909059)< BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,2,2>>(ltranspose(ladjoint(t1)))) - 13.1909059)< BigTol);
 
         Tensor<T,2> t2; t2.iota(102);
-        assert(std::abs(norm(outer(t2,t2)) - 21013.0) < Tol);
-        assert(std::abs(inner(t2,t2) - 21013.0) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(outer(t2,t2)) - 21013.0) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(inner(t2,t2) - 21013.0) < Tol);
     }
 
     // 3D
     {
         Tensor<T,3,3> t1; t1.iota(0);
-        assert(std::abs(determinant(t1))< Tol);
-        assert(std::abs(trace(t1)-12)< Tol);
-        assert(std::abs(norm(matmul(t1,t1)) - 187.637949) < BigTol);
-        assert(std::abs(norm(cofactor(t1)) - 18) < BigTol);
-        assert(std::abs(norm(transpose(adjoint(t1))) - 18) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(determinant(t1))< Tol);
+        FASTOR_EXIT_ASSERT(std::abs(trace(t1)-12)< Tol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(matmul(t1,t1)) - 187.637949) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(cofactor(t1)) - 18) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(transpose(adjoint(t1))) - 18) < BigTol);
 
-        assert(std::abs(norm(static_cast<Tensor<T>>(ldeterminant(t1))))< Tol);
-        assert(std::abs(norm(static_cast<Tensor<T>>(ltrace(t1))) - 12)< Tol);
-        assert(std::abs(norm(static_cast<Tensor<T,3,3>>(lmatmul(t1,t1))) - 187.637949)< BigTol);
-        assert(std::abs(norm(static_cast<Tensor<T,3,3>>(lcofactor(t1))) - 18)< BigTol);
-        assert(std::abs(norm(static_cast<Tensor<T,3,3>>(ltranspose(ladjoint(t1)))) - 18)< BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T>>(ldeterminant(t1))))< Tol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T>>(ltrace(t1))) - 12)< Tol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,3,3>>(lmatmul(t1,t1))) - 187.637949)< BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,3,3>>(lcofactor(t1))) - 18)< BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,3,3>>(ltranspose(ladjoint(t1)))) - 18)< BigTol);
 
         Tensor<T,3> t2; t2.iota(102);
-        assert(std::abs(norm(outer(t2,t2)) - 31829.0) < Tol);
-        assert(std::abs(inner(t2,t2) - 31829.0) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(outer(t2,t2)) - 31829.0) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(inner(t2,t2) - 31829.0) < Tol);
     }
 
     // Misc
     {
         Tensor<T,2,2> a0; a0.iota(3);
         a0 = a0 + transpose(a0);
-        assert(a0.is_symmetric(Tol));
+        FASTOR_EXIT_ASSERT(a0.is_symmetric(Tol));
 
         Tensor<T,3,3> a1; a1.iota(5);
         a1 = a1 + transpose(a1);
-        assert(a1.is_symmetric(Tol));
+        FASTOR_EXIT_ASSERT(a1.is_symmetric(Tol));
 
         Tensor<T,4,4> a2; a2.iota(55);
         a2 = 0.5*(a2 + transpose(a2))+1;
-        assert(a2.is_symmetric(Tol));
+        FASTOR_EXIT_ASSERT(a2.is_symmetric(Tol));
 
-        assert(a0.is_equal(a0));
-        assert(a1.is_equal(a1,Tol));
-        assert(a2.is_equal(a2,BigTol));
+        FASTOR_EXIT_ASSERT(a0.is_equal(a0));
+        FASTOR_EXIT_ASSERT(a1.is_equal(a1,Tol));
+        FASTOR_EXIT_ASSERT(a2.is_equal(a2,BigTol));
     }
 
     print(FGRN(BOLD("All tests passed successfully")));

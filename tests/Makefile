@@ -14,7 +14,10 @@ endif
 
 
 all: tests
-tests: test_simd_vectors test_basics test_einsum test_linalg test_views test_complex_expressions
+	tests: test_auxiliary test_simd_vectors test_basics test_einsum test_linalg test_views test_complex_expressions
+
+test_auxiliary:
+	$(CXX) test_auxiliary.cpp -o test_auxiliary.exe $(CXX_FLAGS) $(INCLUDES)
 
 test_simd_vectors:
 	$(CXX) test_simd_vectors.cpp -o test_simd_vectors.exe $(CXX_FLAGS) $(INCLUDES)
@@ -55,6 +58,7 @@ test_complex_expressions:
 	$(CXX) test_complex_expressions.cpp -o test_complex_expressions_vec.exe $(CXX_FLAGS) $(INCLUDES) -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
 
 run:
+	./test_auxiliary.exe
 	./test_simd_vectors.exe
 	./test_basics.exe
 	./test_einsum.exe
