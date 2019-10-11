@@ -14,7 +14,7 @@ endif
 
 
 all: tests
-	tests: test_auxiliary test_simd_vectors test_basics test_einsum test_linalg test_views test_complex_expressions
+tests: test_auxiliary test_simd_vectors test_basics test_einsum test_linalg test_views test_complex_expressions
 
 test_auxiliary:
 	$(CXX) test_auxiliary.cpp -o test_auxiliary.exe $(CXX_FLAGS) $(INCLUDES)

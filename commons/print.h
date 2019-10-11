@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <vector>
 #include <array>
+#include <string>
 
 #ifdef __SSE2__
 #include <emmintrin.h>
@@ -14,6 +15,41 @@
 #endif
 
 namespace Fastor {
+
+
+//! IOFormat class for tensors
+struct IOFormat {
+    inline  IOFormat(
+                int precision,
+                const std::string& colsep,
+                const std::string& rowsep,
+                const std::string& rowprefix,
+                const std::string& rowsuffix,
+                bool print_dimensions
+                ) {
+        _precision = precision;
+        _colsep = colsep;
+        _rowsep = rowsep;
+        _rowprefix = rowprefix;
+        _rowsuffix = rowsuffix;
+        _print_dimensions = print_dimensions;
+    }
+
+    int _precision;
+    std::string _colsep;
+    std::string _rowsep;
+    std::string _rowprefix;
+    std::string _rowsuffix;
+    bool _print_dimensions;
+};
+
+
+#ifndef FASTOR_DEFINE_IO_FORMAT
+#define FASTOR_DEFINE_IO_FORMAT {std::numeric_limits<double>::digits10,", ","\n","[","]",true};
+// #define FASTOR_DEFINE_IO_FORMAT IOFormat(9,",","\n","[","]",true);
+#endif
+
+
 
 
 #ifdef __SSE2__
