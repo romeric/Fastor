@@ -6,6 +6,7 @@
 #include <vector>
 #include <array>
 #include <string>
+#include <sstream>
 
 #ifdef __SSE2__
 #include <emmintrin.h>
