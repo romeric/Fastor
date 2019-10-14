@@ -580,6 +580,32 @@ struct is_generalised_vector_matrix<Index<Idx0...>,Index<Idx1...> > {
 // A complete tensor contraction meta-engine
 //--------------------------------------------------------------------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------//
+#if __cplusplus > 201103L
+template<size_t N>
+inline constexpr std::array<int,N> find_remaining(const std::array<size_t,N> &maxes_out, int total) {
+    std::array<int,N> remainings = {};
+    remainings[0] = total / maxes_out[0];
+    for (int i=1; i<N; ++i) {
+        remainings[i] = remainings[i-1]/maxes_out[i];
+    }
+    return remainings;
+
+}
+
+template<size_t N, int total>
+inline constexpr std::array<std::array<int,N>,(size_t)total> cartesian_product_2(const std::array<size_t,N> &maxes_out) {
+    std::array<std::array<int,N>,(size_t)total> as_all = {};
+    for (int i=0; i<total; i+=1) {
+        int remaining = total;
+        for (int n=0; n<N; ++n) {
+            remaining /= maxes_out[n];
+            as_all[i][n] = ( i / remaining ) % maxes_out[n];
+        }
+    }
+    return as_all;
+}
+#endif
+
 template<int N>
 constexpr int find_remaining(const int (&maxes_out)[N], int remaining, int i) {
     return i==0 ? remaining/maxes_out[0] : find_remaining(maxes_out,remaining,i-1) / maxes_out[i];

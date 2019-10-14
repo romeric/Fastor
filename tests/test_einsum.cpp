@@ -15,24 +15,24 @@ void run() {
     {
         Tensor<T,2,2> II; II.eye();
         auto II_ijkl = einsum<Index<i,j>,Index<k,l>>(II,II);
-        FASTOR_EXIT_ASSERT(abs(II_ijkl(0,0,0,0) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_ijkl(0,0,1,1) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_ijkl(1,1,0,0) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_ijkl(1,1,1,1) - 1) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(II_ijkl(0,0,0,0) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_ijkl(0,0,1,1) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_ijkl(1,1,0,0) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_ijkl(1,1,1,1) - 1) < Tol);
         auto II_ijkl2 = outer(II,II);
         FASTOR_EXIT_ASSERT(II_ijkl==II_ijkl2);
         auto II_ikjl = permutation<Index<i,k,j,l>>(II_ijkl);
-        FASTOR_EXIT_ASSERT(abs(II_ikjl(0,0,0,0) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_ikjl(0,1,0,1) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_ikjl(1,0,1,0) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_ikjl(1,1,1,1) - 1) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(II_ikjl(0,0,0,0) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_ikjl(0,1,0,1) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_ikjl(1,0,1,0) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_ikjl(1,1,1,1) - 1) < Tol);
         FASTOR_EXIT_ASSERT(abs(norm(II_ijkl) - norm(II_ikjl)) < Tol);
         auto II_iljk = permutation<Index<i,l,j,k>>(II_ijkl);
-        FASTOR_EXIT_ASSERT(abs(II_iljk(0,0,0,0) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_iljk(0,1,1,0) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_iljk(1,0,0,1) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_iljk(1,1,1,1) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(norm(II_ijkl) - norm(II_iljk)) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(II_iljk(0,0,0,0) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_iljk(0,1,1,0) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_iljk(1,0,0,1) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_iljk(1,1,1,1) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(norm(II_ijkl) - norm(II_iljk)) < Tol);
 
 
         Tensor<T,2,2> A, B; A.iota(101); B.iota(77);
@@ -56,7 +56,7 @@ void run() {
                     for (auto ll=0; ll< 2; ll++) {
                         FASTOR_EXIT_ASSERT(abs( bb_ijkl(ii,jj,kk,ll) - bb_ikjl(ii,kk,jj,ll) ) < BigTol);
                         // FASTOR_EXIT_ASSERT(abs( bb_ijkl(ii,jj,kk,ll) - bb_iljk(ii,ll,jj,kk) ) < BigTol); // By definition this cannot be
-                        FASTOR_EXIT_ASSERT(abs( bb_ijkl(ii,ll,jj,kk) - bb_iljk(ii,jj,kk,ll) ) < BigTol); 
+                        FASTOR_EXIT_ASSERT(abs( bb_ijkl(ii,ll,jj,kk) - bb_iljk(ii,jj,kk,ll) ) < BigTol);
                     }
                 }
             }
@@ -88,39 +88,39 @@ void run() {
     {
         Tensor<T,3,3> II; II.eye();
         auto II_ijkl = einsum<Index<i,j>,Index<k,l>>(II,II);
-        FASTOR_EXIT_ASSERT(abs(II_ijkl(0,0,0,0) - 1) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(II_ijkl(0,0,0,0) - 1) < Tol);
         FASTOR_EXIT_ASSERT(abs(II_ijkl(0,0,1,1) - 1) < Tol);
-        FASTOR_EXIT_ASSERT(abs(II_ijkl(0,0,2,2) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_ijkl(1,1,0,0) - 1) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(II_ijkl(0,0,2,2) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_ijkl(1,1,0,0) - 1) < Tol);
         FASTOR_EXIT_ASSERT(abs(II_ijkl(1,1,1,1) - 1) < Tol);
-        FASTOR_EXIT_ASSERT(abs(II_ijkl(1,1,2,2) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_ijkl(2,2,0,0) - 1) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(II_ijkl(1,1,2,2) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_ijkl(2,2,0,0) - 1) < Tol);
         FASTOR_EXIT_ASSERT(abs(II_ijkl(2,2,1,1) - 1) < Tol);
-        FASTOR_EXIT_ASSERT(abs(II_ijkl(2,2,2,2) - 1) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(II_ijkl(2,2,2,2) - 1) < Tol);
         auto II_ijkl2 = outer(II,II);
         FASTOR_EXIT_ASSERT(II_ijkl==II_ijkl2);
         auto II_ikjl = permutation<Index<i,k,j,l>>(II_ijkl);
-        FASTOR_EXIT_ASSERT(abs(II_ikjl(0,0,0,0) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_ikjl(0,1,0,1) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_ikjl(0,2,0,2) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_ikjl(1,0,1,0) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_ikjl(1,1,1,1) - 1) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(II_ikjl(0,0,0,0) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_ikjl(0,1,0,1) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_ikjl(0,2,0,2) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_ikjl(1,0,1,0) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_ikjl(1,1,1,1) - 1) < Tol);
         FASTOR_EXIT_ASSERT(abs(II_ikjl(1,2,1,2) - 1) < Tol);
-        FASTOR_EXIT_ASSERT(abs(II_ikjl(2,0,2,0) - 1) < Tol);  
-        FASTOR_EXIT_ASSERT(abs(II_ikjl(2,1,2,1) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_ikjl(2,2,2,2) - 1) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(II_ikjl(2,0,2,0) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_ikjl(2,1,2,1) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_ikjl(2,2,2,2) - 1) < Tol);
         FASTOR_EXIT_ASSERT(abs(norm(II_ijkl) - norm(II_ikjl)) < Tol);
         auto II_iljk = permutation<Index<i,l,j,k>>(II_ijkl);
-        FASTOR_EXIT_ASSERT(abs(II_iljk(0,0,0,0) - 1) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(II_iljk(0,0,0,0) - 1) < Tol);
         FASTOR_EXIT_ASSERT(abs(II_iljk(0,1,1,0) - 1) < Tol);
-        FASTOR_EXIT_ASSERT(abs(II_iljk(0,2,2,0) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_iljk(1,0,0,1) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_iljk(1,1,1,1) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_iljk(1,2,2,1) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_iljk(2,0,0,2) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_iljk(2,1,1,2) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(II_iljk(2,2,2,2) - 1) < Tol); 
-        FASTOR_EXIT_ASSERT(abs(norm(II_ijkl) - norm(II_iljk)) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(II_iljk(0,2,2,0) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_iljk(1,0,0,1) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_iljk(1,1,1,1) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_iljk(1,2,2,1) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_iljk(2,0,0,2) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_iljk(2,1,1,2) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(II_iljk(2,2,2,2) - 1) < Tol);
+        FASTOR_EXIT_ASSERT(abs(norm(II_ijkl) - norm(II_iljk)) < Tol);
 
 
         Tensor<T,3,3> A, B; A.iota(65); B.iota(13.2);
@@ -143,7 +143,7 @@ void run() {
                     for (auto ll=0; ll< 3; ll++) {
                         FASTOR_EXIT_ASSERT(abs( bb_ijkl(ii,jj,kk,ll) - bb_ikjl(ii,kk,jj,ll) ) < BigTol);
                         // FASTOR_EXIT_ASSERT(abs( bb_ijkl(ii,jj,kk,ll) - bb_iljk(ii,ll,jj,kk) ) < BigTol); // By definition this cannot be
-                        FASTOR_EXIT_ASSERT(abs( bb_ijkl(ii,ll,jj,kk) - bb_iljk(ii,jj,kk,ll) ) < BigTol); 
+                        FASTOR_EXIT_ASSERT(abs( bb_ijkl(ii,ll,jj,kk) - bb_iljk(ii,jj,kk,ll) ) < BigTol);
                     }
                 }
             }
@@ -180,20 +180,20 @@ void run() {
         A.iota(1); B.iota(2);
 
         auto C = einsum<Index<i,j,k>,Index<j>>(A,B);
-        FASTOR_EXIT_ASSERT(abs(C.sum() - 32750) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(C.sum() - 32750) < Tol);
         auto D = einsum<Index<j>,Index<i,j,k>>(B,A);
-        FASTOR_EXIT_ASSERT(abs(D.sum() - 32750) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(D.sum() - 32750) < Tol);
         auto E = einsum<Index<i,j,k>,Index<i,j,l>>(A,A);
-        FASTOR_EXIT_ASSERT(abs(E.sum() - 3293125) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(E.sum() - 3293125) < Tol);
         auto F = einsum<Index<i>,Index<k>>(B,B);
-        FASTOR_EXIT_ASSERT(abs(F.sum() - 400) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(F.sum() - 400) < Tol);
     }
 
     {
         Tensor<double,5,5> A; Tensor<double,5,5,5,5> B; Tensor<double,5> C;
         A.iota(); B.iota(); C.iota();
         auto D = einsum<Index<k,j>,Index<k,i,l,j>,Index<l>>(A,B,C);
-        FASTOR_EXIT_ASSERT(abs(D.sum() - 6.32e+06) < BigTol); 
+        FASTOR_EXIT_ASSERT(abs(D.sum() - 6.32e+06) < BigTol);
     }
 
     // Test generic tensors
@@ -202,20 +202,20 @@ void run() {
         A.iota(1); B.iota(2);
 
         auto C = einsum<Index<i,j,k>,Index<j>>(A-0,1+B-1);
-        FASTOR_EXIT_ASSERT(abs(C.sum() - 32750) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(C.sum() - 32750) < Tol);
         auto D = einsum<Index<j>,Index<i,j,k>>(B*1,-A+A+A);
-        FASTOR_EXIT_ASSERT(abs(D.sum() - 32750) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(D.sum() - 32750) < Tol);
         auto E = einsum<Index<i,j,k>,Index<i,j,l>>(1*A,A*1);
-        FASTOR_EXIT_ASSERT(abs(E.sum() - 3293125) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(E.sum() - 3293125) < Tol);
         auto F = einsum<Index<i>,Index<k>>(2*B-B+B-B,sqrt(B)+B-sqrt(B));
-        FASTOR_EXIT_ASSERT(abs(F.sum() - 400) < BigTol); 
+        FASTOR_EXIT_ASSERT(abs(F.sum() - 400) < BigTol);
     }
 
     {
         Tensor<double,5,5> A; Tensor<double,5,5,5,5> B; Tensor<double,5> C;
         A.iota(); B.iota(); C.iota();
         auto D = einsum<Index<k,j>,Index<k,i,l,j>,Index<l>>(2*sin(A)+A-sin(A)-sin(A),B,C+0);
-        FASTOR_EXIT_ASSERT(abs(D.sum() - 6.32e+06) < BigTol); 
+        FASTOR_EXIT_ASSERT(abs(D.sum() - 6.32e+06) < BigTol);
     }
 
     {
@@ -224,10 +224,10 @@ void run() {
         auto Bs2 = permutation<Index<k,i,j,l>>(As-0);
         auto Bs3 = permutation<Index<k,i,j,l>>(1+As-1);
         auto Bs4 = permutation<Index<k,i,j,l>>(2*As-As-sqrt(As)+sqrt(As));
-        FASTOR_EXIT_ASSERT(abs(As.sum() - Bs1.sum()) < BigTol); 
-        FASTOR_EXIT_ASSERT(abs(As.sum() - Bs2.sum()) < BigTol); 
-        FASTOR_EXIT_ASSERT(abs(As.sum() - Bs3.sum()) < BigTol); 
-        FASTOR_EXIT_ASSERT(abs(As.sum() - Bs4.sum()) < BigTol); 
+        FASTOR_EXIT_ASSERT(abs(As.sum() - Bs1.sum()) < BigTol);
+        FASTOR_EXIT_ASSERT(abs(As.sum() - Bs2.sum()) < BigTol);
+        FASTOR_EXIT_ASSERT(abs(As.sum() - Bs3.sum()) < BigTol);
+        FASTOR_EXIT_ASSERT(abs(As.sum() - Bs4.sum()) < BigTol);
     }
 
     {

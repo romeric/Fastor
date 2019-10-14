@@ -22,7 +22,7 @@ struct SIMDVector<Int64,256> {
     FASTOR_INLINE SIMDVector(Int64 num) : value(_mm256_set1_epi64x(num)) {}
     FASTOR_INLINE SIMDVector(__m256i regi) : value(regi) {}
     FASTOR_INLINE SIMDVector(const SIMDVector<Int64> &a) : value(a.value) {}
-    FASTOR_INLINE SIMDVector(const int *data) : value(_mm256_load_si256((__m256i*)data)) {}
+    FASTOR_INLINE SIMDVector(const Int64 *data) : value(_mm256_load_si256((__m256i*)data)) {}
     FASTOR_INLINE SIMDVector(Int64 *data) : value(_mm256_load_si256((__m256i*)data)) {}
 
     FASTOR_INLINE SIMDVector<Int64> operator=(int num) {
