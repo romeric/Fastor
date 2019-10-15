@@ -81,7 +81,9 @@ struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Te
 #endif
 
 
-    static void Do(const T *a_data, const T *b_data, T *out_data, std::array<int,out_dim> &as, std::array<int,out_dim> &idx) {
+    static
+    FASTOR_INLINE
+    void Do(const T *a_data, const T *b_data, T *out_data, std::array<int,out_dim> &as, std::array<int,out_dim> &idx) {
         for (size_t i=0; i<First; ++i) {
             idx[sizeof...(Lasts)] = i;
             RecursiveCartesian<Index<Idx0...>, Index<Idx1...>,
@@ -145,7 +147,9 @@ struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Te
 #endif
 
 
-    static void Do(const T *a_data, const T *b_data, T *out_data, std::array<int,out_dim> &as, std::array<int,out_dim> &idx)
+    static
+    FASTOR_INLINE
+    void Do(const T *a_data, const T *b_data, T *out_data, std::array<int,out_dim> &as, std::array<int,out_dim> &idx)
     {
         V _vec_a;
         for (size_t i=0; i<Last; i+=stride) {
