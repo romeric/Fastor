@@ -51,6 +51,13 @@ struct SIMDVector<Int64,256> {
             _mm256_storeu_si256((__m256i*)data,value);
     }
 
+    FASTOR_INLINE void load(const Int64 *data) {
+        value =_mm256_load_si256((__m256i*)data);
+    }
+    FASTOR_INLINE void store(Int64 *data) {
+        _mm256_store_si256((__m256i*)data,value);
+    }
+
     FASTOR_INLINE Int64 operator[](FASTOR_INDEX i) const {return reinterpret_cast<const Int64*>(&value)[i];}
     FASTOR_INLINE Int64 operator()(FASTOR_INDEX i) const {return reinterpret_cast<const Int64*>(&value)[i];}
 
@@ -258,6 +265,13 @@ struct SIMDVector<Int64,128> {
             _mm_storeu_si128((__m128i*)data,value);
     }
 
+    FASTOR_INLINE void load(const Int64 *data) {
+        value =_mm_load_si128((__m128i*)data);
+    }
+    FASTOR_INLINE void store(Int64 *data) {
+        _mm_store_si128((__m128i*)data,value);
+    }
+
     FASTOR_INLINE Int64 operator[](FASTOR_INDEX i) const {return reinterpret_cast<const Int64*>(&value)[i];}
     FASTOR_INLINE Int64 operator()(FASTOR_INDEX i) const {return reinterpret_cast<const Int64*>(&value)[i];}
 
@@ -456,6 +470,13 @@ struct SIMDVector<Int64, 64> {
         value = *data;
     }
     FASTOR_INLINE void store(Int64 *data) {
+        data[0] = value;
+    }
+
+    FASTOR_INLINE void aligned_load(const Int64 *data) {
+        value = *data;
+    }
+    FASTOR_INLINE void aligned_store(Int64 *data) {
         data[0] = value;
     }
 

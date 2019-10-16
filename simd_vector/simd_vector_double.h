@@ -49,6 +49,13 @@ struct SIMDVector<double, 256> {
             _mm256_storeu_pd(data,value);
     }
 
+    FASTOR_INLINE void aligned_load(const double *data) {
+        value =_mm256_load_pd(data);
+    }
+    FASTOR_INLINE void aligned_store(double *data) {
+        _mm256_store_pd(data,value);
+    }
+
     FASTOR_INLINE double operator[](FASTOR_INDEX i) const {return reinterpret_cast<const double*>(&value)[i];}
     FASTOR_INLINE double operator()(FASTOR_INDEX i) const {return reinterpret_cast<const double*>(&value)[i];}
 
@@ -301,6 +308,13 @@ struct SIMDVector<double, 128> {
             _mm_storeu_pd(data,value);
     }
 
+    FASTOR_INLINE void aligned_load(const double *data) {
+        value =_mm_load_pd(data);
+    }
+    FASTOR_INLINE void aligned_store(double *data) {
+        _mm_store_pd(data,value);
+    }
+
     FASTOR_INLINE double operator[](FASTOR_INDEX i) const {return reinterpret_cast<const double*>(&value)[i];}
     FASTOR_INLINE double operator()(FASTOR_INDEX i) const {return reinterpret_cast<const double*>(&value)[i];}
 
@@ -541,6 +555,13 @@ struct SIMDVector<double, 64> {
         value = *data;
     }
     FASTOR_INLINE void store(double *data) {
+        data[0] = value;
+    }
+
+    FASTOR_INLINE void aligned_load(const double *data) {
+        value = *data;
+    }
+    FASTOR_INLINE void aligned_store(double *data) {
         data[0] = value;
     }
 

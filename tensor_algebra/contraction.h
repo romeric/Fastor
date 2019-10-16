@@ -147,12 +147,13 @@ struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Te
 #endif
 
 
+
     static
     FASTOR_INLINE
     void Do(const T *a_data, const T *b_data, T *out_data, std::array<int,out_dim> &as, std::array<int,out_dim> &idx)
     {
         V _vec_a;
-        for (size_t i=0; i<Last; i+=stride) {
+        for (int i=0; i<Last; i+=stride) {
             idx[0] = i;
             std::reverse_copy(idx.begin(),idx.end(),as.begin());
 
@@ -173,7 +174,8 @@ struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Te
             _vec_a.set(*(a_data+index_a));
             // V _vec_out = _vec_a*V(b_data+index_b) +  V(out_data+index_out);
             V _vec_out = fmadd(_vec_a,V(b_data+index_b),  V(out_data+index_out));
-            _vec_out.store(out_data+index_out);
+            // _vec_out.store(out_data+index_out);
+            _vec_out.aligned_store(out_data+index_out);
         }
 
         return;
@@ -324,7 +326,8 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
               // out_data[index_out[i]] += a_data[index_a[i]]*b_data[index_b[i]];
               _vec_a.set(*(a_data+index_a[i]));
               V _vec_out = _vec_a*V(b_data+index_b[i]) +  V(out_data+index_out[i]);
-              _vec_out.store(out_data+index_out[i]);
+              // _vec_out.store(out_data+index_out[i]);
+              _vec_out.aligned_store(out_data+index_out[i]);
           }
 
         return out;
@@ -394,7 +397,8 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
 
               _vec_a.set(*(a_data+index_a));
               V _vec_out = _vec_a*V(b_data+index_b) +  V(out_data+index_out);
-              _vec_out.store(out_data+index_out);
+              // _vec_out.store(out_data+index_out);
+              _vec_out.aligned_store(out_data+index_out);
           }
 
           return out;
@@ -462,13 +466,13 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
               int it;
               V _vec_a;
 
-#if __cplusplus > 201103L
+#if __cplusplus >= 201703L
               constexpr std::array<int,out_dim> remainings = find_remaining(maxes_out, total);
 #endif
 
               for (int i = 0; i < total; i+=stride) {
 
-#if __cplusplus > 201103L
+#if __cplusplus >= 201703L
                   for (int n = 0; n < out_dim; ++n) {
                       as[n] = ( i / remainings[n] ) % (int)maxes_out[n];
                   }
@@ -497,7 +501,8 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
 //                  _vec_a.broadcast(&a_data[index_a]);
                   V _vec_out = _vec_a*V(b_data+index_b) +  V(out_data+index_out);
                   // V _vec_out = fmadd(_vec_a,V(b_data+index_b),  V(out_data+index_out));
-                  _vec_out.store(out_data+index_out);
+                  // _vec_out.store(out_data+index_out);
+                  _vec_out.aligned_store(out_data+index_out);
               }
 
 
@@ -521,7 +526,7 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
               //     _vec_a.set(*(a_data+index_a));
               //     // V _vec_out = _vec_a*V(b_data+index_b) +  V(out_data+index_out);
               //     V _vec_out = fmadd(_vec_a,V(b_data+index_b),  V(out_data+index_out));
-              //     _vec_out.store(out_data+index_out);
+              //     _vec_out.aligned_store(out_data+index_out);
               // }
 
               return out;
@@ -573,7 +578,6 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
               _dyadic<T,prod<Rest0...>::value, prod<Rest1...>::value>(a.data(),b.data(),out.data());
               return out;
           }
-
 };
 
 

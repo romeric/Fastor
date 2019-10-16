@@ -121,6 +121,13 @@ struct SIMDVector {
         unused(Aligned);
     }
 
+    FASTOR_INLINE void aligned_load(const T *data) {
+        std::copy(data,data+Size,value);
+    }
+    FASTOR_INLINE void aligned_store(T *data) {
+        std::copy(value,value+Size,data);
+    }
+
     FASTOR_INLINE T operator[](FASTOR_INDEX i) const {return value[i];}
     FASTOR_INLINE T operator()(FASTOR_INDEX i) const {return value[i];}
 
