@@ -26,7 +26,8 @@ test_basics:
 	$(CXX) test_basics.cpp -o test_basics.exe $(CXX_FLAGS) $(INCLUDES)
 
 test_einsum:
-	$(CXX) test_einsum.cpp -o test_einsum.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14
+	$(CXX) test_einsum.cpp -o test_einsum_0.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14
+	$(CXX) test_einsum.cpp -o test_einsum_1.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14 -DCONTRACT_OPT=-1
 
 test_linalg:
 	$(CXX) test_linalg.cpp -o test_linalg.exe $(CXX_FLAGS) $(INCLUDES)
@@ -61,7 +62,8 @@ run:
 	./test_auxiliary.exe
 	./test_simd_vectors.exe
 	./test_basics.exe
-	./test_einsum.exe
+	./test_einsum_0.exe
+	./test_einsum_1.exe
 	./test_linalg.exe
 	./test_views_1d.exe
 	./test_views_1d_vec.exe
