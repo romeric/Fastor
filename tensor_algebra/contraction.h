@@ -30,57 +30,7 @@ struct RecursiveCartesian;
 template<typename T, size_t ...Idx0, size_t ...Idx1, size_t ...Rest0, size_t ...Rest1, size_t First, size_t ... Lasts>
 struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Tensor<T,Rest1...>, First, Lasts...> {
 
-    using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
-    typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
-    using OutIndices = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
-    typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::indices;
-
-    static constexpr int a_dim = sizeof...(Rest0);
-    static constexpr int b_dim = sizeof...(Rest1);
     static constexpr int out_dim =  no_of_unique<Idx0...,Idx1...>::value;
-
-    static constexpr auto& idx_a = IndexTensors<
-          Index<Idx0..., Idx1...>,
-          Tensor<T,Rest0...,Rest1...>,
-          Index<Idx0...>,Tensor<T,Rest0...>,
-          typename std_ext::make_index_sequence<sizeof...(Rest0)>::type>::indices;
-
-    static constexpr auto& idx_b = IndexTensors<
-          Index<Idx0..., Idx1...>,
-          Tensor<T,Rest0...,Rest1...>,
-          Index<Idx1...>,Tensor<T,Rest1...>,
-          typename std_ext::make_index_sequence<sizeof...(Rest1)>::type>::indices;
-
-    static constexpr auto& idx_out = IndexTensors<
-          Index<Idx0..., Idx1...>,
-          Tensor<T,Rest0...,Rest1...>,
-          OutIndices,OutTensor,
-          typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::indices;
-
-    using nloops = loop_setter<
-            Index<Idx0...,Idx1...>,
-            Tensor<T,Rest0...,Rest1...>,
-            typename std_ext::make_index_sequence<out_dim>::type>;
-    static constexpr auto& maxes_out = nloops::dims;
-    static constexpr int total = nloops::value;
-
-    static constexpr std::array<size_t,a_dim> products_a = nprods<Index<Rest0...>,typename std_ext::make_index_sequence<a_dim>::type>::values;
-    static constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
-
-    using Index_with_dims = typename put_dims_in_Index<OutTensor>::type;
-    static constexpr std::array<size_t,OutTensor::Dimension> products_out = \
-          nprods<Index_with_dims,typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::values;
-
-#ifndef FASTOR_DONT_VECTORISE
-    using vectorisability = is_vectorisable<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest1...>>;
-    static constexpr int stride = vectorisability::stride;
-    using V = typename vectorisability::type;
-#else
-    static constexpr int stride = 1;
-    using V = SIMDVector<T,sizeof(T)*8>;
-#endif
-
-
     static
     FASTOR_INLINE
     void Do(const T *a_data, const T *b_data, T *out_data, std::array<int,out_dim> &as, std::array<int,out_dim> &idx) {
@@ -130,8 +80,10 @@ struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Te
     static constexpr auto& maxes_out = nloops::dims;
     static constexpr int total = nloops::value;
 
-    static constexpr std::array<size_t,a_dim> products_a = nprods<Index<Rest0...>,typename std_ext::make_index_sequence<a_dim>::type>::values;
-    static constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
+    static constexpr std::array<size_t,sizeof...(Rest0)> products_a = nprods<Index<Rest0...>,
+        typename std_ext::make_index_sequence<a_dim>::type>::values;
+    static constexpr std::array<size_t,sizeof...(Rest1)> products_b = nprods<Index<Rest1...>,
+        typename std_ext::make_index_sequence<b_dim>::type>::values;
 
     using Index_with_dims = typename put_dims_in_Index<OutTensor>::type;
     static constexpr std::array<size_t,OutTensor::Dimension> products_out = \
@@ -258,6 +210,22 @@ struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Te
 //         return;
 //     }
 // };
+
+template<typename T, size_t Last, size_t ...Idx0, size_t ...Idx1, size_t ...Rest0, size_t ...Rest1>
+constexpr std::array<size_t,sizeof...(Rest0)> RecursiveCartesian<Index<Idx0...>, Index<Idx1...>,
+  Tensor<T,Rest0...>, Tensor<T,Rest1...>,Last>::products_a;
+
+template<typename T, size_t Last, size_t ...Idx0, size_t ...Idx1, size_t ...Rest0, size_t ...Rest1>
+constexpr std::array<size_t,sizeof...(Rest1)> RecursiveCartesian<Index<Idx0...>, Index<Idx1...>,
+  Tensor<T,Rest0...>, Tensor<T,Rest1...>,Last>::products_b;
+
+template<typename T, size_t Last, size_t ...Idx0, size_t ...Idx1, size_t ...Rest0, size_t ...Rest1>
+constexpr std::array<size_t,RecursiveCartesian<Index<Idx0...>, Index<Idx1...>,
+  Tensor<T,Rest0...>, Tensor<T,Rest1...>,Last>::OutTensor::Dimension> RecursiveCartesian<Index<Idx0...>, Index<Idx1...>,
+  Tensor<T,Rest0...>, Tensor<T,Rest1...>,Last>::products_out;
+
+
+
 
 
 template<class Idx0, class Idx1, class Tens0, class Tens1, class Args>

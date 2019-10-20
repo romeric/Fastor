@@ -28,6 +28,7 @@ public:
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX Remainder = prod<Rest...>::value % sizeof(T);
     static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return Dimension;}
+    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX dim) const {
 #ifndef NDEBUG
         FASTOR_ASSERT(dim>=0 && dim < sizeof...(Rest), "TENSOR SHAPE MISMATCH");

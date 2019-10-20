@@ -21,7 +21,11 @@ public:
     FASTOR_INLINE Derived& self() {return *static_cast<Derived*>(this);}
 
     static constexpr FASTOR_INDEX Dimension = Rank;
+#ifndef FASTOR_DYNAMIC_MODE
     static constexpr FASTOR_INDEX size() {return Derived::Size;}
+#else
+    FASTOR_INDEX size() const {return (*static_cast<const Derived*>(this)).size();}
+#endif
 };
 
 }
