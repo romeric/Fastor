@@ -5,20 +5,6 @@
 #include "meta/tensor_post_meta.h"
 
 
-// namespace Fastor {
-
-// template<typename T, typename std::enable_if<std::is_arithmetic<T>::value,bool>::type=0>
-// T forward_evaluate(const T &a) {
-//     return a;
-// }
-// template<typename T, typename std::enable_if<!std::is_arithmetic<T>::value,bool>::type=0>
-// auto forward_evaluate(const T &a) -> decltype(a.evaluate()) {
-//     return a.evaluate();
-// }
-
-// }
-
-
 
 namespace Fastor {
 
@@ -30,7 +16,7 @@ struct BinaryAddOp: public AbstractTensor<BinaryAddOp<TLhs, TRhs, DIM0>,DIM0> {
     typename ExprBinderType<TLhs>::type lhs;
     typename ExprBinderType<TRhs>::type rhs;
 public:
-    
+
     static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX rank() {return DIM0;}
     using scalar_type = typename scalar_type_finder<BinaryAddOp<TLhs, TRhs, DIM0>>::type;
@@ -52,7 +38,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX helper_size() const {
 #ifndef NDEBUG
         FASTOR_ASSERT(rhs.size()==lhs.size(),"EXPRESSION SIZE MISMATCH");
-#endif        
+#endif
         return rhs.size();
     }
 
@@ -69,7 +55,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX helper_dimension(FASTOR_INDEX i) const {
 #ifndef NDEBUG
         FASTOR_ASSERT(rhs.dimension(i)==lhs.dimension(i),"EXPRESSION SHAPE MISMATCH");
-#endif         
+#endif
         return rhs.dimension(i);
     }
 
@@ -176,10 +162,6 @@ public:
     FASTOR_INLINE U helper_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return lhs.template eval_s<U>(i,j) + (U)rhs;
     }
-
-    // constexpr FASTOR_INLINE TLhs evaluate() const {
-    //     return forward_evaluate(lhs) + forward_evaluate(rhs);
-    // }
 };
 
 template<typename TLhs, typename TRhs, size_t DIM0,
@@ -205,7 +187,7 @@ template<typename TLhs, typename TRhs, size_t DIM0, size_t DIM1,
          typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
                                  !std::is_arithmetic<TRhs>::value &&
                                  DIM0!=DIM1,bool>::type = 0 >
-FASTOR_INLINE BinaryAddOp<TLhs, TRhs, meta_min<DIM0,DIM1>::value> 
+FASTOR_INLINE BinaryAddOp<TLhs, TRhs, meta_min<DIM0,DIM1>::value>
 operator+(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1> &rhs) {
   return BinaryAddOp<TLhs, TRhs, meta_min<DIM0,DIM1>::value>(lhs.self(), rhs.self());
 }
