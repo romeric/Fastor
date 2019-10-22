@@ -173,6 +173,43 @@ void run() {
         FASTOR_EXIT_ASSERT(abs((outer(D,D)).sum() - 8589.5824) < HugeTol);
     }
 
+    {
+        Tensor<T,3,5> a1; a1.iota(1);
+        FASTOR_EXIT_ASSERT(norm(transpose(a1) - permutation<Index<j,i>>(a1)) < Tol);
+        Tensor<T,7,13> a2; a2.iota(14.5);
+        FASTOR_EXIT_ASSERT(norm(transpose(a2) - permutation<Index<j,i>>(a2)) < Tol);
+
+        Tensor<T,3,4,5> a3; a3.iota(1.2);
+
+        Tensor<T,3,5,4> a4 = permutation<Index<i,k,j>>(a3);
+        FASTOR_EXIT_ASSERT(abs(norm(a3(0,all,all))-norm(a4(0,all,all))) < HugeTol);
+        FASTOR_EXIT_ASSERT(abs(norm(a3(1,all,all))-norm(a4(1,all,all))) < HugeTol);
+        FASTOR_EXIT_ASSERT(abs(norm(a3(2,all,all))-norm(a4(2,all,all))) < HugeTol);
+
+        Tensor<T,4,5,3> a5 = permutation<Index<j,k,i>>(a3);
+        FASTOR_EXIT_ASSERT(abs(norm(a3) - norm(a5)) < HugeTol);
+        FASTOR_EXIT_ASSERT(abs(a5(0,0,1) - 6.2)  < BigTol);
+        FASTOR_EXIT_ASSERT(abs(a5(0,0,2) - 11.2) < BigTol);
+        FASTOR_EXIT_ASSERT(abs(a5(0,1,0) - 16.2) < BigTol);
+        FASTOR_EXIT_ASSERT(abs(a5(0,2,0) - 31.2) < BigTol);
+        FASTOR_EXIT_ASSERT(abs(a5(0,3,0) - 46.2) < BigTol);
+        FASTOR_EXIT_ASSERT(abs(a5(0,4,0) - 2.2)  < BigTol);
+        FASTOR_EXIT_ASSERT(abs(a5(3,3,1) - 40.2) < BigTol);
+        FASTOR_EXIT_ASSERT(abs(a5(3,4,2) - 60.2) < BigTol);
+
+        Tensor<T,4,3,5> a6 = permutation<Index<j,i,k>>(a3);
+        FASTOR_EXIT_ASSERT(abs(norm(a3) - norm(a6)) < HugeTol);
+        FASTOR_EXIT_ASSERT(abs(a6(0,0,1) - 2.2)   < BigTol);
+        FASTOR_EXIT_ASSERT(abs(a6(0,1,0) - 21.2)  < BigTol);
+        FASTOR_EXIT_ASSERT(abs(a6(3,2,3) - 59.2)  < BigTol);
+
+        Tensor<T,3,4,5,6> a7; a7.iota(2);
+        Tensor<T,3,4,6,5> a8 = permutation<Index<i,j,l,k>>(a7);
+        for (int ii=0; ii<3; ++ii)
+            for (int jj=0; jj<3; ++jj)
+                FASTOR_EXIT_ASSERT(abs(norm(a7(ii,jj,all,all))-norm(a8(ii,jj,all,all))) < HugeTol);
+    }
+
 
 
     {

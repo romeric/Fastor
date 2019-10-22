@@ -114,36 +114,32 @@ FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const Tensor<T,M,N
     return os;
 }
 
-template<typename T, size_t M, size_t N, size_t ... Rest,
-         typename std::enable_if<sizeof...(Rest)>=1,bool>::type=0>
-FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const Tensor<T,M,N,Rest...> &a) {
+
+template<typename T, size_t ... Rest,
+         typename std::enable_if<sizeof...(Rest)>=3,bool>::type=0>
+FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const Tensor<T,Rest...> &a) {
 
     T *a_data = a.data();
 
     IOFormat fmt = FASTOR_DEFINE_IO_FORMAT;
 
-    constexpr int DimensionHolder[sizeof...(Rest)+2] = {M,N,Rest...};
-    int prods = 1;
-    for (int i=0; i<a.Dimension-2; ++i) {
-        prods *= DimensionHolder[i];
-    }
-    int lastrowcol = 1;
-    for (int i=a.Dimension-2; i<a.Dimension; ++i) {
-        lastrowcol *= DimensionHolder[i];
-    }
+    constexpr std::array<int,sizeof...(Rest)> DimensionHolder = {Rest...};
+    constexpr int M = get_value<sizeof...(Rest)-1,Rest...>::value;
+    constexpr int N = get_value<sizeof...(Rest),Rest...>::value;
+    constexpr int lastrowcol = M*N;
+    constexpr size_t prods = prod<Rest...>::value;
 
-    std::vector<std::vector<int>> combs = internal::index_generator<M,N,Rest...>();
+    std::vector<std::vector<int>> combs = internal::index_generator<Rest...>();
     os.precision(fmt._precision);
-    int width = internal::get_row_width(os, a_data, prods*M*N);
+    int width = internal::get_row_width(os, a_data, prods);
 
-    size_t dims_2d = DimensionHolder[a.Dimension-2]*DimensionHolder[a.Dimension-1];
-    for (int dims=0; dims<prods; ++dims) {
+    for (size_t dims=0; dims<prods/M/N; ++dims) {
 
         if (fmt._print_dimensions)
         {
             os << "[";
-            for (size_t kk=0; kk<sizeof...(Rest); ++kk) {
-                os << combs[dims_2d*dims][kk] << ",";
+            for (size_t kk=0; kk<sizeof...(Rest)-2; ++kk) {
+                os << combs[lastrowcol*dims][kk] << ",";
             }
             os << ":,:]\n";
         }

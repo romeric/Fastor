@@ -4,6 +4,7 @@
 #include "tensor/Tensor.h"
 #include "indicial.h"
 #include "meta/tensor_post_meta.h"
+#include "meta/einsum_meta.h"
 
 namespace Fastor {
 
@@ -23,29 +24,147 @@ struct permute_impl<T,Index<ls...>, Tensor<T, fs...>, std_ext::index_sequence<ss
     constexpr static size_t lst[sizeof...(ls)] = { ls... };
     constexpr static size_t fvals[sizeof...(ls)] = {fs...};
     using type = Tensor<T,fvals[count_less(lst, lst[ss])]...>;
+    using index_type = typename tmp_argsort<Index<ls...>,Index<ss...>>::new_argseq;
+    using maxes_out_type = Index<fvals[tmp_argsort<Index<ls...>,Index<ss...>>::new_argseq::_IndexHolder[ss]]...>;
 };
 
 
 
 
-// Return dimensions of tensor as a std::array
-template<class X>
-struct get_tensor_dims;
+template<class Idx, class Tens, size_t ... Args>
+struct RecursiveCartesianPerm;
 
-template<typename T, size_t ... Rest>
-struct get_tensor_dims<Tensor<T,Rest...>> {
-    static constexpr std::array<size_t,sizeof...(Rest)> dims = {Rest...};
-    static constexpr std::array<int,sizeof...(Rest)> dims_int = {Rest...};
+template<typename T, size_t ...Idx, size_t ...Rest, size_t First, size_t ... Lasts>
+struct RecursiveCartesianPerm<Index<Idx...>, Tensor<T,Rest...>, First, Lasts...> {
+
+    static constexpr int out_dim = sizeof...(Rest);
+    static
+    FASTOR_INLINE
+    void Do(const T *a_data, T *out_data, std::array<int,out_dim> &as, std::array<int,out_dim> &idx) {
+        for (size_t i=0; i<First; ++i) {
+            idx[sizeof...(Lasts)] = i;
+            RecursiveCartesianPerm<Index<Idx...>, Tensor<T,Rest...>,Lasts...>::Do(a_data, out_data, as, idx);
+        }
+    }
 };
 
-template<typename T, size_t ... Rest>
-constexpr std::array<size_t,sizeof...(Rest)> get_tensor_dims<Tensor<T,Rest...>>::dims;
-template<typename T, size_t ... Rest>
-constexpr std::array<int,sizeof...(Rest)> get_tensor_dims<Tensor<T,Rest...>>::dims_int;
+template<typename T, size_t Last, size_t ...Idx, size_t ...Rest>
+struct RecursiveCartesianPerm<Index<Idx...>, Tensor<T,Rest...>,Last>
+{
+    using OutTensor = typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type;
+    using maxes_out_type = typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type;
+    using index_type = typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type;
+    static constexpr auto maxes_idx = permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type::_IndexHolder;
+    static constexpr auto maxes_out = permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type::_IndexHolder;
+
+    static constexpr int a_dim = sizeof...(Rest);
+    static constexpr int out_dim = a_dim;
+    static constexpr std::array<int,a_dim> maxes_a = {Rest...};
+
+    static constexpr std::array<size_t,sizeof...(Rest)> products_a = nprods<Index<Rest...>,
+        typename std_ext::make_index_sequence<a_dim>::type>::values;
+    static constexpr std::array<size_t,sizeof...(Rest)> products_out = nprods<maxes_out_type,
+        typename std_ext::make_index_sequence<a_dim>::type>::values;
+
+    static void Do(const T *a_data, T *out_data, std::array<int,out_dim> &as, std::array<int,out_dim> &idx)
+    {
+        constexpr int stride = 1;
+        for (int i=0; i<Last; i+=stride) {
+            idx[0] = i;
+            std::reverse_copy(idx.begin(),idx.end(),as.begin());
+
+            int index_a = as[a_dim-1];
+            for(int it = 0; it< a_dim; it++) {
+                index_a += products_a[it]*as[it];
+            }
+            int index_out = as[maxes_idx[out_dim-1]];
+            for(int it = 0; it< out_dim-1; it++) {
+                index_out += products_out[it]*as[maxes_idx[it]];
+            }
+
+            out_data[index_out] = a_data[index_a];
+        }
+    }
+};
+
+template<typename T, size_t Last, size_t ...Idx, size_t ...Rest>
+constexpr std::array<size_t,sizeof...(Rest)> RecursiveCartesianPerm<Index<Idx...>,
+  Tensor<T,Rest...>,Last>::products_a;
+
+template<typename T, size_t Last, size_t ...Idx, size_t ...Rest>
+constexpr std::array<size_t,sizeof...(Rest)> RecursiveCartesianPerm<Index<Idx...>,
+  Tensor<T,Rest...>,Last>::products_out;
 
 
 
+// template<typename T, size_t ...Idx, size_t ...Rest>
+// struct RecursiveCartesianPerm<Index<Idx...>, Tensor<T,Rest...>>
+// {
+//     using OutTensor = typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+//         typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type;
+//     using maxes_out_type = typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+//         typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type;
+//     using index_type = typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+//         typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type;
+//     static constexpr auto maxes_idx = permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+//         typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type::_IndexHolder;
+//     static constexpr auto maxes_out = permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+//         typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type::_IndexHolder;
 
+//     static constexpr int a_dim = sizeof...(Rest);
+//     static constexpr int out_dim = a_dim;
+//     static constexpr std::array<int,a_dim> maxes_a = {Rest...};
+
+//     static constexpr std::array<size_t,sizeof...(Rest)> products_a = nprods<Index<Rest...>,
+//         typename std_ext::make_index_sequence<a_dim>::type>::values;
+//     static constexpr std::array<size_t,sizeof...(Rest)> products_out = nprods<maxes_out_type,
+//         typename std_ext::make_index_sequence<a_dim>::type>::values;
+
+//     static void Do(const T *a_data, T *out_data, std::array<int,out_dim> &as, std::array<int,out_dim> &idx)
+//     {
+//         std::reverse_copy(idx.begin(),idx.end(),as.begin());
+
+//         int index_a = as[a_dim-1];
+//         for(int it = 0; it< a_dim; it++) {
+//             index_a += products_a[it]*as[it];
+//         }
+//         int index_out = as[maxes_idx[out_dim-1]];
+//         for(int it = 0; it< out_dim-1; it++) {
+//             index_out += products_out[it]*as[maxes_idx[it]];
+//         }
+
+//         out_data[index_out] = a_data[index_a];
+//     }
+// };
+
+// template<typename T, size_t ...Idx, size_t ...Rest>
+// constexpr std::array<size_t,sizeof...(Rest)> RecursiveCartesianPerm<Index<Idx...>,
+//   Tensor<T,Rest...>>::products_a;
+
+// template<typename T, size_t ...Idx, size_t ...Rest>
+// constexpr std::array<size_t,sizeof...(Rest)> RecursiveCartesianPerm<Index<Idx...>,
+//   Tensor<T,Rest...>>::products_out;
+
+
+
+template<class Idx, class Tens, class Args>
+struct RecursiveCartesianPermDispatcher;
+
+template<typename T, size_t ...Idx, size_t ...Rest, size_t ... Args>
+struct RecursiveCartesianPermDispatcher<Index<Idx...>, Tensor<T,Rest...>, Index<Args...> >
+{
+    static constexpr int out_dim =  sizeof...(Rest);
+
+    static inline void Do(const T *a_data, T *out_data,
+      std::array<int,out_dim> &as, std::array<int,out_dim> &idx) {
+      return RecursiveCartesianPerm<Index<Idx...>,Tensor<T,Rest...>, Args...>::Do(a_data, out_data, as, idx);
+    }
+};
 
 
 
@@ -57,54 +176,42 @@ struct extractor_perm {};
 
 template<size_t ... Idx>
 struct extractor_perm<Index<Idx...> > {
-  template<typename T, size_t ... Rest>
+
+    template<typename T, size_t ... Rest>
     static
     typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
-        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type
+    typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type
     permutation_impl(const Tensor<T,Rest...> &a) {
 
-        typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
-            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type out;
+#if CONTRACT_OPT==-1
+
+        using OutTensor = typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type;
+        using maxes_out_type = typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type;
+        using index_type = typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type;
+        constexpr auto& maxes_idx = permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type::_IndexHolder;
+        constexpr auto& maxes_out = permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type::_IndexHolder;
+
+        constexpr int a_dim = sizeof...(Rest);
+        constexpr int out_dim = a_dim;
+        constexpr std::array<int,a_dim> maxes_a = {Rest...};
+
+        constexpr auto& products_a = nprods<Index<Rest...>,
+            typename std_ext::make_index_sequence<a_dim>::type>::values;
+        constexpr auto& products_out = nprods<maxes_out_type,
+            typename std_ext::make_index_sequence<a_dim>::type>::values;
+
+        OutTensor out;
         out.zeros();
 
         T *a_data = a.data();
         T *out_data = out.data();
 
-        constexpr int a_dim = sizeof...(Rest);
-        constexpr int out_dim = a_dim;
-        constexpr std::array<int,a_dim> maxes_a = {Rest...};
-        constexpr std::array<int,a_dim> idx = {Idx...};
-        std::array<int,out_dim> maxes_idx = argsort(idx);
-        std::array<int,out_dim> maxes_out;
-//        std::fill(maxes_out.begin(),maxes_out.end(),0);
-        for (int i=0; i<out_dim; ++i) {
-            maxes_out[i] = maxes_a[maxes_idx[i]];
-        }
-
-        std::array<int,a_dim> products_a;
-        std::fill(products_a.begin(),products_a.end(),0);
-        for (int j=a_dim-1; j>0; --j) {
-            int num = maxes_a[a_dim-1];
-            for (int k=0; k<j-1; ++k) {
-                num *= maxes_a[a_dim-1-k-1];
-            }
-            products_a[j] = num;
-        }
-        std::array<int,out_dim> products_out;
-        std::fill(products_out.begin(),products_out.end(),0);
-        for (int j=out_dim-1; j>0; --j) {
-            int num = maxes_out[out_dim-1];
-            for (int k=0; k<j-1; ++k) {
-                num *= maxes_out[out_dim-1-k-1];
-            }
-            products_out[j] = num;
-        }
-
-        std::reverse(products_a.begin(),products_a.end());
-        std::reverse(products_out.begin(),products_out.end());
-
-        int as[out_dim];
-        std::fill(as,as+out_dim,0);
+        int as[out_dim] = {};
         int it,jt;
 
         while(true)
@@ -132,61 +239,75 @@ struct extractor_perm<Index<Idx...> > {
         }
 
         return out;
+
+#else
+
+        using OutTensor = typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+                typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type;
+
+        OutTensor out;
+        out.zeros();
+
+        T *a_data = a.data();
+        T *out_data = out.data();
+
+        constexpr int out_dim =  sizeof...(Rest);
+
+        std::array<int,out_dim> as = {};
+        std::array<int,out_dim> idx = {};
+
+        using nloops = loop_setter<
+                Index<Idx...>,
+                Tensor<T,Rest...>,
+                typename std_ext::make_index_sequence<out_dim>::type>;
+        using dims_type = typename nloops::dims_type;
+
+        RecursiveCartesianPermDispatcher<Index<Idx...>,Tensor<T,Rest...>,dims_type>::Do(a_data,out_data,as,idx);
+
+        return out;
+#endif
+
     }
 
 
 
-// Generic abstract permute
-  template<typename Derived, size_t DIMS>
-    static typename permute_impl<typename scalar_type_finder<Derived>::type,
-        Index<Idx...>, typename tensor_type_finder<Derived>::type,
-        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type
+    // Generic abstract permute
+    template<typename Derived, size_t DIMS>
+    static
+    typename permute_impl<typename scalar_type_finder<Derived>::type,
+    Index<Idx...>, typename tensor_type_finder<Derived>::type,
+    typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type
     permutation_impl(const AbstractTensor<Derived,DIMS> &a) {
 
         using T = typename scalar_type_finder<Derived>::type;
         using tensor_type = typename tensor_type_finder<Derived>::type;
 
-        typename permute_impl<T,Index<Idx...>, tensor_type,
-            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type out;
-        out.zeros();
-        T *out_data = out.data();
-
-        const Derived & a_src = a.self();
+        using OutTensor = typename permute_impl<T,Index<Idx...>, tensor_type,
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type;
+        using maxes_out_type = typename permute_impl<T,Index<Idx...>, tensor_type,
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type;
+        using index_type = typename permute_impl<T,Index<Idx...>, tensor_type,
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type;
+        constexpr auto& maxes_idx = permute_impl<T,Index<Idx...>, tensor_type,
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type::_IndexHolder;
+        constexpr auto& maxes_out = permute_impl<T,Index<Idx...>, tensor_type,
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type::_IndexHolder;
 
         constexpr int a_dim = DIMS;
         constexpr int out_dim = a_dim;
-        constexpr std::array<int,a_dim> maxes_a = get_tensor_dims<tensor_type>::dims_int;
-        constexpr std::array<int,a_dim> idx = {Idx...};
-        std::array<int,out_dim> maxes_idx = argsort(idx);
-        std::array<int,out_dim> maxes_out;
-        for (int i=0; i<out_dim; ++i) {
-            maxes_out[i] = maxes_a[maxes_idx[i]];
-        }
+        constexpr std::array<int,a_dim> maxes_a = get_tensor_dimensions<tensor_type>::dims_int;
 
-        std::array<int,a_dim> products_a;
-        std::fill(products_a.begin(),products_a.end(),0);
-        for (int j=a_dim-1; j>0; --j) {
-            int num = maxes_a[a_dim-1];
-            for (int k=0; k<j-1; ++k) {
-                num *= maxes_a[a_dim-1-k-1];
-            }
-            products_a[j] = num;
-        }
-        std::array<int,out_dim> products_out;
-        std::fill(products_out.begin(),products_out.end(),0);
-        for (int j=out_dim-1; j>0; --j) {
-            int num = maxes_out[out_dim-1];
-            for (int k=0; k<j-1; ++k) {
-                num *= maxes_out[out_dim-1-k-1];
-            }
-            products_out[j] = num;
-        }
+        constexpr auto& products_a = nprods<typename get_tensor_dimensions<tensor_type>::tensor_to_index,
+            typename std_ext::make_index_sequence<a_dim>::type>::values;
+        constexpr auto& products_out = nprods<maxes_out_type,
+            typename std_ext::make_index_sequence<a_dim>::type>::values;
 
-        std::reverse(products_a.begin(),products_a.end());
-        std::reverse(products_out.begin(),products_out.end());
+        OutTensor out;
+        out.zeros();
+        T *out_data = out.data();
+        const Derived & a_src = a.self();
 
-        int as[out_dim];
-        std::fill(as,as+out_dim,0);
+        int as[out_dim] = {};
         int it,jt;
 
         while(true)
@@ -233,135 +354,6 @@ typename permute_impl<typename scalar_type_finder<Derived>::type,Index_I,
     return extractor_perm<Index_I>::permutation_impl(a);
 }
 
-
-
-
-// Specialised dispatcher as the above generic version can be expensive
-
-// IKJL
-template<class Ind,
-         typename T, size_t I, size_t J, size_t K, size_t L,
-         typename std::enable_if<Ind::NoIndices==4 &&
-                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[1]>::value && 
-                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[2]>::value && 
-                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[3]>::value &&
-
-                                 is_greater<Ind::_IndexHolder[1], Ind::_IndexHolder[2]>::value && 
-                                 is_less<Ind::_IndexHolder[1], Ind::_IndexHolder[3]>::value &&
-
-                                 is_less<Ind::_IndexHolder[2], Ind::_IndexHolder[3]>::value,bool>::type = 0>
-FASTOR_INLINE Tensor<T,I,K,J,L>
-permutation(const Tensor<T,I,J,K,L> &a) {
-
-    Tensor<T,I,K,J,L> out;
-    for (size_t i=0; i<I; ++i) {
-        for (size_t j=0; j<J; ++j) {
-            for (size_t k=0; k<K; ++k) {
-                for (size_t l=0; l<L; ++l) {
-                    out(i,j,k,l) = a(i,k,j,l);
-                }
-            }
-        }
-    }
-    return out;
-}
-
-// ILJK
-template<class Ind,
-         typename T, size_t I, size_t J, size_t K, size_t L,
-         typename std::enable_if<Ind::NoIndices==4 &&
-                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[1]>::value && 
-                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[2]>::value && 
-                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[3]>::value &&
-
-                                 is_greater<Ind::_IndexHolder[1], Ind::_IndexHolder[2]>::value && 
-                                 is_greater<Ind::_IndexHolder[1], Ind::_IndexHolder[3]>::value &&
-
-                                 is_less<Ind::_IndexHolder[2], Ind::_IndexHolder[3]>::value,bool>::type = 0>
-FASTOR_INLINE Tensor<T,I,L,J,K>
-permutation(const Tensor<T,I,J,K,L> &a) {
-
-    Tensor<T,I,L,J,K> out;
-    for (size_t i=0; i<I; ++i) {
-        for (size_t j=0; j<J; ++j) {
-            for (size_t k=0; k<K; ++k) {
-                for (size_t l=0; l<L; ++l) {
-                    out(i,j,k,l) = a(i,l,j,k);
-                }
-            }
-        }
-    }
-    return out;
-}
-
-
-// IKJ
-template<class Ind,
-         typename T, size_t I, size_t J, size_t K,
-         typename std::enable_if<Ind::NoIndices==3 &&
-                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[1]>::value && 
-                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[2]>::value && 
-
-                                 is_greater<Ind::_IndexHolder[1], Ind::_IndexHolder[2]>::value,bool>::type = 0>
-FASTOR_INLINE Tensor<T,I,K,J>
-permutation(const Tensor<T,I,J,K> &a) {
-
-    Tensor<T,I,K,J> out;
-    for (size_t i=0; i<I; ++i) {
-        for (size_t j=0; j<J; ++j) {
-            for (size_t k=0; k<K; ++k) {
-                out(i,j,k) = a(i,k,j);
-            }
-        }
-    }
-    return out;
-}
-
-
-// JKI
-template<class Ind,
-         typename T, size_t I, size_t J, size_t K,
-         typename std::enable_if<Ind::NoIndices==3 &&
-                                 is_less<Ind::_IndexHolder[0], Ind::_IndexHolder[1]>::value && 
-                                 is_greater<Ind::_IndexHolder[0], Ind::_IndexHolder[2]>::value && 
-
-                                 is_greater<Ind::_IndexHolder[1], Ind::_IndexHolder[2]>::value,bool>::type = 0>
-FASTOR_INLINE Tensor<T,J,K,I>
-permutation(const Tensor<T,I,J,K> &a) {
-
-    Tensor<T,J,K,I> out;
-    for (size_t i=0; i<I; ++i) {
-        for (size_t j=0; j<J; ++j) {
-            for (size_t k=0; k<K; ++k) {
-                out(i,j,k) = a(j,k,i);
-            }
-        }
-    }
-    return out;
-}
-
-
-// KJI
-template<class Ind,
-         typename T, size_t I, size_t J, size_t K,
-         typename std::enable_if<Ind::NoIndices==3 &&
-                                 is_greater<Ind::_IndexHolder[0], Ind::_IndexHolder[1]>::value && 
-                                 is_greater<Ind::_IndexHolder[0], Ind::_IndexHolder[2]>::value && 
-
-                                 is_greater<Ind::_IndexHolder[1], Ind::_IndexHolder[2]>::value,bool>::type = 0>
-FASTOR_INLINE Tensor<T,K,J,I>
-permutation(const Tensor<T,K,J,I> &a) {
-
-    Tensor<T,K,J,I> out;
-    for (size_t i=0; i<I; ++i) {
-        for (size_t j=0; j<J; ++j) {
-            for (size_t k=0; k<K; ++k) {
-                out(i,j,k) = a(k,j,i);
-            }
-        }
-    }
-    return out;
-}
 
 
 }

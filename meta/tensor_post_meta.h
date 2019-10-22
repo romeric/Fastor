@@ -1,11 +1,13 @@
 #ifndef TENSOR_POST_META_H
 #define TENSOR_POST_META_H
 
-#include <tensor/Tensor.h>
+#include "tensor/Tensor.h"
+#include "tensor_algebra/indicial.h"
 
 namespace Fastor {
 
 
+//--------------------------------------------------------------------------------------------------------------------//
 template<class T>
 struct scalar_type_finder {
     using type = T;
@@ -34,6 +36,7 @@ template<typename T, size_t ... Rest>
 struct scalar_type_finder<TensorRef<T,Rest...>> {
     using type = T;
 };
+//--------------------------------------------------------------------------------------------------------------------//
 
 
 
@@ -41,7 +44,7 @@ struct scalar_type_finder<TensorRef<T,Rest...>> {
 
 
 
-
+//--------------------------------------------------------------------------------------------------------------------//
 template<class X>
 struct tensor_type_finder {
     using type = Tensor<X>;
@@ -71,10 +74,13 @@ template<typename T, size_t ... Rest>
 struct tensor_type_finder<TensorRef<T,Rest...>> {
     using type = Tensor<T,Rest...>;
 };
+//--------------------------------------------------------------------------------------------------------------------//
 
 
 
 
+
+//--------------------------------------------------------------------------------------------------------------------//
 template<class T>
 struct is_tensor {
     static constexpr bool value = false;
@@ -94,9 +100,13 @@ template<class T, size_t DIMS>
 struct is_abstracttensor<AbstractTensor<T,DIMS>> {
     static constexpr bool value = true;
 };
+//--------------------------------------------------------------------------------------------------------------------//
 
 
 
+
+
+//--------------------------------------------------------------------------------------------------------------------//
 // Do not generalise this, as it leads to all kinds of problems
 // with binary operator expression involving std::arithmetics
 template <class X, class Y, class ... Z>
@@ -116,10 +126,33 @@ template<typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2, size_
 struct concat_tensor<Tensor<T,Rest0...>,Tensor<T,Rest1...>,Tensor<T,Rest2...>,Tensor<T,Rest3...>> {
     using type = Tensor<T,Rest0...,Rest1...,Rest2...,Rest3...>;
 };
+//--------------------------------------------------------------------------------------------------------------------//
+
+
+
+//--------------------------------------------------------------------------------------------------------------------//
+// Return dimensions of tensor as a std::array and Index<Rest...>
+template<class X>
+struct get_tensor_dimensions;
+
+template<typename T, size_t ... Rest>
+struct get_tensor_dimensions<Tensor<T,Rest...>> {
+    static constexpr std::array<size_t,sizeof...(Rest)> dims = {Rest...};
+    static constexpr std::array<int,sizeof...(Rest)> dims_int = {Rest...};
+    using tensor_to_index = Index<Rest...>;
+};
+
+template<typename T, size_t ... Rest>
+constexpr std::array<size_t,sizeof...(Rest)> get_tensor_dimensions<Tensor<T,Rest...>>::dims;
+template<typename T, size_t ... Rest>
+constexpr std::array<int,sizeof...(Rest)> get_tensor_dimensions<Tensor<T,Rest...>>::dims_int;
+//--------------------------------------------------------------------------------------------------------------------//
 
 
 
 
+
+//--------------------------------------------------------------------------------------------------------------------//
 // Extract a matrix from a high order tensor
 // this is used in places like determinant/inverse of high order tensors
 // where the last square matrix (last two dimensions) is needed. If Seq is
@@ -141,6 +174,7 @@ struct LastMatrixExtracter<Tensor<T,Rest...>,std_ext::index_sequence<ss...>>
 template<typename T, size_t ... Rest, size_t ... ss>
 constexpr std::array<size_t,sizeof...(ss)>
 LastMatrixExtracter<Tensor<T,Rest...>,std_ext::index_sequence<ss...>>::values;
+//--------------------------------------------------------------------------------------------------------------------//
 
 }
 

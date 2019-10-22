@@ -23,11 +23,11 @@ struct get_value<1,First,Rest...> {
 template<size_t Idx>
 // Work around to avoid compiler errors
 struct get_value<Idx> {
-    static const size_t value = 0; 
+    static const size_t value = 0;
 };
 
 template <size_t N, typename... Args>
-constexpr inline auto get_index(Args&&... as) 
+constexpr inline auto get_index(Args&&... as)
 -> decltype(std::get<N>(std::forward_as_tuple(std::forward<Args>(as)...))) {
     return std::get<N>(std::forward_as_tuple(std::forward<Args>(as)...));
 }
@@ -128,12 +128,12 @@ struct ExprBinderType {
 //-----------
 template<size_t I, size_t J>
 struct is_less {
-    static constexpr bool value = I < J; 
+    static constexpr bool value = I < J;
 };
 
 template<size_t I, size_t J>
 struct is_greater {
-    static constexpr bool value = I > J; 
+    static constexpr bool value = I > J;
 };
 //-----------
 
@@ -180,24 +180,6 @@ struct meta_argmin<m,n,rest...> {
     static const int value = (pval <= meta_min<pval,rest...>::value) ?
                 meta_argmin<m,n>::value : meta_argmin<pval,rest...>::value+1;
 };
-
-//template<int m, int n, int p, int q, int r>
-//struct meta_argmin<m,n,p,q,r> {
-//    static constexpr int pval = meta_min<m,n,p,q>::value;
-//    static constexpr int value = ( pval <= meta_min<pval,r>::value) ? meta_argmin<m,n,p,q>::value : 4;
-//};
-
-//template<int m, int n, int p, int q>
-//struct meta_argmin<m,n,p,q> {
-//    static constexpr int pval = meta_min<m,n,p>::value;
-//    static constexpr int value = ( pval <= meta_min<pval,q>::value) ? meta_argmin<m,n,p>::value : 3;
-//};
-
-//template<int m, int n, int p>
-//struct meta_argmin<m,n,p> {
-//    static constexpr int pval = meta_min<m,n>::value;
-//    static constexpr int value = ( pval <= meta_min<pval,p>::value) ? meta_argmin<m,n>::value : 2;
-//};
 
 template<int m, int n>
 struct meta_argmin<m,n> {

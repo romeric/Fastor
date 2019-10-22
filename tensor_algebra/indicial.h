@@ -38,6 +38,17 @@ struct Index {
 template<FASTOR_INDEX ... All>
 constexpr FASTOR_INDEX Index<All...>::_IndexHolder[sizeof...(All)];
 
+
+template<FASTOR_INDEX N>
+struct makeIndex {
+    using type = typename concat_<typename makeIndex<N-1>::type,Index<N-1>>::type;
+};
+template<>
+struct makeIndex<0> {
+    using type = Index<0>;
+};
+
+
 }
 
 #endif // INDICIAL_H

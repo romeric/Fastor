@@ -799,6 +799,62 @@ IndexTensors<Index<Idx...>,Tensor<T,Rest...>,Index<Idx_t...>,Tensor<T,Rest_t...>
 //------------------------------------------------------------------------------------------------------------//
 
 
+
+//---------------------------------------------------------------------------------
+template<class arg>
+struct meta_argmin_wrapper;
+template<size_t ...rest>
+struct meta_argmin_wrapper<Index<rest...>> {
+    static constexpr int value = meta_argmin<rest...>::value;
+};
+template<size_t idx>
+struct meta_argmin_wrapper<Index<idx>> {
+    static constexpr int value = idx;
+};
+
+
+// Complete compile-time sorting algorithm: Does not work if there a duplicate entries in a pack
+template<class arg>
+struct tmp_sort;
+template<size_t ...rest>
+struct tmp_sort<Index<rest...>> {
+    static constexpr int least_value_idx = meta_argmin_wrapper<Index<rest...>>::value;
+    static constexpr int least_value = get_value<least_value_idx+1,rest...>::value;
+    using reduced_seq = typename filter_<least_value,rest...>::type;
+    using new_seq = typename concat_<Index<least_value>,typename tmp_sort<reduced_seq>::new_seq>::type;
+};
+template<size_t value>
+struct tmp_sort<Index<value>> {
+    using reduced_seq = Index<value>;
+    using new_seq = Index<value>;
+};
+
+
+// Complete compile-time arg-sorting algorithm: Does not work if there a duplicate entries in a pack
+template<class arg, class seq>
+struct tmp_argsort;
+template<size_t ...rest, size_t ...ss>
+struct tmp_argsort<Index<rest...>,Index<ss...>> {
+    static constexpr int least_value_idx = meta_argmin_wrapper<Index<rest...>>::value;
+    static constexpr int least_value = get_value<least_value_idx+1,rest...>::value;
+    using reduced_seq = typename filter_<least_value,rest...>::type;
+    using new_seq = typename concat_<Index<least_value>,typename tmp_sort<reduced_seq>::new_seq>::type;
+
+    static constexpr int least_index = get_value<least_value_idx+1,ss...>::value;
+
+    using reduced_argseq = typename filter_<least_index,ss...>::type;
+    using new_argseq = typename concat_<Index<least_index>,typename tmp_argsort<reduced_seq,reduced_argseq>::new_argseq>::type;
+};
+template<size_t value, size_t ss>
+struct tmp_argsort<Index<value>,Index<ss>> {
+    using reduced_seq = Index<value>;
+    using new_seq = Index<value>;
+
+    using reduced_argseq = Index<ss>;
+    using new_argseq = Index<ss>;
+};
+//---------------------------------------------------------------------------------
+
 //}
 
 }
