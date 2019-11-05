@@ -260,7 +260,7 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
 
           static_assert(!is_reduction<Index<Idx0...>,Index<Idx1...>>::value,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
 
-#if CONTRACT_OPT==2
+#if CONTRACT_OPT==-3
 
           constexpr int total = no_of_loops_to_set<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,
                   typename std_ext::make_index_sequence<no_of_unique<Idx0...,Idx1...>::value>::type>::value;
@@ -301,7 +301,7 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
         return out;
     }
 
-#elif CONTRACT_OPT==1
+#elif CONTRACT_OPT==-2
 
           using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
             typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
@@ -496,6 +496,106 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
               //     V _vec_out = fmadd(_vec_a,V(b_data+index_b),  V(out_data+index_out));
               //     _vec_out.aligned_store(out_data+index_out);
               // }
+
+              return out;
+          }
+#elif CONTRACT_OPT==1
+
+              using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
+                typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
+              using OutIndices = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
+                typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::indices;
+
+              OutTensor out;
+              out.zeros();
+              const T *a_data = a.data();
+              const T *b_data = b.data();
+              T *out_data = out.data();
+
+              constexpr int a_dim = sizeof...(Rest0);
+              constexpr int b_dim = sizeof...(Rest1);
+              constexpr int out_dim =  no_of_unique<Idx0...,Idx1...>::value;
+
+              constexpr auto& idx_a = IndexTensors<
+                      Index<Idx0..., Idx1...>,
+                      Tensor<T,Rest0...,Rest1...>,
+                      Index<Idx0...>,Tensor<T,Rest0...>,
+                      typename std_ext::make_index_sequence<sizeof...(Rest0)>::type>::indices;
+
+              constexpr auto& idx_b = IndexTensors<
+                      Index<Idx0..., Idx1...>,
+                      Tensor<T,Rest0...,Rest1...>,
+                      Index<Idx1...>,Tensor<T,Rest1...>,
+                      typename std_ext::make_index_sequence<sizeof...(Rest1)>::type>::indices;
+
+              constexpr auto& idx_out = IndexTensors<
+                      Index<Idx0..., Idx1...>,
+                      Tensor<T,Rest0...,Rest1...>,
+                      OutIndices,OutTensor,
+                      typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::indices;
+
+              using nloops = loop_setter<
+                        Index<Idx0...,Idx1...>,
+                        Tensor<T,Rest0...,Rest1...>,
+                        typename std_ext::make_index_sequence<out_dim>::type>;
+              constexpr auto& maxes_out = nloops::dims;
+              constexpr int total = nloops::value;
+
+              constexpr std::array<size_t,a_dim> products_a = nprods<Index<Rest0...>,typename std_ext::make_index_sequence<a_dim>::type>::values;
+              constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
+
+              using Index_with_dims = typename put_dims_in_Index<OutTensor>::type;
+              constexpr std::array<size_t,OutTensor::Dimension> products_out = \
+                      nprods<Index_with_dims,typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::values;
+
+#ifndef FASTOR_DONT_VECTORISE
+              using vectorisability = is_vectorisable<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest1...>>;
+              constexpr int stride = vectorisability::stride;
+              using V = typename vectorisability::type;
+#else
+              constexpr int stride = 1;
+              using V = SIMDVector<T,sizeof(T)*8>;
+#endif
+              std::array<int,out_dim> as = {};
+
+              int it, jt, counter = 0;
+              V _vec_a;
+
+              while(true)
+              {
+                  int index_a = as[idx_a[a_dim-1]];
+                  for(it = 0; it< a_dim; it++) {
+                     index_a += products_a[it]*as[idx_a[it]];
+                  }
+                  int index_b = as[idx_b[b_dim-1]];
+                  for(it = 0; it< b_dim; it++) {
+                     index_b += products_b[it]*as[idx_b[it]];
+                  }
+
+                  int index_out = as[idx_out[OutTensor::Dimension-1]];
+                  for(it = 0; it< static_cast<int>(OutTensor::Dimension); it++) {
+                     index_out += products_out[it]*as[idx_out[it]];
+                  }
+
+                  _vec_a.set(*(a_data+index_a));
+                  // V _vec_out = _vec_a*V(b_data+index_b) +  V(out_data+index_out);
+                  V _vec_out = fmadd(_vec_a,V(b_data+index_b),  V(out_data+index_out));
+                  // _vec_out.store(out_data+index_out);
+                  _vec_out.aligned_store(out_data+index_out);
+
+                  counter++;
+                  for(jt = maxes_out.size()-1; jt>=0 ; jt--)
+                  {
+                      if (jt == maxes_out.size()-1) as[jt]+=stride;
+                      else as[jt] +=1;
+                      if(as[jt]<maxes_out[jt])
+                          break;
+                      else
+                          as[jt]=0;
+                  }
+                  if(jt<0)
+                      break;
+              }
 
               return out;
           }
