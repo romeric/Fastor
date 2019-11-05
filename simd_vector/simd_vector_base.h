@@ -91,10 +91,10 @@ struct SIMDVector {
 //        //std::swap(Size,a.Size);
 //        std::swap(value,a.value);
 //    }
-    FASTOR_INLINE SIMDVector(const T *data) {
+    FASTOR_INLINE SIMDVector(const T *data, bool Aligned=true) {
         std::copy(data,data+Size,value);
     }
-    FASTOR_INLINE SIMDVector(T *data) {
+    FASTOR_INLINE SIMDVector(T *data, bool Aligned=true) {
         std::copy(data,data+Size,value);
     }
 

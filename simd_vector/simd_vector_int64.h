@@ -22,8 +22,18 @@ struct SIMDVector<Int64,256> {
     FASTOR_INLINE SIMDVector(Int64 num) : value(_mm256_set1_epi64x(num)) {}
     FASTOR_INLINE SIMDVector(__m256i regi) : value(regi) {}
     FASTOR_INLINE SIMDVector(const SIMDVector<Int64> &a) : value(a.value) {}
-    FASTOR_INLINE SIMDVector(const Int64 *data) : value(_mm256_load_si256((__m256i*)data)) {}
-    FASTOR_INLINE SIMDVector(Int64 *data) : value(_mm256_load_si256((__m256i*)data)) {}
+    FASTOR_INLINE SIMDVector(const Int64 *data, int Aligned=true) {
+        if (Aligned)
+            value =_mm256_load_si256((__m256i*)data);
+        else
+            value = _mm256_loadu_si256((__m256i*)data);
+    }
+    FASTOR_INLINE SIMDVector(Int64 *data, int Aligned=true) {
+        if (Aligned)
+            value =_mm256_load_si256((__m256i*)data);
+        else
+            value = _mm256_loadu_si256((__m256i*)data);
+    }
 
     FASTOR_INLINE SIMDVector<Int64> operator=(int num) {
         value = _mm256_set1_epi64x(num);
@@ -236,8 +246,18 @@ struct SIMDVector<Int64,128> {
     }
     FASTOR_INLINE SIMDVector(__m128i regi) : value(regi) {}
     FASTOR_INLINE SIMDVector(const SIMDVector<Int64,128> &a) : value(a.value) {}
-    FASTOR_INLINE SIMDVector(const Int64 *data) : value(_mm_load_si128((__m128i*)data)) {}
-    FASTOR_INLINE SIMDVector(Int64 *data) : value(_mm_load_si128((__m128i*)data)) {}
+    FASTOR_INLINE SIMDVector(const Int64 *data, bool Aligned=true) {
+        if (Aligned)
+            value =_mm_load_si128((__m128i*)data);
+        else
+            value = _mm_loadu_si128((__m128i*)data);
+    }
+    FASTOR_INLINE SIMDVector(Int64 *data, bool Aligned=true) {
+        if (Aligned)
+            value =_mm_load_si128((__m128i*)data);
+        else
+            value = _mm_loadu_si128((__m128i*)data);
+    }
 
     FASTOR_INLINE SIMDVector<Int64,128> operator=(Int64 num) {
         value = _mm_set_epi64x(num,num);
@@ -447,8 +467,8 @@ struct SIMDVector<Int64, 64> {
     FASTOR_INLINE SIMDVector() : value(0) {}
     FASTOR_INLINE SIMDVector(Int64 num) : value(num) {}
     FASTOR_INLINE SIMDVector(const SIMDVector<Int64,64> &a) : value(a.value) {}
-    FASTOR_INLINE SIMDVector(const Int64 *data) : value(*data) {}
-    FASTOR_INLINE SIMDVector(Int64 *data) : value(*data) {}
+    FASTOR_INLINE SIMDVector(const Int64 *data, bool Aligned=true) : value(*data) {}
+    FASTOR_INLINE SIMDVector(Int64 *data, bool Aligned=true) : value(*data) {}
 
     FASTOR_INLINE SIMDVector<Int64,64> operator=(Int64 num) {
         value = num;
