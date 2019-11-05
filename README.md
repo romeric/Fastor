@@ -1,5 +1,5 @@
 # Fastor
-**Fastor** [**FA**st **S**IMD op**T**imised tens**OR** algebra framework]: is a smart stack-based high performance tensor (multi-dimensional array) library written in modern C++ [C++11/14/17] with powerful in-built tensor algebraic functionalities (tensor contraction, permutation, reductions, special tensor groups and much more). Designed as a generic multi-dimensional tensor algebra library, Fastor also incorporates domain specific features for tensor contraction algorithms typically arising in classical mechanics, in particular, in finite element analysis of nonlinear solids, fluids and coupled continua. There are multiple paradigms that Fastor exploits:
+**Fastor** is a smart stack-based high performance tensor (multi-dimensional array) library written in modern C++ [C++11/14/17] with powerful in-built tensor algebraic functionalities (tensor contraction, permutation, reductions, special tensor groups etc). Designed as a generic multi-dimensional tensor algebra library, Fastor also incorporates domain specific features for tensor contraction algorithms typically arising in classical mechanics, in particular, in finite element analysis. There are multiple paradigms that Fastor exploits:
 
 - **Operation minimisation/Low FLOP/Complexity reducing Algorithms:** Fastor relies on an extremely smart and domain-aware Expression Template (ET) engine that can not only perform lazy evaluations and operator chaining but can also perform sophisticated mathematical transformation or *compile time* graph optimisation or both to reduce the complexity of evaluation of expressions by orders of magnitude. Some of these functionalities are  non-existent in other available C++ ET linear algebra libraries.
 - **SIMD/Data parallelism/Stream computing** Fastor utilises explicit SIMD (SSE/SSE2/SSE3/SSE4/AVX/AVX2/AVX512/FMA) instructions
@@ -61,26 +61,7 @@ int main() {
     return 0;
 }
 ~~~
-You can compile and run this by providing the following (or equivalent) flags to your compiler `-std=c++14 -O3 -mavx -DNDEBUG`.
-
-### No heap allocation
-Fastor is essentially designed for small mutlidimensional tensors (for instance, tensors appearing during numerical integration in a finite element framework such as stresses, work conjugates, Hessian or small multi-dimensional arrays useful for 2D/3D graphics). As can be seen from the above examples, Fastor is based on fixed size static arrays (entirely stack allocation). The dimensions of the tensors must be known at compile time, which is typically the case for the use-cases it is designed for. However one of the strongest features of Fastor is in its in-built template meta-programming engine, in that, it can automatically determine at *compile time*, the dimensions of the tensors resulting from a complex operation yet to be performed, hence it can always allocate exactly the right amount of stack memory required. This is in contrast to static arrays in `C` or `Fortran` where one has to allocate a huge block of memory before hand to avoid stack overflow.
-
-### Static disptaching for absolute branchless code
-This is a strong statement to make, but Fastor strives to generate optimised SIMD code by utilising the static nature of tensors and the `SFINAE` (Substitution Failure Is Not an Error) feature of `C++11` to statically dispatch calls to bespoke kernels, which completely avoids the need for runtime branching. For example the double contraction of two second order double precision tensors  `A` and `B`, `A_ij*B_ij` with dimensions `2x2`, is statically dispatched to
-~~~c++
-return _mm256_sum_pd(_mm256_mul_pd(_mm256_load_pd(A._data),_mm256_load_pd(B._data)));
-~~~
-(Notice that the double contraction of two second order tensors of `2x2` requires `4 multiplication + 3 addition` which using SIMD lanes can be reduced to `1 multiplication + 1 addition`. Also `_mm256_sum_pd` is Fastor's in-built extension to SIMD intrinsics.) while for `3x3` double precision second order tensors the call is dispatched to
-~~~c++
-__m256d r1 = _mm256_mul_pd(_mm256_load_pd(A._data),_mm256_load_pd(B._data));
-__m256d r2 = _mm256_mul_pd(_mm256_load_pd(A._data+4),_mm256_load_pd(B._data+4));
-__m128d r3 = _mm_mul_sd(_mm_load_sd(A._data+8),_mm_load_sd(B._data+8));
-__m128d summ = _mm_add_pd(_add_pd(r3),_add_pd(_mm256_add_pd(r1,r2)));
-return _mm_cvtsd_f64(summ);
-~~~
-without the need for a branch or a potential `jmp` instruction in assembly (again note that `9 multiplication + 8 addition` is reduced to `3 multiplication + 3 addition`). The main motivation behind customising/optimising these operations for such small tensors is that they are typically needed in the critical hotspots of computer graphics algorithm and finite element analyses, for instance.
-
+You can compile and run this by providing the following (or equivalent) flags to your compiler `-std=c++14 -O3 -march=native -DNDEBUG`.
 
 ### Tensor views: A powerful indexing, slicing and broadcasting mechanism
 Fastor introduces powerful tensor views which make tensor indexing, slicing and broadcating look and feel native to scientific programmers. Consider the following examples
@@ -186,6 +167,25 @@ L128:
   jne L129
 ~~~
 As can be observed, the compiler emits unaligned load and store instructions, but the rest of the generated code is extremely efficient (it does not get more efficient than this). For stack allocated and small tensors the unaligned load/store operations should not be a bottleneck either, as the data would potentially fit in L1 cache. With the help of an optimising compiler, Fastor's functionalities come closest to the ideal metal performance for numerical tensor algebra code.
+
+
+### No heap allocation
+Fastor is essentially designed for small mutlidimensional tensors (for instance, tensors appearing during numerical integration in a finite element framework such as stresses, work conjugates, Hessian or small multi-dimensional arrays useful for 2D/3D graphics). As can be seen from the above examples, Fastor is based on fixed size static arrays (entirely stack allocation). The dimensions of the tensors must be known at compile time, which is typically the case for the use-cases it is designed for. However one of the strongest features of Fastor is in its in-built template meta-programming engine, in that, it can automatically determine at *compile time*, the dimensions of the tensors resulting from a complex operation yet to be performed, hence it can always allocate exactly the right amount of stack memory required. This is in contrast to static arrays in `C` or `Fortran` where one has to allocate a huge block of memory before hand to avoid stack overflow.
+
+### Static disptaching for absolute branchless code
+This is a strong statement to make, but Fastor strives to generate optimised SIMD code by utilising the static nature of tensors and the `SFINAE` (Substitution Failure Is Not an Error) feature of `C++11` to statically dispatch calls to bespoke kernels, which completely avoids the need for runtime branching. For example the double contraction of two second order double precision tensors  `A` and `B`, `A_ij*B_ij` with dimensions `2x2`, is statically dispatched to
+~~~c++
+return _mm256_sum_pd(_mm256_mul_pd(_mm256_load_pd(A._data),_mm256_load_pd(B._data)));
+~~~
+(Notice that the double contraction of two second order tensors of `2x2` requires `4 multiplication + 3 addition` which using SIMD lanes can be reduced to `1 multiplication + 1 addition`. Also `_mm256_sum_pd` is Fastor's in-built extension to SIMD intrinsics.) while for `3x3` double precision second order tensors the call is dispatched to
+~~~c++
+__m256d r1 = _mm256_mul_pd(_mm256_load_pd(A._data),_mm256_load_pd(B._data));
+__m256d r2 = _mm256_mul_pd(_mm256_load_pd(A._data+4),_mm256_load_pd(B._data+4));
+__m128d r3 = _mm_mul_sd(_mm_load_sd(A._data+8),_mm_load_sd(B._data+8));
+__m128d summ = _mm_add_pd(_add_pd(r3),_add_pd(_mm256_add_pd(r1,r2)));
+return _mm_cvtsd_f64(summ);
+~~~
+without the need for a branch or a potential `jmp` instruction in assembly (again note that `9 multiplication + 8 addition` is reduced to `3 multiplication + 3 addition`). The main motivation behind customising/optimising these operations for such small tensors is that they are typically needed in the critical hotspots of computer graphics and finite element algorithm, for instance.
 
 
 ### Smart expression templates
