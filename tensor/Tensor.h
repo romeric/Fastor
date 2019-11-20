@@ -116,7 +116,7 @@ public:
         constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
         constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
         constexpr FASTOR_INDEX P = get_value<3,Rest...>::value;
-        constexpr FASTOR_INDEX Q = get_value<3,Rest...>::value;
+        constexpr FASTOR_INDEX Q = get_value<4,Rest...>::value;
         auto size_ = 0;
         FASTOR_ASSERT(M==lst4d.size(),"TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
         for (auto &lst3d: lst4d) {
