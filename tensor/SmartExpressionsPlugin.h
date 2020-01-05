@@ -1,5 +1,5 @@
 
-// Plugin for all smart expressions 
+// Plugin for all smart expressions
 
 // Smart binders
 //----------------------------------------------------------------------------------------------------------//

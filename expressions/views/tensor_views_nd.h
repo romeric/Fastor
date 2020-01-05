@@ -16,14 +16,17 @@ struct TensorConstViewExpr<Tensor<T,Rest...>,DIMS>: public AbstractTensor<Tensor
 private:
     const Tensor<T,Rest...> &expr;
     std::array<seq,sizeof...(Rest)> _seqs;
-public: 
+    std::array<int,DIMS> _dims;
+public:
     using scalar_type = T;
     static constexpr FASTOR_INDEX Dimension = DIMS;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
+    static constexpr std::array<size_t,DIMS> products_ = nprods_views<Index<Rest...>,
+        typename std_ext::make_index_sequence<DIMS>::type>::values;
     FASTOR_INLINE FASTOR_INDEX size() const {
         int sizer = 1;
-        for (auto &_seq: _seqs) sizer *= _seq.size(); 
-        return sizer; 
+        for (auto &_seq: _seqs) sizer *= _seq.size();
+        return sizer;
     }
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return _seqs[i].size();}
 
@@ -47,29 +50,25 @@ public:
             }
 #ifndef NDEBUG
             FASTOR_ASSERT(_seq._last <= expr.dimension(counter) && _seq._first<expr.dimension(counter),"INDEX OUT OF BOUNDS");
-#endif            
+#endif
             counter++;
         }
+
+        for (FASTOR_INDEX i=0; i<DIMS; ++i) _dims[i] = dimension(i);
     }
 
 
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX idx) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
 
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
-
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        std::array<int,DIMS> as = {};
         std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
         for (auto j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
             int remaining = size();
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( (idx+j) / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( (idx+j) / remaining ) % _dims[n];
             }
             inds[j] = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -83,18 +82,12 @@ public:
 
     template<typename U=T>
     FASTOR_INLINE U eval_s(FASTOR_INDEX idx) const {
-        
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>,
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
 
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
-
+        std::array<int,DIMS> as = {};
         int remaining = size();
         for (int n = 0; n < DIMS; ++n) {
-            remaining /= dimension(n);
-            as[n] = ( idx / remaining ) % dimension(n);
+            remaining /= _dims[n];
+            as[n] = ( idx / remaining ) % _dims[n];
         }
         int ind = 0;
         for(int it = 0; it< DIMS; it++) {
@@ -103,26 +96,21 @@ public:
 
         return expr.data()[ind];
     }
-    
+
 
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX idx, FASTOR_INDEX j) const {
 
         idx += j;
-        SIMDVector<U,DEFAULT_ABI> _vec; 
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        std::array<int,DIMS> as = {};
 
         std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
         for (auto j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
             int remaining = size();
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( (idx+j) / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( (idx+j) / remaining ) % _dims[n];
             }
             inds[j] = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -137,17 +125,12 @@ public:
     template<typename U=T>
     FASTOR_INLINE U eval_s(FASTOR_INDEX idx, FASTOR_INDEX j) const {
         idx += j;
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>,
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
+        std::array<int,DIMS> as = {};
 
         int remaining = size();
         for (int n = 0; n < DIMS; ++n) {
-            remaining /= dimension(n);
-            as[n] = ( idx / remaining ) % dimension(n);
+            remaining /= _dims[n];
+            as[n] = ( idx / remaining ) % _dims[n];
         }
         int ind = 0;
         for(int it = 0; it< DIMS; it++) {
@@ -169,18 +152,21 @@ private:
     Tensor<T,Rest...> &expr;
     std::array<seq,sizeof...(Rest)> _seqs;
     bool does_alias = false;
+    std::array<int,DIMS> _dims;
 
     constexpr FASTOR_INLINE Tensor<T,Rest...> get_tensor() const {return expr;};
     constexpr FASTOR_INLINE std::array<seq,sizeof...(Rest)> get_sequences() const {return _seqs;}
 
-public: 
+public:
     using scalar_type = T;
     static constexpr FASTOR_INDEX Dimension = DIMS;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
+    static constexpr std::array<size_t,DIMS> products_ = nprods_views<Index<Rest...>,
+        typename std_ext::make_index_sequence<DIMS>::type>::values;
     FASTOR_INLINE FASTOR_INDEX size() const {
         int sizer = 1;
-        for (auto &_seq: _seqs) sizer *= _seq.size(); 
-        return sizer; 
+        for (auto &_seq: _seqs) sizer *= _seq.size();
+        return sizer;
     }
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return _seqs[i].size();}
 
@@ -209,9 +195,11 @@ public:
             }
 #ifndef NDEBUG
             FASTOR_ASSERT(_seq._last <= expr.dimension(counter) && _seq._first<expr.dimension(counter),"INDEX OUT OF BOUNDS");
-#endif            
+#endif
             counter++;
         }
+
+        for (FASTOR_INDEX i=0; i<DIMS; ++i) _dims[i] = dimension(i);
     }
 
     // View evalution operators
@@ -226,7 +214,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator=(tmp);
             return;
         }
@@ -240,12 +228,7 @@ public:
 #endif
         T *_data = expr.data();
 
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
         std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
         int total = size();
 
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -255,8 +238,8 @@ public:
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
                 int remaining = total;
                 for (int n = 0; n < DIMS; ++n) {
-                    remaining /= dimension(n);
-                    as[n] = ( (i+j) / remaining ) % dimension(n);
+                    remaining /= _dims[n];
+                    as[n] = ( (i+j) / remaining ) % _dims[n];
                 }
                 int ind = 0;
                 for(int it = 0; it< DIMS; it++) {
@@ -269,8 +252,8 @@ public:
         for (; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -283,8 +266,8 @@ public:
         for (int i = 0; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -305,7 +288,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator+=(tmp);
             return;
         }
@@ -318,13 +301,7 @@ public:
         }
 #endif
         T *_data = expr.data();
-
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
+        std::array<int,DIMS> as = {};
         int total = size();
 
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -334,8 +311,8 @@ public:
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
                 int remaining = total;
                 for (int n = 0; n < DIMS; ++n) {
-                    remaining /= dimension(n);
-                    as[n] = ( (i+j) / remaining ) % dimension(n);
+                    remaining /= _dims[n];
+                    as[n] = ( (i+j) / remaining ) % _dims[n];
                 }
                 int ind = 0;
                 for(int it = 0; it< DIMS; it++) {
@@ -348,8 +325,8 @@ public:
         for (; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -362,8 +339,8 @@ public:
         for (int i = 0; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -384,7 +361,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator-=(tmp);
             return;
         }
@@ -398,12 +375,7 @@ public:
 #endif
         T *_data = expr.data();
 
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
+        std::array<int,DIMS> as = {};
         int total = size();
 
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -413,8 +385,8 @@ public:
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
                 int remaining = total;
                 for (int n = 0; n < DIMS; ++n) {
-                    remaining /= dimension(n);
-                    as[n] = ( (i+j) / remaining ) % dimension(n);
+                    remaining /= _dims[n];
+                    as[n] = ( (i+j) / remaining ) % _dims[n];
                 }
                 int ind = 0;
                 for(int it = 0; it< DIMS; it++) {
@@ -427,8 +399,8 @@ public:
         for (; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -441,8 +413,8 @@ public:
         for (int i = 0; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -463,7 +435,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator*=(tmp);
             return;
         }
@@ -476,13 +448,7 @@ public:
         }
 #endif
         T *_data = expr.data();
-
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
+        std::array<int,DIMS> as = {};
         int total = size();
 
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -492,8 +458,8 @@ public:
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
                 int remaining = total;
                 for (int n = 0; n < DIMS; ++n) {
-                    remaining /= dimension(n);
-                    as[n] = ( (i+j) / remaining ) % dimension(n);
+                    remaining /= _dims[n];
+                    as[n] = ( (i+j) / remaining ) % _dims[n];
                 }
                 int ind = 0;
                 for(int it = 0; it< DIMS; it++) {
@@ -506,8 +472,8 @@ public:
         for (; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -520,8 +486,8 @@ public:
         for (int i = 0; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -542,7 +508,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator/=(tmp);
             return;
         }
@@ -555,13 +521,7 @@ public:
         }
 #endif
         T *_data = expr.data();
-
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
+        std::array<int,DIMS> as = {};
         int total = size();
 
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -571,8 +531,8 @@ public:
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
                 int remaining = total;
                 for (int n = 0; n < DIMS; ++n) {
-                    remaining /= dimension(n);
-                    as[n] = ( (i+j) / remaining ) % dimension(n);
+                    remaining /= _dims[n];
+                    as[n] = ( (i+j) / remaining ) % _dims[n];
                 }
                 int ind = 0;
                 for(int it = 0; it< DIMS; it++) {
@@ -585,8 +545,8 @@ public:
         for (; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -599,8 +559,8 @@ public:
         for (int i = 0; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -625,7 +585,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator=(tmp);
             return;
         }
@@ -635,13 +595,7 @@ public:
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
         T *_data = expr.data();
-
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
         std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
         int total = size();
 
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -651,8 +605,8 @@ public:
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
                 int remaining = total;
                 for (int n = 0; n < DIMS; ++n) {
-                    remaining /= dimension(n);
-                    as[n] = ( (i+j) / remaining ) % dimension(n);
+                    remaining /= _dims[n];
+                    as[n] = ( (i+j) / remaining ) % _dims[n];
                 }
                 int ind = 0;
                 for(int it = 0; it< DIMS; it++) {
@@ -665,8 +619,8 @@ public:
         for (; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -679,8 +633,8 @@ public:
         for (int i = 0; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -702,7 +656,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator+=(tmp);
             return;
         }
@@ -712,13 +666,7 @@ public:
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
         T *_data = expr.data();
-
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
+        std::array<int,DIMS> as = {};
         int total = size();
 
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -728,8 +676,8 @@ public:
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
                 int remaining = total;
                 for (int n = 0; n < DIMS; ++n) {
-                    remaining /= dimension(n);
-                    as[n] = ( (i+j) / remaining ) % dimension(n);
+                    remaining /= _dims[n];
+                    as[n] = ( (i+j) / remaining ) % _dims[n];
                 }
                 int ind = 0;
                 for(int it = 0; it< DIMS; it++) {
@@ -742,8 +690,8 @@ public:
         for (; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -756,8 +704,8 @@ public:
         for (int i = 0; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -779,7 +727,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator-=(tmp);
             return;
         }
@@ -789,13 +737,7 @@ public:
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
         T *_data = expr.data();
-
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
+        std::array<int,DIMS> as = {};
         int total = size();
 
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -805,8 +747,8 @@ public:
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
                 int remaining = total;
                 for (int n = 0; n < DIMS; ++n) {
-                    remaining /= dimension(n);
-                    as[n] = ( (i+j) / remaining ) % dimension(n);
+                    remaining /= _dims[n];
+                    as[n] = ( (i+j) / remaining ) % _dims[n];
                 }
                 int ind = 0;
                 for(int it = 0; it< DIMS; it++) {
@@ -819,8 +761,8 @@ public:
         for (; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -833,8 +775,8 @@ public:
         for (int i = 0; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -856,7 +798,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator*=(tmp);
             return;
         }
@@ -866,13 +808,7 @@ public:
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
         T *_data = expr.data();
-
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
+        std::array<int,DIMS> as = {};
         int total = size();
 
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -882,8 +818,8 @@ public:
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
                 int remaining = total;
                 for (int n = 0; n < DIMS; ++n) {
-                    remaining /= dimension(n);
-                    as[n] = ( (i+j) / remaining ) % dimension(n);
+                    remaining /= _dims[n];
+                    as[n] = ( (i+j) / remaining ) % _dims[n];
                 }
                 int ind = 0;
                 for(int it = 0; it< DIMS; it++) {
@@ -896,8 +832,8 @@ public:
         for (; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -910,8 +846,8 @@ public:
         for (int i = 0; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -933,7 +869,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator/=(tmp);
             return;
         }
@@ -943,13 +879,7 @@ public:
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
         T *_data = expr.data();
-
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
+        std::array<int,DIMS> as = {};
         int total = size();
 
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -959,8 +889,8 @@ public:
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
                 int remaining = total;
                 for (int n = 0; n < DIMS; ++n) {
-                    remaining /= dimension(n);
-                    as[n] = ( (i+j) / remaining ) % dimension(n);
+                    remaining /= _dims[n];
+                    as[n] = ( (i+j) / remaining ) % _dims[n];
                 }
                 int ind = 0;
                 for(int it = 0; it< DIMS; it++) {
@@ -973,8 +903,8 @@ public:
         for (; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -987,8 +917,8 @@ public:
         for (int i = 0; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -1004,15 +934,9 @@ public:
     //----------------------------------------------------------------------------------//
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator=(U num) {
-        
+
         T *_data = expr.data();
-
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
+        std::array<int,DIMS> as = {};
         int total = size();
 
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1022,8 +946,8 @@ public:
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
                 int remaining = total;
                 for (int n = 0; n < DIMS; ++n) {
-                    remaining /= dimension(n);
-                    as[n] = ( (i+j) / remaining ) % dimension(n);
+                    remaining /= _dims[n];
+                    as[n] = ( (i+j) / remaining ) % _dims[n];
                 }
                 int ind = 0;
                 for(int it = 0; it< DIMS; it++) {
@@ -1035,8 +959,8 @@ public:
         for (; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -1048,8 +972,8 @@ public:
         for (int i = 0; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -1062,15 +986,9 @@ public:
 
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator+=(U num) {
-        
+
         T *_data = expr.data();
-
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
+        std::array<int,DIMS> as = {};
         int total = size();
 
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1080,8 +998,8 @@ public:
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
                 int remaining = total;
                 for (int n = 0; n < DIMS; ++n) {
-                    remaining /= dimension(n);
-                    as[n] = ( (i+j) / remaining ) % dimension(n);
+                    remaining /= _dims[n];
+                    as[n] = ( (i+j) / remaining ) % _dims[n];
                 }
                 int ind = 0;
                 for(int it = 0; it< DIMS; it++) {
@@ -1093,8 +1011,8 @@ public:
         for (; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -1106,8 +1024,8 @@ public:
         for (int i = 0; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -1120,15 +1038,9 @@ public:
 
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator-=(U num) {
-        
+
         T *_data = expr.data();
-
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
+        std::array<int,DIMS> as = {};
         int total = size();
 
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1138,8 +1050,8 @@ public:
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
                 int remaining = total;
                 for (int n = 0; n < DIMS; ++n) {
-                    remaining /= dimension(n);
-                    as[n] = ( (i+j) / remaining ) % dimension(n);
+                    remaining /= _dims[n];
+                    as[n] = ( (i+j) / remaining ) % _dims[n];
                 }
                 int ind = 0;
                 for(int it = 0; it< DIMS; it++) {
@@ -1151,8 +1063,8 @@ public:
         for (; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -1164,8 +1076,8 @@ public:
         for (int i = 0; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -1178,15 +1090,9 @@ public:
 
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator*=(U num) {
-        
+
         T *_data = expr.data();
-
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
+        std::array<int,DIMS> as = {};
         int total = size();
 
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1196,8 +1102,8 @@ public:
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
                 int remaining = total;
                 for (int n = 0; n < DIMS; ++n) {
-                    remaining /= dimension(n);
-                    as[n] = ( (i+j) / remaining ) % dimension(n);
+                    remaining /= _dims[n];
+                    as[n] = ( (i+j) / remaining ) % _dims[n];
                 }
                 int ind = 0;
                 for(int it = 0; it< DIMS; it++) {
@@ -1209,8 +1115,8 @@ public:
         for (; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -1222,8 +1128,8 @@ public:
         for (int i = 0; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -1236,15 +1142,10 @@ public:
 
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator/=(U num) {
-        
+
         T *_data = expr.data();
 
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
+        std::array<int,DIMS> as = {};
         int total = size();
 
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1255,8 +1156,8 @@ public:
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
                 int remaining = total;
                 for (int n = 0; n < DIMS; ++n) {
-                    remaining /= dimension(n);
-                    as[n] = ( (i+j) / remaining ) % dimension(n);
+                    remaining /= _dims[n];
+                    as[n] = ( (i+j) / remaining ) % _dims[n];
                 }
                 int ind = 0;
                 for(int it = 0; it< DIMS; it++) {
@@ -1268,8 +1169,8 @@ public:
         for (; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -1282,8 +1183,8 @@ public:
         for (int i = 0; i <total; i++) {
             int remaining = total;
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( i / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( i / remaining ) % _dims[n];
             }
             int ind = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -1295,30 +1196,24 @@ public:
     }
     //----------------------------------------------------------------------------------//
 
-
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX idx) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
 
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
-
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        std::array<int,DIMS> as = {};
         std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
         for (auto j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
             int remaining = size();
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( (idx+j) / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( int(idx+j) / remaining ) % _dims[n];
             }
             inds[j] = 0;
             for(int it = 0; it< DIMS; it++) {
                 inds[j] += products_[it]*as[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
             }
         }
+
         vector_setter(_vec,expr.data(),inds);
         return _vec;
     }
@@ -1326,18 +1221,12 @@ public:
 
     template<typename U=T>
     FASTOR_INLINE U eval_s(FASTOR_INDEX idx) const {
-        
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>,
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
 
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
-
+        std::array<int,DIMS> as = {};
         int remaining = size();
         for (int n = 0; n < DIMS; ++n) {
-            remaining /= dimension(n);
-            as[n] = ( idx / remaining ) % dimension(n);
+            remaining /= _dims[n];
+            as[n] = ( (int)idx / remaining ) % _dims[n];
         }
         int ind = 0;
         for(int it = 0; it< DIMS; it++) {
@@ -1352,20 +1241,15 @@ public:
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX idx, FASTOR_INDEX j) const {
 
         idx += j;
-        SIMDVector<U,DEFAULT_ABI> _vec; 
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>, 
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        std::array<int,DIMS> as = {};
 
         std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
         for (auto j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
             int remaining = size();
             for (int n = 0; n < DIMS; ++n) {
-                remaining /= dimension(n);
-                as[n] = ( (idx+j) / remaining ) % dimension(n);
+                remaining /= _dims[n];
+                as[n] = ( int(idx+j) / remaining ) % _dims[n];
             }
             inds[j] = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -1379,18 +1263,13 @@ public:
 
     template<typename U=T>
     FASTOR_INLINE U eval_s(FASTOR_INDEX idx, FASTOR_INDEX j) const {
+
         idx += j;
-        std::array<size_t,DIMS> products_ = nprods<Index<Rest...>,
-            typename std_ext::make_index_sequence<DIMS>::type>::values;
-        products_[DIMS-1]=1;
-
-        std::array<int,DIMS> as;
-        std::fill(as.begin(),as.end(),0);
-
+        std::array<int,DIMS> as = {};
         int remaining = size();
         for (int n = 0; n < DIMS; ++n) {
-            remaining /= dimension(n);
-            as[n] = ( idx / remaining ) % dimension(n);
+            remaining /= _dims[n];
+            as[n] = ( (int)idx / remaining ) % _dims[n];
         }
         int ind = 0;
         for(int it = 0; it< DIMS; it++) {

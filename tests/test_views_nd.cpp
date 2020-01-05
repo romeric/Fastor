@@ -107,7 +107,7 @@ void run() {
         r3(0,all,all).noalias() /= r3(0,all,all); // perfect overlap noalias not required
         FASTOR_EXIT_ASSERT(abs(norm(r3) - 40141.5219) < 1e-2);
         r3(all,seq(0,2),seq(first,last)).noalias() /= r3(all,seq(1,3),all);
-        FASTOR_EXIT_ASSERT(abs(norm(r3) - 24950.50328) < 1e-2); 
+        FASTOR_EXIT_ASSERT(abs(norm(r3) - 24950.50328) < 1e-2);
 
 
         // Check scanning
@@ -118,9 +118,9 @@ void run() {
         FASTOR_EXIT_ASSERT(abs(norm(r6) - 28.600699) < 1e-3);
         Tensor<T,1,1,4,1> r7 = r4(0,last,all,last);
         FASTOR_EXIT_ASSERT(abs(r7.sum() - 46) < BigTol);
-        Tensor<T,1,1,1,1> r8 = r4(first,2,first,0); 
+        Tensor<T,1,1,1,1> r8 = r4(first,2,first,0);
         FASTOR_EXIT_ASSERT(abs(r8.toscalar() - 10) < BigTol);
-        Tensor<T,1,1,1,1> r9 = r4(last,last,last,last); 
+        Tensor<T,1,1,1,1> r9 = r4(last,last,last,last);
         FASTOR_EXIT_ASSERT(abs(r9.toscalar() - 25) < BigTol);
 
         r4.iota();

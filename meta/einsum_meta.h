@@ -119,6 +119,29 @@ constexpr std::array<size_t,sizeof...(Rest)> nprods<Index<Rest...>,std_ext::inde
 //------------------------------------------------------------------------------------------------------------//
 
 
+// For views only
+//------------------------------------------------------------------------------------------------------------//
+template<int N>
+constexpr int _oner(const size_t (&seq)[N], int i) {
+    return i == N-1 ? 1 : seq[i];
+}
+
+template<class Idx, class Seq>
+struct nprods_views;
+
+template<size_t ... Rest, size_t ... ss>
+struct nprods_views<Index<Rest...>,std_ext::index_sequence<ss...>> {
+    constexpr static size_t vals[sizeof...(Rest)] = {Rest...};
+    static constexpr size_t pvals[sizeof...(Rest)] = {products(vals,ss)...};
+    static constexpr size_t svals[sizeof...(Rest)] = {shifter(pvals,ss)...};
+    static constexpr std::array<size_t,sizeof...(Rest)> values = {_oner(svals,ss)...};
+};
+
+template<size_t ... Rest, size_t ... ss>
+constexpr std::array<size_t,sizeof...(Rest)> nprods_views<Index<Rest...>,std_ext::index_sequence<ss...>>::values;
+//------------------------------------------------------------------------------------------------------------//
+
+
 
 
 

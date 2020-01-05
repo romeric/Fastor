@@ -443,9 +443,20 @@ public:
         return _data[i*get_value<2,Rest...>::value+j];
     }
 
+    // This is purely for smart ops
     constexpr FASTOR_INLINE T eval(T i, T j) const {
         return _data[static_cast<FASTOR_INDEX>(i)*get_value<2,Rest...>::value+static_cast<FASTOR_INDEX>(j)];
     }
+    // template<typename... Args, typename std::enable_if<sizeof...(Args)==Dimension_t::value
+    //                     && is_arithmetic_pack<Args...>::value,bool>::type =0>
+    // FASTOR_INLINE const T& eval(Args ... args) const {
+    //     return operator()(args...);
+    // }
+    // template<typename... Args, typename std::enable_if<sizeof...(Args)==Dimension_t::value
+    //                     && is_arithmetic_pack<Args...>::value,bool>::type =0>
+    // FASTOR_INLINE const T& eval_s(Args ... args) const {
+    //     return operator()(args...);
+    // }
     //----------------------------------------------------------------------------------------------------------//
 
     // Raw pointer providers
