@@ -228,7 +228,7 @@ public:
 #endif
         T *_data = expr.data();
 
-        std::array<int,DIMS> as;
+        std::array<int,DIMS> as = {};
         int total = size();
 
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
