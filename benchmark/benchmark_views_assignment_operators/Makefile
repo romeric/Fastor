@@ -1,13 +1,13 @@
-OPT=-O3 -march=native -DNDEBUG -DFASTOR_NO_ALIAS 
+OPT=-O3 -march=native -DNDEBUG -DFASTOR_NO_ALIAS
 
 ifeq "$(CXX)" "g++"
-    OPT += -finline-limit=1000000 -ffp-contract=fast 
+    OPT += -finline-limit=1000000 -ffp-contract=fast
 endif
 ifeq "$(CXX)" "g++-6"
-    OPT += -finline-limit=1000000 -ffp-contract=fast 
+    OPT += -finline-limit=1000000 -ffp-contract=fast
 endif
 ifeq "$(CXX)" "/usr/local/bin/g++-6"
-    OPT += -finline-limit=1000000 -ffp-contract=fast 
+    OPT += -finline-limit=1000000 -ffp-contract=fast
 endif
 
 ifeq "$(CXX)" "clang++"
@@ -41,7 +41,7 @@ all:
 	$(CXX) -std=c++14 -I../../ benchmark_views.cpp -o benchmark_views_2d.exe $(OPT) -DTWO_D
 	$(CXX) -std=c++14 -I../../ benchmark_views.cpp -o benchmark_views_vec_2d.exe $(OPT) -DFASTOR_USE_VECTORISED_EXPR_ASSIGN -DTWO_D
 
-	$(CXX) -std=c++14 -I../../ benchmark_views.cpp -o benchmark_views_nd.exe $(OPT) -DMUTLI_D
+	$(CXX) -std=c++14 -I../../ benchmark_views.cpp -o benchmark_views_nd.exe $(OPT) -DMULTI_D
 	$(CXX) -std=c++14 -I../../ benchmark_views.cpp -o benchmark_views_vec_nd.exe $(OPT) -DFASTOR_USE_VECTORISED_EXPR_ASSIGN -DMULTI_D
 
 

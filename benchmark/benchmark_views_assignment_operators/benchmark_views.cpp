@@ -3,7 +3,6 @@ using namespace Fastor;
 
 template<typename T>
 void run() {
-
     timer<double> time_;
 #ifdef ONE_D
     print(FBLU(BOLD("1D")));
@@ -22,16 +21,16 @@ void run() {
             for (auto j=0; j<M; ++j) {
                 a[it[j]] = b[j];
                 unused(b);
-            } 
-        } 
+            }
+        }
         time_.toc("Assigning to a view");
-        
+
         time_.tic();
         for (auto i=0; i<NITER; ++i) {
             for (auto j=0; j<M; ++j) {
                 a[it[j]] += 5*b[j];
                 unused(b);
-            } 
+            }
         }
         time_.toc("Assigning to view + 2*Add + Mul ");
     }
@@ -48,9 +47,9 @@ void run() {
         for (auto i=0; i<NITER; ++i) {
             a(it) = b;
             unused(b);
-        } 
+        }
         time_.toc("Assigning to a view");
-        
+
         time_.tic();
         for (auto i=0; i<NITER; ++i) {
             a(it) += 5*b;
@@ -68,7 +67,7 @@ void run() {
         constexpr size_t M=100, N = 111;
         T a[M][N]; //T b[M][N];
         for (auto i=0; i<M; ++i)
-            for (auto j=0; j<N; ++j) 
+            for (auto j=0; j<N; ++j)
                 a[i][j] = (T)rand()/RAND_MAX;
         // for (auto i=0; i<M*N; ++i) b[i] = (T)rand()/RAND_MAX;
 
@@ -82,8 +81,8 @@ void run() {
                     // unused(b);
                 }
             // unused(a);
-            } 
-        } 
+            }
+        }
         // unused(a);
         time_.toc("Constructing from a view");
 
@@ -93,9 +92,9 @@ void run() {
                 for (auto k=4; k<104; k+=3) {
                     a[j][k] += 0.04;
                 }
-            } 
+            }
             unused(a);
-        } 
+        }
         time_.toc("+= Assigning to a view");
     }
 
@@ -112,11 +111,11 @@ void run() {
             // b = a(all,all);
             // Tensor<T,M,N> b = a(seq(0,M),seq(0,N));
             unused(b);
-        } 
+        }
         time_.toc("Constructing from a view");
-        
+
         time_.tic();
-        for (auto i=0; i<NITER; ++i) 
+        for (auto i=0; i<NITER; ++i)
             a(seq(1,90),seq(4,104,3)) += 0.04;
         time_.toc("+= Assigning to a view");
     }
@@ -127,6 +126,7 @@ void run() {
     print(FBLU(BOLD("WITH CLASSICAL ARRAYS AND LOOPS")));
     {
         int i,j,k;
+        constexpr int NITER = 10000;
         constexpr int dim = 100;
         T A[dim][dim][3];
         for (i = 0; i < dim; i++)
@@ -135,52 +135,61 @@ void run() {
                 A[i][j][k] = (T)rand()/RAND_MAX;
 
         time_.tic();
-        for (i = 0; i < dim; i++) {
-            for (j = 0; j < dim; j++) {
-                A[i][j][0] = A[i][j][1];
-                A[i][j][2] = A[i][j][0];
-                A[i][j][1] = A[i][j][2];
-                unused(A,i,j);
-            }
-        }
 
-        // for (i = 0; i < dim; i++) {
-        //     for (j = 0; j < dim; j++) {
-        //         A[i][j][0] += A[i][j][1];
-        //         unused(A);
-        //     }
-        // }
-        // for (i = 0; i < dim; i++) {
-        //     for (j = 0; j < dim; j++) {
-        //         A[i][j][2] += A[i][j][0];
-        //         unused(A);
-        //     }
-        // }
-        // for (i = 0; i < dim; i++) {
-        //     for (j = 0; j < dim; j++) {
-        //         A[i][j][1] += A[i][j][2];
-        //         unused(A,i,j);
-        //     }
-        // }
+        for (auto ii=0; ii<NITER; ++ii) {
+
+            for (i = 0; i < dim; i++) {
+                for (j = 0; j < dim; j++) {
+                    A[i][j][0] = A[i][j][1];
+                    A[i][j][2] = A[i][j][0];
+                    A[i][j][1] = A[i][j][2];
+                    unused(A,i,j);
+                }
+            }
+            // unused(A);
+
+            // for (i = 0; i < dim; i++) {
+            //     for (j = 0; j < dim; j++) {
+            //         A[i][j][0] += A[i][j][1];
+            //         unused(A);
+            //     }
+            // }
+            // for (i = 0; i < dim; i++) {
+            //     for (j = 0; j < dim; j++) {
+            //         A[i][j][2] += A[i][j][0];
+            //         unused(A);
+            //     }
+            // }
+            // for (i = 0; i < dim; i++) {
+            //     for (j = 0; j < dim; j++) {
+            //         A[i][j][1] += A[i][j][2];
+            //         unused(A,i,j);
+            //     }
+            // }
+        }
         time_.toc("Tensor view copy assignment");
     }
 
     print(FBLU(BOLD("USING VECTORISED NOTATION [MATLAB/NUMPY VECTORISATION IS IMPLIED]")));
     {
+        constexpr int NITER = 10000;
         constexpr int dim = 100;
         Tensor<T,dim,dim,3> A;
         A.random();
-        
-        time_.tic(); 
- 
-        A(all,all,0) = A(all,all,1);
-        A(all,all,2) = A(all,all,0);
-        A(all,all,1) = A(all,all,2);
 
-        // A(seq(0,dim),seq(0,dim),0) = A(seq(0,dim),seq(0,dim),1);
-        // A(seq(0,dim),seq(0,dim),2) = A(seq(0,dim),seq(0,dim),0);
-        // A(seq(0,dim),seq(0,dim),1) = A(seq(0,dim),seq(0,dim),2);
-        
+        time_.tic();
+
+        for (auto ii=0; ii<NITER; ++ii) {
+            A(all,all,0) = A(all,all,1);
+            A(all,all,2) = A(all,all,0);
+            A(all,all,1) = A(all,all,2);
+
+            // A(seq(0,dim),seq(0,dim),0) = A(seq(0,dim),seq(0,dim),1);
+            // A(seq(0,dim),seq(0,dim),2) = A(seq(0,dim),seq(0,dim),0);
+            // A(seq(0,dim),seq(0,dim),1) = A(seq(0,dim),seq(0,dim),2);
+            unused(A);
+        }
+
         time_.toc("Tensor view copy assignment");
     }
 #endif
