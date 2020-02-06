@@ -1281,6 +1281,10 @@ public:
 };
 
 
+template<typename T, size_t DIMS, size_t ... Rest>
+constexpr std::array<size_t,DIMS> TensorViewExpr<Tensor<T,Rest...>,DIMS>::products_;
+
+
 } // end of namespace Fastor
 
 

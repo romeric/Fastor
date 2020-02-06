@@ -9,8 +9,8 @@ namespace Fastor {
 
 template<typename T, size_t M, size_t N>
 FASTOR_INLINE void _transpose(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT out) {
-    for (size_t i=0; i< M; ++i)
-        for (size_t j=0; j<N; ++j)
+    for (size_t j=0; j<N; ++j)
+        for (size_t i=0; i< M; ++i)
             out[j*M+i] = a[i*N+j];
 }
 
