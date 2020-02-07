@@ -128,6 +128,68 @@ FASTOR_INLINE typename Derived::scalar_type trace(const AbstractTensor<Derived,D
 }
 
 
+// Generic matmul function for AbstractTensor types
+// Works as long as the return tensor is compile deducible
+// Their applicability on dynamic views should be checked
+template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
+typename std::enable_if< DIM0!=0 && DIM0<=2 && DIM1!=1 && DIM1<=2,bool>::type=0>
+FASTOR_INLINE
+Tensor<typename scalar_type_finder<Derived0>::type,
+    get_tensor_dimensions<typename tensor_type_finder<Derived0>::type>::dims[0],
+    get_tensor_dimensions<typename tensor_type_finder<Derived1>::type>::dims[1]>
+matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b) {
+
+    using T = typename scalar_type_finder<Derived0>::type;
+    const Derived0 &a_src = a.self();
+    const Derived1 &b_src = b.self();
+    using V = SIMDVector<T,DEFAULT_ABI>;
+
+    // size_t M = a_src.dimension(0);
+    // size_t K = a_src.dimension(1);
+    // size_t N = b_src.dimension(1);
+    constexpr size_t M = get_tensor_dimensions<typename tensor_type_finder<Derived0>::type>::dims[0];
+    constexpr size_t K = get_tensor_dimensions<typename tensor_type_finder<Derived0>::type>::dims[1];
+    constexpr size_t N = get_tensor_dimensions<typename tensor_type_finder<Derived1>::type>::dims[1];
+
+    constexpr size_t SIZE_ = V::Size;
+    int ROUND = ROUND_DOWN(N,(int)SIZE_);
+
+    Tensor<typename scalar_type_finder<Derived0>::type,
+    get_tensor_dimensions<typename tensor_type_finder<Derived0>::type>::dims[0],
+    get_tensor_dimensions<typename tensor_type_finder<Derived1>::type>::dims[1]> out;
+    T *out_data = out.data();
+
+    for (size_t j=0; j<M; ++j) {
+        size_t k=0;
+        for (; k<(size_t)ROUND; k+=SIZE_) {
+            V out_row, vec_a;
+            for (size_t i=0; i<K; ++i) {
+                // V brow; brow.load(&b[i*N+k],false);
+                V brow = b_src.template eval<T>(i*N+k);
+                vec_a.set(a_src.template eval_s<T>(j*K+i));
+#ifndef __FMA__
+                out_row += vec_a*brow;
+#else
+                out_row = fmadd(vec_a,brow,out_row);
+#endif
+            }
+            out_row.store(out_data+k+N*j,false);
+        }
+
+        for (; k<N; k++) {
+            T out_row = 0.;
+            for (size_t i=0; i<K; ++i) {
+                // out_row += a[j*K+i]*b[i*N+k];
+                out_row += a_src.template eval_s<T>(j*K+i)*b_src.template eval_s<T>(i*N+k);
+            }
+            out_data[N*j+k] = out_row;
+        }
+    }
+
+    return out;
+}
+
+
 }
 
 
