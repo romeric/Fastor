@@ -31,7 +31,7 @@ test_einsum:
 	$(CXX) test_einsum.cpp -o test_einsum_2.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14 -DCONTRACT_OPT=-1
 
 test_linalg:
-	$(CXX) test_linalg.cpp -o test_linalg.exe $(CXX_FLAGS) $(INCLUDES)
+	$(CXX) test_linalg.cpp -o test_linalg.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14
 
 test_views:
 	$(CXX) test_views_1d.cpp -o test_views_1d.exe $(CXX_FLAGS) $(INCLUDES)
