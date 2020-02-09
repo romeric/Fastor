@@ -131,9 +131,20 @@ struct is_less {
     static constexpr bool value = I < J;
 };
 
+//-----------
+template<size_t I, size_t J>
+struct is_less_equal {
+    static constexpr bool value = I <= J;
+};
+
 template<size_t I, size_t J>
 struct is_greater {
     static constexpr bool value = I > J;
+};
+
+template<size_t I, size_t J>
+struct is_greater_equal {
+    static constexpr bool value = I >= J;
 };
 //-----------
 
