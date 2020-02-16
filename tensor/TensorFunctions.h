@@ -10,7 +10,8 @@ namespace Fastor {
 #ifdef __AVX__
 template<typename T, size_t I, size_t J,
     // typename std::enable_if<I!=J || is_less_equal<J,8>::value,bool>::type=0>
-    typename std::enable_if<I!=J || (I==J && J % 4!= 0) || is_less_equal<J,8>::value,bool>::type=0>
+    typename std::enable_if<I!=J || (I==J && J % SIMDVector<T,DEFAULT_ABI>::Size!= 0)
+    || is_less_equal<J,9>::value,bool>::type=0>
 #else
 template<typename T, size_t I, size_t J>
 #endif
@@ -22,7 +23,8 @@ FASTOR_INLINE Tensor<T,J,I> transpose(const Tensor<T,I,J> &a) {
 
 #ifdef __AVX__
 template<typename T, size_t M, size_t N,
-    typename std::enable_if<M==N && M % 4 == 0 && is_greater<M,8>::value,bool>::type=0>
+    typename std::enable_if<M==N && M % SIMDVector<T,DEFAULT_ABI>::Size == 0
+    && is_greater<M,9>::value,bool>::type=0>
 FASTOR_INLINE
 Tensor<T,N,M> transpose(const Tensor<T,M,N>& a) {
 
@@ -33,18 +35,18 @@ Tensor<T,N,M> transpose(const Tensor<T,M,N>& a) {
     constexpr size_t SIZE_ = V::Size;
     const int ROUND = ROUND_DOWN(M,(int)SIZE_);
 
-    T FASTOR_ALIGN v[4*4];
-    T FASTOR_ALIGN v_out[4*4];
-    for (size_t j=0; j<N; j+=4) {
-        for (size_t i=0; i< M; i+=4) {
+    T FASTOR_ALIGN v[SIZE_*SIZE_];
+    T FASTOR_ALIGN v_out[SIZE_*SIZE_];
+    for (size_t j=0; j<N; j+=SIZE_) {
+        for (size_t i=0; i< M; i+=SIZE_) {
             V _vec;
-            for (size_t ii=0; ii<4; ++ii) {
+            for (size_t ii=0; ii<SIZE_; ++ii) {
                 _vec.load(&a_data[(i+ii)*N+(j)]);
-                _vec.store(&v[ii*4]);
+                _vec.store(&v[ii*SIZE_]);
             }
-            _transpose<T,4,4>(v,v_out);
-            for (size_t jj=0; jj<4; ++jj) {
-                _vec.load(&v_out[jj*4]);
+            _transpose<T,SIZE_,SIZE_>(v,v_out);
+            for (size_t jj=0; jj<SIZE_; ++jj) {
+                _vec.load(&v_out[jj*SIZE_]);
                 _vec.store(&out_data[(j+jj)*M+(i)],false);
             }
 

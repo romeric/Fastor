@@ -5,6 +5,7 @@ using namespace Fastor;
 
 #define Tol 1e-12
 #define BigTol 1e-5
+#define HugeTol 1e-2
 
 
 template<typename T>
@@ -30,6 +31,44 @@ void test_linalg() {
         FASTOR_EXIT_ASSERT(std::abs(norm(outer(t2,t2)) - 21013.0) < Tol);
         FASTOR_EXIT_ASSERT(std::abs(inner(t2,t2) - 21013.0) < Tol);
     }
+
+    {
+        Tensor<T,2,2> t1; t1.iota(5);
+        FASTOR_EXIT_ASSERT(std::abs(norm(transpose(t1))-norm(t1))< HugeTol);
+    }
+    {
+        Tensor<T,3,3> t1; t1.iota(5);
+        FASTOR_EXIT_ASSERT(std::abs(norm(transpose(t1))-norm(t1))< HugeTol);
+    }
+    {
+        Tensor<T,4,4> t1; t1.iota(5);
+        FASTOR_EXIT_ASSERT(std::abs(norm(transpose(t1))-norm(t1))< HugeTol);
+    }
+    {
+        Tensor<T,5,5> t1; t1.iota(5);
+        FASTOR_EXIT_ASSERT(std::abs(norm(transpose(t1))-norm(t1))< HugeTol);
+    }
+    {
+        Tensor<T,7,7> t1; t1.iota(5);
+        FASTOR_EXIT_ASSERT(std::abs(norm(transpose(t1))-norm(t1))< HugeTol);
+    }
+    {
+        Tensor<T,8,8> t1; t1.iota(5);
+        FASTOR_EXIT_ASSERT(std::abs(norm(transpose(t1))-norm(t1))< HugeTol);
+    }
+    {
+        Tensor<T,9,9> t1; t1.iota(5);
+        FASTOR_EXIT_ASSERT(std::abs(norm(transpose(t1))-norm(t1))< HugeTol);
+    }
+    {
+        Tensor<T,10,10> t1; t1.iota(5);
+        FASTOR_EXIT_ASSERT(std::abs(norm(transpose(t1))-norm(t1))< HugeTol);
+    }
+    {
+        Tensor<T,16,16> t1; t1.iota(5);
+        FASTOR_EXIT_ASSERT(std::abs(norm(transpose(t1))-norm(t1))< HugeTol);
+    }
+
 
     // 3D
     {
