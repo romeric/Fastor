@@ -112,18 +112,27 @@ struct is_abstracttensor<AbstractTensor<T,DIMS>> {
 template <class X, class Y, class ... Z>
 struct concat_tensor;
 
-template<typename T, size_t ... Rest0, size_t ... Rest1>
-struct concat_tensor<Tensor<T,Rest0...>,Tensor<T,Rest1...>> {
+template<template<typename,size_t...> class Derived0,
+    template<typename,size_t...> class Derived1,
+    typename T, size_t ... Rest0, size_t ... Rest1>
+struct concat_tensor<Derived0<T,Rest0...>,Derived1<T,Rest1...>> {
     using type = Tensor<T,Rest0...,Rest1...>;
 };
 
-template<typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2>
-struct concat_tensor<Tensor<T,Rest0...>,Tensor<T,Rest1...>,Tensor<T,Rest2...>> {
+template<template<typename,size_t...> class Derived0,
+    template<typename,size_t...> class Derived1,
+    template<typename,size_t...> class Derived2,
+    typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2>
+struct concat_tensor<Derived0<T,Rest0...>,Derived1<T,Rest1...>,Derived2<T,Rest2...>> {
     using type = Tensor<T,Rest0...,Rest1...,Rest2...>;
 };
 
-template<typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2, size_t ... Rest3>
-struct concat_tensor<Tensor<T,Rest0...>,Tensor<T,Rest1...>,Tensor<T,Rest2...>,Tensor<T,Rest3...>> {
+template<template<typename,size_t...> class Derived0,
+    template<typename,size_t...> class Derived1,
+    template<typename,size_t...> class Derived2,
+    template<typename,size_t...> class Derived3,
+    typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2, size_t ... Rest3>
+struct concat_tensor<Derived0<T,Rest0...>,Derived1<T,Rest1...>,Derived2<T,Rest2...>,Derived3<T,Rest3...>> {
     using type = Tensor<T,Rest0...,Rest1...,Rest2...,Rest3...>;
 };
 //--------------------------------------------------------------------------------------------------------------------//

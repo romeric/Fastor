@@ -10,7 +10,7 @@ FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
     FASTOR_ASSERT((i>=0 && i<Size), "INDEX OUT OF BOUNDS");
 #endif
     SIMDVector<T,DEFAULT_ABI> out;
-    out.load(_data+i);
+    out.load(&_data[i]);
     return out;
 }
 template<typename U=T>

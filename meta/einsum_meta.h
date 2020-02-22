@@ -186,8 +186,8 @@ constexpr bool contains(const size_t (&ind)[N], int num){
 template<class Dims>
 struct put_dims_in_Index;
 
-template<size_t ... Rest, typename T>
-struct put_dims_in_Index<Tensor<T, Rest...>> {
+template<template<typename,size_t...> class Derived, size_t ... Rest, typename T>
+struct put_dims_in_Index<Derived<T, Rest...>> {
     using type = Index<Rest...>;
 };
 //------------------------------------------------------------------------------------------------------------//
@@ -802,8 +802,10 @@ loop_setter<Index<Idx...>,Tensor<T,Rest...>,std_ext::index_sequence<ss...>>::dim
 template<class Ind, class Tens, class Ind_t, class Tens_t, class Seq>
 struct IndexTensors;
 
-template<class T, size_t... Idx, size_t... Idx_t, size_t ...Rest, size_t ...Rest_t, size_t ... ss>
-struct IndexTensors<Index<Idx...>,Tensor<T,Rest...>,Index<Idx_t...>,Tensor<T,Rest_t...>,std_ext::index_sequence<ss...>> {
+template<template<typename,size_t...> class Derived0,
+    template<typename,size_t...> class Derived1,
+    typename T, size_t... Idx, size_t... Idx_t, size_t ...Rest, size_t ...Rest_t, size_t ... ss>
+struct IndexTensors<Index<Idx...>,Derived0<T,Rest...>,Index<Idx_t...>,Derived1<T,Rest_t...>,std_ext::index_sequence<ss...>> {
 
     using index_temp = typename loop_setter<Index<Idx...>,Tensor<T,Rest...>,
             typename std_ext::make_index_sequence<no_of_unique<Idx...>::value>::type>::indices;
@@ -816,9 +818,11 @@ struct IndexTensors<Index<Idx...>,Tensor<T,Rest...>,Index<Idx_t...>,Tensor<T,Res
 
 };
 
-template<class T, size_t... Idx, size_t... Idx_t, size_t ...Rest, size_t ...Rest_t, size_t ... ss>
+template<template<typename,size_t...> class Derived0,
+    template<typename,size_t...> class Derived1,
+    typename T, size_t... Idx, size_t... Idx_t, size_t ...Rest, size_t ...Rest_t, size_t ... ss>
 constexpr std::array<size_t,sizeof...(Idx_t)>
-IndexTensors<Index<Idx...>,Tensor<T,Rest...>,Index<Idx_t...>,Tensor<T,Rest_t...>,std_ext::index_sequence<ss...>>::indices;
+IndexTensors<Index<Idx...>,Derived0<T,Rest...>,Index<Idx_t...>,Derived1<T,Rest_t...>,std_ext::index_sequence<ss...>>::indices;
 //------------------------------------------------------------------------------------------------------------//
 
 

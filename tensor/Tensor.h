@@ -464,7 +464,7 @@ public:
         if(prod<Rest...>::value!=prod<RestOther...>::value) return false;
         else {
             bool out = true;
-            T *other_data = other.data();
+            const T *other_data = other.data();
             for (size_t i=0; i<Size; ++i) {
                 if (std::fabs(_data[i]-other_data[i])>Tol) {
                     out = false;
