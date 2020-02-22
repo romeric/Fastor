@@ -4,14 +4,24 @@
 #include "commons/commons.h"
 #include "extended_intrinsics/extintrin.h"
 #include "simd_vector/SIMDVector.h"
+#include "meta/tensor_meta.h"
+
+#ifdef USE_LIBXSMM_BACKEND
+#include "libxsmm_backend.h"
+#endif
 
 namespace Fastor {
 
 
-
 // For square matrices
+#ifndef USE_LIBXSMM_BACKEND
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<M==N && M==K && N % SIMDVector<T,DEFAULT_ABI>::Size ==0,bool>::type = 0>
+#else
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<M==N && M==K && N % SIMDVector<T,DEFAULT_ABI>::Size ==0
+         && is_less_equal<N,BLAS_SWITCH_MATRIX_SIZE_S>::value,bool>::type = 0>
+#endif
 FASTOR_INLINE
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
 
@@ -65,6 +75,15 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
         }
     }
 }
+#ifdef USE_LIBXSMM_BACKEND
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<M==N && M==K && N % SIMDVector<T,DEFAULT_ABI>::Size ==0
+         && is_greater<N,BLAS_SWITCH_MATRIX_SIZE_S>::value,bool>::type = 0>
+FASTOR_INLINE
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
+    blas::matmul_libxsmm<T,M,K,N>(a,b,c);
+}
+#endif
 
 
 #ifdef __SSE4_2__
@@ -94,7 +113,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
         // row 1
         __m128d a_vec1 = _mm_set1_pd(a[K+i]);
         out_row1 = _mm_fmadd_pd(a_vec1,brow,out_row1);
-#endif 
+#endif
     }
     _mm_store_pd(out,out_row0);
     _mm_storeu_pd(out+2,out_row1);
@@ -126,7 +145,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
         // row 1
         __m128 a_vec1 = _mm_set1_ps(a[K+i]);
         out_row1 = _mm_fmadd_ps(a_vec1,brow,out_row1);
-#endif 
+#endif
     }
     _mm_store_ps(out,_mm_shuffle_ps(out_row0,out_row1,_MM_SHUFFLE(1,0,1,0)));
 }
@@ -147,7 +166,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
     for (size_t i=0; i<K; ++i) {
         __m256d brow = _mm256_loadul3_pd(&b[i*3]);
-#ifndef __FMA__ 
+#ifndef __FMA__
         // row 0
         __m256d a_vec0 = _mm256_set1_pd(a[i]);
         out_row0 = _mm256_add_pd(out_row0,_mm256_mul_pd(a_vec0,brow));
@@ -167,7 +186,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
         // row 2
         __m256d a_vec2 = _mm256_set1_pd(a[2*K+i]);
         out_row2 = _mm256_fmadd_pd(a_vec2,brow,out_row2);
-#endif        
+#endif
     }
     _mm256_store_pd(out,out_row0);
     _mm256_storeu_pd(out+3,out_row1);
@@ -194,7 +213,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
     for (size_t i=0; i<K; ++i) {
         __m128 brow = _mm_loadul3_ps(&b[i*3]);
-#ifndef __FMA__ 
+#ifndef __FMA__
         // row 0
         __m128 a_vec0 = _mm_set1_ps(a[i]);
         out_row0 = _mm_add_ps(out_row0,_mm_mul_ps(a_vec0,brow));
@@ -265,7 +284,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
         // row 3
         __m256d a_vec3 = _mm256_set1_pd(a[3*K+i]);
         out_row3 = _mm256_fmadd_pd(a_vec3,brow,out_row3);
-#endif  
+#endif
     }
     _mm256_store_pd(out,out_row0);
     _mm256_store_pd(out+4,out_row1);
@@ -323,7 +342,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     _mm_store_ps(out+12,out_row3);
 
 
-    /* 
+    /*
     // AVX version - process two rows in one AVX register - doesn't pay off
     // as on FMA based architecture increases the cycle count by 4
     __m256 out_row01 = VZEROPS;
@@ -390,7 +409,7 @@ void _matmul_2x2xn(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T *
 #else
             out_row0 = fmadd(vec_a0,brow,out_row0);
             out_row1 = fmadd(vec_a1,brow,out_row1);
-#endif            
+#endif
         }
         out_row0.store(out+k,false);
         out_row1.store(out+N+k,false);
@@ -408,7 +427,7 @@ void _matmul_2x2xn(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T *
 #else
             out_row0 = fmadd(vec_a0,brow,out_row0);
             out_row1 = fmadd(vec_a1,brow,out_row1);
-#endif 
+#endif
         }
         out_row0.store(out+k,false);
         out_row1.store(out+N+k,false);
@@ -458,7 +477,7 @@ void _matmul_3x3xn(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T *
             out_row0 = fmadd(vec_a0,brow,out_row0);
             out_row1 = fmadd(vec_a1,brow,out_row1);
             out_row2 = fmadd(vec_a2,brow,out_row2);
-#endif            
+#endif
         }
         out_row0.store(out+k,false);
         out_row1.store(out+N+k,false);
@@ -480,7 +499,7 @@ void _matmul_3x3xn(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T *
             out_row0 = fmadd(vec_a0,brow,out_row0);
             out_row1 = fmadd(vec_a1,brow,out_row1);
             out_row2 = fmadd(vec_a2,brow,out_row2);
-#endif 
+#endif
         }
         out_row0.store(out+k,false);
         out_row1.store(out+N+k,false);
@@ -505,10 +524,19 @@ void _matmul_3x3xn(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T *
 
 
 // Non-sqaure matrices
+#ifndef USE_LIBXSMM_BACKEND
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<(M==K && K!=N) || (M!=K && K==N) || (M!=K && K!=N && M!=N)
                                  || (M!=K && M==N && M!=2 && M!=3 && M!=4)
                                  || ((M==N && M==K) && N % SIMDVector<T,DEFAULT_ABI>::Size !=0),bool>::type = 0>
+#else
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<((M==K && K!=N) || (M!=K && K==N) || (M!=K && K!=N && M!=N)
+                                 || (M!=K && M==N && M!=2 && M!=3 && M!=4)
+                                 || ((M==N && M==K) && N % SIMDVector<T,DEFAULT_ABI>::Size !=0))
+                                 && is_less_equal<M*N*K/BLAS_SWITCH_MATRIX_SIZE_NS/BLAS_SWITCH_MATRIX_SIZE_NS/BLAS_SWITCH_MATRIX_SIZE_NS,
+                                 1>::value ,bool>::type = 0>
+#endif
 FASTOR_INLINE
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
@@ -853,6 +881,19 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 #endif
 #endif
 }
+
+#ifdef USE_LIBXSMM_BACKEND
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<((M==K && K!=N) || (M!=K && K==N) || (M!=K && K!=N && M!=N)
+                                 || (M!=K && M==N && M!=2 && M!=3 && M!=4)
+                                 || ((M==N && M==K) && N % SIMDVector<T,DEFAULT_ABI>::Size !=0))
+                                 && is_greater<M*N*K/BLAS_SWITCH_MATRIX_SIZE_NS/BLAS_SWITCH_MATRIX_SIZE_NS/BLAS_SWITCH_MATRIX_SIZE_NS,1>::value,
+                                 bool>::type = 0>
+FASTOR_INLINE
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
+    blas::matmul_libxsmm<T,M,K,N>(a,b,c);
+}
+#endif
 
 
 
