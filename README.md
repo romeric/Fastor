@@ -116,9 +116,9 @@ To solve this issue, use immediate construction from a view
 Tensor<double,2,2,5,3> B = A(all,all,seq(0,5),seq(0,3)); // B is now permanent
 auto C = B + 2; // This will behave as expected
 ~~~
-From a performance point of view, Fastor tries very hard to vectorise (read SIMD vectorisation) tensor views, but this heavily depends on the compilers ability to inline multiple recursive functions [as is the case for all expression templates]. If a view appears on the right hand side of an assignment, but not on the left, Fastor automatically vectorises the expression. However if a view appears on the left hand side of an assignment, Fastor does not by default vectorise the expression. To enable vectorisation across all tensor views use the compiler flag `-DFASTOR_USE_VECTORISE_EXPR_ASSIGN`. Also for performance reasons, it is beneficial to avoid overlapping assignments, otherwise a copy will be made. If your code does not use any overlapping assignments, then this feature can be turned off completely by issusing `-DFASTOR_NO_ALIAS`. At this stage it is also beneficial to consider that while compiling a complex and big expressions the inlining limit of the compiler should be increased and tested i.e. `-finline-limit=<big number>` for GCC, `-mllvm -inline-threshold=<big number>` for Clang and `-inline-forceinline` for ICC.
+From a performance point of view, Fastor tries very hard to vectorise (read SIMD vectorisation) tensor views, but this heavily depends on the compilers ability to inline multiple recursive functions [as is the case for all expression templates]. If a view appears on the right hand side of an assignment, but not on the left, Fastor automatically vectorises the expression. However if a view appears on the left hand side of an assignment, Fastor does not by default vectorise the expression. To enable vectorisation across all tensor views use the compiler flag `-DFASTOR_USE_VECTORISE_EXPR_ASSIGN`. Also for performance reasons it is beneficial to avoid overlapping assignments, otherwise a copy will be made. If your code does not use any overlapping assignments, then this feature can be turned off completely by issusing `-DFASTOR_NO_ALIAS`. At this stage it is also beneficial to consider that while compiling complex and big expressions the inlining limit of the compiler should be increased and tested i.e. `-finline-limit=<big number>` for GCC, `-mllvm -inline-threshold=<big number>` for Clang and `-inline-forceinline` for ICC.
 
-As an example to see how efficiently tensor views can be vectorised, consider the following 4th order finite difference example for Laplace equation
+To see how efficient tensor views can be vectorised, as an example consider the following 4th order finite difference example for Laplace equation
 ~~~c++
 Tensor<double,100,100> u, v;
 // fill u and v
@@ -167,6 +167,17 @@ L128:
   jne L129
 ~~~
 As can be observed, the compiler emits unaligned load and store instructions, but the rest of the generated code is extremely efficient (it does not get more efficient than this). For stack allocated and small tensors the unaligned load/store operations should not be a bottleneck either, as the data would potentially fit in L1 cache. With the help of an optimising compiler, Fastor's functionalities come closest to the ideal metal performance for numerical tensor algebra code.
+
+### Specialised tensor
+A set of specialised tensors are available that provide optimised tensor algebraic computations, for instance `SingleValueTensor`. Some of the computations performed on these tensors have almost zero cost no matter how big the tensor is. These tensors work in the exact same way as the `Tensor` class and can be assigned to one another. Consider for example the einsum between two `SingleValueTensor`s. A single `SingleValueTensor` is a tensor of any dimension and size whose elements are all the same (a matrix of ones for instance).
+
+~~~c++
+SingleValueTensor<double,20,20,30> a(3.51);
+SingleValueTensor<double,20,30> b(2.76);
+auto c =einsum<Index<0,1,2>,Index<0,3>>(a,b);
+~~~
+
+This will incur almost no to compute. On the other if the tensors were of type `Tensor` then a heavy computation would ensue.
 
 
 ### No heap allocation
