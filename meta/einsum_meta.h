@@ -58,18 +58,19 @@ struct concat_<Index<I1...>, Index<I2...>, Inds...>
 template<int I, int... Is>
 struct filter_
     :  concat_<typename std::conditional<Is == I, Index<>, Index<Is>>::type...> {};
+
 //Use them:
 template<class Ind, class Arr, class Seq>
 struct contraction_impl;
 
-template<class T, size_t... Ind, size_t... Dim, size_t... Seq>
-struct contraction_impl<Index<Ind...>, Tensor<T, Dim...>, std_ext::index_sequence<Seq...>>{
+template<template<typename, size_t ...> class Derived, typename T, size_t... Ind, size_t... Dim, size_t... Seq>
+struct contraction_impl<Index<Ind...>, Derived<T, Dim...>, std_ext::index_sequence<Seq...>>{
     static constexpr int ind[sizeof...(Ind)] = { Ind... };
     static constexpr int dim[sizeof...(Dim)] = { Dim... };
     static constexpr int result[sizeof...(Seq)] = {calc(Seq, ind, dim)...};
 
     template<size_t... Dims>
-    static auto unpack_helper(Index<Dims...>) -> Tensor<T, Dims...>;
+    static auto unpack_helper(Index<Dims...>) -> Derived<T, Dims...>;
 
     using type = decltype(unpack_helper(typename filter_<1001001,  result[Seq]...>::type{}));
 

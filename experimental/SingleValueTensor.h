@@ -308,6 +308,42 @@ FASTOR_INLINE SingleValueTensor<T,M,N> matmul(const SingleValueTensor<T,M,K> &a,
 }
 
 
+
+
+// This one is almost like a compile time einsum
+template<class Index_I, class Index_J, typename T, size_t ... Rest0, size_t ... Rest1>
+FASTOR_INLINE
+typename contraction_impl<typename concat_<Index_I,Index_J>::type,SingleValueTensor<T,Rest0...,Rest1...>,
+                typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type
+einsum(const SingleValueTensor<T,Rest0...> &a, const SingleValueTensor<T,Rest1...> &b) {
+
+    static_assert(einsum_index_checker<typename concat_<Index_I,Index_J>::type>::value,
+                  "INDICES FOR EINSUM FUNCTION CANNOT APPEAR MORE THAN TWICE. USE CONTRACTION INSTEAD");
+
+    std::array<size_t,Index_I::NoIndices> idx0; std::copy_n(Index_I::_IndexHolder,Index_I::NoIndices,idx0.begin());
+    std::array<size_t,Index_J::NoIndices> idx1; std::copy_n(Index_J::_IndexHolder,Index_J::NoIndices,idx1.begin());
+    std::array<size_t,Index_I::NoIndices> dims0 = {Rest0...};
+
+    // n^2 but is okay as this is a small loop with compile time spans
+    size_t total = 1;
+    for (int i=0; i<idx0.size(); ++i) {
+        for (int j=0; j<idx1.size(); ++j) {
+            if (idx0[i]==idx1[j]) {
+                total *= dims0[i];
+            }
+        }
+    }
+    const T a_value = a.eval_s(0);
+    const T b_value = b.eval_s(0);
+    const T out_value = total*a_value*b_value;
+
+    using OutTensor = typename contraction_impl<typename concat_<Index_I,Index_J>::type,SingleValueTensor<T,Rest0...,Rest1...>,
+                typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
+    OutTensor out(out_value);
+    return out;
+}
+
+
 }
 
 
