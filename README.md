@@ -177,7 +177,7 @@ SingleValueTensor<double,20,30> b(2.76);
 auto c =einsum<Index<0,1,2>,Index<0,3>>(a,b);
 ~~~
 
-This will incur almost no to compute. On the other if the tensors were of type `Tensor` then a heavy computation would ensue.
+This will incur almost no runtime cost. On the other if the tensors were of type `Tensor` then a heavy computation would ensue.
 
 
 ### No heap allocation
