@@ -317,13 +317,3 @@ Fastor can be cited as
     url = "http://www.sciencedirect.com/science/article/pii/S0010465517300681"
 }
 ````
-
-### Similar Projects
-Similar projects exist with varying levels of functionality, in particular
-- [FTensor](http://www.wlandry.net/Projects/FTensor): Dense tensor algebra framework for up to rank 4 tensors
-- [LTensor](https://code.google.com/archive/p/ltensor/): Dense tensor algebra framework for up to rank 4 tensors
-- [libtensor](https://github.com/juanjosegarciaripoll/tensor): Dense tensor algebra framework for up to rank 6 tensors
-- [Eigen's tensor algebra package](http://eigen.tuxfamily.org/index.php?title=Tensor_support): Arbitrary rank dense tensor algebra module
-- [Blitz++'s tensor module](http://blitz.sourceforge.net/): Dense linear algebra framework for up to rank 11 tensors
-- [TiledArray](https://github.com/ValeevGroup/tiledarray): Massively parallel arbitrary rank block sparse tensor algebra framework based on Eigen
-- [Cyclops Tensor Framework](https://github.com/solomonik/ctf): Distributed memory arbitrary rank sparse tensor algebra framework
