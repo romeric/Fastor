@@ -1,6 +1,8 @@
 #ifndef SINGLEVALUE_TENSOR_H
 #define SINGLEVALUE_TENSOR_H
 
+#include <limits>
+
 #include <tensor/Tensor.h>
 #include <tensor/TensorIO.h>
 #include <meta/tensor_meta.h>
@@ -227,7 +229,8 @@ T trace(const SingleValueTensor<T,M,M> &a) {
 
 template<typename T, size_t M>
 FASTOR_INLINE T determinant(const SingleValueTensor<T,M,M> &a) {
-    return std::pow(a(0,0),M);
+    // determinant of a single value tensor is 0
+    return 0.;
 }
 
 template<typename T, size_t M, size_t N>
@@ -237,8 +240,8 @@ FASTOR_INLINE double norm(const SingleValueTensor<T,M,N> &a) {
 
 template<typename T, size_t I>
 FASTOR_INLINE Tensor<T,I,I> inverse(const SingleValueTensor<T,I,I> &a) {
-    Tensor<T,I,I> out; Tensor<T,I,I> in(a(0,0));
-    _inverse<T,I>(in.data(),out.data());
+    // A single value tensor is not invertible
+    Tensor<T,I,I> out(std::numeric_limits<T>::quiet_NaN());
     return out;
 }
 
