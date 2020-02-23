@@ -174,7 +174,7 @@ A set of specialised tensors are available that provide optimised tensor algebra
 ~~~c++
 SingleValueTensor<double,20,20,30> a(3.51);
 SingleValueTensor<double,20,30> b(2.76);
-auto c =einsum<Index<0,1,2>,Index<0,3>>(a,b);
+auto c = einsum<Index<0,1,2>,Index<0,3>>(a,b);
 ~~~
 
 This will incur almost no runtime cost. As where if the tensors were of type `Tensor` then a heavy computation would ensue.
