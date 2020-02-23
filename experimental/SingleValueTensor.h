@@ -285,23 +285,24 @@ FASTOR_INLINE Tensor<T,M,N> matmul(const SingleValueTensor<T,M,K> &a, const Tens
 template<typename T, size_t M, size_t K, size_t N>
 FASTOR_INLINE SingleValueTensor<T,M,N> matmul(const SingleValueTensor<T,M,K> &a, const SingleValueTensor<T,K,N> &b) {
 
-    using V = SIMDVector<T,DEFAULT_ABI>;
-
     const T a_value = a(0,0);
     const T b_value = b(0,0);
+    // matmul is just this
+    SingleValueTensor<T,M,N> out(a_value*b_value*K);
 
-    V vec_out;
-    size_t j=0;
-    for (; j<ROUND_DOWN(K,(int)V::Size); j+=V::Size) {
-        vec_out = vec_out + V(a_value)*b_value;
-    }
-    T out_value = 0.;
-    for (; j<K; j++) {
-        out_value += a_value*b_value;
-    }
-    out_value += vec_out.sum();
-    SingleValueTensor<T,M,N> out(out_value);
-
+    // Not necessary
+    // using V = SIMDVector<T,DEFAULT_ABI>;
+    // V vec_out;
+    // size_t j=0;
+    // for (; j<ROUND_DOWN(K,(int)V::Size); j+=V::Size) {
+    //     vec_out = vec_out + V(a_value)*b_value;
+    // }
+    // T out_value = 0.;
+    // for (; j<K; j++) {
+    //     out_value += a_value*b_value;
+    // }
+    // out_value += vec_out.sum();
+    // SingleValueTensor<T,M,N> out(out_value);
 
     return out;
 }
