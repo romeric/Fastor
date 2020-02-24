@@ -8,6 +8,7 @@
 #include "ranges.h"
 #include "ForwardDeclare.h"
 #include "expressions/smart_ops/smart_ops.h"
+#include <tensor/TensorIO.h>
 
 
 namespace Fastor {
@@ -50,6 +51,30 @@ public:
 
 
     // No constructor should be added not even CRTP constructors
+    
+    // Provide generic AbstractTensors copy constructor though
+    template<typename Derived, size_t DIMS>
+    FASTOR_INLINE void operator=(const AbstractTensor<Derived,DIMS>& src_) {
+        const Derived &src = src_.self();
+#ifndef NDEBUG
+        FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        FASTOR_INDEX i;
+        for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
+            src.template eval<T>(i).store(_data+i, IS_ALIGNED);
+        }
+        for (; i < src.size(); ++i) {
+            _data[i] = src.template eval_s<T>(i);
+        }
+    }
+
+    // AbstractTensor and scalar in-place operators
+    //----------------------------------------------------------------------------------------------------------//
+#undef TENSOR_INPLACE_OPERATORS_H
+    #include "TensorInplaceOperators.h"
+#define TENSOR_INPLACE_OPERATORS_H
+    //----------------------------------------------------------------------------------------------------------//
+
 
 
 
@@ -57,6 +82,11 @@ private:
     scalar_type* _data;
     // const scalar_type* _data;
 };
+
+OS_STREAM_TENSOR0(TensorRef)
+OS_STREAM_TENSOR1(TensorRef)
+OS_STREAM_TENSOR2(TensorRef)
+OS_STREAM_TENSORn(TensorRef)
 
 
 }
