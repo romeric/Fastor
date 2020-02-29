@@ -723,7 +723,8 @@ public:
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
         SIMDVector<U,DEFAULT_ABI> _vec;
-        if (S1==1) _vec.load(expr.data()+S0*i*N+S1*j + Padding, false);
+        // if (S1==1) _vec.load(expr.data()+S0*i*N+S1*j + Padding, false);
+        if (S1==1) _vec.load(expr.data()+S0*i*N+j + Padding, false);
         else vector_setter(_vec,expr.data(),S0*i*N+S1*j + Padding,S1);
         return _vec;
     }

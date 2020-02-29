@@ -219,6 +219,9 @@ using DEFAULT_FLOAT_TYPE = double;
 using DFT = DEFAULT_FLOAT_TYPE;
 using FASTOR_VINDEX = volatile size_t;
 
+constexpr int RowMajor = 0;
+constexpr int ColumnMajor = 1;
+
 
 #ifndef NDEBUG
 inline void FASTOR_ASSERT(bool cond, const std::string &x) {

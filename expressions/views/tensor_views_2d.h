@@ -91,6 +91,8 @@ private:
     seq _seq0;
     seq _seq1;
     bool does_alias = false;
+    // std::array<FASTOR_INDEX,2> _dims;
+
 
     constexpr FASTOR_INLINE Tensor<T,M,N> get_tensor() const {return expr;};
     // constexpr FASTOR_INLINE std::array<seq,sizeof...(Rest)> get_sequences() {return _seqs;}
@@ -121,6 +123,7 @@ public:
         FASTOR_ASSERT(_seq0._last <= M && _seq0._first<M,"INDEX OUT OF BOUNDS");
         FASTOR_ASSERT(_seq1._last <= N && _seq1._first<N,"INDEX OUT OF BOUNDS");
 #endif
+        // for (FASTOR_INDEX i=0; i<2; ++i) _dims[i] = dimension(i);
     }
 
     // View evalution operators
@@ -940,8 +943,8 @@ public:
         SIMDVector<U,DEFAULT_ABI> _vec;
         std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
         for (auto j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
-            // auto it = (idx+j) / _seq0.size(), jt = (idx+j) % _seq0.size();
             auto it = (idx+j) / _seq1.size(), jt = (idx+j) % _seq1.size();
+            // auto it = (idx+j) / _dims[1], jt = (idx+j) % _dims[0];
             inds[j] = _seq0._step*it*N+_seq1._step*jt + _seq0._first*N + _seq1._first;
         }
         vector_setter(_vec,expr.data(),inds);
@@ -951,7 +954,8 @@ public:
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
         SIMDVector<U,DEFAULT_ABI> _vec;
-        if (_seq1._step==1) _vec.load(expr.data()+_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,false);
+        if (_seq1._step==1) _vec.load(expr.data()+_seq0._step*i*N+j + _seq0._first*N + _seq1._first,false);
+        // if (_seq1._step==1) _vec.load(expr.data()+_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,false);
         else vector_setter(_vec,expr.data(),_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,_seq1._step);
         return _vec;
     }

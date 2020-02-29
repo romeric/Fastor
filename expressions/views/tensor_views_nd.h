@@ -68,7 +68,7 @@ public:
             int remaining = size();
             for (int n = 0; n < DIMS; ++n) {
                 remaining /= _dims[n];
-                as[n] = ( (idx+j) / remaining ) % _dims[n];
+                as[n] = ( int(idx+j) / remaining ) % _dims[n];
             }
             inds[j] = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -87,7 +87,7 @@ public:
         int remaining = size();
         for (int n = 0; n < DIMS; ++n) {
             remaining /= _dims[n];
-            as[n] = ( idx / remaining ) % _dims[n];
+            as[n] = ( (int)idx / remaining ) % _dims[n];
         }
         int ind = 0;
         for(int it = 0; it< DIMS; it++) {
@@ -110,7 +110,7 @@ public:
             int remaining = size();
             for (int n = 0; n < DIMS; ++n) {
                 remaining /= _dims[n];
-                as[n] = ( (idx+j) / remaining ) % _dims[n];
+                as[n] = ( int(idx+j) / remaining ) % _dims[n];
             }
             inds[j] = 0;
             for(int it = 0; it< DIMS; it++) {
@@ -130,7 +130,7 @@ public:
         int remaining = size();
         for (int n = 0; n < DIMS; ++n) {
             remaining /= _dims[n];
-            as[n] = ( idx / remaining ) % _dims[n];
+            as[n] = ( (int)idx / remaining ) % _dims[n];
         }
         int ind = 0;
         for(int it = 0; it< DIMS; it++) {
