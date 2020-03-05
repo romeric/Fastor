@@ -61,6 +61,18 @@ public:
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return expr(S0*i+F0,S1*j+F1);
     }
+
+    template<typename U=T>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,2>& as) const {
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        vector_setter(_vec,expr.data(),S0*as[0]*N+S1*as[1] + Padding,S1);
+        return _vec;
+    }
+
+    template<typename U=T>
+    constexpr FASTOR_INLINE U teval_s(const std::array<int,2>& as) const {
+        return expr(S0*as[0]+F0,S1*as[1]+F1);
+    }
 };
 
 
@@ -612,7 +624,7 @@ public:
             FASTOR_INDEX j;
             for (j = 0; j <ROUND_DOWN(dimension(1),Stride); j+=Stride) {
                 auto _vec = this->template eval<T>(i,j) + _vec_other;
-                data_setter(_data,_vec_other,S0*i*N+S1*j+Padding,S1);
+                data_setter(_data,_vec,S0*i*N+S1*j+Padding,S1);
             }
             for (; j <dimension(1); ++j) {
                 expr(S0*i+F0,S1*j+F1) += num;
@@ -636,7 +648,7 @@ public:
             FASTOR_INDEX j;
             for (j = 0; j <ROUND_DOWN(dimension(1),Stride); j+=Stride) {
                 auto _vec = this->template eval<T>(i,j) - _vec_other;
-                data_setter(_data,_vec_other,S0*i*N+S1*j+Padding,S1);
+                data_setter(_data,_vec,S0*i*N+S1*j+Padding,S1);
             }
             for (; j <dimension(1); ++j) {
                 expr(S0*i+F0,S1*j+F1) -= num;
@@ -660,7 +672,7 @@ public:
             FASTOR_INDEX j;
             for (j = 0; j <ROUND_DOWN(dimension(1),Stride); j+=Stride) {
                 auto _vec = this->template eval<T>(i,j) * _vec_other;
-                data_setter(_data,_vec_other,S0*i*N+S1*j+Padding,S1);
+                data_setter(_data,_vec,S0*i*N+S1*j+Padding,S1);
             }
             for (; j <dimension(1); ++j) {
                 expr(S0*i+F0,S1*j+F1) *= num;
@@ -685,7 +697,7 @@ public:
             FASTOR_INDEX j;
             for (j = 0; j <ROUND_DOWN(dimension(1),Stride); j+=Stride) {
                 auto _vec = this->template eval<T>(i,j) * _vec_other;
-                data_setter(_data,_vec_other,S0*i*N+S1*j+Padding,S1);
+                data_setter(_data,_vec,S0*i*N+S1*j+Padding,S1);
             }
             for (; j <dimension(1); ++j) {
                 expr(S0*i+F0,S1*j+F1) *= inum;

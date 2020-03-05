@@ -133,15 +133,15 @@ FASTOR_INLINE void reverse() {
 FASTOR_INLINE T sum() const {
 
     if ((Size==0) || (Size==1)) return _data[0];
-
     using V = SIMDVector<T,DEFAULT_ABI>;
-    constexpr int unroll_upto = V::unroll_size(Size);
-    constexpr int stride = V::Size;
-    int i = 0;
 
     V vec =static_cast<T>(0);
-    for (; i< unroll_upto; i+=stride) {
-        vec += V(_data+i);
+    V _vec_in;
+    FASTOR_INDEX i = 0;
+    for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
+        _vec_in.load(&_data[i],false);
+        // vec += V(_data+i,false);
+        vec += _vec_in;
     }
     T scalar = static_cast<T>(0);
     for (; i< Size; ++i) {

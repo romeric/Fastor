@@ -44,7 +44,7 @@ void run() {
         a4(fseq<0,2>(),fseq<1,5,2>()) *=10;
         FASTOR_EXIT_ASSERT(abs(a4.sum() + 23107.5) < Tol);
         a4(fseq<first,last>(),fseq<first,last>()) *=a4;
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 139586878.125) < 2); // SP gives a large difference
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 139586878.125) < 20); // SP gives a large difference
         a4(fall,fall) /=a4;
         FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol);
 
@@ -53,19 +53,19 @@ void run() {
         decltype(a4) a5; a5.iota(12);
         a4.ones();
         a4(fall,fall) += a5(fall,fall);
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 300.) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 300.) < Tol);
         a4(fall,fall) -= a5(fall,fall);
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol);
         a4(fseq<0,2>(),fseq<0,2>()) *= a5(fseq<1,3>{},fseq<2,4>());
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 99.) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 99.) < Tol);
         a4(fseq<0,2>{},fseq<0,2>()) /= a5(fseq<1,3>{},fseq<2,4>());
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol);
 
         // Check overlap - fseq does not allow overlap
         a4(all,all) = a4(all,all);
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol);
         a4(all,all).noalias() = a4(all,all);
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol);
 
         print(FGRN(BOLD("All tests passed successfully")));
     }

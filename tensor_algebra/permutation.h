@@ -73,8 +73,8 @@ struct RecursiveCartesianPerm<Index<Idx...>, Tensor<T,Rest...>,Last>
 
     static void Do(const T *a_data, T *out_data, std::array<int,out_dim> &as, std::array<int,out_dim> &idx)
     {
-        constexpr int stride = 1;
-        for (int i=0; i<Last; i+=stride) {
+        constexpr size_t stride = 1;
+        for (size_t i=0; i<Last; i+=stride) {
             idx[0] = i;
             std::reverse_copy(idx.begin(),idx.end(),as.begin());
 
@@ -286,8 +286,8 @@ struct extractor_perm<Index<Idx...> > {
             typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type;
         using maxes_out_type = typename permute_impl<T,Index<Idx...>, tensor_type,
             typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type;
-        using index_type = typename permute_impl<T,Index<Idx...>, tensor_type,
-            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type;
+        // using index_type = typename permute_impl<T,Index<Idx...>, tensor_type,
+            // typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type;
         constexpr auto& maxes_idx = permute_impl<T,Index<Idx...>, tensor_type,
             typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type::_IndexHolder;
         constexpr auto& maxes_out = permute_impl<T,Index<Idx...>, tensor_type,

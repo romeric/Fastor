@@ -4,6 +4,7 @@ using namespace Fastor;
 
 #define Tol 1e-12
 #define BigTol 1e-5
+#define HugeTol 1e-2
 
 template<typename T>
 void run() {
@@ -18,21 +19,21 @@ void run() {
         // Views
         // Assignment to views
         r1(all,0,all,all,3) = -1234;
-        FASTOR_EXIT_ASSERT(abs(norm(r1) - 8491.192377) < BigTol);
+        FASTOR_EXIT_ASSERT(abs(norm(r1) - 8491.192377) < HugeTol);
 
         r1.iota();
         r1(seq(0,3),0,seq(0,-1),seq(0,4,1),3) = -1234;
-        FASTOR_EXIT_ASSERT(abs(norm(r1) - 8491.192377) < BigTol);
+        FASTOR_EXIT_ASSERT(abs(norm(r1) - 8491.192377) < HugeTol);
 
         // other operators
         r1(seq(0,3,2),all,1,seq(1,4,3),4) += 1234;
-        FASTOR_EXIT_ASSERT(abs(norm(r1) - 9444.503) < 1e-3);
+        FASTOR_EXIT_ASSERT(abs(norm(r1) - 9444.503) < HugeTol);
         r1(seq(0,3,2),all,1,seq(1,4,3),4) -= 1234;
-        FASTOR_EXIT_ASSERT(abs(norm(r1) - 8491.192377) < BigTol);
+        FASTOR_EXIT_ASSERT(abs(norm(r1) - 8491.192377) < HugeTol);
         r1(seq(0,3,2),0,1,seq(1,4,3),4) *= 12;
-        FASTOR_EXIT_ASSERT(abs(norm(r1) - 9467.742) < 1e-3);
+        FASTOR_EXIT_ASSERT(abs(norm(r1) - 9467.742) < HugeTol);
         r1(seq(0,3,2),0,1,seq(1,4,3),4) /= 12;
-        FASTOR_EXIT_ASSERT(abs(norm(r1) - 8491.192377) < BigTol);
+        FASTOR_EXIT_ASSERT(abs(norm(r1) - 8491.192377) < HugeTol);
 
 
         // Check construction from views
@@ -40,15 +41,15 @@ void run() {
         decltype(r2) r3 = r2(all,all,all);
         FASTOR_EXIT_ASSERT(abs(norm(r2) - norm(r3)) < Tol);
         r3 = 2*r2(all,seq(0,-1),seq(0,5))/12 + 5;
-        FASTOR_EXIT_ASSERT(abs(norm(r3) - 170.560351) < 1e-3);
+        FASTOR_EXIT_ASSERT(abs(norm(r3) - 170.560351) < HugeTol);
         r3 += -3*r3(all,all,all) - 15;
-        FASTOR_EXIT_ASSERT(abs(norm(r3) - 441.462) < 1e-3);
+        FASTOR_EXIT_ASSERT(abs(norm(r3) - 441.462) < HugeTol);
         r3 -= -3*r3(all,all,all) - 15;
-        FASTOR_EXIT_ASSERT(abs(norm(r3) - 1665.45439) < 1e-3);
+        FASTOR_EXIT_ASSERT(abs(norm(r3) - 1665.45439) < HugeTol);
         r3 *= r2/5 - 6*r3(all,all,all) + r2(all,all,all);
         FASTOR_EXIT_ASSERT(abs(norm(r3) -  2753466.75326) < 0.5);
         r3 /= r2/5 - 6*r3(all,all,all) / r2(all,all,all);
-        FASTOR_EXIT_ASSERT(abs(norm(r3) -  137.001) < 1e-2);
+        FASTOR_EXIT_ASSERT(abs(norm(r3) -  137.001) < HugeTol);
 
         // Assigning to a view from numbers/tensors/views
         r3(seq(0,-1,1),all,seq(0,5)) = 2;
@@ -91,9 +92,9 @@ void run() {
 
         // Check overlap
         r3 = r2;
-        FASTOR_EXIT_ASSERT(abs(norm(r2) - norm(r3)) < BigTol);
+        FASTOR_EXIT_ASSERT(abs(norm(r2) - norm(r3)) < HugeTol);
         r3(all,all,seq(1,3)) = 2*r3(all,all,seq(1,3)); // Perfect overlapping does not require noalias()
-        FASTOR_EXIT_ASSERT(abs(norm(r3) - 1218.00862) < 1e-3);
+        FASTOR_EXIT_ASSERT(abs(norm(r3) - 1218.00862) < 0.5);
         r3(all,all,seq(1,3)).noalias() = r3(all,all,seq(1,3)); // Check with noalias() nevertheless
         FASTOR_EXIT_ASSERT(abs(norm(r3) - 1218.00862) < 1e-3);
         r3(all,all,seq(1,3)).noalias() = r3(all,all,seq(0,2));
@@ -103,11 +104,11 @@ void run() {
         r3(all,all,seq(1,3)).noalias() -= r3(all,all,seq(0,2));
         FASTOR_EXIT_ASSERT(abs(norm(r3) - 821.7061518) < 1e-3);
         r3(seq(0,2),all,seq(1,3)).noalias() *= r3(seq(1,3),all,seq(0,2));
-        FASTOR_EXIT_ASSERT(abs(norm(r3) - 50891.812966) < 1e-2);
+        FASTOR_EXIT_ASSERT(abs(norm(r3) - 50891.812966) < HugeTol);
         r3(0,all,all).noalias() /= r3(0,all,all); // perfect overlap noalias not required
-        FASTOR_EXIT_ASSERT(abs(norm(r3) - 40141.5219) < 1e-2);
+        FASTOR_EXIT_ASSERT(abs(norm(r3) - 40141.5219) < HugeTol);
         r3(all,seq(0,2),seq(first,last)).noalias() /= r3(all,seq(1,3),all);
-        FASTOR_EXIT_ASSERT(abs(norm(r3) - 24950.50328) < 1e-2);
+        FASTOR_EXIT_ASSERT(abs(norm(r3) - 24950.50328) < HugeTol);
 
 
         // Check scanning

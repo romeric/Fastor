@@ -1,5 +1,5 @@
 #ifndef FORWARD_DECLARE_H
-#define FORWARD_DECLARE_H 
+#define FORWARD_DECLARE_H
 
 
 namespace Fastor {
@@ -88,6 +88,15 @@ struct TensorFixedViewExpr2D;
 
 template<typename Expr, typename Seq0, typename Seq1, size_t DIMS>
 struct TensorConstFixedViewExpr2D;
+
+template <FASTOR_INDEX ... All>
+struct Index;
+
+template<class Idx, class Seq>
+struct nprods;
+
+template<class Idx, class Seq>
+struct nprods_views;
 //----------------------------------------------------------------
 
 }

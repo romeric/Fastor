@@ -115,30 +115,60 @@ public:
     }
     template<typename U=T>
     FASTOR_INLINE T eval_s(FASTOR_INDEX i) const {
-    #ifdef BOUNDSCHECK
+#ifdef BOUNDSCHECK
         // This is a generic evaluator and not for 1D cases only
         FASTOR_ASSERT((i>=0 && i<Size), "INDEX OUT OF BOUNDS");
-    #endif
+#endif
         return _data[0];
     }
     template<typename U=T>
     FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
         static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
         constexpr int N = get_value<2,Rest...>::value;
-    #ifdef BOUNDSCHECK
+#ifdef BOUNDSCHECK
         constexpr int M = get_value<1,Rest...>::value;
         FASTOR_ASSERT((i>=0 && i<M && j>=0 && j<N), "INDEX OUT OF BOUNDS");
-    #endif
+#endif
         return SIMDVector<T,DEFAULT_ABI>(_data[0]);
     }
     template<typename U=T>
     FASTOR_INLINE T eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
-    #ifdef BOUNDSCHECK
+#ifdef BOUNDSCHECK
         constexpr int M = get_value<1,Rest...>::value;
         constexpr int N = get_value<2,Rest...>::value;
         FASTOR_ASSERT((i>=0 && i<M && j>=0 && j<N), "INDEX OUT OF BOUNDS");
-    #endif
+#endif
+        return _data[0];
+    }
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,Dimension> &as) const {
+#ifdef BOUNDSCHECK
+        constexpr std::array<size_t,Dimension> products_ = nprods_views<Index<Rest...>,
+            typename std_ext::make_index_sequence<Dimension>::type>::values;
+
+        int index = 0;
+        for (int i=0; i<Dimension; ++i) {
+            index += products_[i]*as[i];
+        }
+        // This is a generic evaluator and not for 1D cases only
+        FASTOR_ASSERT((index>=0 && index<Size), "INDEX OUT OF BOUNDS");
+#endif
+        return SIMDVector<T,DEFAULT_ABI>(_data[0]);
+    }
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,Dimension> &as) const {
+#ifdef BOUNDSCHECK
+        constexpr std::array<size_t,Dimension> products_ = nprods_views<Index<Rest...>,
+            typename std_ext::make_index_sequence<Dimension>::type>::values;
+
+        int index = 0;
+        for (int i=0; i<Dimension; ++i) {
+            index += products_[i]*as[i];
+        }
+        // This is a generic evaluator and not for 1D cases only
+        FASTOR_ASSERT((index>=0 && index<Size), "INDEX OUT OF BOUNDS");
+#endif
         return _data[0];
     }
 

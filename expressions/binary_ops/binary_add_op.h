@@ -162,6 +162,56 @@ public:
     FASTOR_INLINE U helper_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return lhs.template eval_s<U>(i,j) + (U)rhs;
     }
+
+    // for nD tensors
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return thelper<TLhs,TRhs,U>(as);
+    }
+
+    template<typename LExpr, typename RExpr, typename U,
+           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
+                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> thelper(const std::array<int,DIM0> &as) const {
+        return lhs.template teval<U>(as) + rhs.template teval<U>(as);
+    }
+    template<typename LExpr, typename RExpr, typename U,
+           typename std::enable_if<std::is_arithmetic<LExpr>::value &&
+                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> thelper(const std::array<int,DIM0> &as) const {
+        return (U)lhs + rhs.template teval<U>(as);
+    }
+    template<typename LExpr, typename RExpr, typename U,
+           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
+                                   std::is_arithmetic<RExpr>::value,bool>::type = 0>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> thelper(const std::array<int,DIM0> &as) const {
+        return lhs.template teval<U>(as) + (U)rhs;
+    }
+
+    // scalar based (for nD tensors)
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return thelper_s<TLhs,TRhs,U>(as);
+    }
+
+    template<typename LExpr, typename RExpr, typename U,
+           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
+                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+    FASTOR_INLINE U thelper_s(const std::array<int,DIM0> &as) const {
+        return lhs.template teval_s<U>(as) + rhs.template teval_s<U>(as);
+    }
+    template<typename LExpr, typename RExpr, typename U,
+           typename std::enable_if<std::is_arithmetic<LExpr>::value &&
+                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+    FASTOR_INLINE U thelper_s(const std::array<int,DIM0> &as) const {
+        return (U)lhs + rhs.template teval_s<U>(as);
+    }
+    template<typename LExpr, typename RExpr, typename U,
+           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
+                                   std::is_arithmetic<RExpr>::value,bool>::type = 0>
+    FASTOR_INLINE U thelper_s(const std::array<int,DIM0> &as) const {
+        return lhs.template teval_s<U>(as) + (U)rhs;
+    }
 };
 
 template<typename TLhs, typename TRhs, size_t DIM0,

@@ -8,6 +8,7 @@
 #include "ranges.h"
 #include "ForwardDeclare.h"
 #include "expressions/smart_ops/smart_ops.h"
+#include "meta/tensor_pre_meta.h"
 
 namespace Fastor {
 
@@ -149,37 +150,8 @@ public:
     // CRTP constructors
     //----------------------------------------------------------------------------------------------------------//
     //----------------------------------------------------------------------------------------------------------//
-    // Generate both copy constructor and copy assignment operator, for validity and safety reasons
-    // that expressions are evaluated directly into this
-    template<typename Derived>
-    FASTOR_INLINE Tensor(const AbstractTensor<Derived,sizeof...(Rest)>& src_) {
-        verify_dimensions(src_);
-        const Derived &src = src_.self();
-        FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
-            src.template eval<T>(i).store(_data+i, IS_ALIGNED);
-        }
-        for (; i < src.size(); ++i) {
-            _data[i] = src.template eval_s<T>(i);
-        }
-    }
-
-    template<typename Derived>
-    FASTOR_INLINE Tensor<T,Rest...>& operator=(const AbstractTensor<Derived,sizeof...(Rest)>& src_) {
-        verify_dimensions(src_);
-        const Derived &src = src_.self();
-        FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
-            src.template eval<T>(i).store(_data+i, IS_ALIGNED);
-        }
-        for (; i < src.size(); ++i) {
-            _data[i] = src.template eval_s<T>(i);
-        }
-        return *this;
-    }
-
     // Generic AbstractTensors
-    template<typename Derived, size_t DIMS, typename std::enable_if<DIMS!=sizeof...(Rest),bool>::type=0>
+    template<typename Derived, size_t DIMS, typename std::enable_if<!has_tensor_view<Derived>::value || DIMS!=sizeof...(Rest),bool>::type=0>
     FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
         const Derived &src = src_.self();
 #ifndef NDEBUG
@@ -194,7 +166,7 @@ public:
         }
     }
 
-    template<typename Derived, size_t DIMS, typename std::enable_if<DIMS!=sizeof...(Rest),bool>::type=0>
+    template<typename Derived, size_t DIMS, typename std::enable_if<!has_tensor_view<Derived>::value || DIMS!=sizeof...(Rest),bool>::type=0>
     FASTOR_INLINE Tensor<T,Rest...>& operator=(const AbstractTensor<Derived,DIMS>& src_) {
         const Derived &src = src_.self();
 #ifndef NDEBUG

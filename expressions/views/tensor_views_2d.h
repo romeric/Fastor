@@ -68,6 +68,19 @@ public:
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first);
     }
+
+    template<typename U=T>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,2>& as) const {
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        if (_seq1._step==1) _vec.load(expr.data()+_seq0._step*as[0]*N+as[1] + _seq0._first*N + _seq1._first,false);
+        else vector_setter(_vec,expr.data(),_seq0._step*as[0]*N+_seq1._step*as[1] + _seq0._first*N + _seq1._first,_seq1._step);
+        return _vec;
+    }
+
+    template<typename U=T>
+    constexpr FASTOR_INLINE U teval_s(const std::array<int,2>& as) const {
+        return expr(_seq0._step*as[0]+_seq0._first,_seq1._step*as[1]+_seq1._first);
+    }
 };
 
 
@@ -849,7 +862,7 @@ public:
             FASTOR_INDEX j;
             for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                 auto _vec = this->template eval<T>(i,j) + _vec_other;
-                data_setter(_data,_vec_other,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
+                data_setter(_data,_vec,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
             }
             for (; j <_seq1.size(); ++j) {
                 expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) += num;
@@ -873,7 +886,7 @@ public:
             FASTOR_INDEX j;
             for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                 auto _vec = this->template eval<T>(i,j) - _vec_other;
-                data_setter(_data,_vec_other,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
+                data_setter(_data,_vec,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
             }
             for (; j <_seq1.size(); ++j) {
                 expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) -= num;
@@ -897,7 +910,7 @@ public:
             FASTOR_INDEX j;
             for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                 auto _vec = this->template eval<T>(i,j) * _vec_other;
-                data_setter(_data,_vec_other,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
+                data_setter(_data,_vec,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
             }
             for (; j <_seq1.size(); ++j) {
                 expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) *= num;
@@ -922,7 +935,7 @@ public:
             FASTOR_INDEX j;
             for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                 auto _vec = this->template eval<T>(i,j) * _vec_other;
-                data_setter(_data,_vec_other,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
+                data_setter(_data,_vec,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
             }
             for (; j <_seq1.size(); ++j) {
                 expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) *= inum;
@@ -970,6 +983,19 @@ public:
     template<typename U=T>
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first);
+    }
+
+    template<typename U=T>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,2>& as) const {
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        if (_seq1._step==1) _vec.load(expr.data()+_seq0._step*as[0]*N+as[1] + _seq0._first*N + _seq1._first,false);
+        else vector_setter(_vec,expr.data(),_seq0._step*as[0]*N+_seq1._step*as[1] + _seq0._first*N + _seq1._first,_seq1._step);
+        return _vec;
+    }
+
+    template<typename U=T>
+    constexpr FASTOR_INLINE U teval_s(const std::array<int,2>& as) const {
+        return expr(_seq0._step*as[0]+_seq0._first,_seq1._step*as[1]+_seq1._first);
     }
 
 };

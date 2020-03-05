@@ -12,7 +12,26 @@ namespace Fastor {
 
 template<typename T, size_t M, size_t N>
 FASTOR_HINT_INLINE void _adjoint(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT out) {
-    assert(false && "METHOD NOT YET IMPLEMENTED");
+    if (M==2 && N==2) {
+        out[0] = a[3];
+        out[1] = -a[1];
+        out[2] = -a[2];
+        out[3] = a[0];
+    }
+    else if (M==3 && N==3) {
+        out[0] =  (a[4]*a[8] - a[7]*a[5]);
+        out[1] = -(a[1]*a[8] - a[7]*a[2]);
+        out[2] =  (a[1]*a[5] - a[4]*a[2]);
+        out[3] = -(a[3]*a[8] - a[6]*a[5]);
+        out[4] =  (a[0]*a[8] - a[6]*a[2]);
+        out[5] = -(a[0]*a[5] - a[3]*a[2]);
+        out[6] =  (a[3]*a[7] - a[6]*a[4]);
+        out[7] = -(a[0]*a[7] - a[6]*a[1]);
+        out[8] =  (a[0]*a[4] - a[3]*a[1]);
+    }
+    else {
+        assert(false && "METHOD NOT YET IMPLEMENTED");
+    }
 }
 
 #ifdef __SSE4_2__

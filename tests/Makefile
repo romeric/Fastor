@@ -42,6 +42,7 @@ test_views:
 
 	$(CXX) test_views_nd.cpp -o test_views_nd.exe $(CXX_FLAGS) $(INCLUDES)
 	$(CXX) test_views_nd.cpp -o test_views_nd_vec.exe $(CXX_FLAGS) $(INCLUDES) -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
+	$(CXX) test_views_nd_2.cpp -o test_views_nd_2.exe $(CXX_FLAGS) $(INCLUDES)
 
 	$(CXX) test_fixed_views_1d.cpp -o test_fixed_views_1d.exe $(CXX_FLAGS) $(INCLUDES)
 	$(CXX) test_fixed_views_1d.cpp -o test_fixed_views_1d_vec.exe $(CXX_FLAGS) $(INCLUDES) -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -59,20 +60,35 @@ test_complex_expressions:
 	$(CXX) test_complex_expressions.cpp -o test_complex_expressions.exe $(CXX_FLAGS) $(INCLUDES)
 	$(CXX) test_complex_expressions.cpp -o test_complex_expressions_vec.exe $(CXX_FLAGS) $(INCLUDES) -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
 
-run:
+
+
+run: run_auxiliary run_simd_vectors run_basics run_linalg run_einsum run_views run_complex_expressions
+
+run_auxiliary:
 	./test_auxiliary.exe
+
+run_simd_vectors:
 	./test_simd_vectors.exe
+
+run_basics:
 	./test_basics.exe
+
+run_linalg:
 	./test_linalg.exe
+
+run_einsum:
 	./test_einsum_0.exe
 	./test_einsum_1.exe
 	./test_einsum_2.exe
+
+run_views:
 	./test_views_1d.exe
 	./test_views_1d_vec.exe
 	./test_views_2d.exe
 	./test_views_2d_vec.exe
 	./test_views_nd.exe
 	./test_views_nd_vec.exe
+	./test_views_nd_2.exe
 	./test_fixed_views_1d.exe
 	./test_fixed_views_1d_vec.exe
 	./test_fixed_views_2d.exe
@@ -81,8 +97,12 @@ run:
 	./test_random_views_1d_vec.exe
 	./test_random_views_nd.exe
 	./test_random_views_nd_vec.exe
+
+run_complex_expressions:
 	./test_complex_expressions.exe
 	./test_complex_expressions_vec.exe
+
+
 
 clean:
 	rm -rf *.exe

@@ -17,7 +17,7 @@ struct TensorConstFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1> :
     public AbstractTensor<TensorConstFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1>,1> {
 private:
     const Tensor<T,N> &expr;
-public: 
+public:
     using scalar_type = T;
     static constexpr FASTOR_INDEX Dimension = 1;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
@@ -32,7 +32,7 @@ public:
 
     template<typename U>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
+        SIMDVector<U,DEFAULT_ABI> _vec;
         vector_setter(_vec,expr.data(),S0*i+F0,S0);
         return _vec;
     }
@@ -44,7 +44,7 @@ public:
 
     template<typename U>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
+        SIMDVector<U,DEFAULT_ABI> _vec;
         vector_setter(_vec,expr.data(),S0*(i+j)+F0,S0);
         return _vec;
     }
@@ -52,6 +52,18 @@ public:
     template<typename U>
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return expr.data()[S0*(i+j)+F0];
+    }
+
+    template<typename U=T>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,1>& as) const {
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        vector_setter(_vec,expr.data(),S0*as[0]+F0,S0);
+        return _vec;
+    }
+
+    template<typename U=T>
+    constexpr FASTOR_INLINE U teval_s(const std::array<int,1>& as) const {
+        return expr.data()[S0*as[0]+F0];
     }
 };
 
@@ -66,7 +78,7 @@ struct TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1> :
     public AbstractTensor<TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1>,1> {
 private:
     Tensor<T,N> &expr;
-public: 
+public:
     using scalar_type = T;
     static constexpr FASTOR_INDEX Dimension = 1;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
@@ -460,7 +472,7 @@ public:
 
     template<typename U>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
+        SIMDVector<U,DEFAULT_ABI> _vec;
         vector_setter(_vec,expr.data(),S0*i+F0,S0);
         return _vec;
     }
@@ -472,7 +484,7 @@ public:
 
     template<typename U>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
+        SIMDVector<U,DEFAULT_ABI> _vec;
         vector_setter(_vec,expr.data(),S0*(i+j)+F0,S0);
         return _vec;
     }
@@ -481,10 +493,22 @@ public:
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return expr.data()[S0*(i+j)+F0];
     }
+
+    template<typename U=T>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,1>& as) const {
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        vector_setter(_vec,expr.data(),S0*as[0]+F0,S0);
+        return _vec;
+    }
+
+    template<typename U=T>
+    constexpr FASTOR_INLINE U teval_s(const std::array<int,1>& as) const {
+        return expr.data()[S0*as[0]+F0];
+    }
 };
 
 
-} 
+}
 
 
 #endif // TENSOR_FIXED_VIEWS_1D_H

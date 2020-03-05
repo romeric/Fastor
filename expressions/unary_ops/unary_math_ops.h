@@ -39,6 +39,14 @@ public:
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return expr.template eval_s<U>(i,j);
     }
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return expr.template teval<U>(as);
+    }
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return expr.template teval_s<U>(as);
+    }
 };
 
 template<typename Expr, size_t DIM0,
@@ -77,6 +85,14 @@ public:
     template<typename U=scalar_type>
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return -expr.template eval_s<U>(i,j);
+    }
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return -expr.template teval<U>(as);
+    }
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return -expr.template teval_s<U>(as);
     }
 };
 
@@ -117,6 +133,14 @@ public:
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return std::abs(expr.template eval_s<U>(i,j));
     }
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return abs(expr.template teval<U>(as));
+    }
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return std::abs(expr.template teval_s<U>(as));
+    }
 };
 
 template<typename Expr, size_t DIM0,
@@ -148,7 +172,7 @@ public:
     }
     template<typename U=scalar_type>
     FASTOR_INLINE U eval_s(FASTOR_INDEX i) const {
-        return std::sqrt(expr.template eval_s<U>(i));
+        return sqrts(expr.template eval_s<U>(i));
     }
     template<typename U=scalar_type>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
@@ -157,6 +181,14 @@ public:
     template<typename U=scalar_type>
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return sqrts(expr.template eval_s<U>(i,j));
+    }
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return sqrt(expr.template teval<U>(as));
+    }
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return sqrts(expr.template teval_s<U>(as));
     }
 };
 
@@ -199,6 +231,14 @@ public:
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return std::exp(expr.template eval_s<U>(i,j));
     }
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return exp(expr.template teval<U>(as));
+    }
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return std::exp(expr.template teval_s<U>(as));
+    }
 };
 
 template<typename Expr, size_t DIM0,
@@ -236,6 +276,14 @@ public:
     template<typename U=scalar_type>
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return std::log(expr.template eval_s<U>(i,j));
+    }
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return log(expr.template teval<U>(as));
+    }
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return std::log(expr.template teval_s<U>(as));
     }
 };
 
@@ -277,6 +325,14 @@ public:
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return std::sin(expr.template eval_s<U>(i,j));
     }
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return sin(expr.template teval<U>(as));
+    }
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return std::sin(expr.template teval_s<U>(as));
+    }
 };
 
 template<typename Expr, size_t DIM0,
@@ -316,6 +372,14 @@ public:
     template<typename U=scalar_type>
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return std::cos(expr.template eval_s<U>(i,j));
+    }
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return cos(expr.template teval<U>(as));
+    }
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return std::cos(expr.template teval_s<U>(as));
     }
 };
 
@@ -357,6 +421,14 @@ public:
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return std::tan(expr.template eval_s<U>(i,j));
     }
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return tan(expr.template teval<U>(as));
+    }
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return std::tan(expr.template teval_s<U>(as));
+    }
 };
 
 template<typename Expr, size_t DIM0,
@@ -396,6 +468,14 @@ public:
     template<typename U=scalar_type>
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return std::asin(expr.template eval_s<U>(i,j));
+    }
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return asin(expr.template teval<U>(as));
+    }
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return std::asin(expr.template teval_s<U>(as));
     }
 };
 
@@ -437,6 +517,14 @@ public:
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return std::acos(expr.template eval_s<U>(i,j));
     }
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return acos(expr.template teval<U>(as));
+    }
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return std::acos(expr.template teval_s<U>(as));
+    }
 };
 
 template<typename Expr, size_t DIM0,
@@ -476,6 +564,14 @@ public:
     template<typename U=scalar_type>
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return std::atan(expr.template eval_s<U>(i,j));
+    }
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return atan(expr.template teval<U>(as));
+    }
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return std::atan(expr.template teval_s<U>(as));
     }
 };
 
@@ -517,6 +613,14 @@ public:
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return std::sinh(expr.template eval_s<U>(i,j));
     }
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return sinh(expr.template teval<U>(as));
+    }
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return std::sinh(expr.template teval_s<U>(as));
+    }
 };
 
 template<typename Expr, size_t DIM0,
@@ -557,6 +661,14 @@ public:
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return std::cosh(expr.template eval_s<U>(i,j));
     }
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return cosh(expr.template teval<U>(as));
+    }
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return std::cosh(expr.template teval_s<U>(as));
+    }
 };
 
 template<typename Expr, size_t DIM0,
@@ -596,6 +708,14 @@ public:
     template<typename U=scalar_type>
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return std::tanh(expr.template eval_s<U>(i,j));
+    }
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return tanh(expr.template teval<U>(as));
+    }
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return std::tanh(expr.template teval_s<U>(as));
     }
 };
 

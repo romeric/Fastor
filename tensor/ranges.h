@@ -57,6 +57,9 @@ struct seq {
     constexpr FASTOR_INLINE bool operator==(seq other) const {
         return (_first==other._first && _last==other._last && _step==other._step) ? true : false;
     }
+    constexpr FASTOR_INLINE bool operator!=(seq other) const {
+        return (_first!=other._first || _last!=other._last || _step!=other._step) ? true : false;
+    }
 
 };
 

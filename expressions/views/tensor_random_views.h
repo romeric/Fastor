@@ -9,7 +9,7 @@ namespace Fastor {
 // Const versions
 //----------------------------------------------------------------------------------//
 template<typename T, size_t N, typename Int, size_t IterSize>
-struct TensorConstRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>: 
+struct TensorConstRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>:
     public AbstractTensor<TensorConstRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>,1> {
 private:
     const Tensor<T,N> &expr;
@@ -54,21 +54,36 @@ public:
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return expr(it_expr(i+j));
     }
+
+    template<typename U=T>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,1>& as) const {
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        std::array<int,SIMDVector<T,DEFAULT_ABI>::Size> inds;
+        for (FASTOR_INDEX j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j)
+            inds[j] = it_expr.data()[as[0]+j];
+        vector_setter(_vec,expr.data(),inds);
+        return _vec;
+    }
+
+    template<typename U=T>
+    constexpr FASTOR_INLINE U teval_s(const std::array<int,1>& as) const {
+        return expr.data()[it_expr.data()[as[0]]];
+    }
 };
 
 
 //----------------------------------------------------------------------------------//
 template<typename T, size_t ... Rest, typename Int, size_t ... IterSizes, size_t DIMS>
-struct TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>: 
+struct TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>:
     public AbstractTensor<TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>,DIMS> {
 private:
     const Tensor<T,Rest...> &expr;
-    // The index tensor needs to be copied for the purpose of indexing a 
-    // multidimensional tensor with multiple 1D or any other lower other 
+    // The index tensor needs to be copied for the purpose of indexing a
+    // multidimensional tensor with multiple 1D or any other lower other
     // tensors. This issue could be solved by providing another type parameter/flag
     // such as CopyIndex to the class which would use std::conditional to choose
-    // between "const Tensor<Int,IterSizes...> &" and "Tensor<Int,IterSizes...>"  
-    
+    // between "const Tensor<Int,IterSizes...> &" and "Tensor<Int,IterSizes...>"
+
     // const Tensor<Int,IterSizes...> &it_expr;
     Tensor<Int,IterSizes...> it_expr;
 public:
@@ -79,7 +94,7 @@ public:
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return prod<IterSizes...>::value;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return it_expr.dimension(i);}
 
-    constexpr FASTOR_INLINE TensorConstRandomViewExpr(const Tensor<T,Rest...> &_ex, 
+    constexpr FASTOR_INLINE TensorConstRandomViewExpr(const Tensor<T,Rest...> &_ex,
         const Tensor<Int,IterSizes...> &_it) : expr(_ex), it_expr(_it) {
         static_assert(sizeof...(Rest)==DIMS && sizeof...(IterSizes)==DIMS, "INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     }
@@ -115,6 +130,23 @@ public:
         return expr.data()[it_expr.data()[i+j]];
     }
 
+    template<typename U=T>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIMS>& as) const {
+        int i = std::accumulate(as.begin(), as.end(), 0);
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        std::array<int,SIMDVector<T,DEFAULT_ABI>::Size> inds;
+        for (FASTOR_INDEX j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j)
+            inds[j] = it_expr.data()[i+j];
+        vector_setter(_vec,expr.data(),inds);
+        return _vec;
+    }
+
+    template<typename U=T>
+    FASTOR_INLINE U teval_s(const std::array<int,DIMS>& as) const {
+        int i = std::accumulate(as.begin(), as.end(), 0);
+        return expr.data()[it_expr.data()[i]];
+    }
+
 };
 
 //----------------------------------------------------------------------------------//
@@ -124,7 +156,7 @@ public:
 
 
 template<typename T, size_t N, typename Int, size_t IterSize>
-struct TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>: 
+struct TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>:
     public AbstractTensor<TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>,1> {
 private:
     Tensor<T,N> &expr;
@@ -160,7 +192,7 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other_src;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator=(tmp);
             return;
         }
@@ -199,7 +231,7 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other_src;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator+=(tmp);
             return;
         }
@@ -238,7 +270,7 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other_src;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator-=(tmp);
             return;
         }
@@ -277,7 +309,7 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other_src;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator*=(tmp);
             return;
         }
@@ -316,7 +348,7 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other_src;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator/=(tmp);
             return;
         }
@@ -358,12 +390,12 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator=(tmp);
             return;
         }
 #endif
-        const Derived& other_src = other.self();  
+        const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
@@ -395,7 +427,7 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator+=(tmp);
             return;
         }
@@ -432,7 +464,7 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator-=(tmp);
             return;
         }
@@ -469,7 +501,7 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator*=(tmp);
             return;
         }
@@ -507,7 +539,7 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator/=(tmp);
             return;
         }
@@ -540,7 +572,7 @@ public:
     //----------------------------------------------------------------------------------//
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator=(U num) {
-        
+
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
         FASTOR_INDEX i;
@@ -562,7 +594,7 @@ public:
 
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator+=(U num) {
-        
+
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
         FASTOR_INDEX i;
@@ -675,6 +707,21 @@ public:
         return expr(it_expr(i+j));
     }
 
+    template<typename U=T>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,1>& as) const {
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        std::array<int,SIMDVector<T,DEFAULT_ABI>::Size> inds;
+        for (FASTOR_INDEX j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j)
+            inds[j] = it_expr.data()[as[0]+j];
+        vector_setter(_vec,expr.data(),inds);
+        return _vec;
+    }
+
+    template<typename U=T>
+    constexpr FASTOR_INLINE U teval_s(const std::array<int,1>& as) const {
+        return expr.data()[it_expr.data()[as[0]]];
+    }
+
 };
 
 
@@ -736,16 +783,16 @@ public:
 
 
 template<typename T, size_t ... Rest, typename Int, size_t ... IterSizes, size_t DIMS>
-struct TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>: 
+struct TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>:
     public AbstractTensor<TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>,DIMS> {
 private:
     Tensor<T,Rest...> &expr;
-    // The index tensor needs to be copied for the purpose of indexing a 
-    // multidimensional tensor with multiple 1D or any other lower other 
+    // The index tensor needs to be copied for the purpose of indexing a
+    // multidimensional tensor with multiple 1D or any other lower other
     // tensors. This issue could be solved by providing another type parameter/flag
     // such as CopyIndex to the class which would use std::conditional to choose
-    // between "const Tensor<Int,IterSizes...> &" and "Tensor<Int,IterSizes...>"  
-    
+    // between "const Tensor<Int,IterSizes...> &" and "Tensor<Int,IterSizes...>"
+
     // const Tensor<Int,IterSizes...> &it_expr;
     Tensor<Int,IterSizes...> it_expr;
     bool does_alias = false;
@@ -779,11 +826,11 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other_src;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator=(tmp);
             return;
         }
-#endif        
+#endif
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -819,11 +866,11 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other_src;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator+=(tmp);
             return;
         }
-#endif        
+#endif
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -859,11 +906,11 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other_src;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator-=(tmp);
             return;
         }
-#endif        
+#endif
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -899,11 +946,11 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other_src;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator*=(tmp);
             return;
         }
-#endif        
+#endif
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -939,11 +986,11 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other_src;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator/=(tmp);
             return;
         }
-#endif        
+#endif
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -982,11 +1029,11 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator=(tmp);
             return;
         }
-#endif   
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -1020,11 +1067,11 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator+=(tmp);
             return;
         }
-#endif   
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -1058,11 +1105,11 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator-=(tmp);
             return;
         }
-#endif   
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -1096,11 +1143,11 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator*=(tmp);
             return;
         }
-#endif   
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -1134,11 +1181,11 @@ public:
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator/=(tmp);
             return;
         }
-#endif   
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -1305,6 +1352,23 @@ public:
     template<typename U=T>
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return expr.data()[it_expr.data()[i+j]];
+    }
+
+    template<typename U=T>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIMS>& as) const {
+        int i = std::accumulate(as.begin(), as.end(), 0);
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        std::array<int,SIMDVector<T,DEFAULT_ABI>::Size> inds;
+        for (FASTOR_INDEX j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j)
+            inds[j] = it_expr.data()[i+j];
+        vector_setter(_vec,expr.data(),inds);
+        return _vec;
+    }
+
+    template<typename U=T>
+    FASTOR_INLINE U teval_s(const std::array<int,DIMS>& as) const {
+        int i = std::accumulate(as.begin(), as.end(), 0);
+        return expr.data()[it_expr.data()[i]];
     }
 };
 

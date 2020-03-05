@@ -7,6 +7,33 @@
 //!---------------------------------------------------------------//
 
 #ifdef __SSE4_2__
+#define ZEROPS (_mm_set1_ps(0.f))
+#define ZEROPD (_mm_set1_pd(0.0))
+// minus/negative version
+#define MZEROPS (_mm_set1_ps(-0.f))
+#define MZEROPD (_mm_set1_pd(-0.0))
+#define ONEPS (_mm_set1_ps(1.f))
+#define ONEPD (_mm_set1_pd(1.0))
+#define HALFPS (_mm_set1_ps(0.5f))
+#define HALFPD (_mm_set1_pd(0.5))
+#define TWOPS (_mm_set1_ps(2.0f))
+#define TOWPD (_mm_set1_pd(2.0))
+#endif
+#ifdef __AVX__
+#define VZEROPS (_mm256_set1_ps(0.f))
+#define VZEROPD (_mm256_set1_pd(0.0))
+// minus/negative version
+#define MVZEROPS (_mm256_set1_ps(-0.f))
+#define MVZEROPD (_mm256_set1_pd(-0.0))
+#define VONEPS (_mm256_set1_ps(1.f))
+#define VONEPD (_mm256_set1_pd(1.0))
+#define VHALFPS (_mm256_set1_ps(0.5f))
+#define VHALFPD (_mm256_set1_pd(0.5))
+#define VTWOPS (_mm256_set1_ps(2.0f))
+#define VTOWPD (_mm256_set1_pd(2.0))
+#endif
+
+#ifdef __SSE4_2__
 FASTOR_INLINE __m128 _mm_loadl3_ps(const float *value) {
     //! Align load a vector into the first three elements of an xmm
     __m128i xy = _mm_loadl_epi64((const __m128i*)value);

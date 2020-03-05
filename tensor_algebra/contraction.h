@@ -176,7 +176,7 @@ struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Te
 //     static constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
 
 //     using Index_with_dims = typename put_dims_in_Index<OutTensor>::type;
-//     static constexpr std::array<size_t,OutTensor::Dimension> products_out = \
+//     static constexpr std::array<size_t,OutTensor::Dimension> products_out = 
 //           nprods<Index_with_dims,typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::values;
 
 // #ifndef FASTOR_DONT_VECTORISE

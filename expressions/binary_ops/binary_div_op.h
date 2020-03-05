@@ -33,7 +33,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX helper_size() const {
 #ifndef NDEBUG
         FASTOR_ASSERT(rhs.size()==lhs.size(),"EXPRESSION SIZE MISMATCH");
-#endif        
+#endif
         return rhs.size();
     }
 
@@ -50,7 +50,7 @@ public:
     FASTOR_INLINE FASTOR_INDEX helper_dimension(FASTOR_INDEX i) const {
 #ifndef NDEBUG
         FASTOR_ASSERT(rhs.dimension(i)==lhs.dimension(i),"EXPRESSION SHAPE MISMATCH");
-#endif         
+#endif
         return rhs.dimension(i);
     }
 
@@ -75,19 +75,19 @@ public:
                                    !std::is_arithmetic<RExpr>::value,bool>::type = 0>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> helper(FASTOR_INDEX i) const {
 #ifndef FASTOR_UNSAFE_MATH
-        return lhs / rhs.template eval<U>(i);
+        return (U)lhs / rhs.template eval<U>(i);
 #else
-        return lhs * rcp(rhs.template eval<U>(i));
-#endif        
+        return (U)lhs * rcp(rhs.template eval<U>(i));
+#endif
     }
     template<typename LExpr, typename RExpr, typename U,
            typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
                                    std::is_arithmetic<RExpr>::value,bool>::type = 0>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> helper(FASTOR_INDEX i) const {
 #ifndef FASTOR_UNSAFE_MATH
-        return lhs.template eval<U>(i) / rhs;
+        return lhs.template eval<U>(i) / (U)rhs;
 #else
-        return lhs.template eval<U>(i) * rcp(SIMDVector<U,DEFAULT_ABI>(rhs));   
+        return lhs.template eval<U>(i) * rcp(SIMDVector<U,DEFAULT_ABI>(rhs));
 #endif
     }
 
@@ -141,7 +141,7 @@ public:
         return lhs / rhs.template eval<U>(i,j);
 #else
         return lhs * rcp(rhs.template eval<U>(i,j));
-#endif 
+#endif
     }
     template<typename LExpr, typename RExpr, typename U,
            typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
@@ -150,7 +150,7 @@ public:
 #ifndef FASTOR_UNSAFE_MATH
         return lhs.template eval<U>(i,j) / rhs;
 #else
-        return lhs.template eval<U>(i,j) * rcp(SIMDVector<U,DEFAULT_ABI>(rhs));   
+        return lhs.template eval<U>(i,j) * rcp(SIMDVector<U,DEFAULT_ABI>(rhs));
 #endif
     }
 
@@ -178,6 +178,56 @@ public:
     FASTOR_INLINE U helper_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return lhs.template eval_s<U>(i,j) / (U)rhs;
     }
+
+    // for nD tensors
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {
+        return thelper<TLhs,TRhs,U>(as);
+    }
+
+    template<typename LExpr, typename RExpr, typename U,
+           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
+                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> thelper(const std::array<int,DIM0> &as) const {
+        return lhs.template teval<U>(as) / rhs.template teval<U>(as);
+    }
+    template<typename LExpr, typename RExpr, typename U,
+           typename std::enable_if<std::is_arithmetic<LExpr>::value &&
+                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> thelper(const std::array<int,DIM0> &as) const {
+        return (U)lhs / rhs.template teval<U>(as);
+    }
+    template<typename LExpr, typename RExpr, typename U,
+           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
+                                   std::is_arithmetic<RExpr>::value,bool>::type = 0>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> thelper(const std::array<int,DIM0> &as) const {
+        return lhs.template teval<U>(as) / (U)rhs;
+    }
+
+    // scalar based (for nD tensors)
+    template<typename U>
+    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {
+        return thelper_s<TLhs,TRhs,U>(as);
+    }
+
+    template<typename LExpr, typename RExpr, typename U,
+           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
+                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+    FASTOR_INLINE U thelper_s(const std::array<int,DIM0> &as) const {
+        return lhs.template teval_s<U>(as) / rhs.template teval_s<U>(as);
+    }
+    template<typename LExpr, typename RExpr, typename U,
+           typename std::enable_if<std::is_arithmetic<LExpr>::value &&
+                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+    FASTOR_INLINE U thelper_s(const std::array<int,DIM0> &as) const {
+        return (U)lhs / rhs.template teval_s<U>(as);
+    }
+    template<typename LExpr, typename RExpr, typename U,
+           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
+                                   std::is_arithmetic<RExpr>::value,bool>::type = 0>
+    FASTOR_INLINE U thelper_s(const std::array<int,DIM0> &as) const {
+        return lhs.template teval_s<U>(as) / (U)rhs;
+    }
 };
 
 template<typename TLhs, typename TRhs, size_t DIM0,
@@ -203,7 +253,7 @@ template<typename TLhs, typename TRhs, size_t DIM0, size_t DIM1,
          typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
                                  !std::is_arithmetic<TRhs>::value &&
                                  DIM0!=DIM1,bool>::type = 0 >
-FASTOR_INLINE BinaryDivOp<TLhs, TRhs, meta_min<DIM0,DIM1>::value> 
+FASTOR_INLINE BinaryDivOp<TLhs, TRhs, meta_min<DIM0,DIM1>::value>
 operator/(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1> &rhs) {
   return BinaryDivOp<TLhs, TRhs, meta_min<DIM0,DIM1>::value>(lhs.self(), rhs.self());
 }

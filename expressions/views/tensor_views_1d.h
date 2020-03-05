@@ -26,12 +26,12 @@ public:
 
     FASTOR_INLINE TensorConstViewExpr(const Tensor<T,N> &_ex, const seq &_s) : expr(_ex), _seq(_s) {
         if (_seq._last < 0) _seq._last += N + /*including the end point*/ 1;
-        if (_seq._first < 0) _seq._first += N + /*including the end point*/ 1; 
+        if (_seq._first < 0) _seq._first += N + /*including the end point*/ 1;
     }
 
     template<typename U>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
+        SIMDVector<U,DEFAULT_ABI> _vec;
         vector_setter(_vec,expr.data(),i*_seq._step+_seq._first,_seq._step);
         return _vec;
     }
@@ -43,7 +43,7 @@ public:
 
     template<typename U>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
+        SIMDVector<U,DEFAULT_ABI> _vec;
         vector_setter(_vec,expr.data(),(i+j)*_seq._step+_seq._first,_seq._step);
         return _vec;
     }
@@ -51,6 +51,18 @@ public:
     template<typename U>
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return expr.data()[(i+j)*_seq._step+_seq._first];
+    }
+
+    template<typename U=T>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,1>& as) const {
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        vector_setter(_vec,expr.data(),as[0]*_seq._step+_seq._first,_seq._step);
+        return _vec;
+    }
+
+    template<typename U=T>
+    constexpr FASTOR_INLINE U teval_s(const std::array<int,1>& as) const {
+        return expr.data()[as[0]*_seq._step+_seq._first];
     }
 };
 
@@ -94,7 +106,7 @@ public:
 
     FASTOR_INLINE TensorViewExpr(Tensor<T,N> &_ex, const seq &_s) : expr(_ex), _seq(_s) {
         if (_seq._last < 0) _seq._last += N + /*including the end point*/ 1;
-        if (_seq._first < 0) _seq._first += N + /*including the end point*/ 1; 
+        if (_seq._first < 0) _seq._first += N + /*including the end point*/ 1;
     }
 
     // View evalution operators
@@ -109,7 +121,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,N>,1>(tmp_this_tensor,_seq);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator=(tmp);
             return;
         }
@@ -153,7 +165,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,N>,1>(tmp_this_tensor,_seq);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator+=(tmp);
             return;
         }
@@ -197,7 +209,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,N>,1>(tmp_this_tensor,_seq);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator-=(tmp);
             return;
         }
@@ -241,7 +253,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,N>,1>(tmp_this_tensor,_seq);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator*=(tmp);
             return;
         }
@@ -285,7 +297,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,N>,1>(tmp_this_tensor,_seq);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator/=(tmp);
             return;
         }
@@ -333,7 +345,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,N>,1>(tmp_this_tensor,_seq);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator=(tmp);
             return;
         }
@@ -374,7 +386,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,N>,1>(tmp_this_tensor,_seq);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator+=(tmp);
             return;
         }
@@ -415,7 +427,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,N>,1>(tmp_this_tensor,_seq);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator-=(tmp);
             return;
         }
@@ -456,7 +468,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,N>,1>(tmp_this_tensor,_seq);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator*=(tmp);
             return;
         }
@@ -497,7 +509,7 @@ public:
             auto tmp = TensorViewExpr<Tensor<T,N>,1>(tmp_this_tensor,_seq);
             // Assign other to temporary
             tmp = other;
-            // assign temporary to this 
+            // assign temporary to this
             this->operator/=(tmp);
             return;
         }
@@ -654,7 +666,7 @@ public:
 
     template<typename U>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
+        SIMDVector<U,DEFAULT_ABI> _vec;
         vector_setter(_vec,expr.data(),i*_seq._step+_seq._first,_seq._step);
         return _vec;
     }
@@ -666,7 +678,7 @@ public:
 
     template<typename U>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        SIMDVector<U,DEFAULT_ABI> _vec; 
+        SIMDVector<U,DEFAULT_ABI> _vec;
         vector_setter(_vec,expr.data(),(i+j)*_seq._step+_seq._first,_seq._step);
         return _vec;
     }
@@ -674,6 +686,18 @@ public:
     template<typename U>
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return expr.data()[(i+j)*_seq._step+_seq._first];
+    }
+
+    template<typename U=T>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,1>& as) const {
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        vector_setter(_vec,expr.data(),as[0]*_seq._step+_seq._first,_seq._step);
+        return _vec;
+    }
+
+    template<typename U=T>
+    constexpr FASTOR_INLINE U teval_s(const std::array<int,1>& as) const {
+        return expr.data()[as[0]*_seq._step+_seq._first];
     }
 };
 

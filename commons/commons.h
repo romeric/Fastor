@@ -88,6 +88,7 @@
 //#define USE_OLD_VERSION // TO USE SOME OLD VERSIONS OF INTRINSICS
 //#define FASTOR_USE_VECTORISED_EXPR_ASSIGN  // TO USE VECTORISED EXPRESSION ASSIGNMENT
 //#define FASTOR_ZERO_INITIALISE
+//#define FASTOR_USE_OLD_NDVIEWS
 
 #ifndef BLAS_SWITCH_MATRIX_SIZE_NS
 #define BLAS_SWITCH_MATRIX_SIZE_NS 13
@@ -176,34 +177,6 @@
     #endif
 #else
     #define IS_ALIGNED true
-#endif
-
-
-#ifdef __SSE4_2__
-#define ZEROPS (_mm_set1_ps(0.f))
-#define ZEROPD (_mm_set1_pd(0.0))
-// minus/negative version
-#define MZEROPS (_mm_set1_ps(-0.f))
-#define MZEROPD (_mm_set1_pd(-0.0))
-#define ONEPS (_mm_set1_ps(1.f))
-#define ONEPD (_mm_set1_pd(1.0))
-#define HALFPS (_mm_set1_ps(0.5f))
-#define HALFPD (_mm_set1_pd(0.5))
-#define TWOPS (_mm_set1_ps(2.0f))
-#define TOWPD (_mm_set1_pd(2.0))
-#endif
-#ifdef __AVX__
-#define VZEROPS (_mm256_set1_ps(0.f))
-#define VZEROPD (_mm256_set1_pd(0.0))
-// minus/negative version
-#define MVZEROPS (_mm256_set1_ps(-0.f))
-#define MVZEROPD (_mm256_set1_pd(-0.0))
-#define VONEPS (_mm256_set1_ps(1.f))
-#define VONEPD (_mm256_set1_pd(1.0))
-#define VHALFPS (_mm256_set1_ps(0.5f))
-#define VHALFPD (_mm256_set1_pd(0.5))
-#define VTWOPS (_mm256_set1_ps(2.0f))
-#define VTOWPD (_mm256_set1_pd(2.0))
 #endif
 
 
@@ -309,4 +282,3 @@ struct PP_CAT(static_warning,__LINE__) { \
 
 
 #endif // COMMONS_H
-

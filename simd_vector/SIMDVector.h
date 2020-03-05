@@ -187,6 +187,12 @@ template<typename T, int ABI,
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int ) {
     vec.set(data[idx]);
 }
+// 4 word in an 8 - for compatibility
+template<typename T, int ABI,
+         typename std::enable_if<sizeof(T)==4 && ABI==64,bool>::type=0>
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
+    vec.set(data[idx+general_stride],data[idx]);
+}
 // 4 word SSE
 template<typename T, int ABI,
          typename std::enable_if<sizeof(T)==4 && ABI==128,bool>::type=0>
@@ -281,6 +287,12 @@ template<typename T, int ABI,
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,1> &a) {
     vec.set(data[a[0]]);
 }
+// 4 word in an 8 - for compatibility
+template<typename T, int ABI,
+         typename std::enable_if<sizeof(T)==4 && ABI==64,bool>::type=0>
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,2> &a) {
+    vec.set(data[a[1]],data[a[0]]);
+}
 // 4 word SSE
 template<typename T, int ABI,
          typename std::enable_if<sizeof(T)==4 && ABI==128,bool>::type=0>
@@ -361,6 +373,13 @@ template<typename T, int ABI, typename Int,
          typename std::enable_if<sizeof(T)==4 && ABI==32,bool>::type=0>
 FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int ) {
     data[idx] = vec.value;
+}
+// 4 word in an 8 - for compatibility
+template<typename T, int ABI, typename Int,
+         typename std::enable_if<sizeof(T)==4 && ABI==64,bool>::type=0>
+FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride=1) {
+    data[idx] = vec[0];
+    data[idx+general_stride] = vec[1];
 }
 // 4 word SSE
 template<typename T, int ABI, typename Int,

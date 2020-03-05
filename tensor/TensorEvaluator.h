@@ -44,10 +44,6 @@ FASTOR_INLINE T eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
     return _data[i*get_value<2,Rest...>::value+j];
 }
 
-// This is purely for smart ops
-constexpr FASTOR_INLINE T eval(T i, T j) const {
-    return _data[static_cast<FASTOR_INDEX>(i)*get_value<2,Rest...>::value+static_cast<FASTOR_INDEX>(j)];
-}
 // template<typename... Args, typename std::enable_if<sizeof...(Args)==Dimension_t::value
 //                     && is_arithmetic_pack<Args...>::value,bool>::type =0>
 // FASTOR_INLINE const T& eval(Args ... args) const {
@@ -58,6 +54,49 @@ constexpr FASTOR_INLINE T eval(T i, T j) const {
 // FASTOR_INLINE const T& eval_s(Args ... args) const {
 //     return operator()(args...);
 // }
+
+// This is purely for smart ops
+constexpr FASTOR_INLINE T eval(T i, T j) const {
+    return _data[static_cast<FASTOR_INDEX>(i)*get_value<2,Rest...>::value+static_cast<FASTOR_INDEX>(j)];
+}
+
+
+template<typename U=T>
+FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> teval(const std::array<int, Dimension> &as) const {
+
+    constexpr std::array<size_t,Dimension> products_ = nprods_views<Index<Rest...>,
+        typename std_ext::make_index_sequence<Dimension>::type>::values;
+
+    int index = 0;
+    for (int i=0; i<Dimension; ++i) {
+        index += products_[i]*as[i];
+    }
+
+#ifdef BOUNDSCHECK
+    FASTOR_ASSERT((index>=0 && index<Size), "INDEX OUT OF BOUNDS");
+#endif
+
+    SIMDVector<T,DEFAULT_ABI> _vec; _vec.load(&_data[index],false);
+    return _vec;
+}
+template<typename U=T>
+FASTOR_INLINE T teval_s(const std::array<int, Dimension> &as) const {
+
+    constexpr std::array<size_t,Dimension> products_ = nprods_views<Index<Rest...>,
+        typename std_ext::make_index_sequence<Dimension>::type>::values;
+
+    int index = 0;
+    for (int i=0; i<Dimension; ++i) {
+        index += products_[i]*as[i];
+    }
+
+#ifdef BOUNDSCHECK
+    FASTOR_ASSERT((index>=0 && index<Size), "INDEX OUT OF BOUNDS");
+#endif
+
+    return _data[index];
+}
+
 //----------------------------------------------------------------------------------------------------------//
 
 #endif // end of TENSOR_EVALUATOR_H

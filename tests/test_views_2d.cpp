@@ -44,7 +44,7 @@ void run() {
         a4(seq(0,2),seq(1,5,2)) *=10;
         FASTOR_EXIT_ASSERT(abs(a4.sum() + 23107.5) < Tol);
         a4(seq(first,last),seq(first,last)) *=a4;
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 139586878.125) < 2); // SP gives a large difference
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 139586878.125) < 20); // SP gives a large difference
         a4(all,all) /=a4;
         FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol);
 
@@ -53,29 +53,29 @@ void run() {
         decltype(a4) a5; a5.iota(12);
         a4.ones();
         a4(all,all) += a5(all,all);
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 300.) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 300.) < Tol);
         a4(all,all) -= a5(all,all);
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol);
         a4(seq(0,2),seq(0,2)) *= a5(seq(1,3),seq(2,4));
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 99.) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 99.) < Tol);
         a4(seq(0,2),seq(0,2)) /= a5(seq(1,3),seq(2,4));
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol);
 
         // Check overlap
         a4(all,all) = a4(all,all);
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol);
         a4(all,all).noalias() = a4(all,all);
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol);
         a4.iota(1);
         // a4(all,seq(0,4)) = a4(all,seq(1,5)); // this does not alias
         a4(all,seq(2,5)).noalias() = a4(all,seq(0,3));
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 102.) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 102.) < Tol);
         a4(all,seq(2,5)).noalias() += a4(all,seq(0,3));
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 159.) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 159.) < Tol);
         a4(all,seq(2,5)).noalias() += 2 + a4(all,seq(0,3));
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 252.) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 252.) < Tol);
         a4(all,seq(2,5)).noalias() -= a4(all,seq(0,3));
-        FASTOR_EXIT_ASSERT(abs(a4.sum() - 153.) < Tol); 
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 153.) < Tol);
         a4(all,seq(2,5)).noalias() -= a4(all,seq(0,3))*3;
         FASTOR_EXIT_ASSERT(abs(a4.sum() + 90.) < Tol);
         a4(all,seq(2,5)).noalias() *= a4(all,seq(0,3));
