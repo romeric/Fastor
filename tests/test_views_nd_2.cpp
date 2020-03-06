@@ -318,6 +318,12 @@ int main() {
     print(FBLU(BOLD("Testing multi-dimensional tensor views: double precision")));
     run_vectorisable<double>();
     run_non_vectorisable<double>();
+    print(FBLU(BOLD("Testing multi-dimensional tensor views: int 32")));
+    run_vectorisable<int>();
+    run_non_vectorisable<int>();
+    print(FBLU(BOLD("Testing multi-dimensional tensor views: int 64")));
+    run_vectorisable<Int64>();
+    run_non_vectorisable<Int64>();
 
     return 0;
 }

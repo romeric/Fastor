@@ -113,6 +113,30 @@ struct SIMDVector<int,256> {
         value = _mm256_mul_epi32x(value,a.value);
     }
 
+    FASTOR_INLINE void operator/=(int num) {
+        int val[Size]; _mm256_storeu_si256((__m256i*)val, value);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            val[i] /= num;
+        }
+        value = _mm256_loadu_si256((__m256i*)val);
+    }
+    FASTOR_INLINE void operator/=(__m256i regi) {
+        int val[Size]; _mm256_storeu_si256((__m256i*)val, value);
+        int val_num[Size]; _mm256_storeu_si256((__m256i*)val_num, regi);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            val[i] /= val_num[i];
+        }
+        value = _mm256_loadu_si256((__m256i*)val);
+    }
+    FASTOR_INLINE void operator/=(const SIMDVector<int> &a) {
+        int val[Size]; _mm256_storeu_si256((__m256i*)val, value);
+        int val_a[Size]; _mm256_storeu_si256((__m256i*)val_a, a.value);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            val[i] /= val_a[i];
+        }
+        value = _mm256_loadu_si256((__m256i*)val);
+    }
+
     FASTOR_INLINE int minimum() {
         int *vals = (int*)&value;
         int quan = 0;
@@ -136,7 +160,7 @@ struct SIMDVector<int,256> {
     }
 
     FASTOR_INLINE int sum() {
-        int *vals = (int*)&value;
+        int vals[Size]; _mm256_storeu_si256((__m256i*)vals, value);
         int quan = 0;
         for (FASTOR_INDEX i=0; i<Size; ++i)
             quan += vals[i];
@@ -144,8 +168,8 @@ struct SIMDVector<int,256> {
     }
 
     FASTOR_INLINE int dot(const SIMDVector<int> &other) {
-        int *vals0 = (int*)&value;
-        int *vals1 = (int*)&other.value;
+        int vals0[Size]; _mm256_storeu_si256((__m256i*)vals0, value);
+        int vals1[Size]; _mm256_storeu_si256((__m256i*)vals1, other.value);
         int quan = 0;
         for (FASTOR_INDEX i=0; i<Size; ++i)
             quan += vals0[i]*vals1[i];
@@ -215,6 +239,38 @@ FASTOR_INLINE SIMDVector<int> operator*(const SIMDVector<int> &a, int b) {
 FASTOR_INLINE SIMDVector<int> operator*(int a, const SIMDVector<int> &b) {
     SIMDVector<int> out;
     out.value = _mm256_mul_epi32x(_mm256_set1_epi32(a),b.value);
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<int> operator/(const SIMDVector<int> &a, const SIMDVector<int> &b) {
+    SIMDVector<int> out; 
+    int val[out.size()];   _mm256_storeu_si256((__m256i*)val, out.value);
+    int val_a[out.size()]; _mm256_storeu_si256((__m256i*)val_a, a.value);
+    int val_b[out.size()]; _mm256_storeu_si256((__m256i*)val_b, b.value);
+    for (FASTOR_INDEX i=0; i<out.size(); ++i) {
+        val[i] = val_a[i] / val_b[i];
+    }
+    out.value = _mm256_loadu_si256((__m256i*)val);
+    return out;
+}
+FASTOR_INLINE SIMDVector<int> operator/(const SIMDVector<int> &a, int b) {
+    SIMDVector<int> out; 
+    int val[out.size()];   _mm256_storeu_si256((__m256i*)val, out.value);
+    int val_a[out.size()]; _mm256_storeu_si256((__m256i*)val_a, a.value);
+    for (FASTOR_INDEX i=0; i<out.size(); ++i) {
+        val[i] = val_a[i] / b;
+    }
+    out.value = _mm256_loadu_si256((__m256i*)val);
+    return out;
+}
+FASTOR_INLINE SIMDVector<int> operator/(int a, const SIMDVector<int> &b) {
+    SIMDVector<int> out; 
+    int val[out.size()];   _mm256_storeu_si256((__m256i*)val, out.value);
+    int val_b[out.size()]; _mm256_storeu_si256((__m256i*)val_b, b.value);
+    for (FASTOR_INDEX i=0; i<out.size(); ++i) {
+        val[i] = a / val_b[i];
+    }
+    out.value = _mm256_loadu_si256((__m256i*)val);
     return out;
 }
 
@@ -348,6 +404,30 @@ struct SIMDVector<int,128> {
         value = _mm_mul_epi32(value,a.value);
     }
 
+    FASTOR_INLINE void operator/=(int num) {
+        int val[Size]; _mm_storeu_si128((__m128i*)val, value);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            val[i] /= num;
+        }
+        value = _mm_loadu_si128((__m128i*)val);
+    }
+    FASTOR_INLINE void operator/=(__m128i regi) {
+        int val[Size]; _mm_storeu_si128((__m128i*)val, value);
+        int val_num[Size]; _mm_storeu_si128((__m128i*)val_num, regi);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            val[i] /= val_num[i];
+        }
+        value = _mm_loadu_si128((__m128i*)val);
+    }
+    FASTOR_INLINE void operator/=(const SIMDVector<int,128> &a) {
+        int val[Size]; _mm_storeu_si128((__m128i*)val, value);
+        int val_a[Size]; _mm_storeu_si128((__m128i*)val_a, a.value);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            val[i] /= val_a[i];
+        }
+        value = _mm_loadu_si128((__m128i*)val);
+    }
+
     FASTOR_INLINE int minimum() {
         int *vals = (int*)&value;
         int quan = 0;
@@ -371,7 +451,7 @@ struct SIMDVector<int,128> {
     }
 
     FASTOR_INLINE int sum() {
-        int *vals = (int*)&value;
+        int vals[Size]; _mm_storeu_si128((__m128i*)vals, value);
         int quan = 0;
         for (FASTOR_INDEX i=0; i<Size; ++i)
             quan += vals[i];
@@ -449,6 +529,38 @@ FASTOR_INLINE SIMDVector<int,128> operator*(const SIMDVector<int,128> &a, int b)
 FASTOR_INLINE SIMDVector<int,128> operator*(int a, const SIMDVector<int,128> &b) {
     SIMDVector<int,128> out;
     out.value = _mm_mul_epi32x(_mm_set1_epi32(a),b.value);
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<int,128> operator/(const SIMDVector<int,128> &a, const SIMDVector<int,128> &b) {
+    SIMDVector<int,128> out; 
+    int val[out.size()];   _mm_storeu_si128((__m128i*)val, out.value);
+    int val_a[out.size()]; _mm_storeu_si128((__m128i*)val_a, a.value);
+    int val_b[out.size()]; _mm_storeu_si128((__m128i*)val_b, b.value);
+    for (FASTOR_INDEX i=0; i<out.size(); ++i) {
+        val[i] = val_a[i] / val_b[i];
+    }
+    out.value = _mm_loadu_si128((__m128i*)val);
+    return out;
+}
+FASTOR_INLINE SIMDVector<int,128> operator/(const SIMDVector<int,128> &a, int b) {
+    SIMDVector<int,128> out; 
+    int val[out.size()];   _mm_storeu_si128((__m128i*)val, out.value);
+    int val_a[out.size()]; _mm_storeu_si128((__m128i*)val_a, a.value);
+    for (FASTOR_INDEX i=0; i<out.size(); ++i) {
+        val[i] = val_a[i] / b;
+    }
+    out.value = _mm_loadu_si128((__m128i*)val);
+    return out;
+}
+FASTOR_INLINE SIMDVector<int,128> operator/(int a, const SIMDVector<int,128> &b) {
+    SIMDVector<int,128> out; 
+    int val[out.size()];   _mm_storeu_si128((__m128i*)val, out.value);
+    int val_b[out.size()]; _mm_storeu_si128((__m128i*)val_b, b.value);
+    for (FASTOR_INDEX i=0; i<out.size(); ++i) {
+        val[i] = a / val_b[i];
+    }
+    out.value = _mm_loadu_si128((__m128i*)val);
     return out;
 }
 

@@ -35,7 +35,7 @@ struct SIMDVector<Int64,256> {
             value = _mm256_loadu_si256((__m256i*)data);
     }
 
-    FASTOR_INLINE SIMDVector<Int64> operator=(int num) {
+    FASTOR_INLINE SIMDVector<Int64> operator=(Int64 num) {
         value = _mm256_set1_epi64x(num);
         return *this;
     }
@@ -43,7 +43,7 @@ struct SIMDVector<Int64,256> {
         value = regi;
         return *this;
     }
-    FASTOR_INLINE SIMDVector<Int64> operator=(const SIMDVector<int> &a) {
+    FASTOR_INLINE SIMDVector<Int64> operator=(const SIMDVector<Int64> &a) {
         value = a.value;
         return *this;
     }
@@ -61,10 +61,10 @@ struct SIMDVector<Int64,256> {
             _mm256_storeu_si256((__m256i*)data,value);
     }
 
-    FASTOR_INLINE void load(const Int64 *data) {
+    FASTOR_INLINE void aligned_load(const Int64 *data) {
         value =_mm256_load_si256((__m256i*)data);
     }
-    FASTOR_INLINE void store(Int64 *data) {
+    FASTOR_INLINE void aligned_store(Int64 *data) {
         _mm256_store_si256((__m256i*)data,value);
     }
 
@@ -89,7 +89,7 @@ struct SIMDVector<Int64,256> {
     FASTOR_INLINE void operator+=(__m256i regi) {
         value = _mm256_add_epi64x(value,regi);
     }
-    FASTOR_INLINE void operator+=(const SIMDVector<int> &a) {
+    FASTOR_INLINE void operator+=(const SIMDVector<Int64> &a) {
         value = _mm256_add_epi64x(value,a.value);
     }
 
@@ -99,7 +99,7 @@ struct SIMDVector<Int64,256> {
     FASTOR_INLINE void operator-=(__m256i regi) {
         value = _mm256_sub_epi64x(value,regi);
     }
-    FASTOR_INLINE void operator-=(const SIMDVector<int> &a) {
+    FASTOR_INLINE void operator-=(const SIMDVector<Int64> &a) {
         value = _mm256_sub_epi64x(value,a.value);
     }
 
@@ -109,8 +109,32 @@ struct SIMDVector<Int64,256> {
     FASTOR_INLINE void operator*=(__m256i regi) {
         value = _mm256_mul_epi64x(value,regi);
     }
-    FASTOR_INLINE void operator*=(const SIMDVector<int> &a) {
+    FASTOR_INLINE void operator*=(const SIMDVector<Int64> &a) {
         value = _mm256_mul_epi64x(value,a.value);
+    }
+
+    FASTOR_INLINE void operator/=(Int64 num) {
+        Int64 val[Size]; _mm256_storeu_si256((__m256i*)val, value);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            val[i] /= num;
+        }
+        value = _mm256_loadu_si256((__m256i*)val);
+    }
+    FASTOR_INLINE void operator/=(__m256i regi) {
+        Int64 val[Size]; _mm256_storeu_si256((__m256i*)val, value);
+        Int64 val_num[Size]; _mm256_storeu_si256((__m256i*)val_num, regi);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            val[i] /= val_num[i];
+        }
+        value = _mm256_loadu_si256((__m256i*)val);
+    }
+    FASTOR_INLINE void operator/=(const SIMDVector<Int64> &a) {
+        Int64 val[Size]; _mm256_storeu_si256((__m256i*)val, value);
+        Int64 val_a[Size]; _mm256_storeu_si256((__m256i*)val_a, a.value);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            val[i] /= val_a[i];
+        }
+        value = _mm256_loadu_si256((__m256i*)val);
     }
 
     FASTOR_INLINE Int64 minimum() {
@@ -222,6 +246,37 @@ FASTOR_INLINE SIMDVector<Int64> operator*(Int64 a, const SIMDVector<Int64> &b) {
     return out;
 }
 
+FASTOR_INLINE SIMDVector<Int64> operator/(const SIMDVector<Int64> &a, const SIMDVector<Int64> &b) {
+    SIMDVector<Int64> out; 
+    Int64 val[out.size()];   _mm256_storeu_si256((__m256i*)val, out.value);
+    Int64 val_a[out.size()]; _mm256_storeu_si256((__m256i*)val_a, a.value);
+    Int64 val_b[out.size()]; _mm256_storeu_si256((__m256i*)val_b, b.value);
+    for (FASTOR_INDEX i=0; i<out.size(); ++i) {
+        val[i] = val_a[i] / val_b[i];
+    }
+    out.value = _mm256_loadu_si256((__m256i*)val);
+    return out;
+}
+FASTOR_INLINE SIMDVector<Int64> operator/(const SIMDVector<Int64> &a, Int64 b) {
+    SIMDVector<Int64> out; 
+    Int64 val[out.size()];   _mm256_storeu_si256((__m256i*)val, out.value);
+    Int64 val_a[out.size()]; _mm256_storeu_si256((__m256i*)val_a, a.value);
+    for (FASTOR_INDEX i=0; i<out.size(); ++i) {
+        val[i] = val_a[i] / b;
+    }
+    out.value = _mm256_loadu_si256((__m256i*)val);
+    return out;
+}
+FASTOR_INLINE SIMDVector<Int64> operator/(Int64 a, const SIMDVector<Int64> &b) {
+    SIMDVector<Int64> out; 
+    Int64 val[out.size()];   _mm256_storeu_si256((__m256i*)val, out.value);
+    Int64 val_b[out.size()]; _mm256_storeu_si256((__m256i*)val_b, b.value);
+    for (FASTOR_INDEX i=0; i<out.size(); ++i) {
+        val[i] = a / val_b[i];
+    }
+    out.value = _mm256_loadu_si256((__m256i*)val);
+    return out;
+}
 
 #endif
 
@@ -285,10 +340,10 @@ struct SIMDVector<Int64,128> {
             _mm_storeu_si128((__m128i*)data,value);
     }
 
-    FASTOR_INLINE void load(const Int64 *data) {
+    FASTOR_INLINE void aligned_load(const Int64 *data) {
         value =_mm_load_si128((__m128i*)data);
     }
-    FASTOR_INLINE void store(Int64 *data) {
+    FASTOR_INLINE void aligned_store(Int64 *data) {
         _mm_store_si128((__m128i*)data,value);
     }
 
@@ -337,6 +392,30 @@ struct SIMDVector<Int64,128> {
     }
     FASTOR_INLINE void operator*=(const SIMDVector<Int64,128> &a) {
         value = _mm_mul_epi64(value,a.value);
+    }
+
+    FASTOR_INLINE void operator/=(Int64 num) {
+        Int64 val[Size]; _mm_storeu_si128((__m128i*)val, value);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            val[i] /= num;
+        }
+        value = _mm_loadu_si128((__m128i*)val);
+    }
+    FASTOR_INLINE void operator/=(__m128i regi) {
+        Int64 val[Size]; _mm_storeu_si128((__m128i*)val, value);
+        Int64 val_num[Size]; _mm_storeu_si128((__m128i*)val_num, regi);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            val[i] /= val_num[i];
+        }
+        value = _mm_loadu_si128((__m128i*)val);
+    }
+    FASTOR_INLINE void operator/=(const SIMDVector<Int64,128> &a) {
+        Int64 val[Size]; _mm_storeu_si128((__m128i*)val, value);
+        Int64 val_a[Size]; _mm_storeu_si128((__m128i*)val_a, a.value);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            val[i] /= val_a[i];
+        }
+        value = _mm_loadu_si128((__m128i*)val);
     }
 
     FASTOR_INLINE Int64 minimum() {
@@ -449,6 +528,38 @@ FASTOR_INLINE SIMDVector<Int64,128> operator*(Int64 a, const SIMDVector<Int64,12
     return out;
 }
 
+FASTOR_INLINE SIMDVector<Int64,128> operator/(const SIMDVector<Int64,128> &a, const SIMDVector<Int64,128> &b) {
+    SIMDVector<Int64,128> out; 
+    Int64 val[out.size()];   _mm_storeu_si128((__m128i*)val, out.value);
+    Int64 val_a[out.size()]; _mm_storeu_si128((__m128i*)val_a, a.value);
+    Int64 val_b[out.size()]; _mm_storeu_si128((__m128i*)val_b, b.value);
+    for (FASTOR_INDEX i=0; i<out.size(); ++i) {
+        val[i] = val_a[i] / val_b[i];
+    }
+    out.value = _mm_loadu_si128((__m128i*)val);
+    return out;
+}
+FASTOR_INLINE SIMDVector<Int64,128> operator/(const SIMDVector<Int64,128> &a, Int64 b) {
+    SIMDVector<Int64,128> out; 
+    Int64 val[out.size()];   _mm_storeu_si128((__m128i*)val, out.value);
+    Int64 val_a[out.size()]; _mm_storeu_si128((__m128i*)val_a, a.value);
+    for (FASTOR_INDEX i=0; i<out.size(); ++i) {
+        val[i] = val_a[i] / b;
+    }
+    out.value = _mm_loadu_si128((__m128i*)val);
+    return out;
+}
+FASTOR_INLINE SIMDVector<Int64,128> operator/(Int64 a, const SIMDVector<Int64,128> &b) {
+    SIMDVector<Int64,128> out; 
+    Int64 val[out.size()];   _mm_storeu_si128((__m128i*)val, out.value);
+    Int64 val_b[out.size()]; _mm_storeu_si128((__m128i*)val_b, b.value);
+    for (FASTOR_INDEX i=0; i<out.size(); ++i) {
+        val[i] = a / val_b[i];
+    }
+    out.value = _mm_loadu_si128((__m128i*)val);
+    return out;
+}
+
 
 #endif
 
@@ -500,10 +611,10 @@ struct SIMDVector<Int64, 64> {
         data[0] = value;
     }
 
-    FASTOR_INLINE int operator[](FASTOR_INDEX) const {return value;}
-    FASTOR_INLINE int operator()(FASTOR_INDEX) const {return value;}
+    FASTOR_INLINE Int64 operator[](FASTOR_INDEX) const {return value;}
+    FASTOR_INLINE Int64 operator()(FASTOR_INDEX) const {return value;}
 
-    FASTOR_INLINE void set(int num) {
+    FASTOR_INLINE void set(Int64 num) {
         value = num;
     }
 
@@ -526,14 +637,14 @@ struct SIMDVector<Int64, 64> {
         value -= a.value;
     }
 
-    FASTOR_INLINE void operator*=(int num) {
+    FASTOR_INLINE void operator*=(Int64 num) {
         value *= num;
     }
     FASTOR_INLINE void operator*=(const SIMDVector<Int64,64> &a) {
         value *= a.value;
     }
 
-    FASTOR_INLINE void operator/=(int num) {
+    FASTOR_INLINE void operator/=(Int64 num) {
         value /= num;
     }
     FASTOR_INLINE void operator/=(const SIMDVector<Int64,64> &a) {

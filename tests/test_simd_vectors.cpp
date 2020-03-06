@@ -6,6 +6,180 @@ using namespace Fastor;
 
 
 template<typename T, int ABI>
+void test_intergers_divs();
+
+template<>
+void test_intergers_divs<int,256>() {
+
+    using TT = int;
+    constexpr int ABI = 256;
+        std::array<TT,8> arr = {70,3,6,1,5,9,14,20};
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        a /= 2;
+        FASTOR_EXIT_ASSERT((a.sum() - 62)< Tol, "TEST FAILED");
+    }
+
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        a /= a;
+        FASTOR_EXIT_ASSERT((a.sum() - 8)< Tol, "TEST FAILED");
+    }
+
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        a /= a.value;
+        FASTOR_EXIT_ASSERT((a.sum() - 8)< Tol, "TEST FAILED");
+    }
+
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        SIMDVector<TT,ABI> b(arr.data(),false);
+        SIMDVector<TT,ABI> aa = a / b;
+        FASTOR_EXIT_ASSERT((aa.sum() - 8)< Tol, "TEST FAILED");
+    }
+
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        SIMDVector<TT,ABI> aa = a / (TT)2;
+        FASTOR_EXIT_ASSERT((aa.sum() - 62)< Tol, "TEST FAILED");
+        SIMDVector<TT,ABI> bb = (TT)100 / a;
+        FASTOR_EXIT_ASSERT((bb.sum() - 193)< Tol, "TEST FAILED");
+    }
+
+    print(FGRN(BOLD("All tests passed successfully")));
+}
+
+template<>
+void test_intergers_divs<int,128>() {
+
+    using TT = int;
+    constexpr int ABI = 128;
+        std::array<TT,4> arr = {70,3,6,1};
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        a /= 2;
+        FASTOR_EXIT_ASSERT((a.sum() - 39)< Tol, "TEST FAILED");
+    }
+
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        a /= a;
+        FASTOR_EXIT_ASSERT((a.sum() - 4)< Tol, "TEST FAILED");
+    }
+
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        a /= a.value;
+        FASTOR_EXIT_ASSERT((a.sum() - 4)< Tol, "TEST FAILED");
+    }
+
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        SIMDVector<TT,ABI> b(arr.data(),false);
+        SIMDVector<TT,ABI> aa = a / b;
+        FASTOR_EXIT_ASSERT((aa.sum() - 4)< Tol, "TEST FAILED");
+    }
+
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        SIMDVector<TT,ABI> aa = a / (TT)2;
+        FASTOR_EXIT_ASSERT((aa.sum() - 39)< Tol, "TEST FAILED");
+        SIMDVector<TT,ABI> bb = (TT)100 / a;
+        FASTOR_EXIT_ASSERT((bb.sum() - 150)< Tol, "TEST FAILED");
+    }
+
+    print(FGRN(BOLD("All tests passed successfully")));
+}
+
+template<>
+void test_intergers_divs<Int64,256>() {
+
+    using TT = Int64;
+    constexpr int ABI = 256;
+    std::array<TT,4> arr = {5,9,14,20};
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        a /= 2;
+        FASTOR_EXIT_ASSERT((a.sum() - 23)< Tol, "TEST FAILED");
+    }
+
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        a /= a;
+        FASTOR_EXIT_ASSERT((a.sum() - 4)< Tol, "TEST FAILED");
+    }
+
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        a /= a.value;
+        FASTOR_EXIT_ASSERT((a.sum() - 4)< Tol, "TEST FAILED");
+    }
+
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        SIMDVector<TT,ABI> b(arr.data(),false);
+        SIMDVector<TT,ABI> aa = a / b;
+        FASTOR_EXIT_ASSERT((aa.sum() - 4)< Tol, "TEST FAILED");
+    }
+
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        SIMDVector<TT,ABI> aa = a / (TT)2;
+        FASTOR_EXIT_ASSERT((aa.sum() - 23)< Tol, "TEST FAILED");
+        SIMDVector<TT,ABI> bb = (TT)100 / a;
+        FASTOR_EXIT_ASSERT((bb.sum() - 43)< Tol, "TEST FAILED");
+    }
+
+    print(FGRN(BOLD("All tests passed successfully")));
+}
+
+template<>
+void test_intergers_divs<Int64,128>() {
+
+    using TT = Int64;
+    constexpr int ABI = 128;
+    std::array<TT,2> arr = {14,20};
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        a /= 2;
+        FASTOR_EXIT_ASSERT((a.sum() - 17)< Tol, "TEST FAILED");
+    }
+
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        a /= a;
+        FASTOR_EXIT_ASSERT((a.sum() - 2)< Tol, "TEST FAILED");
+    }
+
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        a /= a.value;
+        FASTOR_EXIT_ASSERT((a.sum() - 2)< Tol, "TEST FAILED");
+    }
+
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        SIMDVector<TT,ABI> b(arr.data(),false);
+        SIMDVector<TT,ABI> aa = a / b;
+        FASTOR_EXIT_ASSERT((aa.sum() - 2)< Tol, "TEST FAILED");
+    }
+
+    {
+        SIMDVector<TT,ABI> a(arr.data(),false);
+        SIMDVector<TT,ABI> aa = a / (TT)2;
+        FASTOR_EXIT_ASSERT((aa.sum() - 17)< Tol, "TEST FAILED");
+        SIMDVector<TT,ABI> bb = (TT)100 / a;
+        FASTOR_EXIT_ASSERT((bb.sum() - 12)< Tol, "TEST FAILED");
+    }
+
+    print(FGRN(BOLD("All tests passed successfully")));
+}
+
+
+
+
+template<typename T, int ABI>
 void test_simd_vectors() {
 
     SIMDVector<T,ABI> t1, t2;
@@ -64,6 +238,17 @@ int main() {
     test_simd_vectors<Int64,256>();
     print(FBLU(BOLD("Testing SIMDVector of long long - 512")));
     test_simd_vectors<Int64,512>();
+
+
+    print(FBLU(BOLD("Testing SIMDVector of int for division - 128")));
+    test_intergers_divs<int,128>();
+    print(FBLU(BOLD("Testing SIMDVector of int for division - 256")));
+    test_intergers_divs<int,256>();
+
+    print(FBLU(BOLD("Testing SIMDVector of long long for division - 128")));
+    test_intergers_divs<Int64,128>();
+    print(FBLU(BOLD("Testing SIMDVector of long long for division - 256")));
+    test_intergers_divs<Int64,256>();
 
     return 0;
 }
