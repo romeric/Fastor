@@ -116,7 +116,7 @@ struct SIMDVector {
         std::copy(data,data+Size,value);
         unused(Aligned);
     }
-    FASTOR_INLINE void store(T *data, bool Aligned=true) {
+    FASTOR_INLINE void store(T *data, bool Aligned=true) const {
         std::copy(value,value+Size,data);
         unused(Aligned);
     }
@@ -124,7 +124,7 @@ struct SIMDVector {
     FASTOR_INLINE void aligned_load(const T *data) {
         std::copy(data,data+Size,value);
     }
-    FASTOR_INLINE void aligned_store(T *data) {
+    FASTOR_INLINE void aligned_store(T *data) const {
         std::copy(value,value+Size,data);
     }
 

@@ -54,7 +54,7 @@ struct SIMDVector<int,256> {
         else
             value = _mm256_loadu_si256((__m256i*)data);
     }
-    FASTOR_INLINE void store(int *data, bool Aligned=true) {
+    FASTOR_INLINE void store(int *data, bool Aligned=true) const {
         if (Aligned)
             _mm256_store_si256((__m256i*)data,value);
         else
@@ -64,7 +64,7 @@ struct SIMDVector<int,256> {
     FASTOR_INLINE void aligned_load(const int *data) {
         value =_mm256_load_si256((__m256i*)data);
     }
-    FASTOR_INLINE void aligned_store(int *data) {
+    FASTOR_INLINE void aligned_store(int *data) const {
         _mm256_store_si256((__m256i*)data,value);
     }
 
@@ -243,7 +243,7 @@ FASTOR_INLINE SIMDVector<int> operator*(int a, const SIMDVector<int> &b) {
 }
 
 FASTOR_INLINE SIMDVector<int> operator/(const SIMDVector<int> &a, const SIMDVector<int> &b) {
-    SIMDVector<int> out; 
+    SIMDVector<int> out;
     int val[out.size()];   _mm256_storeu_si256((__m256i*)val, out.value);
     int val_a[out.size()]; _mm256_storeu_si256((__m256i*)val_a, a.value);
     int val_b[out.size()]; _mm256_storeu_si256((__m256i*)val_b, b.value);
@@ -254,7 +254,7 @@ FASTOR_INLINE SIMDVector<int> operator/(const SIMDVector<int> &a, const SIMDVect
     return out;
 }
 FASTOR_INLINE SIMDVector<int> operator/(const SIMDVector<int> &a, int b) {
-    SIMDVector<int> out; 
+    SIMDVector<int> out;
     int val[out.size()];   _mm256_storeu_si256((__m256i*)val, out.value);
     int val_a[out.size()]; _mm256_storeu_si256((__m256i*)val_a, a.value);
     for (FASTOR_INDEX i=0; i<out.size(); ++i) {
@@ -264,7 +264,7 @@ FASTOR_INLINE SIMDVector<int> operator/(const SIMDVector<int> &a, int b) {
     return out;
 }
 FASTOR_INLINE SIMDVector<int> operator/(int a, const SIMDVector<int> &b) {
-    SIMDVector<int> out; 
+    SIMDVector<int> out;
     int val[out.size()];   _mm256_storeu_si256((__m256i*)val, out.value);
     int val_b[out.size()]; _mm256_storeu_si256((__m256i*)val_b, b.value);
     for (FASTOR_INDEX i=0; i<out.size(); ++i) {
@@ -345,7 +345,7 @@ struct SIMDVector<int,128> {
         else
             value = _mm_loadu_si128((__m128i*)data);
     }
-    FASTOR_INLINE void store(int *data, bool Aligned=true) {
+    FASTOR_INLINE void store(int *data, bool Aligned=true) const {
         if (Aligned)
             _mm_store_si128((__m128i*)data,value);
         else
@@ -355,7 +355,7 @@ struct SIMDVector<int,128> {
     FASTOR_INLINE void aligned_load(const int *data) {
         value =_mm_load_si128((__m128i*)data);
     }
-    FASTOR_INLINE void aligned_store(int *data) {
+    FASTOR_INLINE void aligned_store(int *data) const {
         _mm_store_si128((__m128i*)data,value);
     }
 
@@ -533,7 +533,7 @@ FASTOR_INLINE SIMDVector<int,128> operator*(int a, const SIMDVector<int,128> &b)
 }
 
 FASTOR_INLINE SIMDVector<int,128> operator/(const SIMDVector<int,128> &a, const SIMDVector<int,128> &b) {
-    SIMDVector<int,128> out; 
+    SIMDVector<int,128> out;
     int val[out.size()];   _mm_storeu_si128((__m128i*)val, out.value);
     int val_a[out.size()]; _mm_storeu_si128((__m128i*)val_a, a.value);
     int val_b[out.size()]; _mm_storeu_si128((__m128i*)val_b, b.value);
@@ -544,7 +544,7 @@ FASTOR_INLINE SIMDVector<int,128> operator/(const SIMDVector<int,128> &a, const 
     return out;
 }
 FASTOR_INLINE SIMDVector<int,128> operator/(const SIMDVector<int,128> &a, int b) {
-    SIMDVector<int,128> out; 
+    SIMDVector<int,128> out;
     int val[out.size()];   _mm_storeu_si128((__m128i*)val, out.value);
     int val_a[out.size()]; _mm_storeu_si128((__m128i*)val_a, a.value);
     for (FASTOR_INDEX i=0; i<out.size(); ++i) {
@@ -554,7 +554,7 @@ FASTOR_INLINE SIMDVector<int,128> operator/(const SIMDVector<int,128> &a, int b)
     return out;
 }
 FASTOR_INLINE SIMDVector<int,128> operator/(int a, const SIMDVector<int,128> &b) {
-    SIMDVector<int,128> out; 
+    SIMDVector<int,128> out;
     int val[out.size()];   _mm_storeu_si128((__m128i*)val, out.value);
     int val_b[out.size()]; _mm_storeu_si128((__m128i*)val_b, b.value);
     for (FASTOR_INDEX i=0; i<out.size(); ++i) {
@@ -602,21 +602,21 @@ struct SIMDVector<int, 32> {
     FASTOR_INLINE void load(const int *data, bool ) {
         value = *data;
     }
-    FASTOR_INLINE void store(int *data, bool ) {
+    FASTOR_INLINE void store(int *data, bool ) const {
         data[0] = value;
     }
 
     FASTOR_INLINE void load(const int *data) {
         value = *data;
     }
-    FASTOR_INLINE void store(int *data) {
+    FASTOR_INLINE void store(int *data) const {
         data[0] = value;
     }
 
     FASTOR_INLINE void aligned_load(const int *data) {
         value = *data;
     }
-    FASTOR_INLINE void aligned_store(int *data) {
+    FASTOR_INLINE void aligned_store(int *data) const {
         data[0] = value;
     }
 

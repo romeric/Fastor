@@ -54,7 +54,7 @@ struct SIMDVector<float,256> {
         else
             value = _mm256_loadu_ps(data);
     }
-    FASTOR_INLINE void store(float *data, bool Aligned=true) {
+    FASTOR_INLINE void store(float *data, bool Aligned=true) const {
         if (Aligned)
             _mm256_store_ps(data,value);
         else
@@ -64,7 +64,7 @@ struct SIMDVector<float,256> {
     FASTOR_INLINE void aligned_load(const float *data) {
         value =_mm256_load_ps(data);
     }
-    FASTOR_INLINE void aligned_store(float *data) {
+    FASTOR_INLINE void aligned_store(float *data) const {
         _mm256_store_ps(data,value);
     }
 
@@ -327,7 +327,7 @@ struct SIMDVector<float,128> {
         else
             value = _mm_loadu_ps(data);
     }
-    FASTOR_INLINE void store(float *data, bool Aligned=true) {
+    FASTOR_INLINE void store(float *data, bool Aligned=true) const {
         if (Aligned)
             _mm_store_ps(data,value);
         else
@@ -337,7 +337,7 @@ struct SIMDVector<float,128> {
     FASTOR_INLINE void aligned_load(const float *data) {
         value =_mm_load_ps(data);
     }
-    FASTOR_INLINE void aligned_store(float *data) {
+    FASTOR_INLINE void aligned_store(float *data) const {
         _mm_store_ps(data,value);
     }
 
@@ -569,21 +569,21 @@ struct SIMDVector<float, 32> {
     FASTOR_INLINE void load(const float *data, bool ) {
         value = *data;
     }
-    FASTOR_INLINE void store(float *data, bool ) {
+    FASTOR_INLINE void store(float *data, bool ) const {
         data[0] = value;
     }
 
     FASTOR_INLINE void load(const float *data) {
         value = *data;
     }
-    FASTOR_INLINE void store(float *data) {
+    FASTOR_INLINE void store(float *data) const {
         data[0] = value;
     }
 
     FASTOR_INLINE void aligned_load(const float *data) {
         value = *data;
     }
-    FASTOR_INLINE void aligned_store(float *data) {
+    FASTOR_INLINE void aligned_store(float *data) const {
         data[0] = value;
     }
 
