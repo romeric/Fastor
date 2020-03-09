@@ -10,13 +10,13 @@
 
 namespace Fastor {
 
-namespace internal {
-template<typename T, typename U, size_t N>
-constexpr std::array<T,N>  _filll_one_value(std::array<T,N> seq, U val) {
-    for (int i=0; i<N; ++i) seq[i]=val;
-    return seq;
-}
-}
+// namespace internal {
+// template<typename T, typename U, size_t N>
+// constexpr std::array<T,N>  _filll_one_value(std::array<T,N> seq, U val) {
+//     for (int i=0; i<N; ++i) seq[i]=val;
+//     return seq;
+// }
+// }
 
 
 template<typename T, size_t ...Rest>
@@ -40,11 +40,16 @@ public:
         return DimensionHolder[dim];
     }
 
+    // template<typename U=int>
+    // SingleValueTensor(U num) : _data{internal::_filll_one_value(_data,num)} {}
+    // SingleValueTensor(const SingleValueTensor<T,Rest...> &a) : _data{internal::_filll_one_value(_data,a.data()[0])} {}
+    // FASTOR_INLINE SingleValueTensor(const AbstractTensor<SingleValueTensor<T,Rest...>,sizeof...(Rest)>& src_)
+    // : _data{internal::_filll_one_value(_data,0)} {
+    // }
     template<typename U=int>
-    SingleValueTensor(U num) : _data{internal::_filll_one_value(_data,num)} {}
-    SingleValueTensor(const SingleValueTensor<T,Rest...> &a) : _data{internal::_filll_one_value(_data,a.data()[0])} {}
-    FASTOR_INLINE SingleValueTensor(const AbstractTensor<SingleValueTensor<T,Rest...>,sizeof...(Rest)>& src_)
-    : _data{internal::_filll_one_value(_data,0)} {
+    SingleValueTensor(U num) : _data{(T)num} {}
+    SingleValueTensor(const SingleValueTensor<T,Rest...> &a) : _data{(T)a.data()[0]} {}
+    FASTOR_INLINE SingleValueTensor(const AbstractTensor<SingleValueTensor<T,Rest...>,sizeof...(Rest)>& src_) : _data{T(0)} {
     }
 
     constexpr FASTOR_INLINE T* data() const { return const_cast<T*>(this->_data.data());}
