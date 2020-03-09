@@ -3,9 +3,8 @@
 
 template<typename U, size_t M1, size_t N1>
 FASTOR_INLINE Tensor(const TensorViewExpr<Tensor<U,M1,N1>,2>& src) {
-// FASTOR_INLINE Tensor(const AbstractTensor<TensorViewExpr<Tensor<U,M1,N1>,2>,2>& src_) {
-    // const TensorViewExpr<Tensor<U,M1,N1>,2> &src = src_.self();
-    // verify_dimensions(src);
+    using scalar_type_ = U;
+    constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
 #ifndef NDEBUG
         FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
@@ -13,18 +12,19 @@ FASTOR_INLINE Tensor(const TensorViewExpr<Tensor<U,M1,N1>,2>& src) {
     constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
     for (FASTOR_INDEX i = 0; i <M; ++i) {
         FASTOR_INDEX j;
-        for (j = 0; j <ROUND_DOWN(N,Stride); j+=Stride) {
-            src.template eval<T>(i,j).store(_data+i*N+j, false);
+        for (j = 0; j <ROUND_DOWN(N,Stride_); j+=Stride_) {
+            src.template eval<scalar_type_>(i,j).store(_data+i*N+j, false);
         }
         for (; j < N; ++j) {
-            _data[i*N+j] = src.template eval_s<T>(i,j);
+            _data[i*N+j] = src.template eval_s<scalar_type_>(i,j);
         }
     }
 }
 
 template<typename U, size_t M1, size_t N1, typename Seq0, typename Seq1>
 FASTOR_INLINE Tensor(const TensorFixedViewExpr2D<Tensor<U,M1,N1>,Seq0,Seq1,2>& src) {
-    // verify_dimensions(src);
+    using scalar_type_ = U;
+    constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
 #ifndef NDEBUG
         FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
@@ -32,11 +32,11 @@ FASTOR_INLINE Tensor(const TensorFixedViewExpr2D<Tensor<U,M1,N1>,Seq0,Seq1,2>& s
     constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
     for (FASTOR_INDEX i = 0; i <M; ++i) {
         FASTOR_INDEX j;
-        for (j = 0; j <ROUND_DOWN(N,Stride); j+=Stride) {
-            src.template eval<T>(i,j).store(_data+i*N+j, false);
+        for (j = 0; j <ROUND_DOWN(N,Stride_); j+=Stride_) {
+            src.template eval<scalar_type_>(i,j).store(_data+i*N+j, false);
         }
         for (; j < N; ++j) {
-            _data[i*N+j] = src.template eval_s<T>(i,j);
+            _data[i*N+j] = src.template eval_s<scalar_type_>(i,j);
         }
     }
 }
@@ -44,7 +44,8 @@ FASTOR_INLINE Tensor(const TensorFixedViewExpr2D<Tensor<U,M1,N1>,Seq0,Seq1,2>& s
 
 template<typename Derived, size_t DIMS, typename std::enable_if<has_tensor_view<Derived>::value && DIMS==sizeof...(Rest),bool>::type=0>
 FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
-    // verify_dimensions(src_);
+    using scalar_type_ = typename scalar_type_finder<Derived>::type;
+    // constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
     const Derived &src = src_.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -56,7 +57,7 @@ FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
 
     while(counter < Size)
     {
-        _data[counter] = src.template teval_s<T>(as);
+        _data[counter] = src.template teval_s<scalar_type_>(as);
 
         counter++;
         for(jt = Dimension-1; jt>=0; jt--)
