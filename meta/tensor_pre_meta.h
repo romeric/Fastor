@@ -38,6 +38,10 @@ struct has_tensor_view<BinaryExpr<TLhs,TRhs,DIMS>> {
         (std::is_arithmetic<TLhs>::value ? has_tensor_view<TRhs>::value : has_tensor_view<TLhs>::value);
 };
 
+
+template<class T>
+struct scalar_type_finder;
+
 }
 
 #endif // TENSOR_PRE_META_H

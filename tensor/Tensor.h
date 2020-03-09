@@ -12,7 +12,6 @@
 
 namespace Fastor {
 
-
 template<typename T, size_t ... Rest>
 class Tensor: public AbstractTensor<Tensor<T,Rest...>,sizeof...(Rest)> {
 private:
@@ -22,7 +21,7 @@ private:
     T FASTOR_ALIGN _data[prod<Rest...>::value];
 #endif
 public:
-    typedef T scalar_type;
+    using scalar_type = T;
     using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
     static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
     static constexpr FASTOR_INDEX Size = prod<Rest...>::value;
@@ -48,7 +47,7 @@ public:
         SIMDVector<T,DEFAULT_ABI> reg(static_cast<T>(num));
         FASTOR_INDEX i;
         for (i = 0; i< ROUND_DOWN(Size,Stride); i+=Stride) {
-            reg.store(_data+i);
+            reg.store(&_data[i]);
         }
         for (; i<Size; ++i) {
             _data[i] = (T)num;
@@ -153,13 +152,15 @@ public:
     // Generic AbstractTensors
     template<typename Derived, size_t DIMS, typename std::enable_if<!has_tensor_view<Derived>::value || DIMS!=sizeof...(Rest),bool>::type=0>
     FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
+        using scalar_type_ = typename scalar_type_finder<Derived>::type;
+        constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
         const Derived &src = src_.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
         FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
-            src.template eval<T>(i).store(_data+i, IS_ALIGNED);
+        for (i = 0; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
+            src.template eval<T>(i).store(&_data[i], IS_ALIGNED);
         }
         for (; i < src.size(); ++i) {
             _data[i] = src.template eval_s<T>(i);
@@ -168,13 +169,15 @@ public:
 
     template<typename Derived, size_t DIMS, typename std::enable_if<!has_tensor_view<Derived>::value || DIMS!=sizeof...(Rest),bool>::type=0>
     FASTOR_INLINE Tensor<T,Rest...>& operator=(const AbstractTensor<Derived,DIMS>& src_) {
+        using scalar_type_ = typename scalar_type_finder<Derived>::type;
+        constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
         const Derived &src = src_.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
         FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(src.size(),Stride); i+=Stride) {
-            src.template eval<T>(i).store(_data+i, IS_ALIGNED);
+        for (i = 0; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
+            src.template eval<T>(i).store(&_data[i], IS_ALIGNED);
         }
         for (; i < src.size(); ++i) {
             _data[i] = src.template eval_s<T>(i);
@@ -197,8 +200,8 @@ public:
         V _vec;
         FASTOR_INDEX i=0;
         for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
-            _vec = V(_data+i) + V(a_data+i);
-            _vec.store(_data+i);
+            _vec = V(&_data[i]) + V(&a_data[i]);
+            _vec.store(&_data[i]);
         }
         for (; i<Size; ++i) {
             _data[i] += a_data[i];
@@ -211,8 +214,8 @@ public:
         V _vec;
         FASTOR_INDEX i=0;
         for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
-            _vec = V(_data+i) - V(a_data+i);
-            _vec.store(_data+i);
+            _vec = V(&_data[i]) - V(&a_data[i]);
+            _vec.store(&_data[i]);
         }
         for (; i<Size; ++i) {
             _data[i] -= a_data[i];
@@ -225,8 +228,8 @@ public:
         V _vec;
         FASTOR_INDEX i=0;
         for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
-            _vec = V(_data+i) * V(a_data+i);
-            _vec.store(_data+i);
+            _vec = V(&_data[i]) * V(&a_data[i]);
+            _vec.store(&_data[i]);
         }
         for (; i<Size; ++i) {
             _data[i] *= a_data[i];
@@ -239,8 +242,8 @@ public:
         V _vec;
         FASTOR_INDEX i=0;
         for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
-            _vec = V(_data+i) / V(a_data+i);
-            _vec.store(_data+i);
+            _vec = V(&_data[i]) / V(&a_data[i]);
+            _vec.store(&_data[i]);
         }
         for (; i<Size; ++i) {
             _data[i] /= a_data[i];

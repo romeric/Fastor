@@ -197,7 +197,7 @@ constexpr int ColumnMajor = 1;
 
 
 #ifndef NDEBUG
-inline void FASTOR_ASSERT(bool cond, const std::string &x) {
+FASTOR_INLINE void FASTOR_ASSERT(bool cond, const std::string &x) {
     if (cond==true) {
         return;
     }
@@ -207,7 +207,7 @@ inline void FASTOR_ASSERT(bool cond, const std::string &x) {
     }
 }
 #else
-inline void FASTOR_ASSERT(bool, const std::string&) {}
+FASTOR_INLINE void FASTOR_ASSERT(bool, const std::string&) {}
 #endif
 // The following assert is provided for cases where despite
 // the DNDEBUG one might want the code to stop at failure

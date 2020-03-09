@@ -5,6 +5,8 @@
 //---------------------------------------------------------------------------------------------//
 template<typename Derived, size_t DIMS>
 FASTOR_INLINE void operator +=(const AbstractTensor<Derived,DIMS>& src_) {
+    using scalar_type_ = typename scalar_type_finder<Derived>::type;
+    constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
     const Derived &src = src_.self();
 #ifdef NDEBUG
     FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -12,17 +14,19 @@ FASTOR_INLINE void operator +=(const AbstractTensor<Derived,DIMS>& src_) {
     using V = SIMDVector<T,DEFAULT_ABI>;
     V _vec;
     FASTOR_INDEX i;
-    for (i = 0; i <ROUND_DOWN(Size,V::Size); i+=V::Size) {
-        _vec = V(_data+i) + src.template eval<T>(i);
+    for (i = 0; i <ROUND_DOWN(Size,Stride_); i+=Stride_) {
+        _vec = V(_data+i) + src.template eval<scalar_type_>(i);
         _vec.store(_data+i);
     }
     for (; i < Size; ++i) {
-        _data[i] += src.template eval_s<T>(i);
+        _data[i] += src.template eval_s<scalar_type_>(i);
     }
 }
 
 template<typename Derived, size_t DIMS>
 FASTOR_INLINE void operator -=(const AbstractTensor<Derived,DIMS>& src_) {
+    using scalar_type_ = typename scalar_type_finder<Derived>::type;
+    constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
     const Derived &src = src_.self();
 #ifdef NDEBUG
     FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -30,17 +34,19 @@ FASTOR_INLINE void operator -=(const AbstractTensor<Derived,DIMS>& src_) {
     using V = SIMDVector<T,DEFAULT_ABI>;
     V _vec;
     FASTOR_INDEX i;
-    for (i = 0; i <ROUND_DOWN(Size,V::Size); i+=V::Size) {
-        _vec = V(_data+i) - src.template eval<T>(i);
+    for (i = 0; i <ROUND_DOWN(Size,Stride_); i+=Stride_) {
+        _vec = V(_data+i) - src.template eval<scalar_type_>(i);
         _vec.store(_data+i);
     }
     for (; i < Size; ++i) {
-        _data[i] -= src.template eval_s<T>(i);
+        _data[i] -= src.template eval_s<scalar_type_>(i);
     }
 }
 
 template<typename Derived, size_t DIMS>
 FASTOR_INLINE void operator *=(const AbstractTensor<Derived,DIMS>& src_) {
+    using scalar_type_ = typename scalar_type_finder<Derived>::type;
+    constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
     const Derived &src = src_.self();
 #ifdef NDEBUG
     FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -48,17 +54,19 @@ FASTOR_INLINE void operator *=(const AbstractTensor<Derived,DIMS>& src_) {
     using V = SIMDVector<T,DEFAULT_ABI>;
     V _vec;
     FASTOR_INDEX i;
-    for (i = 0; i <ROUND_DOWN(Size,V::Size); i+=V::Size) {
-        _vec = V(_data+i) * src.template eval<T>(i);
+    for (i = 0; i <ROUND_DOWN(Size,Stride_); i+=Stride_) {
+        _vec = V(_data+i) * src.template eval<scalar_type_>(i);
         _vec.store(_data+i);
     }
     for (; i < Size; ++i) {
-        _data[i] *= src.template eval_s<T>(i);
+        _data[i] *= src.template eval_s<scalar_type_>(i);
     }
 }
 
 template<typename Derived, size_t DIMS>
 FASTOR_INLINE void operator /=(const AbstractTensor<Derived,DIMS>& src_) {
+    using scalar_type_ = typename scalar_type_finder<Derived>::type;
+    constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
     const Derived &src = src_.self();
 #ifdef NDEBUG
     FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -66,12 +74,12 @@ FASTOR_INLINE void operator /=(const AbstractTensor<Derived,DIMS>& src_) {
     using V = SIMDVector<T,DEFAULT_ABI>;
     V _vec;
     FASTOR_INDEX i;
-    for (i = 0; i <ROUND_DOWN(Size,V::Size); i+=V::Size) {
-        _vec = V(_data+i) / src.template eval<T>(i);
+    for (i = 0; i <ROUND_DOWN(Size,Stride_); i+=Stride_) {
+        _vec = V(_data+i) / src.template eval<scalar_type_>(i);
         _vec.store(_data+i);
     }
     for (; i < Size; ++i) {
-        _data[i] /= src.template eval_s<T>(i);
+        _data[i] /= src.template eval_s<scalar_type_>(i);
     }
 }
 //---------------------------------------------------------------------------------------------//

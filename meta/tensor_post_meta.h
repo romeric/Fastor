@@ -36,6 +36,11 @@ template<typename T, size_t ... Rest>
 struct scalar_type_finder<TensorRef<T,Rest...>> {
     using type = T;
 };
+template<template<typename,typename,typename,size_t> class TensorFixedViewExpr,
+    typename Expr, typename Seq0, typename Seq1, size_t DIMS>
+struct scalar_type_finder<TensorFixedViewExpr<Expr,Seq0,Seq1,DIMS>> {
+    using type = typename scalar_type_finder<Expr>::type;
+};
 //--------------------------------------------------------------------------------------------------------------------//
 
 
