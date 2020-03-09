@@ -5,7 +5,7 @@
 #include "backend/backend.h"
 #include "simd_vector/SIMDVector.h"
 #include "AbstractTensor.h"
-#include "ranges.h"
+#include "Ranges.h"
 #include "ForwardDeclare.h"
 #include "expressions/smart_ops/smart_ops.h"
 #include <tensor/TensorIO.h>
@@ -51,7 +51,7 @@ public:
 
 
     // No constructor should be added not even CRTP constructors
-    
+
     // Provide generic AbstractTensors copy constructor though
     template<typename Derived, size_t DIMS>
     FASTOR_INLINE void operator=(const AbstractTensor<Derived,DIMS>& src_) {

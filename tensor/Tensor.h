@@ -5,7 +5,7 @@
 #include "backend/backend.h"
 #include "simd_vector/SIMDVector.h"
 #include "AbstractTensor.h"
-#include "ranges.h"
+#include "Ranges.h"
 #include "ForwardDeclare.h"
 #include "expressions/smart_ops/smart_ops.h"
 #include "meta/tensor_pre_meta.h"

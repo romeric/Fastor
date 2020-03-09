@@ -3,7 +3,7 @@
 
 
 #include "tensor/Tensor.h"
-#include "tensor/ranges.h"
+#include "tensor/Ranges.h"
 
 namespace Fastor {
 
