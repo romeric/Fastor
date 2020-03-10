@@ -32,9 +32,11 @@ public:
         return DimensionHolder[dim];
     }
 
-    // constexpr TensorRef(const scalar_type* data) : _data(data) {}
+    // Constructors
+    //----------------------------------------------------------------------------------------------------------//
     constexpr TensorRef(scalar_type* data) : _data(data) {}
-
+    template<size_t ... RestOther> constexpr TensorRef(Tensor<T,RestOther...> &a) : _data(a.data()) {}
+    //----------------------------------------------------------------------------------------------------------//
 
     // Scalar indexing
     //----------------------------------------------------------------------------------------------------------//
