@@ -235,6 +235,15 @@ struct SIMDVector {
         return quan;
     }
 
+    template<typename U>
+    FASTOR_INLINE SIMDVector<U,ABI> SIMDVector<U,ABI> cast() {
+        SIMDVector<U,ABI> out;
+        for (FASTOR_INDEX i=0; i<Size;++i) {
+            out.value[i] = static_cast<U>(value[i]);
+        }
+        return out;
+    }
+
     T FASTOR_ALIGN value[Size];
 };
 
