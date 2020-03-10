@@ -14,8 +14,8 @@ namespace Fastor {
 template <>
 struct SIMDVector<float,256> {
     using value_type = __m256;
-    static constexpr FASTOR_INDEX Size = get_vector_size<float>::size;
-    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return get_vector_size<float>::size;}
+    static constexpr FASTOR_INDEX Size = internal::get_vector_size<float>::size;
+    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return internal::get_vector_size<float>::size;}
     static constexpr int unroll_size(FASTOR_INDEX size) {return (static_cast<int>(size) - static_cast<int>(Size));}
 
     FASTOR_INLINE SIMDVector() : value(_mm256_setzero_ps()) {}
@@ -287,8 +287,8 @@ FASTOR_INLINE SIMDVector<float> abs(const SIMDVector<float> &a) {
 template <>
 struct SIMDVector<float,128> {
     using value_type = __m128;
-    static constexpr FASTOR_INDEX Size = get_vector_size<float,128>::size;
-    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return get_vector_size<float,128>::size;}
+    static constexpr FASTOR_INDEX Size = internal::get_vector_size<float,128>::size;
+    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return internal::get_vector_size<float,128>::size;}
     static constexpr int unroll_size(FASTOR_INDEX size) {return (static_cast<int>(size) - static_cast<int>(Size));}
 
     FASTOR_INLINE SIMDVector() : value(_mm_setzero_ps()) {}
