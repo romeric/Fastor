@@ -168,7 +168,17 @@ FASTOR_INLINE T product() const {
         scalar *= _data[i];
     }
 
-#endif // TENSOR_METHODS_CONST_H
-
     return vec.product()*scalar;
 }
+
+template<typename U>
+FASTOR_INLINE Tensor<U,Rest...> cast() const {
+    Tensor<U,Rest...> out;
+    U *out_data = out.data();
+    for (FASTOR_INDEX i=0; i<Size; ++i) {
+        out_data[i] = static_cast<U>(_data[i]);
+    }
+    return out;
+}
+
+#endif // TENSOR_METHODS_CONST_H
