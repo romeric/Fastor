@@ -7,7 +7,7 @@ FASTOR_INLINE void fill(U num0) {
     FASTOR_INDEX i=0;
     for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
         SIMDVector<T,DEFAULT_ABI> _vec = num;
-        _vec.store(_data+i);
+        _vec.store(&_data[i]);
     }
     for (; i<Size; ++i) _data[i] = num0;
 }
@@ -24,7 +24,7 @@ FASTOR_INLINE void arange(U num0=0) {
     FASTOR_INDEX i=0;
     for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
         _vec.set_sequential(T(i)+T(num));
-        _vec.store(_data+i);
+        _vec.store(&_data[i]);
     }
     for (; i<Size; ++i) _data[i] = T(i)+T(num0);
 }
@@ -33,7 +33,7 @@ FASTOR_INLINE void zeros() {
     SIMDVector<T,DEFAULT_ABI> _zeros;
     FASTOR_INDEX i=0;
     for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
-        _zeros.store(_data+i);
+        _zeros.store(&_data[i]);
     }
     for (; i<Size; ++i) _data[i] = 0;
 }
@@ -85,14 +85,14 @@ FASTOR_INLINE void eye() {
 FASTOR_INLINE void random() {
     //! Populate tensor with random FP numbers
     for (FASTOR_INDEX i=0; i<this->Size; ++i) {
-        _data[i] = (T)rand()/RAND_MAX;
+        _data[get_mem_index(i)] = (T)rand()/RAND_MAX;
     }
 }
 
 FASTOR_INLINE void randint() {
     //! Populate tensor with random integer numbers
     for (FASTOR_INDEX i=0; i<this->Size; ++i) {
-        _data[i] = (T)rand();
+        _data[get_mem_index(i)] = (T)rand();
     }
 }
 
@@ -117,7 +117,7 @@ FASTOR_INLINE void reverse() {
     V vec;
     for (; i< unroll_upto; i+=stride) {
         vec.load(&tmp[Size - i - stride]);
-        vec.reverse().store(_data+i);
+        vec.reverse().store(&_data[i]);
     }
     for (; i< Size; ++i) {
         _data[i] = tmp[Size-i-1];
@@ -169,16 +169,6 @@ FASTOR_INLINE T product() const {
     }
 
     return vec.product()*scalar;
-}
-
-template<typename U>
-FASTOR_INLINE Tensor<U,Rest...> cast() const {
-    Tensor<U,Rest...> out;
-    U *out_data = out.data();
-    for (FASTOR_INDEX i=0; i<Size; ++i) {
-        out_data[i] = static_cast<U>(_data[i]);
-    }
-    return out;
 }
 
 #endif // TENSOR_METHODS_CONST_H

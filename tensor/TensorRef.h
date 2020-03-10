@@ -36,23 +36,26 @@ public:
     constexpr TensorRef(scalar_type* data) : _data(data) {}
 
 
+    // Scalar indexing
+    //----------------------------------------------------------------------------------------------------------//
+#undef SCALAR_INDEXING_NONCONST_H
+#undef SCALAR_INDEXING_CONST_H
+#undef INDEX_RETRIEVER_H
+    #include "tensor/IndexRetriever.h"
+    #include "tensor/ScalarIndexing.h"
+#define INDEX_RETRIEVER_H
+#define SCALAR_INDEXING_NONCONST_H
+#define SCALAR_INDEXING_CONST_H
     // Expression templates evaluators
     //----------------------------------------------------------------------------------------------------------//
 #undef TENSOR_EVALUATOR_H
     #include "tensor/TensorEvaluator.h"
 #define TENSOR_EVALUATOR_H
     //----------------------------------------------------------------------------------------------------------//
-#undef SCALAR_INDEXING_NONCONST_H
-#undef SCALAR_INDEXING_CONST_H
-    #include "tensor/ScalarIndexing.h"
-#define SCALAR_INDEXING_NONCONST_H
-#define SCALAR_INDEXING_CONST_H
-    // #include "BlockIndexingRef.h"
 
-
-    // No constructor should be added not even CRTP constructors
-
+    // No constructor should be added
     // Provide generic AbstractTensors copy constructor though
+    //----------------------------------------------------------------------------------------------------------//
     template<typename Derived, size_t DIMS>
     FASTOR_INLINE void operator=(const AbstractTensor<Derived,DIMS>& src_) {
         const Derived &src = src_.self();
@@ -75,12 +78,37 @@ public:
 #define TENSOR_INPLACE_OPERATORS_H
     //----------------------------------------------------------------------------------------------------------//
 
+    //----------------------------------------------------------------------------------------------------------//
+#undef TENSOR_METHODS_CONST_H
+#undef TENSOR_METHODS_NONCONST_H
+    #include "TensorMethods.h"
+#define TENSOR_METHODS_CONST_H
+#define TENSOR_METHODS_NONCONST_H
+    //----------------------------------------------------------------------------------------------------------//
 
+    // Converters
+    //----------------------------------------------------------------------------------------------------------//
+#undef PODCONVERTERS_H
+    #include "PODConverters.h"
+#define PODCONVERTERS_H
+    //----------------------------------------------------------------------------------------------------------//
+
+    // Cast method
+    //----------------------------------------------------------------------------------------------------------//
+    template<typename U>
+    FASTOR_INLINE Tensor<U,Rest...> cast() const {
+        Tensor<U,Rest...> out;
+        U *out_data = out.data();
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            out_data[get_mem_index(i)] = static_cast<U>(_data[i]);
+        }
+        return out;
+    }
+    //----------------------------------------------------------------------------------------------------------//
 
 
 private:
     scalar_type* _data;
-    // const scalar_type* _data;
 };
 
 OS_STREAM_TENSOR0(TensorRef)

@@ -56,41 +56,19 @@ public:
     // constexpr FASTOR_INLINE T* data() const { return const_cast<T*>(&this->_data);}
 
 
-    // Scalar indexing const
+    // Index retriever
     //----------------------------------------------------------------------------------------------------------//
-// #undef SCALAR_INDEXING_CONST_H
-//     #include <tensor/ScalarIndexing.h>
-// #define SCALAR_INDEXING_CONST_H
-    //----------------------------------------------------------------------------------------------------------//
-
-    //----------------------------------------------------------------------------------------------------------//
-    template<typename... Args, typename std::enable_if<sizeof...(Args)==1
-                            && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
-    FASTOR_INLINE const T& operator()(Args ... args) const {
+    template<typename U>
+    FASTOR_INLINE int get_mem_index(U index) const {
 #ifdef BOUNDSCHECK
-        constexpr int M = get_value<1,Rest...>::value;
-        const int i = get_index<0>(args...) < 0 ? M + get_index<0>(args...) : get_index<0>(args...);
-        assert( ( (i>=0 && i<M)) && "INDEX OUT OF BOUNDS");
+        FASTOR_ASSERT((index>=0 && index<Size), "INDEX OUT OF BOUNDS");
 #endif
-        return _data[0];
+        return index;
     }
 
-    template<typename... Args, typename std::enable_if<sizeof...(Args)==2
-                            && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
-    FASTOR_INLINE const T& operator()(Args ... args) const {
-#ifdef BOUNDSCHECK
-        constexpr int M = get_value<1,Rest...>::value;
-        constexpr int N = get_value<2,Rest...>::value;
-        const int i = get_index<0>(args...) < 0 ? M + get_index<0>(args...) : get_index<0>(args...);
-        const int j = get_index<1>(args...) < 0 ? N + get_index<1>(args...) : get_index<1>(args...);
-        assert( ( (i>=0 && i<M) && (j>=0 && j<N)) && "INDEX OUT OF BOUNDS");
-#endif
-        return _data[0];
-    }
-
-    template<typename... Args, typename std::enable_if<sizeof...(Args)>=3
-                            && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
-    FASTOR_INLINE const T& operator()(Args ... args) const {
+    template<typename... Args, typename std::enable_if<sizeof...(Args)==Dimension_t::value &&
+                                is_arithmetic_pack<Args...>::value,bool>::type =0>
+    FASTOR_INLINE int get_flat_index(Args ... args) const {
 #ifdef BOUNDSCHECK
         int largs[sizeof...(Args)] = {args...};
         constexpr int DimensionHolder[Dimension] = {Rest...};
@@ -99,90 +77,36 @@ public:
             assert( (largs[i]>=0 && largs[i]<DimensionHolder[i]) && "INDEX OUT OF BOUNDS");
         }
 #endif
-        return _data[0];
+        return 0;
     }
 
-    // Expression templates evaluators
-    //----------------------------------------------------------------------------------------------------------//
-// #undef TENSOR_EVALUATOR_H
-//     #include "tensor/TensorEvaluator.h"
-// #define TENSOR_EVALUATOR_H
-
-    // Expression templates evaluators
-    //----------------------------------------------------------------------------------------------------------//
-    template<typename U=T>
-    FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
-#ifdef BOUNDSCHECK
-        // This is a generic evaluator and not for 1D cases only
-        FASTOR_ASSERT((i>=0 && i<Size), "INDEX OUT OF BOUNDS");
-#endif
-        return SIMDVector<T,DEFAULT_ABI>(_data[0]);
-    }
-    template<typename U=T>
-    FASTOR_INLINE T eval_s(FASTOR_INDEX i) const {
-#ifdef BOUNDSCHECK
-        // This is a generic evaluator and not for 1D cases only
-        FASTOR_ASSERT((i>=0 && i<Size), "INDEX OUT OF BOUNDS");
-#endif
-        return _data[0];
-    }
-    template<typename U=T>
-    FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
-        constexpr int N = get_value<2,Rest...>::value;
-#ifdef BOUNDSCHECK
-        constexpr int M = get_value<1,Rest...>::value;
-        FASTOR_ASSERT((i>=0 && i<M && j>=0 && j<N), "INDEX OUT OF BOUNDS");
-#endif
-        return SIMDVector<T,DEFAULT_ABI>(_data[0]);
-    }
-    template<typename U=T>
-    FASTOR_INLINE T eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
-#ifdef BOUNDSCHECK
-        constexpr int M = get_value<1,Rest...>::value;
-        constexpr int N = get_value<2,Rest...>::value;
-        FASTOR_ASSERT((i>=0 && i<M && j>=0 && j<N), "INDEX OUT OF BOUNDS");
-#endif
-        return _data[0];
-    }
-    template<typename U>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,Dimension> &as) const {
+    FASTOR_INLINE int get_flat_index(const std::array<int, Dimension> &as) const {
 #ifdef BOUNDSCHECK
         constexpr std::array<size_t,Dimension> products_ = nprods_views<Index<Rest...>,
             typename std_ext::make_index_sequence<Dimension>::type>::values;
-
         int index = 0;
         for (int i=0; i<Dimension; ++i) {
             index += products_[i]*as[i];
         }
-        // This is a generic evaluator and not for 1D cases only
         FASTOR_ASSERT((index>=0 && index<Size), "INDEX OUT OF BOUNDS");
 #endif
-        return SIMDVector<T,DEFAULT_ABI>(_data[0]);
+        return 0;
     }
-    template<typename U>
-    FASTOR_INLINE U teval_s(const std::array<int,Dimension> &as) const {
-#ifdef BOUNDSCHECK
-        constexpr std::array<size_t,Dimension> products_ = nprods_views<Index<Rest...>,
-            typename std_ext::make_index_sequence<Dimension>::type>::values;
+    //----------------------------------------------------------------------------------------------------------//
 
-        int index = 0;
-        for (int i=0; i<Dimension; ++i) {
-            index += products_[i]*as[i];
-        }
-        // This is a generic evaluator and not for 1D cases only
-        FASTOR_ASSERT((index>=0 && index<Size), "INDEX OUT OF BOUNDS");
-#endif
-        return _data[0];
-    }
 
-    // This is purely for smart ops
-    constexpr FASTOR_INLINE T eval(T i, T j) const {
-        return _data[0];
-    }
-   // ----------------------------------------------------------------------------------------------------------//
+    // Scalar indexing const
+    //----------------------------------------------------------------------------------------------------------//
+#undef SCALAR_INDEXING_CONST_H
+    #include <tensor/ScalarIndexing.h>
+#define SCALAR_INDEXING_CONST_H
+    //----------------------------------------------------------------------------------------------------------//
 
+    // Expression templates evaluators
+    //----------------------------------------------------------------------------------------------------------//
+#undef TENSOR_EVALUATOR_H
+    #include "tensor/TensorEvaluator.h"
+#define TENSOR_EVALUATOR_H
     //----------------------------------------------------------------------------------------------------------//
 
     // Tensor methods
@@ -197,6 +121,15 @@ public:
 #undef PODCONVERTERS_H
     #include "tensor/PODConverters.h"
 #define PODCONVERTERS_H
+    //----------------------------------------------------------------------------------------------------------//
+
+    // Cast method
+    //----------------------------------------------------------------------------------------------------------//
+    template<typename U>
+    FASTOR_INLINE SingleValueTensor<U,Rest...> cast() const {
+        SingleValueTensor<U,Rest...> out(static_cast<U>(_data[0]));
+        return out;
+    }
     //----------------------------------------------------------------------------------------------------------//
 
     // Boolean functions
