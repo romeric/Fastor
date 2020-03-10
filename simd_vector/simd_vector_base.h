@@ -9,6 +9,8 @@
 
 namespace Fastor {
 
+namespace internal {
+
 template<typename T,int ABI=256>
 struct get_vector_size {
     static const FASTOR_INDEX size = ABI/sizeof(T)/8;
@@ -64,14 +66,16 @@ struct get_vector_size<std::complex<float>,128> {
     static const FASTOR_INDEX size = 2;
 };
 
+} // end of namesapce internal
+
 
 
 // THE DEFAULT SIMDVector TAKES CARE OF FALLING BACK TO SCALAR CODE
 // WHEREEVER SIMD IS NOT AVAILABLE
 template <typename T, int ABI=256>
 struct SIMDVector {
-    static constexpr FASTOR_INDEX Size = get_vector_size<T,ABI>::size;
-    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return get_vector_size<T,ABI>::size;}
+    static constexpr FASTOR_INDEX Size = internal::get_vector_size<T,ABI>::size;
+    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return internal::get_vector_size<T,ABI>::size;}
     static constexpr int unroll_size(FASTOR_INDEX size) {return (static_cast<int>(size) - static_cast<int>(Size));}
     using value_type = T[Size];
 
