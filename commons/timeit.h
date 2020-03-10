@@ -128,25 +128,45 @@ inline double timeit(T (*func)(Params...), Args...args)
 
         if (mean_time > RUNTIME)
         {
+#ifndef FASTOR_USE_BEST_TIME
             mean_time /= counter;
+#else
+            mean_time = best_time;
+#endif
             if (mean_time >= 1.0e-3 && mean_time < 1.)
                 std::cout << static_cast<long int>(counter)
+#ifndef FASTOR_USE_BEST_TIME
                           << FGRN(BOLD(" runs, average elapsed time is "))
+#else
+                          << FGRN(BOLD(" runs, best elapsed time is "))
+#endif
                           << mean_time/1.0e-03 << " ms" << ". " << FGRN(BOLD("No of CPU cycles "))
                           << uint64_t(cycles/(1.0*counter)) << std::endl;
             else if (mean_time >= 1.0e-6 && mean_time < 1.0e-3)
                 std::cout << static_cast<long int>(counter)
+#ifndef FASTOR_USE_BEST_TIME
                           << FGRN(BOLD(" runs, average elapsed time is "))
+#else
+                          << FGRN(BOLD(" runs, best elapsed time is "))
+#endif
                           << mean_time/1.0e-06 << " \xC2\xB5s" << ". " << FGRN(BOLD("No of CPU cycles "))
                           << uint64_t(cycles/(1.0*counter)) << std::endl; //\xE6
             else if (mean_time < 1.0e-6)
                 std::cout << static_cast<long int>(counter)
+#ifndef FASTOR_USE_BEST_TIME
                           << FGRN(BOLD(" runs, average elapsed time is "))
+#else
+                          << FGRN(BOLD(" runs, best elapsed time is "))
+#endif
                           << mean_time/1.0e-09 << " ns" << ". " << FGRN(BOLD("No of CPU cycles "))
                           << uint64_t(cycles/(1.0*counter)) << std::endl;
             else
                 std::cout << static_cast<long int>(counter)
+#ifndef FASTOR_USE_BEST_TIME
                           << FGRN(BOLD(" runs, average elapsed time is "))
+#else
+                          << FGRN(BOLD(" runs, best elapsed time is "))
+#endif
                           << mean_time << " s" << ". " << FGRN(BOLD("No of CPU cycles "))
                           << uint64_t(cycles/(1.0*counter)) << std::endl;
 
@@ -201,7 +221,11 @@ inline std::tuple<double,uint64_t> rtimeit(T (*func)(Params...), Args...args)
 
         if (mean_time > RUNTIME)
         {
+#ifndef FASTOR_USE_BEST_TIME
             mean_time /= counter;
+#else
+            mean_time = best_time;
+#endif
             break;
         }
     }
