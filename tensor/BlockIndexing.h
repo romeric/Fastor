@@ -29,9 +29,9 @@ FASTOR_INLINE Tensor<T,range_detector<F0,L0,S0>::value,range_detector<F1,L1,S1>:
     constexpr int size_0 = range_detector<F0,L0,S0>::value;
     constexpr int size_1 = range_detector<F1,L1,S1>::value;
     constexpr int size_ = size_0*size_1;
-    Tensor<T,size_0,size_1> out; T *out_data = out.data(); 
+    Tensor<T,size_0,size_1> out; T *out_data = out.data();
 
-    constexpr auto &idx = ravel_2d_indices<F0,L0,S0,F1,L1,S1,N, 
+    constexpr auto &idx = ravel_2d_indices<F0,L0,S0,F1,L1,S1,N,
         typename std_ext::make_index_sequence<size_>::type>::idx;
 
     for (int i=0; i<size_; ++i) {
@@ -141,17 +141,17 @@ FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,sizeof...(Seq)> operator()(Seq ..
 }
 
 template<int F0, int L0, int S0>
-FASTOR_INLINE TensorFixedViewExpr1D<Tensor<T,Rest...>, 
+FASTOR_INLINE TensorFixedViewExpr1D<Tensor<T,Rest...>,
         typename to_positive<fseq<F0,L0,S0>,prod<Rest...>::value>::type,1> operator()(fseq<F0,L0,S0>) {
     static_assert(Dimension==1,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
-    return TensorFixedViewExpr1D<Tensor<T,Rest...>, 
+    return TensorFixedViewExpr1D<Tensor<T,Rest...>,
         typename to_positive<fseq<F0,L0,S0>,prod<Rest...>::value>::type,1>(*this);
 }
 
 template<int F0, int L0, int S0, int F1, int L1, int S1>
 FASTOR_INLINE TensorFixedViewExpr2D<Tensor<T,Rest...>,
         typename to_positive<fseq<F0,L0,S0>,get_value<1,Rest...>::value>::type,
-        typename to_positive<fseq<F1,L1,S1>,get_value<2,Rest...>::value>::type,2> 
+        typename to_positive<fseq<F1,L1,S1>,get_value<2,Rest...>::value>::type,2>
 operator()(fseq<F0,L0,S0>, fseq<F1,L1,S1>) {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     return TensorFixedViewExpr2D<Tensor<T,Rest...>,
@@ -171,22 +171,22 @@ FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,2> operator()(Int num, fseq<F0,L0
     return TensorViewExpr<Tensor<T,Rest...>,2>(*this,seq(num),seq(_s));
 }
 
-template<typename Int, size_t N, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0> 
+template<typename Int, size_t N, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
 FASTOR_INLINE TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,N>,1> operator()(const Tensor<Int,N> &_it) {
     static_assert(Dimension==1,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     return TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,N>,1>(*this,_it);
 }
 
-template<typename Int, size_t ... IterSizes, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0> 
-FASTOR_INLINE TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,sizeof...(Rest)> 
+template<typename Int, size_t ... IterSizes, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
+FASTOR_INLINE TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,sizeof...(Rest)>
 operator()(const Tensor<Int,IterSizes...> &_it) {
     static_assert(Dimension==sizeof...(IterSizes),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     return TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,sizeof...(Rest)>(*this,_it);
 }
 
-template<typename Int0, typename Int1, size_t M, size_t N, 
-    typename std::enable_if<std::is_integral<Int0>::value && std::is_integral<Int1>::value,bool>::type=0> 
-FASTOR_INLINE TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int0,M,N>,2> 
+template<typename Int0, typename Int1, size_t M, size_t N,
+    typename std::enable_if<std::is_integral<Int0>::value && std::is_integral<Int1>::value,bool>::type=0>
+FASTOR_INLINE TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int0,M,N>,2>
 operator()(const Tensor<Int0,M> &_it0, const Tensor<Int1,N> &_it1) {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     Tensor<Int0,M,N> tmp_it;
@@ -199,9 +199,9 @@ operator()(const Tensor<Int0,M> &_it0, const Tensor<Int1,N> &_it1) {
     return TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int0,M,N>,2>(*this,tmp_it);
 }
 
-template<typename Int0, typename Int1, size_t M, 
-    typename std::enable_if<std::is_integral<Int0>::value && std::is_integral<Int1>::value,bool>::type=0> 
-FASTOR_INLINE TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int0,M,1>,2> 
+template<typename Int0, typename Int1, size_t M,
+    typename std::enable_if<std::is_integral<Int0>::value && std::is_integral<Int1>::value,bool>::type=0>
+FASTOR_INLINE TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int0,M,1>,2>
 operator()(const Tensor<Int0,M> &_it0, Int1 num) {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     Tensor<Int0,M,1> tmp_it;
@@ -212,9 +212,9 @@ operator()(const Tensor<Int0,M> &_it0, Int1 num) {
     return TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int0,M,1>,2>(*this,tmp_it);
 }
 
-template<typename Int0, typename Int1, size_t M, 
-    typename std::enable_if<std::is_integral<Int0>::value && std::is_integral<Int1>::value,bool>::type=0> 
-FASTOR_INLINE TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int0,M,1>,2> 
+template<typename Int0, typename Int1, size_t M,
+    typename std::enable_if<std::is_integral<Int0>::value && std::is_integral<Int1>::value,bool>::type=0>
+FASTOR_INLINE TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int0,M,1>,2>
 operator()(Int1 num, const Tensor<Int0,M> &_it0) {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     Tensor<Int0,M,1> tmp_it;
@@ -226,9 +226,9 @@ operator()(Int1 num, const Tensor<Int0,M> &_it0) {
 }
 
 template<typename Int, size_t M, int F, int L, int S,
-    typename std::enable_if<std::is_integral<Int>::value,bool>::type=0> 
-FASTOR_INLINE TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,M, 
-    to_positive<fseq<F,L,S>,get_value<2,Rest...>::value>::type::Size>,2> 
+    typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
+FASTOR_INLINE TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,M,
+    to_positive<fseq<F,L,S>,get_value<2,Rest...>::value>::type::Size>,2>
 operator()(const Tensor<Int,M> &_it0, fseq<F,L,S>) {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     constexpr int NCols = get_value<2,Rest...>::value;
@@ -240,14 +240,14 @@ operator()(const Tensor<Int,M> &_it0, fseq<F,L,S>) {
             tmp_it(i,j) = _it0(i)*NCols + _seq::_step*j + _seq::_first;
         }
     }
-    return TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,M, 
+    return TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,M,
         to_positive<fseq<F,L,S>,get_value<2,Rest...>::value>::type::Size>,2> (*this,tmp_it);
 }
 
 template<typename Int, size_t N, int F, int L, int S,
-    typename std::enable_if<std::is_integral<Int>::value,bool>::type=0> 
-FASTOR_INLINE TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int, 
-    to_positive<fseq<F,L,S>,get_value<1,Rest...>::value>::type::Size,N>,2> 
+    typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
+FASTOR_INLINE TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,
+    to_positive<fseq<F,L,S>,get_value<1,Rest...>::value>::type::Size,N>,2>
 operator()(fseq<F,L,S>, const Tensor<Int,N> &_it0) {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     constexpr int NRows = get_value<1,Rest...>::value;
@@ -260,7 +260,7 @@ operator()(fseq<F,L,S>, const Tensor<Int,N> &_it0) {
             tmp_it(i,j) = (_seq::_step*i + _seq::_first)*NCols + _it0(j);
         }
     }
-    return TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int, 
+    return TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,
         to_positive<fseq<F,L,S>,get_value<1,Rest...>::value>::type::Size,N>,2> (*this,tmp_it);
 }
 //----------------------------------------------------------------------------------------------------------//
@@ -292,17 +292,17 @@ FASTOR_INLINE TensorConstViewExpr<Tensor<T,Rest...>,sizeof...(Seq)> operator()(S
 }
 
 template<int F0, int L0, int S0>
-FASTOR_INLINE TensorConstFixedViewExpr1D<Tensor<T,Rest...>, 
+FASTOR_INLINE TensorConstFixedViewExpr1D<Tensor<T,Rest...>,
         typename to_positive<fseq<F0,L0,S0>,prod<Rest...>::value>::type,1> operator()(fseq<F0,L0,S0>) const {
     static_assert(Dimension==1,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
-    return TensorConstFixedViewExpr1D<Tensor<T,Rest...>, 
+    return TensorConstFixedViewExpr1D<Tensor<T,Rest...>,
         typename to_positive<fseq<F0,L0,S0>,prod<Rest...>::value>::type,1>(*this);
 }
 
 template<int F0, int L0, int S0, int F1, int L1, int S1>
 FASTOR_INLINE TensorConstFixedViewExpr2D<Tensor<T,Rest...>,
         typename to_positive<fseq<F0,L0,S0>,get_value<1,Rest...>::value>::type,
-        typename to_positive<fseq<F1,L1,S1>,get_value<2,Rest...>::value>::type,2> 
+        typename to_positive<fseq<F1,L1,S1>,get_value<2,Rest...>::value>::type,2>
 operator()(fseq<F0,L0,S0>, fseq<F1,L1,S1>) const {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     return TensorConstFixedViewExpr2D<Tensor<T,Rest...>,
@@ -322,23 +322,23 @@ FASTOR_INLINE TensorConstViewExpr<Tensor<T,Rest...>,2> operator()(Int num, fseq<
     return TensorConstViewExpr<Tensor<T,Rest...>,2>(*this,seq(num),seq(_s));
 }
 
-template<typename Int, size_t N, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0> 
-FASTOR_INLINE TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,N>,1> 
+template<typename Int, size_t N, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
+FASTOR_INLINE TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,N>,1>
 operator()(const Tensor<Int,N> &_it) const {
     static_assert(Dimension==1,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     return TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,N>,1>(*this,_it);
 }
 
-template<typename Int, size_t ... IterSizes, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0> 
-FASTOR_INLINE TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,sizeof...(Rest)> 
+template<typename Int, size_t ... IterSizes, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
+FASTOR_INLINE TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,sizeof...(Rest)>
 operator()(const Tensor<Int,IterSizes...> &_it) const {
     static_assert(Dimension==sizeof...(IterSizes),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     return TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,sizeof...(Rest)>(*this,_it);
 }
 
-template<typename Int0, typename Int1, size_t M, size_t N, 
-    typename std::enable_if<std::is_integral<Int0>::value && std::is_integral<Int1>::value,bool>::type=0> 
-FASTOR_INLINE TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int0,M,N>,2> 
+template<typename Int0, typename Int1, size_t M, size_t N,
+    typename std::enable_if<std::is_integral<Int0>::value && std::is_integral<Int1>::value,bool>::type=0>
+FASTOR_INLINE TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int0,M,N>,2>
 operator()(const Tensor<Int0,M> &_it0, const Tensor<Int1,N> &_it1) const {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     Tensor<Int0,M,N> tmp_it;
@@ -351,9 +351,9 @@ operator()(const Tensor<Int0,M> &_it0, const Tensor<Int1,N> &_it1) const {
     return TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int0,M,N>,2>(*this,tmp_it);
 }
 
-template<typename Int0, typename Int1, size_t M, 
-    typename std::enable_if<std::is_integral<Int0>::value && std::is_integral<Int1>::value,bool>::type=0> 
-FASTOR_INLINE TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int0,M,1>,2> 
+template<typename Int0, typename Int1, size_t M,
+    typename std::enable_if<std::is_integral<Int0>::value && std::is_integral<Int1>::value,bool>::type=0>
+FASTOR_INLINE TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int0,M,1>,2>
 operator()(const Tensor<Int0,M> &_it0, Int1 num) const {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     Tensor<Int0,M,1> tmp_it;
@@ -364,9 +364,9 @@ operator()(const Tensor<Int0,M> &_it0, Int1 num) const {
     return TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int0,M,1>,2>(*this,tmp_it);
 }
 
-template<typename Int0, typename Int1, size_t M, 
-    typename std::enable_if<std::is_integral<Int0>::value && std::is_integral<Int1>::value,bool>::type=0> 
-FASTOR_INLINE TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int0,M,1>,2> 
+template<typename Int0, typename Int1, size_t M,
+    typename std::enable_if<std::is_integral<Int0>::value && std::is_integral<Int1>::value,bool>::type=0>
+FASTOR_INLINE TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int0,M,1>,2>
 operator()(Int1 num, const Tensor<Int0,M> &_it0) const {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     Tensor<Int0,M,1> tmp_it;
@@ -378,9 +378,9 @@ operator()(Int1 num, const Tensor<Int0,M> &_it0) const {
 }
 
 template<typename Int, size_t M, int F, int L, int S,
-    typename std::enable_if<std::is_integral<Int>::value,bool>::type=0> 
-FASTOR_INLINE TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,M, 
-    to_positive<fseq<F,L,S>,get_value<2,Rest...>::value>::type::Size>,2> 
+    typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
+FASTOR_INLINE TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,M,
+    to_positive<fseq<F,L,S>,get_value<2,Rest...>::value>::type::Size>,2>
 operator()(const Tensor<Int,M> &_it0, fseq<F,L,S>) const {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     constexpr int NCols = get_value<2,Rest...>::value;
@@ -392,14 +392,14 @@ operator()(const Tensor<Int,M> &_it0, fseq<F,L,S>) const {
             tmp_it(i,j) = _it0(i)*NCols + _seq::_step*j + _seq::_first;
         }
     }
-    return TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,M, 
+    return TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,M,
         to_positive<fseq<F,L,S>,get_value<2,Rest...>::value>::type::Size>,2> (*this,tmp_it);
 }
 
 template<typename Int, size_t N, int F, int L, int S,
-    typename std::enable_if<std::is_integral<Int>::value,bool>::type=0> 
-FASTOR_INLINE TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int, 
-    to_positive<fseq<F,L,S>,get_value<1,Rest...>::value>::type::Size,N>,2> 
+    typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
+FASTOR_INLINE TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,
+    to_positive<fseq<F,L,S>,get_value<1,Rest...>::value>::type::Size,N>,2>
 operator()(fseq<F,L,S>, const Tensor<Int,N> &_it0) const {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     constexpr int NRows = get_value<1,Rest...>::value;
@@ -412,7 +412,7 @@ operator()(fseq<F,L,S>, const Tensor<Int,N> &_it0) const {
             tmp_it(i,j) = (_seq::_step*i + _seq::_first)*NCols + _it0(j);
         }
     }
-    return TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int, 
+    return TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,
         to_positive<fseq<F,L,S>,get_value<1,Rest...>::value>::type::Size,N>,2> (*this,tmp_it);
 }
 //----------------------------------------------------------------------------------------------------------//
