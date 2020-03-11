@@ -1,15 +1,18 @@
 #ifndef SPECIALISED_CONSTRUCTORS_H
 #define SPECIALISED_CONSTRUCTORS_H
 
-template<size_t ...Rest1, typename std::enable_if<sizeof...(Rest)==sizeof...(Rest1),bool>::type=0>
-FASTOR_INLINE Tensor(const TensorViewExpr<Tensor<T,Rest1...>,2>& src) {
+
+//----------------------------------------------------------------------------------------------------------//
+template<size_t ...Rest1, typename Seq0, typename Seq1,
+    typename std::enable_if<sizeof...(Rest)==sizeof...(Rest1),bool>::type=0>
+FASTOR_INLINE Tensor(const TensorFixedViewExpr2D<Tensor<T,Rest1...>,Seq0,Seq1,2>& src) {
     using scalar_type_ = T;
     constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
 #ifndef NDEBUG
-        FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        for (FASTOR_INDEX i = 0; i<sizeof...(Rest); ++i) {
-            FASTOR_ASSERT(src.dimension(i)==this->dimension(i), "TENSOR SHAPE MISMATCH");
-        }
+    FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
+    for (FASTOR_INDEX i = 0; i<sizeof...(Rest); ++i) {
+        FASTOR_ASSERT(src.dimension(i)==this->dimension(i), "TENSOR SHAPE MISMATCH");
+    }
 #endif
     constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
     constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
@@ -24,17 +27,44 @@ FASTOR_INLINE Tensor(const TensorViewExpr<Tensor<T,Rest1...>,2>& src) {
     }
 }
 
+template<typename Derived, size_t DIMS,
+    typename std::enable_if<!has_tensor_view<Derived>::value &&
+    has_tensor_fixed_view_2d<Derived>::value && DIMS==sizeof...(Rest),bool>::type=0>
+FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
+    using scalar_type_ = typename scalar_type_finder<Derived>::type;
+    constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
+    const Derived &src = src_.self();
+#ifndef NDEBUG
+    FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
+    for (FASTOR_INDEX i = 0; i<sizeof...(Rest); ++i) {
+        FASTOR_ASSERT(src.dimension(i)==this->dimension(i), "TENSOR SHAPE MISMATCH");
+    }
+#endif
+    constexpr int M = get_value<1,Rest...>::value;
+    constexpr int N = get_value<2,Rest...>::value;
+    for (int i = 0; i <M; i+=Stride_) {
+        int j;
+        for (j = 0; j <ROUND_DOWN(N,Stride_); j+=Stride_) {
+            src.template eval<T>(i,j).store(&_data[i*N+j], IS_ALIGNED);
+        }
+        for (j = 0; j <N; ++j) {
+            _data[i*N+j] = src.template eval_s<T>(i,j);
+        }
+    }
+}
+//----------------------------------------------------------------------------------------------------------//
 
-template<size_t ...Rest1, typename Seq0, typename Seq1,
-    typename std::enable_if<sizeof...(Rest)==sizeof...(Rest1),bool>::type=0>
-FASTOR_INLINE Tensor(const TensorFixedViewExpr2D<Tensor<T,Rest1...>,Seq0,Seq1,2>& src) {
+
+//----------------------------------------------------------------------------------------------------------//
+template<size_t ...Rest1, typename std::enable_if<sizeof...(Rest)==sizeof...(Rest1),bool>::type=0>
+FASTOR_INLINE Tensor(const TensorViewExpr<Tensor<T,Rest1...>,2>& src) {
     using scalar_type_ = T;
     constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
 #ifndef NDEBUG
-        FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        for (FASTOR_INDEX i = 0; i<sizeof...(Rest); ++i) {
-            FASTOR_ASSERT(src.dimension(i)==this->dimension(i), "TENSOR SHAPE MISMATCH");
-        }
+    FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
+    for (FASTOR_INDEX i = 0; i<sizeof...(Rest); ++i) {
+        FASTOR_ASSERT(src.dimension(i)==this->dimension(i), "TENSOR SHAPE MISMATCH");
+    }
 #endif
     constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
     constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
@@ -53,10 +83,10 @@ FASTOR_INLINE Tensor(const TensorFixedViewExpr2D<Tensor<T,Rest1...>,Seq0,Seq1,2>
 template<size_t ...Rest1, typename std::enable_if<is_greater<sizeof...(Rest1),2>::value,bool>::type=0>
 FASTOR_INLINE Tensor(const TensorViewExpr<Tensor<T,Rest1...>,sizeof...(Rest)>& src) {
 #ifndef NDEBUG
-        FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        for (FASTOR_INDEX i = 0; i<sizeof...(Rest); ++i) {
-            FASTOR_ASSERT(src.dimension(i)==this->dimension(i), "TENSOR SHAPE MISMATCH");
-        }
+    FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
+    for (FASTOR_INDEX i = 0; i<sizeof...(Rest); ++i) {
+        FASTOR_ASSERT(src.dimension(i)==this->dimension(i), "TENSOR SHAPE MISMATCH");
+    }
 #endif
     constexpr int DimensionHolder[Dimension] = {Rest...};
     std::array<int,Dimension> as = {};
@@ -112,10 +142,10 @@ FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
     // constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
     const Derived &src = src_.self();
 #ifndef NDEBUG
-        FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        for (FASTOR_INDEX i = 0; i<sizeof...(Rest); ++i) {
-            FASTOR_ASSERT(src.dimension(i)==this->dimension(i), "TENSOR SHAPE MISMATCH");
-        }
+    FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
+    for (FASTOR_INDEX i = 0; i<sizeof...(Rest); ++i) {
+        FASTOR_ASSERT(src.dimension(i)==this->dimension(i), "TENSOR SHAPE MISMATCH");
+    }
 #endif
 
     constexpr int DimensionHolder[Dimension] = {Rest...};
@@ -169,6 +199,7 @@ FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
     //         break;
     // }
 }
+//----------------------------------------------------------------------------------------------------------//
 
 
 #endif // SPECIALISED_CONSTRUCTORS_H

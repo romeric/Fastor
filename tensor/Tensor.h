@@ -150,7 +150,9 @@ public:
     //----------------------------------------------------------------------------------------------------------//
     //----------------------------------------------------------------------------------------------------------//
     // Generic AbstractTensors
-    template<typename Derived, size_t DIMS, typename std::enable_if<!has_tensor_view<Derived>::value || DIMS!=sizeof...(Rest),bool>::type=0>
+    template<typename Derived, size_t DIMS,
+        typename std::enable_if<(!has_tensor_view<Derived>::value &&
+        !has_tensor_fixed_view_2d<Derived>::value) || DIMS!=sizeof...(Rest),bool>::type=0>
     FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
         using scalar_type_ = typename scalar_type_finder<Derived>::type;
         constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
@@ -167,7 +169,9 @@ public:
         }
     }
 
-    template<typename Derived, size_t DIMS, typename std::enable_if<!has_tensor_view<Derived>::value || DIMS!=sizeof...(Rest),bool>::type=0>
+    template<typename Derived, size_t DIMS,
+        typename std::enable_if<(!has_tensor_view<Derived>::value &&
+        !has_tensor_fixed_view_2d<Derived>::value) || DIMS!=sizeof...(Rest),bool>::type=0>
     FASTOR_INLINE Tensor<T,Rest...>& operator=(const AbstractTensor<Derived,DIMS>& src_) {
         using scalar_type_ = typename scalar_type_finder<Derived>::type;
         constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
