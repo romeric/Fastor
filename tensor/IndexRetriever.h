@@ -23,7 +23,7 @@ FASTOR_INLINE int get_flat_index(Args ... args) const {
     constexpr int M = get_value<1,Rest...>::value;
     const int i = get_index<0>(args...) < 0 ? M + get_index<0>(args...) : get_index<0>(args...);
 #ifdef BOUNDSCHECK
-    assert( ( (i>=0 && i<M)) && "INDEX OUT OF BOUNDS");
+    FASTOR_ASSERT( ( (i>=0 && i<M)), "INDEX OUT OF BOUNDS");
 #endif
     return i;
 }
@@ -36,7 +36,7 @@ FASTOR_INLINE int get_flat_index(Args ... args) const {
     const int i = get_index<0>(args...) < 0 ? M + get_index<0>(args...) : get_index<0>(args...);
     const int j = get_index<1>(args...) < 0 ? N + get_index<1>(args...) : get_index<1>(args...);
 #ifdef BOUNDSCHECK
-    assert( ( (i>=0 && i<M) && (j>=0 && j<N)) && "INDEX OUT OF BOUNDS");
+    FASTOR_ASSERT( ( (i>=0 && i<M) && (j>=0 && j<N)), "INDEX OUT OF BOUNDS");
 #endif
     return i*N+j;
 }
@@ -51,7 +51,7 @@ FASTOR_INLINE int get_flat_index(Args ... args) const {
     const int j = get_index<1>(args...) < 0 ? N + get_index<1>(args...) : get_index<1>(args...);
     const int k = get_index<2>(args...) < 0 ? P + get_index<2>(args...) : get_index<2>(args...);
 #ifdef BOUNDSCHECK
-    assert( ( (i>=0 && i<M) && (j>=0 && j<N) && (k>=0 && k<P)) && "INDEX OUT OF BOUNDS");
+    FASTOR_ASSERT( ( (i>=0 && i<M) && (j>=0 && j<N) && (k>=0 && k<P)), "INDEX OUT OF BOUNDS");
 #endif
     return i*N*P+j*P+k;
 }
@@ -68,8 +68,8 @@ FASTOR_INLINE int get_flat_index(Args ... args) const {
     const int k = get_index<2>(args...) < 0 ? P + get_index<2>(args...) : get_index<2>(args...);
     const int l = get_index<3>(args...) < 0 ? Q + get_index<3>(args...) : get_index<3>(args...);
 #ifdef BOUNDSCHECK
-    assert( ( (i>=0 && i<M) && (j>=0 && j<N)
-              && (k>=0 && k<P) && (l>=0 && l<Q)) && "INDEX OUT OF BOUNDS");
+    FASTOR_ASSERT( ( (i>=0 && i<M) && (j>=0 && j<N)
+              && (k>=0 && k<P) && (l>=0 && l<Q)), "INDEX OUT OF BOUNDS");
 #endif
     return i*N*P*Q+j*P*Q+k*Q+l;
 }
@@ -82,7 +82,7 @@ FASTOR_INLINE int get_flat_index(Args ... args) const {
     for (int i=0; i<Dimension; ++i) {
         if (largs[i]==-1) largs[i] += DimensionHolder[i];
 #ifdef BOUNDSCHECK
-        assert( (largs[i]>=0 && largs[i]<DimensionHolder[i]) && "INDEX OUT OF BOUNDS");
+        FASTOR_ASSERT( (largs[i]>=0 && largs[i]<DimensionHolder[i]), "INDEX OUT OF BOUNDS");
 #endif
     }
     std::array<int,Dimension> products;

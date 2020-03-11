@@ -988,14 +988,15 @@ public:
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,2>& as) const {
         SIMDVector<U,DEFAULT_ABI> _vec;
-        if (_seq1._step==1) _vec.load(expr.data()+_seq0._step*as[0]*N+as[1] + _seq0._first*N + _seq1._first,false);
+        if (_seq1._step==1) _vec.load(&(expr.data()[_seq0._step*as[0]*N+as[1] + _seq0._first*N + _seq1._first]),false);
         else vector_setter(_vec,expr.data(),_seq0._step*as[0]*N+_seq1._step*as[1] + _seq0._first*N + _seq1._first,_seq1._step);
         return _vec;
     }
 
     template<typename U=T>
     constexpr FASTOR_INLINE U teval_s(const std::array<int,2>& as) const {
-        return expr(_seq0._step*as[0]+_seq0._first,_seq1._step*as[1]+_seq1._first);
+        // return expr(_seq0._step*as[0]+_seq0._first,_seq1._step*as[1]+_seq1._first);
+        return expr.data()[_seq0._step*as[0]*N+_seq1._step*as[1] + _seq0._first*N + _seq1._first];
     }
 
 };

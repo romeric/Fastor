@@ -21,7 +21,7 @@ FASTOR_INLINE T& operator()(Args ... args) {
 //----------------------------------------------------------------------------------------------------------//
 template<typename... Args, typename std::enable_if<sizeof...(Args)==Dimension_t::value &&
                                 is_arithmetic_pack<Args...>::value,bool>::type =0>
-FASTOR_INLINE const T& operator()(Args ... args) const {
+constexpr FASTOR_INLINE const T& operator()(Args ... args) const {
     return _data[get_flat_index(args...)];
 }
 

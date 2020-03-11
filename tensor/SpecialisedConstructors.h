@@ -139,28 +139,26 @@ FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
             break;
     }
 
-    // Generic vectorised version that takes care of the remainder scalar ops
+    // // Generic vectorised version that takes care of the remainder scalar ops
     // using V=SIMDVector<T,DEFAULT_ABI>;
     // while(counter < Size)
     // {
     //     const FASTOR_INDEX remainder = DimensionHolder[Dimension-1] - as[Dimension-1];
-    //     if (remainder % V::Size == 0) {
-    //         V _vec = src.template eval<T>(counter);
-    //         // V _vec = src.template teval<T>(as);
+    //     if (remainder > V::Size) {
+    //         // V _vec = src.template eval<T>(counter);
+    //         V _vec = src.template teval<T>(as);
     //         _vec.store(&_data[counter],false);
     //         counter+=V::Size;
     //     }
     //     else {
-    //         // print(22);
-    //         _data[counter] = src.template eval_s<T>(counter);
-    //         // _data[counter] = src.template teval_s<T>(as);
+    //         // _data[counter] = src.template eval_s<T>(counter);
+    //         _data[counter] = src.template teval_s<T>(as);
     //         counter++;
     //     }
-    //     // println(as);
 
     //     for(jt = Dimension-1; jt>=0; jt--)
     //     {
-    //         if (jt == Dimension-1) as[jt]+=V::Size;
+    //         if (jt == Dimension-1 && remainder > V::Size) as[jt]+=V::Size;
     //         else as[jt] +=1;
     //         if(as[jt]<DimensionHolder[jt])
     //             break;
