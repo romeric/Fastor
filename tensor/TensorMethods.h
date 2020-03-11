@@ -140,7 +140,6 @@ FASTOR_INLINE T sum() const {
     FASTOR_INDEX i = 0;
     for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
         _vec_in.load(&_data[i],false);
-        // vec += V(_data+i,false);
         vec += _vec_in;
     }
     T scalar = static_cast<T>(0);
@@ -161,7 +160,7 @@ FASTOR_INLINE T product() const {
 
     V vec = static_cast<T>(1);
     for (; i< unroll_upto; i+=stride) {
-        vec *= V(_data+i);
+        vec *= V(&_data[i],false);
     }
     T scalar = static_cast<T>(1);
     for (; i< Size; ++i) {

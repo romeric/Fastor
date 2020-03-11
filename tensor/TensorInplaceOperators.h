@@ -15,8 +15,8 @@ FASTOR_INLINE void operator +=(const AbstractTensor<Derived,DIMS>& src_) {
     V _vec;
     FASTOR_INDEX i;
     for (i = 0; i <ROUND_DOWN(Size,Stride_); i+=Stride_) {
-        _vec = V(_data+i) + src.template eval<scalar_type_>(i);
-        _vec.store(_data+i);
+        _vec = V(&_data[i]) + src.template eval<scalar_type_>(i);
+        _vec.store(&_data[i]);
     }
     for (; i < Size; ++i) {
         _data[i] += src.template eval_s<scalar_type_>(i);
@@ -35,8 +35,8 @@ FASTOR_INLINE void operator -=(const AbstractTensor<Derived,DIMS>& src_) {
     V _vec;
     FASTOR_INDEX i;
     for (i = 0; i <ROUND_DOWN(Size,Stride_); i+=Stride_) {
-        _vec = V(_data+i) - src.template eval<scalar_type_>(i);
-        _vec.store(_data+i);
+        _vec = V(&_data[i]) - src.template eval<scalar_type_>(i);
+        _vec.store(&_data[i]);
     }
     for (; i < Size; ++i) {
         _data[i] -= src.template eval_s<scalar_type_>(i);
@@ -55,8 +55,8 @@ FASTOR_INLINE void operator *=(const AbstractTensor<Derived,DIMS>& src_) {
     V _vec;
     FASTOR_INDEX i;
     for (i = 0; i <ROUND_DOWN(Size,Stride_); i+=Stride_) {
-        _vec = V(_data+i) * src.template eval<scalar_type_>(i);
-        _vec.store(_data+i);
+        _vec = V(&_data[i]) * src.template eval<scalar_type_>(i);
+        _vec.store(&_data[i]);
     }
     for (; i < Size; ++i) {
         _data[i] *= src.template eval_s<scalar_type_>(i);
@@ -75,8 +75,8 @@ FASTOR_INLINE void operator /=(const AbstractTensor<Derived,DIMS>& src_) {
     V _vec;
     FASTOR_INDEX i;
     for (i = 0; i <ROUND_DOWN(Size,Stride_); i+=Stride_) {
-        _vec = V(_data+i) / src.template eval<scalar_type_>(i);
-        _vec.store(_data+i);
+        _vec = V(&_data[i]) / src.template eval<scalar_type_>(i);
+        _vec.store(&_data[i]);
     }
     for (; i < Size; ++i) {
         _data[i] /= src.template eval_s<scalar_type_>(i);
@@ -92,8 +92,8 @@ FASTOR_INLINE void operator +=(U num) {
     V _vec, _vec_a((T)num);
     FASTOR_INDEX i=0;
     for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
-        _vec = V(_data+i) + _vec_a;
-        _vec.store(_data+i);
+        _vec = V(&_data[i]) + _vec_a;
+        _vec.store(&_data[i]);
     }
     for (; i<Size; ++i) {
         _data[i] += (U)(num);
@@ -106,8 +106,8 @@ FASTOR_INLINE void operator -=(U num) {
     V _vec, _vec_a((T)num);
     FASTOR_INDEX i=0;
     for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
-        _vec = V(_data+i) - _vec_a;
-        _vec.store(_data+i);
+        _vec = V(&_data[i]) - _vec_a;
+        _vec.store(&_data[i]);
     }
     for (; i<Size; ++i) {
         _data[i] -= (U)(num);
@@ -120,8 +120,8 @@ FASTOR_INLINE void operator *=(U num) {
     V _vec, _vec_a((T)num);
     FASTOR_INDEX i=0;
     for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
-        _vec = V(_data+i) * _vec_a;
-        _vec.store(_data+i);
+        _vec = V(&_data[i]) * _vec_a;
+        _vec.store(&_data[i]);
     }
     for (; i<Size; ++i) {
         _data[i] *= (U)(num);
@@ -135,8 +135,8 @@ FASTOR_INLINE void operator /=(U num) {
     V _vec, _vec_a(inum);
     FASTOR_INDEX i=0;
     for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
-        _vec = V(_data+i) * _vec_a;
-        _vec.store(_data+i);
+        _vec = V(&_data[i]) * _vec_a;
+        _vec.store(&_data[i]);
     }
     for (; i<Size; ++i) {
         _data[i] *= inum;
