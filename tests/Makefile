@@ -14,7 +14,7 @@ endif
 
 
 all: tests
-tests: test_auxiliary test_simd_vectors test_basics test_linalg test_einsum test_views test_complex_expressions
+tests: test_auxiliary test_simd_vectors test_basics test_linalg test_einsum test_views test_mixed_views test_complex_expressions
 
 test_auxiliary:
 	$(CXX) test_auxiliary.cpp -o test_auxiliary.exe $(CXX_FLAGS) $(INCLUDES)
@@ -55,6 +55,9 @@ test_views:
 
 	$(CXX) test_random_views_nd.cpp -o test_random_views_nd.exe $(CXX_FLAGS) $(INCLUDES)
 	$(CXX) test_random_views_nd.cpp -o test_random_views_nd_vec.exe $(CXX_FLAGS) $(INCLUDES) -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
+
+test_mixed_views:
+	$(CXX) test_mixed_views.cpp -o test_mixed_views.exe $(CXX_FLAGS) $(INCLUDES)
 
 test_complex_expressions:
 	$(CXX) test_complex_expressions.cpp -o test_complex_expressions.exe $(CXX_FLAGS) $(INCLUDES)
@@ -97,6 +100,9 @@ run_views:
 	./test_random_views_1d_vec.exe
 	./test_random_views_nd.exe
 	./test_random_views_nd_vec.exe
+
+run_mixed_views:
+	./test_mixed_views.exe
 
 run_complex_expressions:
 	./test_complex_expressions.exe
