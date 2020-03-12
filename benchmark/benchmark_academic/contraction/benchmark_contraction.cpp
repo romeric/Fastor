@@ -1,4 +1,4 @@
-#include <Fastor.h>
+#include <Fastor/Fastor.h>
 using namespace Fastor;
 
 template<size_t NITER, typename T, class Index_I, class Index_J, class Tensor0, class Tensor1>

@@ -1,4 +1,4 @@
-#include "Fastor.h"
+#include <Fastor/Fastor.h>
 
 using namespace Fastor;
 

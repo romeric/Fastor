@@ -1,4 +1,4 @@
-#include <Fastor.h>
+#include <Fastor/Fastor.h>
 #include <sys/resource.h>
 
 using namespace Fastor;

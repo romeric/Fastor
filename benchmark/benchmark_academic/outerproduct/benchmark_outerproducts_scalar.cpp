@@ -2,7 +2,7 @@
 // Turn off vectorisation for Fastor to generate scalar code
 #define FASTOR_DONT_VECTORISE
 
-#include <Fastor.h>
+#include <Fastor/Fastor.h>
 using namespace Fastor;
 
 

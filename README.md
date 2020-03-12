@@ -36,7 +36,7 @@ will output the following
 ~~~
 Einstein summation as well as summing over multiple (i.e. more than two) indices are supported. As a complete example, for instance, consider
 ~~~c++
-#include <Fastor.h>
+#include <Fastor/Fastor.h>
 using namespace Fastor;
 enum {I,J,K,L,M,N};
 

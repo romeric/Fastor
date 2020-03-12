@@ -1,7 +1,7 @@
 #ifndef _HELPER__H
 #define _HELPER__H
 
-#include <Fastor.h>
+#include <Fastor/Fastor.h>
 #include <tuple>
 using namespace Fastor;
 
