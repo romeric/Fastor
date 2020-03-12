@@ -3,13 +3,13 @@ CXXFLAGS = -std=c++14 $(OPT) -march=native -DNDEBUG
 
 
 ifeq "$(CXX)" "g++"
-    CXXFLAGS += -finline-limit=1000000 -ffp-contract=fast 
+    CXXFLAGS += -finline-functions -finline-limit=1000000 -ffp-contract=fast
 endif
-ifeq "$(CXX)" "g++-6"
-    CXXFLAGS += -finline-limit=1000000 -ffp-contract=fast 
+ifeq "$(CXX)" "g++-9"
+    CXXFLAGS += -finline-functions -finline-limit=1000000 -ffp-contract=fast
 endif
-ifeq "$(CXX)" "/usr/local/bin/g++-6"
-    CXXFLAGS += -finline-limit=1000000 -ffp-contract=fast 
+ifeq "$(CXX)" "/usr/local/bin/g++-9"
+    CXXFLAGS += -finline-functions -finline-limit=1000000 -ffp-contract=fast
 endif
 
 ifeq "$(CXX)" "clang++"
@@ -44,7 +44,7 @@ all:
 	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_seq_alias_vec.exe $(CXXFLAGS) -DUSE_SEQ_ALIAS -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
 	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_seq_noalias_vec.exe $(CXXFLAGS) -DUSE_SEQ_NOALIAS -DFASTOR_NO_ALIAS -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
 	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_iseq_vec.exe $(CXXFLAGS) -DUSE_ISEQ -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
-	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_fseq_vec.exe $(CXXFLAGS) -DUSE_FSEQ -DFASTOR_USE_VECTORISED_EXPR_ASSIGN 
+	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_fseq_vec.exe $(CXXFLAGS) -DUSE_FSEQ -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
 
 N=100
 
