@@ -1,12 +1,12 @@
 #ifndef SINGLEVALUE_TENSOR_H
 #define SINGLEVALUE_TENSOR_H
 
-#include <limits>
 
-#include <tensor/Tensor.h>
-#include <tensor/TensorIO.h>
-#include <meta/tensor_meta.h>
-#include <meta/tensor_post_meta.h>
+#include "Fastor/tensor/Tensor.h"
+#include "Fastor/tensor/TensorIO.h"
+#include "Fastor/meta/tensor_meta.h"
+#include "Fastor/meta/tensor_post_meta.h"
+#include <limits>
 
 namespace Fastor {
 
@@ -98,28 +98,28 @@ public:
     // Scalar indexing const
     //----------------------------------------------------------------------------------------------------------//
 #undef SCALAR_INDEXING_CONST_H
-    #include <tensor/ScalarIndexing.h>
+    #include <Fastor/tensor/ScalarIndexing.h>
 #define SCALAR_INDEXING_CONST_H
     //----------------------------------------------------------------------------------------------------------//
 
     // Expression templates evaluators
     //----------------------------------------------------------------------------------------------------------//
 #undef TENSOR_EVALUATOR_H
-    #include "tensor/TensorEvaluator.h"
+    #include "Fastor/tensor/TensorEvaluator.h"
 #define TENSOR_EVALUATOR_H
     //----------------------------------------------------------------------------------------------------------//
 
     // Tensor methods
     //----------------------------------------------------------------------------------------------------------//
 #undef TENSOR_METHODS_CONST_H
-    #include "tensor/TensorMethods.h"
+    #include "Fastor/tensor/TensorMethods.h"
 #define TENSOR_METHODS_CONST_H
     //----------------------------------------------------------------------------------------------------------//
 
     // Converters
     //----------------------------------------------------------------------------------------------------------//
 #undef PODCONVERTERS_H
-    #include "tensor/PODConverters.h"
+    #include "Fastor/tensor/PODConverters.h"
 #define PODCONVERTERS_H
     //----------------------------------------------------------------------------------------------------------//
 
