@@ -10,12 +10,12 @@ using namespace Fastor;
 // This benchmark is included, since it truly tests
 // the inlining capabilities of compilers. There can
 // be a huge slow-down/speed-up in performance
-// if the whole expression is inlined 
+// if the whole expression is inlined
 
 /*
 // include for historical reason. This scalar variant
 // does not do the same thing as the vectorised variants
-// and heavily suffers from aliasing and the compiler 
+// and heavily suffers from aliasing and the compiler
 // can't optimise that
 template<typename T, size_t num>
 T finite_difference_loop_impl(Tensor<T,num,num> &u) {
@@ -24,12 +24,12 @@ T finite_difference_loop_impl(Tensor<T,num,num> &u) {
     for (auto i=0; i<num-2; ++i) {
         for (auto j=0; j<num-2; ++j) {
             auto u_old = u(i+1,j+1);
-            u(i+1,j+1) = (( u(i,j+1) + u(i+2,j+1) + 
+            u(i+1,j+1) = (( u(i,j+1) + u(i+2,j+1) +
                             u(i+1,j) + u(i+1,2+j) ) * 4.0 +
                             u(i,j)   + u(i,j+2)   +
                             u(2+i,j) + u(2+i,2+j)) / 20.0;
             auto diff = u(i+1,j+1) - u_old;
-            err += diff*diff;  
+            err += diff*diff;
         }
     }
     return sqrts(err);
@@ -50,12 +50,12 @@ T finite_difference_loop_impl(Tensor<T,num,num> &u) {
     T err = 0.;
     for (auto i=0; i<num-2; ++i) {
         for (auto j=0; j<num-2; ++j) {
-            u(i+1,j+1) = (( u_old(i,j+1) + u_old(i+2,j+1) + 
+            u(i+1,j+1) = (( u_old(i,j+1) + u_old(i+2,j+1) +
                             u_old(i+1,j) + u_old(i+1,2+j) ) * 4.0 +
                             u_old(i,j)   + u_old(i,j+2)   +
                             u_old(2+i,j) + u_old(2+i,2+j)) / 20.0;
             auto diff = u(i+1,j+1) - u_old(i+1,j+1);
-            err += diff*diff;  
+            err += diff*diff;
         }
     }
     return sqrts(err);
@@ -66,7 +66,7 @@ template<typename T, size_t num>
 T finite_difference_seq_alias_impl(Tensor<T,num,num> &u) {
 
     Tensor<T,num,num> u_old = u;
-    u(seq(1,last-1),seq(1,last-1)).noalias() = 
+    u(seq(1,last-1),seq(1,last-1)).noalias() =
         ((  u(seq(0,last-2),seq(1,last-1)) + u(seq(2,last),seq(1,last-1)) +
             u(seq(1,last-1),seq(0,last-2)) + u(seq(1,last-1),seq(2,last)) )*4.0 +
             u(seq(0,last-2),seq(0,last-2)) + u(seq(0,last-2),seq(2,last)) +
@@ -81,7 +81,7 @@ T finite_difference_seq_noalias_impl(Tensor<T,num,num> &u) {
 
     Tensor<T,num,num> u_old = u;
 
-    u(seq(1,last-1),seq(1,last-1)) = 
+    u(seq(1,last-1),seq(1,last-1)) =
         ((  u_old(seq(0,last-2),seq(1,last-1)) + u_old(seq(2,last),seq(1,last-1)) +
             u_old(seq(1,last-1),seq(0,last-2)) + u_old(seq(1,last-1),seq(2,last)) )*4.0 +
             u_old(seq(0,last-2),seq(0,last-2)) + u_old(seq(0,last-2),seq(2,last)) +
@@ -95,11 +95,11 @@ T finite_difference_iseq_impl(Tensor<T,num,num> &u) {
 
     Tensor<T,num,num> u_old = u;
 
-    u(seq(1,last-1),seq(1,last-1)) = 
-        ((  u_old(iseq<0,num-2>{},iseq<1,num-1>{}) + u_old(iseq<2,num>{},iseq<1,num-1>{}) + 
-            u_old(iseq<1,num-1>{},iseq<0,num-2>{}) + u_old(iseq<1,num-1>{},iseq<2,num>{}) ) * 4.0 + 
-            u_old(iseq<0,num-2>{},iseq<0,num-2>{}) + u_old(iseq<0,num-2>{},iseq<2,num>{}) + 
-            u_old(iseq<2,num>{},iseq<0,num-2>{})   + u_old(iseq<2,num>{},iseq<2,num>{}) 
+    u(seq(1,last-1),seq(1,last-1)) =
+        ((  u_old(iseq<0,num-2>{},iseq<1,num-1>{}) + u_old(iseq<2,num>{},iseq<1,num-1>{}) +
+            u_old(iseq<1,num-1>{},iseq<0,num-2>{}) + u_old(iseq<1,num-1>{},iseq<2,num>{}) ) * 4.0 +
+            u_old(iseq<0,num-2>{},iseq<0,num-2>{}) + u_old(iseq<0,num-2>{},iseq<2,num>{}) +
+            u_old(iseq<2,num>{},iseq<0,num-2>{})   + u_old(iseq<2,num>{},iseq<2,num>{})
         ) / 20.0;
 
     return norm(u-u_old);
@@ -109,11 +109,11 @@ template<typename T, size_t num>
 T finite_difference_fseq_impl(Tensor<T,num,num> &u) {
 
     Tensor<T,num,num> u_old = u;
-    u(fseq<1,num-1>{},fseq<1,num-1>{}) = 
-        ((  u_old(fseq<0,num-2>{},fseq<1,num-1>{}) + u_old(fseq<2,num>{},fseq<1,num-1>{}) + 
-            u_old(fseq<1,num-1>{},fseq<0,num-2>{}) + u_old(fseq<1,num-1>{},fseq<2,num>{}) ) * 4.0 + 
-            u_old(fseq<0,num-2>{},fseq<0,num-2>{}) + u_old(fseq<0,num-2>{},fseq<2,num>{}) + 
-            u_old(fseq<2,num>{},fseq<0,num-2>{})   + u_old(fseq<2,num>{},fseq<2,num>{}) 
+    u(fseq<1,num-1>{},fseq<1,num-1>{}) =
+        ((  u_old(fseq<0,num-2>{},fseq<1,num-1>{}) + u_old(fseq<2,num>{},fseq<1,num-1>{}) +
+            u_old(fseq<1,num-1>{},fseq<0,num-2>{}) + u_old(fseq<1,num-1>{},fseq<2,num>{}) ) * 4.0 +
+            u_old(fseq<0,num-2>{},fseq<0,num-2>{}) + u_old(fseq<0,num-2>{},fseq<2,num>{}) +
+            u_old(fseq<2,num>{},fseq<0,num-2>{})   + u_old(fseq<2,num>{},fseq<2,num>{})
         )  / 20.0;
 
     return norm(u-u_old);
@@ -126,7 +126,7 @@ void run_finite_difference() {
     T pi = 4*std::atan(1.0);
     T err = 2.;
     int iter = 0;
-    
+
     Tensor<T,num> x;
     for (auto i=0; i<num; ++i) {
         x(i) = i*pi/(num-1);
