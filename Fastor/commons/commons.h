@@ -229,17 +229,16 @@ FASTOR_INLINE void FASTOR_WARN(bool cond, const std::string &x) {
 
 
 #ifndef FASTOR_NO_STATIC_WARNING
-// Note that some versions of GCC define DEPRECATE macro
 #if defined(__GNUC__)
-    #define DEPRECATE(foo, msg) foo __attribute__((deprecated(msg)))
+    #define FASTOR_DEPRECATE(foo, msg) foo __attribute__((deprecated(msg)))
 #elif defined(_MSC_VER)
-    #define DEPRECATE(foo, msg) __declspec(deprecated(msg)) foo
+    #define FASTOR_DEPRECATE(foo, msg) __declspec(deprecated(msg)) foo
 #else
     #error FASTOR STATIC WARNING DOES NOT SUPPORT THIS COMPILER
 #endif
 
-#define PP_CAT(x,y) PP_CAT1(x,y)
-#define PP_CAT1(x,y) x##y
+#define FASTOR_CAT(x,y) _FASTOR_CAT1(x,y)
+#define _FASTOR_CAT1(x,y) x##y
 
 
 namespace Fastor {
@@ -253,10 +252,10 @@ namespace useless
 }
 
 #define FASTOR_STATIC_WARN(cond, msg) \
-struct PP_CAT(static_warning,__LINE__) { \
-  DEPRECATE(void _(::useless::false_type const& ),msg) {}; \
+struct FASTOR_CAT(static_warning,__LINE__) { \
+  FASTOR_DEPRECATE(void _(::useless::false_type const& ),msg) {}; \
   void _(::useless::true_type const& ) {}; \
-  PP_CAT(static_warning,__LINE__)() {_(::useless::converter<(cond)>());} \
+  FASTOR_CAT(static_warning,__LINE__)() {_(::useless::converter<(cond)>());} \
 }
 
 } // end of namespace Fastor
