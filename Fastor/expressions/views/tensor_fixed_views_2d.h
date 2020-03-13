@@ -282,7 +282,7 @@ public:
 #endif
         T *FASTOR_RESTRICT _data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        constexpr FASTOR_INDEX UNROLL_UPTO = ROUND_DOWN(dimension(0),Stride);
+        constexpr FASTOR_INDEX UNROLL_UPTO = ROUND_DOWN(dimension(1),Stride);
         for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
             FASTOR_INDEX j;
             for (j = 0; j <UNROLL_UPTO; j+=Stride) {
@@ -439,7 +439,7 @@ public:
         T *FASTOR_RESTRICT _data = expr.data();
         FASTOR_INDEX counter = 0;
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        constexpr FASTOR_INDEX UNROLL_UPTO = ROUND_DOWN(dimension(0),Stride);
+        constexpr FASTOR_INDEX UNROLL_UPTO = ROUND_DOWN(dimension(1),Stride);
         for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
             FASTOR_INDEX j;
             for (j = 0; j <UNROLL_UPTO; j+=Stride) {
