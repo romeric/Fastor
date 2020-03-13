@@ -741,7 +741,8 @@ public:
 
     template<typename U=T>
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        return expr(S0*i+F0,S1*j+F1);
+        // return expr(S0*i+F0,S1*j+F1);
+        return expr.data()[S0*i*N+S1*j + Padding];
     }
 };
 
