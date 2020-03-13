@@ -197,21 +197,13 @@ constexpr int ColumnMajor = 1;
 
 
 #ifndef NDEBUG
-FASTOR_INLINE void FASTOR_ASSERT(bool cond, const std::string &x) {
-    if (cond==true) {
-        return;
-    }
-    else {
-        std::cout << x << std::endl;
-        exit(EXIT_FAILURE);
-    }
-}
+#define FASTOR_ASSERT(COND, MESSAGE) assert(COND && MESSAGE)
 #else
-FASTOR_INLINE void FASTOR_ASSERT(bool, const std::string&) {}
+#define FASTOR_ASSERT(COND, MESSAGE)
 #endif
 // The following assert is provided for cases where despite
 // the DNDEBUG one might want the code to stop at failure
-inline void FASTOR_EXIT_ASSERT(bool cond, const std::string &x="") {
+FASTOR_INLINE void FASTOR_EXIT_ASSERT(bool cond, const std::string &x="") {
     if (cond==true) {
         return;
     }
@@ -221,7 +213,7 @@ inline void FASTOR_EXIT_ASSERT(bool cond, const std::string &x="") {
     }
 }
 
-inline void FASTOR_WARN(bool cond, const std::string &x) {
+FASTOR_INLINE void FASTOR_WARN(bool cond, const std::string &x) {
     if (cond==true) {
         return;
     }
