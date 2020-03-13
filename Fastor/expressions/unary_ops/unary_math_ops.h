@@ -1,5 +1,5 @@
-#ifndef UNARY_ADD_OP_H
-#define UNARY_ADD_OP_H
+#ifndef UNARY_MATH_OP_H
+#define UNARY_MATH_OP_H
 
 
 #include "Fastor/tensor/Tensor.h"
@@ -72,5 +72,5 @@ FASTOR_MAKE_UNARY_MATH_OPS(tanh, tanh, std::tanh, Tanh, scalar_type);
 }
 
 
-#endif // UNARY_ADD_OP_H
+#endif // UNARY_MATH_OP_H
 
