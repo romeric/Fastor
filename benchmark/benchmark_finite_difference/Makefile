@@ -34,6 +34,7 @@ CXXFLAGS += -mfma
 endif
 
 all:
+	$(CXX) -I../../ benchmark_finite_difference_c.cpp -o out_loops_c.exe $(CXXFLAGS)
 	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_loops.exe $(CXXFLAGS) -DUSE_LOOPS
 
 	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_seq_alias.exe $(CXXFLAGS) -DUSE_SEQ_ALIAS
@@ -49,6 +50,7 @@ all:
 N=100
 
 run:
+	./out_loops_c.exe $(N)
 	./out_loops.exe $(N)
 
 	./out_seq_alias.exe $(N)
