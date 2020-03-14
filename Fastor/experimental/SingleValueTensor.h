@@ -179,10 +179,10 @@ struct scalar_type_finder<SingleValueTensor<T,Rest...>> {
 };
 
 
-OS_STREAM_TENSOR0(SingleValueTensor)
-OS_STREAM_TENSOR1(SingleValueTensor)
-OS_STREAM_TENSOR2(SingleValueTensor)
-OS_STREAM_TENSORn(SingleValueTensor)
+FASTOR_MAKE_OS_STREAM_TENSOR0(SingleValueTensor)
+FASTOR_MAKE_OS_STREAM_TENSOR1(SingleValueTensor)
+FASTOR_MAKE_OS_STREAM_TENSOR2(SingleValueTensor)
+FASTOR_MAKE_OS_STREAM_TENSORn(SingleValueTensor)
 
 
 template<typename T, size_t M, size_t N>

@@ -75,7 +75,7 @@ int get_row_width(const std::ostream &os, const t_type<T,Rest...>& a) {\
 } // end of namespace internal
 
 
-#define OS_STREAM_TENSOR0(t_type) \
+#define FASTOR_MAKE_OS_STREAM_TENSOR0(t_type) \
 template<typename T>\
 FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const t_type<T> &a) {\
     IOFormat fmt = FASTOR_DEFINE_IO_FORMAT;\
@@ -84,7 +84,7 @@ FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const t_type<T> &a
     return os;\
 }\
 
-#define OS_STREAM_TENSOR1(t_type) \
+#define FASTOR_MAKE_OS_STREAM_TENSOR1(t_type) \
 template<typename T, size_t M> \
 FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const t_type<T,M> &a) {\
     IOFormat fmt = FASTOR_DEFINE_IO_FORMAT;\
@@ -101,7 +101,7 @@ FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const t_type<T,M> 
     return os;\
 }\
 
-#define OS_STREAM_TENSOR2(t_type) \
+#define FASTOR_MAKE_OS_STREAM_TENSOR2(t_type) \
 template<typename T, size_t M, size_t N> \
 FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const t_type<T,M,N> &a) { \
     IOFormat fmt = FASTOR_DEFINE_IO_FORMAT; \
@@ -126,7 +126,7 @@ FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const t_type<T,M,N
 }\
 
 
-#define OS_STREAM_TENSORn(t_type) \
+#define FASTOR_MAKE_OS_STREAM_TENSORn(t_type) \
 template<typename T, size_t ... Rest, typename std::enable_if<sizeof...(Rest)>=3,bool>::type=0> \
 FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const t_type<T,Rest...> &a) {\
     IOFormat fmt = FASTOR_DEFINE_IO_FORMAT;\
@@ -168,10 +168,10 @@ FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const t_type<T,Res
     return os;\
 }\
 
-OS_STREAM_TENSOR0(Tensor)
-OS_STREAM_TENSOR1(Tensor)
-OS_STREAM_TENSOR2(Tensor)
-OS_STREAM_TENSORn(Tensor)
+FASTOR_MAKE_OS_STREAM_TENSOR0(Tensor)
+FASTOR_MAKE_OS_STREAM_TENSOR1(Tensor)
+FASTOR_MAKE_OS_STREAM_TENSOR2(Tensor)
+FASTOR_MAKE_OS_STREAM_TENSORn(Tensor)
 
 
 }
