@@ -31,7 +31,7 @@ struct seq {
 
     int _first;
     int _last;
-    int _step;
+    int _step = 1;
 
     constexpr FASTOR_INLINE seq(int _f, int _l, int _s=1) : _first(_f), _last(_l), _step(_s) {}
     constexpr FASTOR_INLINE seq(int num) : _first(num), _last(num+1), _step(1) {}

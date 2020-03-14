@@ -124,56 +124,6 @@ FASTOR_INLINE void reverse() {
     }
 }
 
-// Do not use this directly from outside the class
-FASTOR_INLINE void _change_layout_(const T* arr, T* arr_out, int layout=RowMajor) {
-    // layout == 0 for row-major and 1 for column-major
-    if (layout==RowMajor || Dimension < 2) std::copy(arr,arr+prod<Rest...>::value,arr_out);
-    else {
-        if (Dimension == 2) {
-            constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
-            constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
-            for (FASTOR_INDEX i=0; i<M; ++i) {
-                for (FASTOR_INDEX j=0; j<N; ++j) {
-                    arr_out[i*N+j] = arr[j*M+i];
-                }
-            }
-        }
-        else {
-
-            std::array<size_t,Dimension> products_ = nprods_views<Index<Rest...>,
-                typename std_ext::make_index_sequence<Dimension>::type>::values;
-            FASTOR_INDEX DimensionHolder[Dimension] = {Rest...};
-            std::reverse(DimensionHolder,DimensionHolder+Dimension);
-            std::reverse(products_.begin(),products_.end());
-            std::array<int,Dimension> as = {};
-
-            int jt;
-            FASTOR_INDEX counter=0;
-            while(counter < Size)
-            {
-                FASTOR_INDEX index = 0;
-                for (int ii=0; ii<Dimension; ++ii) {
-                    index += products_[ii]*as[ii];
-                }
-
-                arr_out[index] = arr[counter];
-
-                counter++;
-                for(jt = Dimension-1; jt>=0; jt--)
-                {
-                    as[jt] +=1;
-                    if(as[jt]<DimensionHolder[jt])
-                        break;
-                    else
-                        as[jt]=0;
-                }
-                if(jt<0)
-                    break;
-            }
-        }
-    }
-}
-
 #endif // TENSOR_METHODS_NONCONST_H
 
 
