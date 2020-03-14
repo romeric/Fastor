@@ -432,6 +432,15 @@ inverse(const Tensor<T,Rest...> &a) {
 
 
 
+//
+template<template<typename,size_t...> class TensorType, typename T, size_t ... Rest>
+FASTOR_INLINE Tensor<T,Rest...> to_column_major(const TensorType<T,Rest...> &a) {
+    Tensor<T,Rest...> out;
+    out._change_layout_(a.data(),out.data(),ColumnMajor);
+    return out;
+}
+//
+
 
 
 

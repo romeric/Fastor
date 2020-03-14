@@ -428,11 +428,11 @@ public:
             return false;
     }
 
-    FASTOR_INLINE Tensor<T,Rest...> to_column_major() {
-        Tensor<T,Rest...> out;
-        _change_layout_(_data,out.data(),ColumnMajor);
-        return out;
-    }
+    // FASTOR_INLINE Tensor<T,Rest...> to_column_major() {
+    //     Tensor<T,Rest...> out;
+    //     _change_layout_(_data,out.data(),ColumnMajor);
+    //     return out;
+    // }
     //----------------------------------------------------------------------------------------------------------//
 
 protected:
