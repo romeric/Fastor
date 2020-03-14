@@ -7,9 +7,8 @@
 
 namespace Fastor {
 
-// All other ops
-//#define FASTOR_MAKE_UNARY_MATH_OPS(OP_NAME, SIMD_OP, SCALAR_OP, STRUCT_NAME, EVAL_TYPE)
-#define FASTOR_MAKE_UNARY_MATH_OPS(OP_NAME,SIMD_OP,SCALAR_OP,STRUCT_NAME,EVAL_TYPE)\
+// All unary math ops
+#define FASTOR_MAKE_UNARY_MATH_OPS(OP_NAME, SIMD_OP, SCALAR_OP, STRUCT_NAME, EVAL_TYPE)\
 template<typename Expr, size_t DIM0>\
 struct Unary ##STRUCT_NAME ## Op: public AbstractTensor<Unary ##STRUCT_NAME ## Op<Expr, DIM0>,DIM0> {\
 private:\
