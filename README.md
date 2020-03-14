@@ -5,6 +5,9 @@
 - **SIMD/Data parallelism/Stream computing** Fastor utilises explicit SIMD (SSE/SSE2/SSE3/SSE4/AVX/AVX2/AVX512/FMA) instructions
 - **Zero overhead tensor algebraic functions** statically dispatched bespoke kernels for a variety of tensor products using a priori knowledge of tensors either through compile-time specialisation or advanced topological studies or both
 
+### Documentation
+Full documenation can be found under the [Wiki](https://github.com/romeric/Fastor/wiki) pages.
+
 ### High-level API
 Fastor provides a high level interface for tensor algebra. As a first example consider the following
 ~~~c++
