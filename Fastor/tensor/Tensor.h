@@ -138,10 +138,7 @@ public:
 
     // Classic array wrappers
     FASTOR_INLINE Tensor(const T *arr, int layout=RowMajor) {
-        // layout == 0 for row-major and 1 for column-major
-        if (layout==RowMajor || Dimension < 2) std::copy(arr,arr+prod<Rest...>::value,_data);
-        else {
-        }
+        _change_layout_(arr, _data, layout);
     }
     FASTOR_INLINE Tensor(const std::array<T,sizeof...(Rest)> &arr) {std::copy(arr,arr+prod<Rest...>::value,_data);}
     //----------------------------------------------------------------------------------------------------------//
@@ -429,6 +426,12 @@ public:
             return true;
         else
             return false;
+    }
+
+    FASTOR_INLINE Tensor<T,Rest...> to_column_major() {
+        Tensor<T,Rest...> out;
+        _change_layout_(_data,out.data(),ColumnMajor);
+        return out;
     }
     //----------------------------------------------------------------------------------------------------------//
 
