@@ -33,7 +33,7 @@ struct scalar_type_finder<Expr<TLhs,TRhs,DIMS>> {
 };
 
 template<typename T, size_t ... Rest>
-struct scalar_type_finder<TensorRef<T,Rest...>> {
+struct scalar_type_finder<TensorMap<T,Rest...>> {
     using type = T;
 };
 template<template<typename,typename,typename,size_t> class TensorFixedViewExpr,
@@ -76,7 +76,7 @@ struct tensor_type_finder<BinaryExpr<TLhs,TRhs,DIMS>> {
 };
 
 template<typename T, size_t ... Rest>
-struct tensor_type_finder<TensorRef<T,Rest...>> {
+struct tensor_type_finder<TensorMap<T,Rest...>> {
     using type = Tensor<T,Rest...>;
 };
 //--------------------------------------------------------------------------------------------------------------------//

@@ -10,7 +10,7 @@ namespace Fastor {
 template<typename T, size_t ... Rest>
 class Tensor;
 template<typename T, size_t ... Rest>
-class TensorRef;
+class TensorMap;
 
 
 template<class Derived, FASTOR_INDEX Rank>

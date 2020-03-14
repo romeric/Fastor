@@ -1,5 +1,5 @@
-#ifndef TENSOR_REF_H
-#define TENSOR_REF_H
+#ifndef TENSOR_MAP_H
+#define TENSOR_MAP_H
 
 #include "Fastor/commons/commons.h"
 #include "Fastor/backend/backend.h"
@@ -14,7 +14,7 @@
 namespace Fastor {
 
 template<typename T, size_t ... Rest>
-class TensorRef: public AbstractTensor<TensorRef<T, Rest...>,sizeof...(Rest)> {
+class TensorMap: public AbstractTensor<TensorMap<T, Rest...>,sizeof...(Rest)> {
 public:
     using scalar_type = T;
     using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
@@ -34,8 +34,8 @@ public:
 
     // Constructors
     //----------------------------------------------------------------------------------------------------------//
-    constexpr TensorRef(scalar_type* data) : _data(data) {}
-    template<size_t ... RestOther> constexpr TensorRef(Tensor<T,RestOther...> &a) : _data(a.data()) {}
+    constexpr TensorMap(scalar_type* data) : _data(data) {}
+    template<size_t ... RestOther> constexpr TensorMap(Tensor<T,RestOther...> &a) : _data(a.data()) {}
     //----------------------------------------------------------------------------------------------------------//
 
     // Scalar indexing
@@ -113,12 +113,12 @@ private:
     scalar_type* _data;
 };
 
-OS_STREAM_TENSOR0(TensorRef)
-OS_STREAM_TENSOR1(TensorRef)
-OS_STREAM_TENSOR2(TensorRef)
-OS_STREAM_TENSORn(TensorRef)
+OS_STREAM_TENSOR0(TensorMap)
+OS_STREAM_TENSOR1(TensorMap)
+OS_STREAM_TENSOR2(TensorMap)
+OS_STREAM_TENSORn(TensorMap)
 
 
 }
 
-#endif // TENSOR_REF_H
+#endif // TENSOR_MAP_H

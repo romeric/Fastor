@@ -5,7 +5,7 @@
 #include "commons/utils.h"
 #include "simd_vector/SIMDVector.h"
 #include "tensor/Tensor.h"
-#include "tensor/TensorRef.h"
+#include "tensor/TensorMap.h"
 #include "tensor/TensorIO.h"
 #include "tensor/TensorFunctions.h"
 #include "tensor/AbstractTensorFunctions.h"
