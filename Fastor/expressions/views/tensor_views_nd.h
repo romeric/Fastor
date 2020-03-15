@@ -11,10 +11,10 @@ namespace Fastor {
 
 // Generic const tensor views based on sequences/slices
 //----------------------------------------------------------------------------------------------//
-template<typename T, size_t DIMS, size_t ... Rest>
-struct TensorConstViewExpr<Tensor<T,Rest...>,DIMS>: public AbstractTensor<TensorConstViewExpr<Tensor<T,Rest...>,DIMS>,DIMS> {
+template<template<typename,size_t...> class TensorType, typename T, size_t DIMS, size_t ... Rest>
+struct TensorConstViewExpr<TensorType<T,Rest...>,DIMS>: public AbstractTensor<TensorConstViewExpr<TensorType<T,Rest...>,DIMS>,DIMS> {
 private:
-    const Tensor<T,Rest...> &expr;
+    const TensorType<T,Rest...> &expr;
     std::array<seq,sizeof...(Rest)> _seqs;
     std::array<int,DIMS> _dims;
     bool _is_vectorisable;
@@ -35,7 +35,7 @@ public:
     }
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return _seqs[i].size();}
 
-    FASTOR_INLINE TensorConstViewExpr(const Tensor<T,Rest...> &_ex, std::array<seq,sizeof...(Rest)> _s) : expr(_ex), _seqs(std::move(_s)) {
+    FASTOR_INLINE TensorConstViewExpr(const TensorType<T,Rest...> &_ex, std::array<seq,sizeof...(Rest)> _s) : expr(_ex), _seqs(std::move(_s)) {
         static_assert(DIMS==sizeof...(Rest),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
         auto counter = 0;
         for (auto &_seq: _seqs) {
@@ -202,10 +202,10 @@ public:
 
 // Generic non-const tensor views based on sequences/slices
 //----------------------------------------------------------------------------------------------//
-template<typename T, size_t DIMS, size_t ... Rest>
-struct TensorViewExpr<Tensor<T,Rest...>,DIMS>: public AbstractTensor<TensorViewExpr<Tensor<T,Rest...>,DIMS>,DIMS> {
+template<template<typename,size_t...> class TensorType, typename T, size_t DIMS, size_t ... Rest>
+struct TensorViewExpr<TensorType<T,Rest...>,DIMS>: public AbstractTensor<TensorViewExpr<TensorType<T,Rest...>,DIMS>,DIMS> {
 private:
-    Tensor<T,Rest...> &expr;
+    TensorType<T,Rest...> &expr;
     std::array<seq,sizeof...(Rest)> _seqs;
     bool does_alias = false;
     std::array<int,DIMS> _dims;
@@ -231,12 +231,12 @@ public:
     }
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return _seqs[i].size();}
 
-    FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,DIMS>& noalias() {
+    FASTOR_INLINE TensorViewExpr<TensorType<T,Rest...>,DIMS>& noalias() {
         does_alias = true;
         return *this;
     }
 
-    TensorViewExpr(Tensor<T,Rest...> &_ex, std::array<seq,sizeof...(Rest)> _s) : expr(_ex), _seqs(std::move(_s)) {
+    TensorViewExpr(TensorType<T,Rest...> &_ex, std::array<seq,sizeof...(Rest)> _s) : expr(_ex), _seqs(std::move(_s)) {
         static_assert(DIMS==sizeof...(Rest),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
         auto counter = 0;
         for (auto &_seq: _seqs) {
@@ -268,13 +268,13 @@ public:
     // View evalution operators
     // Copy assignment operators [Needed in addition to generic AbstractTensor overload]
     //----------------------------------------------------------------------------------//
-    void operator=(const TensorViewExpr<Tensor<T,Rest...>,DIMS> &other) {
+    void operator=(const TensorViewExpr<TensorType<T,Rest...>,DIMS> &other) {
 #ifdef FASTOR_DISALLOW_ALIASING
         if (does_alias) {
             does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -347,13 +347,13 @@ public:
         }
     }
 
-    void operator+=(const TensorViewExpr<Tensor<T,Rest...>,DIMS> &other) {
+    void operator+=(const TensorViewExpr<TensorType<T,Rest...>,DIMS> &other) {
 #ifdef FASTOR_DISALLOW_ALIASING
         if (does_alias) {
             does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -427,13 +427,13 @@ public:
         }
     }
 
-    void operator-=(const TensorViewExpr<Tensor<T,Rest...>,DIMS> &other) {
+    void operator-=(const TensorViewExpr<TensorType<T,Rest...>,DIMS> &other) {
 #ifdef FASTOR_DISALLOW_ALIASING
         if (does_alias) {
             does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -507,13 +507,13 @@ public:
         }
     }
 
-    void operator*=(const TensorViewExpr<Tensor<T,Rest...>,DIMS> &other) {
+    void operator*=(const TensorViewExpr<TensorType<T,Rest...>,DIMS> &other) {
 #ifdef FASTOR_DISALLOW_ALIASING
         if (does_alias) {
             does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -587,13 +587,13 @@ public:
         }
     }
 
-    void operator/=(const TensorViewExpr<Tensor<T,Rest...>,DIMS> &other) {
+    void operator/=(const TensorViewExpr<TensorType<T,Rest...>,DIMS> &other) {
 #ifdef FASTOR_DISALLOW_ALIASING
         if (does_alias) {
             does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -678,7 +678,7 @@ public:
             does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -788,7 +788,7 @@ public:
             does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -868,7 +868,7 @@ public:
             does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -947,7 +947,7 @@ public:
             does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -1026,7 +1026,7 @@ public:
             does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -1108,7 +1108,7 @@ public:
             does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -1184,7 +1184,7 @@ public:
             does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -1263,7 +1263,7 @@ public:
             does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -1341,7 +1341,7 @@ public:
             does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -1420,7 +1420,7 @@ public:
             does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -1930,8 +1930,8 @@ public:
 };
 
 
-template<typename T, size_t DIMS, size_t ... Rest>
-constexpr std::array<size_t,DIMS> TensorViewExpr<Tensor<T,Rest...>,DIMS>::products_;
+template<template<typename,size_t...> class TensorType, typename T, size_t DIMS, size_t ... Rest>
+constexpr std::array<size_t,DIMS> TensorViewExpr<TensorType<T,Rest...>,DIMS>::products_;
 
 
 } // end of namespace Fastor

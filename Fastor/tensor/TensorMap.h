@@ -38,6 +38,12 @@ public:
     template<size_t ... RestOther> constexpr TensorMap(Tensor<T,RestOther...> &a) : _data(a.data()) {}
     //----------------------------------------------------------------------------------------------------------//
 
+    // Raw pointer providers
+    //----------------------------------------------------------------------------------------------------------//
+    FASTOR_INLINE T* data() const { return const_cast<T*>(this->_data);}
+    FASTOR_INLINE T* data() {return this->_data;}
+    //----------------------------------------------------------------------------------------------------------//
+
     // Scalar indexing
     //----------------------------------------------------------------------------------------------------------//
 #undef SCALAR_INDEXING_NONCONST_H
@@ -48,6 +54,16 @@ public:
 #define INDEX_RETRIEVER_H
 #define SCALAR_INDEXING_NONCONST_H
 #define SCALAR_INDEXING_CONST_H
+
+    // Block indexing (all variants excluding iseq)
+    //----------------------------------------------------------------------------------------------------------//
+    template<typename ... Seq, typename std::enable_if<!is_arithmetic_pack<Seq...>::value,bool>::type =0>
+    FASTOR_INLINE TensorViewExpr<TensorMap<T,Rest...>,sizeof...(Seq)> operator()(Seq ... _seqs) {
+        static_assert(Dimension==sizeof...(Seq),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+        return TensorViewExpr<TensorMap<T,Rest...>,sizeof...(Seq)>(*this, {_seqs...});
+    }
+    //----------------------------------------------------------------------------------------------------------//
+
     // Expression templates evaluators
     //----------------------------------------------------------------------------------------------------------//
 #undef TENSOR_EVALUATOR_H
