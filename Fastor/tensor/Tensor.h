@@ -57,7 +57,17 @@ public:
     FASTOR_INLINE Tensor(const Tensor<T,Rest...> &other) {
         // This constructor cannot be default
         // Note that all other data members are static constexpr
+
         std::copy(other.data(),other.data()+Size,_data);
+        // using V = SIMDVector<T,DEFAULT_ABI>;
+        // const T* other_data = other.data();
+        // FASTOR_INDEX i=0;
+        // for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
+        //     V(&other_data[i]).store(&_data[i]);
+        // }
+        // for (; i<Size; ++i) {
+        //     _data[i] = other_data[i];
+        // }
     };
 
     // List initialisers
