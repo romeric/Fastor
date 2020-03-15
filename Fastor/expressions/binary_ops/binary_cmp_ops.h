@@ -80,7 +80,7 @@ struct BinaryCmpOp##NAME: public AbstractTensor<BinaryCmpOp##NAME<TLhs, TRhs, DI
            typename std::enable_if<std::is_arithmetic<LExpr>::value &&\
                                    !std::is_arithmetic<RExpr>::value,bool>::type = 0>\
     FASTOR_INLINE U helper_s(FASTOR_INDEX i) const {\
-        return (U)lhs OP rhs.template eval_s<U>(i);\
+        return (EVAL_TYPE)lhs OP rhs.template eval_s<EVAL_TYPE>(i);\
     }\
     template<typename LExpr, typename RExpr, typename U,\
            typename std::enable_if<!std::is_arithmetic<LExpr>::value &&\
