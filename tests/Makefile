@@ -14,7 +14,7 @@ endif
 
 
 all: tests
-tests: test_auxiliary test_simd_vectors test_basics test_linalg test_einsum test_views test_mixed_views test_complex_expressions
+tests: test_auxiliary test_simd_vectors test_basics test_linalg test_einsum test_views test_mixed_views test_tensormap test_complex_expressions
 
 test_auxiliary:
 	$(CXX) test_auxiliary.cpp -o test_auxiliary.exe $(CXX_FLAGS) $(INCLUDES)
@@ -58,6 +58,9 @@ test_views:
 
 test_mixed_views:
 	$(CXX) test_mixed_views.cpp -o test_mixed_views.exe $(CXX_FLAGS) $(INCLUDES)
+
+test_tensormap:
+	$(CXX) test_tensormap.cpp -o test_tensormap.exe $(CXX_FLAGS) $(INCLUDES)
 
 test_complex_expressions:
 	$(CXX) test_complex_expressions.cpp -o test_complex_expressions.exe $(CXX_FLAGS) $(INCLUDES)
@@ -103,6 +106,9 @@ run_views:
 
 run_mixed_views:
 	./test_mixed_views.exe
+
+run_tensormap:
+	./test_tensormap.exe
 
 run_complex_expressions:
 	./test_complex_expressions.exe
