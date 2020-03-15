@@ -1,11 +1,11 @@
 #ifndef EXPRESSIONS_H
 #define EXPRESSIONS_H
 
+#include <Fastor/expressions/binary_ops/binary_arithmetic_ops.h>
 // #include <Fastor/expressions/binary_ops/binary_add_op.h>
 // #include <Fastor/expressions/binary_ops/binary_sub_op.h>
 // #include <Fastor/expressions/binary_ops/binary_mul_op.h>
-// #include <Fastor/expressions/binary_ops/binary_div_op.h>
-#include <Fastor/expressions/binary_ops/binary_arithmetic_ops.h>
+#include <Fastor/expressions/binary_ops/binary_div_op.h>
 #include <Fastor/expressions/binary_ops/binary_cmp_ops.h>
 #include <Fastor/expressions/unary_ops/unary_math_ops.h>
 #include <Fastor/expressions/smart_ops/smart_ops.h>

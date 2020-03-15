@@ -1,9 +1,10 @@
 #ifndef BINARY_SUB_OP_H
 #define BINARY_SUB_OP_H
 
+#include "Fastor/tensor/AbstractTensor.h"
+#include "Fastor/meta/tensor_post_meta.h"
 
-#include "tensor/AbstractTensor.h"
-#include "meta/tensor_post_meta.h"
+
 
 namespace Fastor {
 

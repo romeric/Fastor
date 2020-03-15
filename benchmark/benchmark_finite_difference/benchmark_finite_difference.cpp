@@ -163,20 +163,21 @@ void run_finite_difference() {
 
 int main(int argc, char *argv[]) {
 
-    const rlim_t stacksize = 1024*1024*1024;
-    struct rlimit rl;
-    int result;
-    result = getrlimit(RLIMIT_STACK, &rl);
-    if (result==0) {
-        if (rl.rlim_cur < stacksize) {
-            rl.rlim_cur = stacksize;
-            result = setrlimit(RLIMIT_STACK,&rl);
-            if (result !=0) {
-                FASTOR_ASSERT(result !=0, "CHANGING STACK SIZE FAILED");
-            }
-        }
-    }
+    // const rlim_t stacksize = 1024*1024*1024;
+    // struct rlimit rl;
+    // int result;
+    // result = getrlimit(RLIMIT_STACK, &rl);
+    // if (result==0) {
+    //     if (rl.rlim_cur < stacksize) {
+    //         rl.rlim_cur = stacksize;
+    //         result = setrlimit(RLIMIT_STACK,&rl);
+    //         if (result !=0) {
+    //             FASTOR_ASSERT(result !=0, "CHANGING STACK SIZE FAILED");
+    //         }
+    //     }
+    // }
 
+    using T = double;
     int N;
     if (argc == 2) {
        N = atoi(argv[1]);
@@ -192,9 +193,9 @@ int main(int argc, char *argv[]) {
     t_j.tic();
     // Putting all this in stack might hurt the performance
     // as opposed to compiling for each individual benchmarks
-    if (N==100) run_finite_difference<double,100>();
-    if (N==150) run_finite_difference<double,150>();
-    if (N==200) run_finite_difference<double,200>();
+    if (N==100) run_finite_difference<T,100>();
+    if (N==150) run_finite_difference<T,150>();
+    if (N==200) run_finite_difference<T,200>();
     t_j.toc();
 
     return 0;

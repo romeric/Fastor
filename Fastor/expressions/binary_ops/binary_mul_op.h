@@ -1,8 +1,9 @@
 #ifndef BINARY_MUL_OP_H
 #define BINARY_MUL_OP_H
 
-#include "tensor/AbstractTensor.h"
-#include "meta/tensor_post_meta.h"
+#include "Fastor/tensor/AbstractTensor.h"
+#include "Fastor/meta/tensor_post_meta.h"
+
 
 namespace Fastor {
 

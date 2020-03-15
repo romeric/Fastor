@@ -210,9 +210,9 @@ operator OP(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1
 FASTOR_MAKE_BINARY_ARITHMETIC_OPS(+, Add, scalar_type)
 FASTOR_MAKE_BINARY_ARITHMETIC_OPS(-, Sub, scalar_type)
 FASTOR_MAKE_BINARY_ARITHMETIC_OPS(*, Mul, scalar_type)
-FASTOR_MAKE_BINARY_ARITHMETIC_OPS(/, Div, scalar_type)
+// FASTOR_MAKE_BINARY_ARITHMETIC_OPS(/, Div, scalar_type) // Dont create div as it is a special case
 
-// // Dispatch based on the type of tensor and not the expression
+// Dispatch based on the type of tensor and not the expression
 // FASTOR_MAKE_BINARY_ARITHMETIC_OPS(+, Add, U)
 // FASTOR_MAKE_BINARY_ARITHMETIC_OPS(-, Sub, U)
 // FASTOR_MAKE_BINARY_ARITHMETIC_OPS(*, Mul, U)
