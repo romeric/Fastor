@@ -387,6 +387,91 @@ FASTOR_INLINE SIMDVector<T,ABI> abs(const SIMDVector<T,ABI> &a) {
     return out;
 }
 
+
+
+
+// Binary comparison ops
+//----------------------------------------------------------------------------------------------------------------//
+#define FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(OP) \
+template<typename T, int ABI> \
+SIMDVector<bool,SIMDVector<T,ABI>::Size*sizeof(bool)*8> operator OP(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b) { \
+    constexpr FASTOR_INDEX Size = SIMDVector<T,ABI>::Size;\
+    T FASTOR_ALIGN val_a[Size];\
+    a.store(val_a);\
+    T FASTOR_ALIGN val_b[Size];\
+    b.store(val_b);\
+    SIMDVector<bool,Size*sizeof(bool)*8> out;\
+    bool FASTOR_ALIGN val_out[Size];\
+    out.store(val_out);\
+    for (FASTOR_INDEX i=0; i<Size; ++i) {\
+        val_out[i] = val_a[i] OP val_b[i];\
+    }\
+    out.load(val_out);\
+    return out;\
+}\
+
+FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(==);
+FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(!=);
+FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(>);
+FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(<);
+FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(>=);
+FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(<=);
+FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(&&);
+FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(||);
+
+
+#define FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(OP) \
+template<typename T, typename U, int ABI> \
+SIMDVector<bool,SIMDVector<T,ABI>::Size*sizeof(bool)*8> operator OP(const SIMDVector<T,ABI> &a, U b) { \
+    constexpr FASTOR_INDEX Size = SIMDVector<T,ABI>::Size;\
+    T FASTOR_ALIGN val_a[Size];\
+    a.store(val_a);\
+    SIMDVector<bool,Size*sizeof(bool)*8> out;\
+    bool FASTOR_ALIGN val_out[Size];\
+    out.store(val_out);\
+    for (FASTOR_INDEX i=0; i<Size; ++i) {\
+        val_out[i] = val_a[i] OP T(b);\
+    }\
+    out.load(val_out);\
+    return out;\
+}\
+
+FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(==);
+FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(!=);
+FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(>);
+FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(<);
+FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(>=);
+FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(<=);
+FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(&&);
+FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(||);
+
+
+#define FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(OP) \
+template<typename T, typename U, int ABI> \
+SIMDVector<bool,SIMDVector<T,ABI>::Size*sizeof(bool)*8> operator OP(U a, const SIMDVector<T,ABI> &b) { \
+    constexpr FASTOR_INDEX Size = SIMDVector<T,ABI>::Size;\
+    T FASTOR_ALIGN val_b[Size];\
+    b.store(val_b);\
+    SIMDVector<bool,Size*sizeof(bool)*8> out;\
+    bool FASTOR_ALIGN val_out[Size];\
+    out.store(val_out);\
+    for (FASTOR_INDEX i=0; i<Size; ++i) {\
+        val_out[i] = T(a) OP val_b[i];\
+    }\
+    out.load(val_out);\
+    return out;\
+}\
+
+FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(==);
+FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(!=);
+FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(>);
+FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(<);
+FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(>=);
+FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(<=);
+FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(&&);
+FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(||);
+//----------------------------------------------------------------------------------------------------------------//
+
 }
 
 #endif // SIMD_VECTOR_H

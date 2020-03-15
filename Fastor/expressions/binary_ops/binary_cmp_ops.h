@@ -1,14 +1,14 @@
 #ifndef BINARY_CMP_OPS
 #define BINARY_CMP_OPS
 
-#include "tensor/AbstractTensor.h"
-#include "meta/tensor_post_meta.h"
+#include "Fastor/tensor/AbstractTensor.h"
+#include "Fastor/meta/tensor_post_meta.h"
 
 
 
 namespace Fastor {
 
-#define FASTOR_MAKE_BINARY_CMP_OPS_(OP,NAME) \
+#define FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(OP,NAME) \
 template<typename TLhs, typename TRhs, size_t DIM0>\
 struct BinaryCmpOp##NAME: public AbstractTensor<BinaryCmpOp##NAME<TLhs, TRhs, DIM0>,DIM0> {\
     typename ExprBinderType<TLhs>::type lhs;\
@@ -205,13 +205,13 @@ operator OP(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1
 }\
 
 
-FASTOR_MAKE_BINARY_CMP_OPS_(== ,EQ);
-FASTOR_MAKE_BINARY_CMP_OPS_(<  ,LT);
-FASTOR_MAKE_BINARY_CMP_OPS_(>  ,GT);
-FASTOR_MAKE_BINARY_CMP_OPS_(<= ,LE);
-FASTOR_MAKE_BINARY_CMP_OPS_(>= ,GE);
-FASTOR_MAKE_BINARY_CMP_OPS_(&& ,AND);
-FASTOR_MAKE_BINARY_CMP_OPS_(|| ,OR);
+FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(== ,EQ);
+FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(<  ,LT);
+FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(>  ,GT);
+FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(<= ,LE);
+FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(>= ,GE);
+FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(&& ,AND);
+FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(|| ,OR);
 
 }
 
