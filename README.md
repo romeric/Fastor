@@ -2,8 +2,8 @@
 **Fastor** is a stack-based high performance tensor (multi-dimensional array) library written in modern C++ [C++11/14/17] with powerful in-built tensor algebraic functionalities (tensor contraction, permutation, reductions, special tensor groups etc). There are multiple paradigms that Fastor exploits:
 
 - **Operation minimisation or low FLOP/complexity reducing algorithms:** Fastor relies on a domain-aware Expression Template (ET) engine that can not only perform lazy and delayed evaluation but also sophisticated mathematical transformation at *compile time* such as graph optimisation, nearly symbolic tensor algebraic manipulation to reduce the complexity of evaluation of BLAS and/or non-BLAS type expressions by orders of magnitude. Some of these functionalities are non-existent in other available C++ ET linear algebra libraries.
-- **SIMD/Data parallelism/Stream computing** Fastor utilises explicit SIMD instructions (from SSE all the way to AVX512 and FMA)
-- **Zero overhead tensor algebraic functions** Fastor incorporates statically dispatched bespoke kernels for a variety of tensor products using a priori knowledge of tensors either through compile-time specialisation or advanced topological studies or both
+- **SIMD/Data parallelism/Stream computing** Fastor utilises explicit SIMD instructions (from SSE all the way to AVX512 and FMA).
+- **Zero overhead tensor algebraic functions** Fastor incorporates statically dispatched bespoke kernels for a variety of tensor products using a priori knowledge of tensors either through compile-time specialisation or advanced topological studies or both.
 
 ### Documentation
 Full documenation can be found under the [Wiki](https://github.com/romeric/Fastor/wiki) pages.
@@ -109,7 +109,7 @@ Aside from `iseq` (which pretty much immediately returns another tensor), all ot
 A(all,all) -= log(B(all,all,0)) + abs(B(all,fall,1)) + sin(C(all,0,all,0)) - 102. - cos(B(all,all,0));
 ~~~
 
-It should be mentioned that since tensor views work on a view of (reference to) a tensor and do not copy any data in the background, the use of the keyword `auto` can be dangerous at times
+<!-- It should be mentioned that since tensor views work on a view of (reference to) a tensor and do not copy any data in the background, the use of the keyword `auto` can be dangerous at times
 ~~~c++
 auto B = A(all,all,seq(0,5),seq(0,3)); // the scope of view expressions ends with ; as view is a refrerence to an rvalue
 auto C = B + 2; // Hence this will sigfault as B refers to a non-existing piece of memory
@@ -118,7 +118,7 @@ To solve this issue, use immediate construction from a view
 ~~~c++
 Tensor<double,2,2,5,3> B = A(all,all,seq(0,5),seq(0,3)); // B is now permanent
 auto C = B + 2; // This will behave as expected
-~~~
+~~~ -->
 From a performance point of view, Fastor tries very hard to vectorise (read SIMD vectorisation) tensor views, but this heavily depends on the compilers ability to inline multiple recursive functions [as is the case for all expression templates]. If a view appears on the right hand side of an assignment, but not on the left, Fastor automatically vectorises the expression. However if a view appears on the left hand side of an assignment, Fastor does not by default vectorise the expression. To enable vectorisation across all tensor views use the compiler flag `-DFASTOR_USE_VECTORISE_EXPR_ASSIGN`. Also for performance reasons it is beneficial to avoid overlapping assignments, otherwise a copy will be made. If your code does not use any overlapping assignments, then this feature can be turned off completely by issusing `-DFASTOR_NO_ALIAS`. At this stage it is also beneficial to consider that while compiling complex and big expressions the inlining limit of the compiler should be increased and tested i.e. `-finline-limit=<big number>` for GCC, `-mllvm -inline-threshold=<big number>` for Clang and `-inline-forceinline` for ICC.
 
 To see how efficient tensor views can be vectorised, as an example consider the following 4th order finite difference example for Laplace equation
