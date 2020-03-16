@@ -304,9 +304,9 @@ Fastor is extremely light weight, it is a *header-only* library, requires no bui
 
 ### Tested Compilers
 Fastor has been tested against the following compilers (on Ubuntu 14.04/16.04/18.04 and macOS). While compiling on macOS with Clang, `-std=c++14` is necessary
-- GCC 4.8, GCC 4.9, GCC 5.1, GCC 5.2, GCC 5.3, GCC 5.4, GCC 6.2, GCC 7.3, GCC 9.1
-- Clang 3.6, Clang 3.7, Clang 3.8, Clang 3.9, Clang 5
-- Intel 16.0.1, Intel 16.0.2, Intel 16.0.3, Intel 17.0.1, Intel 18.2
+- GCC 4.8, GCC 4.9, GCC 5.1, GCC 5.2, GCC 5.3, GCC 5.4, GCC 6.2, GCC 7.3, GCC 8, GCC 9.1
+- Clang 3.6, Clang 3.7, Clang 3.8, Clang 3.9, Clang 5, Clang 7, Clang 8
+- Intel 16.0.1, Intel 16.0.2, Intel 16.0.3, Intel 17.0.1, Intel 18.2, Intel 19.2
 
 ### Reference/Citation
 Fastor can be cited as
