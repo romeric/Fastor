@@ -1,7 +1,7 @@
 #ifndef LIBXSMM_BACKEND_H
 #define LIBXSMM_BACKEND_H
 
-#include <tensor/Tensor.h>
+#include <Fastor/tensor/Tensor.h>
 
 #ifdef USE_LIBXSMM_BACKEND
 
