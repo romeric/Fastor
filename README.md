@@ -169,7 +169,7 @@ L128:
   cmpq  %r13, %rcx
   jne L129
 ~~~
-As can be observed, the compiler emits unaligned load and store instructions, but the rest of the generated code is extremely efficient (it does not get more efficient than this). For stack allocated and small tensors the unaligned load/store operations should not be a bottleneck either, as the data would potentially fit in L1 cache. With the help of an optimising compiler, Fastor's functionalities come closest to the ideal metal performance for numerical tensor algebra code.
+Aside from unaligned load and store instructions which are unavoidable the rest of the generated code is as efficient as it gets for a `AVX2` architecture. Furthermore, on recent X86 architectures unaliged access as fast as aligned access. This is specfically true for Fastor's stack allocated tensors as the data would potentially fit in L1 cache. With the help of an optimising compiler, Fastor's functionalities come closest to the ideal metal performance for numerical tensor algebra code.
 
 ### Specialised tensors
 A set of specialised tensors are available that provide optimised tensor algebraic computations, for instance `SingleValueTensor`. Some of the computations performed on these tensors have almost zero cost no matter how big the tensor is. These tensors work in the exact same way as the `Tensor` class and can be assigned to one another. Consider for example the einsum between two `SingleValueTensor`s. A `SingleValueTensor` is a tensor of any dimension and size whose elements are all the same (a matrix of ones for instance).
