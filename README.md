@@ -1,9 +1,9 @@
 # Fastor
-**Fastor** is a stack-based high performance tensor (multi-dimensional array) library written in modern C++ [C++11/14/17] with powerful in-built tensor algebraic functionalities (tensor contraction, permutation, reductions, special tensor groups etc). Designed as a generic multi-dimensional tensor algebra library, Fastor also incorporates domain specific features for tensor contraction algorithms typically arising in classical mechanics, in particular, in finite element analysis. There are multiple paradigms that Fastor exploits:
+**Fastor** is a stack-based high performance tensor (multi-dimensional array) library written in modern C++ [C++11/14/17] with powerful in-built tensor algebraic functionalities (tensor contraction, permutation, reductions, special tensor groups etc). There are multiple paradigms that Fastor exploits:
 
-- **Operation minimisation/Low FLOP/Complexity reducing Algorithms:** Fastor relies on a domain-aware Expression Template (ET) engine that can not only perform lazy evaluations and operator chaining but can also perform sophisticated mathematical transformation or *compile time* graph optimisation or both to reduce the complexity of evaluation of expressions by orders of magnitude. Some of these functionalities are  non-existent in other available C++ ET linear algebra libraries.
-- **SIMD/Data parallelism/Stream computing** Fastor utilises explicit SIMD (SSE/SSE2/SSE3/SSE4/AVX/AVX2/AVX512/FMA) instructions
-- **Zero overhead tensor algebraic functions** statically dispatched bespoke kernels for a variety of tensor products using a priori knowledge of tensors either through compile-time specialisation or advanced topological studies or both
+- **Operation minimisation or low FLOP/complexity reducing algorithms:** Fastor relies on a domain-aware Expression Template (ET) engine that can not only perform lazy and delayed evaluation but can also perform sophisticated mathematical transformation at *compile time* such as graph optimisation, nearly symbolic tensor algebraic manipulation to reduce the complexity of evaluation of BLAS and/or non-BLAS type expressions by orders of magnitude. Some of these functionalities are non-existent in other available C++ ET linear algebra libraries.
+- **SIMD/Data parallelism/Stream computing** Fastor utilises explicit SIMD instructions (from SSE all the way to AVX512 and FMA)
+- **Zero overhead tensor algebraic functions** Fastor incorporates statically dispatched bespoke kernels for a variety of tensor products using a priori knowledge of tensors either through compile-time specialisation or advanced topological studies or both
 
 ### Documentation
 Full documenation can be found under the [Wiki](https://github.com/romeric/Fastor/wiki) pages.
