@@ -27,9 +27,11 @@ FASTOR_INLINE Tensor(const TensorFixedViewExpr2D<Tensor<T,Rest1...>,Seq0,Seq1,2>
     }
 }
 
+#ifndef FASTOR_DISABLE_SPECIALISED_CTR
+
 template<typename Derived, size_t DIMS,
-    typename std::enable_if<!has_tensor_view<Derived>::value &&
-    has_tensor_fixed_view_2d<Derived>::value && DIMS==sizeof...(Rest),bool>::type=0>
+    typename std::enable_if<!internal::has_tensor_view<Derived>::value &&
+    internal::has_tensor_fixed_view_2d<Derived>::value && DIMS==sizeof...(Rest),bool>::type=0>
 FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
     using scalar_type_ = typename scalar_type_finder<Derived>::type;
     constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
@@ -52,6 +54,8 @@ FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
         }
     }
 }
+
+#endif // FASTOR_DISABLE_SPECIALISED_CTR
 //----------------------------------------------------------------------------------------------------------//
 
 
@@ -135,8 +139,9 @@ FASTOR_INLINE Tensor(const TensorViewExpr<Tensor<T,Rest1...>,sizeof...(Rest)>& s
     }
 }
 
+#ifndef FASTOR_DISABLE_SPECIALISED_CTR
 
-template<typename Derived, size_t DIMS, typename std::enable_if<has_tensor_view<Derived>::value && DIMS==sizeof...(Rest),bool>::type=0>
+template<typename Derived, size_t DIMS, typename std::enable_if<internal::has_tensor_view<Derived>::value && DIMS==sizeof...(Rest),bool>::type=0>
 FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
     using scalar_type_ = typename scalar_type_finder<Derived>::type;
     // constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
@@ -199,6 +204,8 @@ FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
     //         break;
     // }
 }
+
+#endif // FASTOR_DISABLE_SPECIALISED_CTR
 //----------------------------------------------------------------------------------------------------------//
 
 

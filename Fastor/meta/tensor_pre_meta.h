@@ -2,16 +2,38 @@
 #define TENSOR_PRE_META_H
 
 #include "Fastor/commons/commons.h"
+#include "Fastor/tensor/ForwardDeclare.h"
 
 namespace Fastor {
 
 template<typename T, size_t ... Rest>
 class Tensor;
 
+// traits
+namespace internal {
 //----------------------------------------------------------------------------------------------------------//
-template<typename Expr, size_t DIMS>
-struct TensorViewExpr;
+template<typename Derived>
+struct is_binary_cmp_op {
+    static constexpr bool value = false;
+};
+#define FASTOR_MAKE_IS_BINARY_CMP_OP(NAME) \
+template<typename TLhs, typename TRhs, size_t DIMS>\
+struct is_binary_cmp_op<BinaryCmpOp##NAME <TLhs,TRhs,DIMS>> {\
+    static constexpr bool value = true;\
+};\
 
+FASTOR_MAKE_IS_BINARY_CMP_OP(EQ)
+FASTOR_MAKE_IS_BINARY_CMP_OP(NEQ)
+FASTOR_MAKE_IS_BINARY_CMP_OP(LT)
+FASTOR_MAKE_IS_BINARY_CMP_OP(GT)
+FASTOR_MAKE_IS_BINARY_CMP_OP(LE)
+FASTOR_MAKE_IS_BINARY_CMP_OP(GE)
+FASTOR_MAKE_IS_BINARY_CMP_OP(AND)
+FASTOR_MAKE_IS_BINARY_CMP_OP(OR)
+//----------------------------------------------------------------------------------------------------------//
+
+
+//----------------------------------------------------------------------------------------------------------//
 template<typename Derived>
 struct is_tensor_view {
     static constexpr bool value = false;
@@ -42,9 +64,6 @@ struct has_tensor_view<BinaryExpr<TLhs,TRhs,DIMS>> {
 
 
 //----------------------------------------------------------------------------------------------------------//
-template<typename Expr, typename Seq0, typename Seq1, size_t DIMS>
-struct TensorFixedViewExpr2D;
-
 template<typename Derived>
 struct is_tensor_fixed_view_2d {
     static constexpr bool value = false;
@@ -72,6 +91,8 @@ struct has_tensor_fixed_view_2d<BinaryExpr<TLhs,TRhs,DIMS>> {
         (std::is_arithmetic<TLhs>::value ? has_tensor_view<TRhs>::value : has_tensor_view<TLhs>::value);
 };
 //----------------------------------------------------------------------------------------------------------//
+
+} // end of namespace internal
 
 
 template<class T>

@@ -97,6 +97,25 @@ struct nprods;
 
 template<class Idx, class Seq>
 struct nprods_views;
+
+
+#define FASTOR_MAKE_BINARY_CMP_OP_FORWARD_DECLARATION(NAME)\
+template<typename TLhs, typename TRhs, size_t DIM0>\
+struct BinaryCmpOp##NAME ;\
+
+FASTOR_MAKE_BINARY_CMP_OP_FORWARD_DECLARATION(EQ)
+FASTOR_MAKE_BINARY_CMP_OP_FORWARD_DECLARATION(NEQ)
+FASTOR_MAKE_BINARY_CMP_OP_FORWARD_DECLARATION(LT)
+FASTOR_MAKE_BINARY_CMP_OP_FORWARD_DECLARATION(GT)
+FASTOR_MAKE_BINARY_CMP_OP_FORWARD_DECLARATION(LE)
+FASTOR_MAKE_BINARY_CMP_OP_FORWARD_DECLARATION(GE)
+FASTOR_MAKE_BINARY_CMP_OP_FORWARD_DECLARATION(AND)
+FASTOR_MAKE_BINARY_CMP_OP_FORWARD_DECLARATION(OR)
+
+namespace internal {
+template<typename Derived>
+struct is_binary_cmp_op;
+}
 //----------------------------------------------------------------
 
 }

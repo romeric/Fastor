@@ -32,6 +32,16 @@
     #endif
 #endif
 
+#if defined(__cplusplus)
+    #if __cplusplus == 201103L
+        #define FASTOR_CXX_VERSION 2011
+    #elif __cplusplus == 201402L
+        #define FASTOR_CXX_VERSION 2014
+    #elif __cplusplus == 201703L
+        #define FASTOR_CXX_VERSION 2017
+    #endif
+#endif
+
 #if defined(__GNUC__) || defined(__GNUG__)
     #define FASTOR_INLINE inline __attribute__((always_inline))
     #define FASTOR_NOINLINE __attribute__((noinline))
@@ -61,6 +71,16 @@
 #define FASTOR_HINT_INLINE inline
 
 
+// C++17 if constexpr
+#if FASTOR_CXX_VERSION == 2017
+    #define FASTOR_HAS_IF_CONSTEXPR 1
+    #define FASTOR_IF_CONSTEXPR if constexpr
+#else
+    #define FASTOR_HAS_IF_CONSTEXPR 0
+    #define FASTOR_IF_CONSTEXPR if
+#endif
+
+
 // ICC's default option is fast anyway (i.e. -fp-model fast=1)
 // but it does not define the __FAST_MATH__ macro
 #if defined(__FAST_MATH__)
@@ -70,8 +90,6 @@
 // #define FASTOR_UNSAFE_MATH
 #endif
 
-// Define this if hadd seems beneficial
-//#define USE_HADD
 
 // ADDITIONAL MACROS DEFINED THROUGHOUT FASTOR
 //-----------------------------------------------
@@ -90,6 +108,7 @@
 //#define FASTOR_ZERO_INITIALISE
 //#define FASTOR_USE_OLD_NDVIEWS
 //#define FASTOR_DISPATCH_DIV_TO_MUL_EXPR // CHANGE BINARY_DIV_OP TO BINARY_MUL_OP
+//#define FASTOR_DISABLE_SPECIALISED_CTR
 
 #ifndef BLAS_SWITCH_MATRIX_SIZE_NS
 #define BLAS_SWITCH_MATRIX_SIZE_NS 13
@@ -105,6 +124,8 @@
 #define COPY_SMART_EXPR
 #endif
 
+// Define this if hadd seems beneficial
+//#define USE_HADD
 
 #ifndef FASTOR_NO_ALIAS
 #define FASTOR_DISALLOW_ALIASING

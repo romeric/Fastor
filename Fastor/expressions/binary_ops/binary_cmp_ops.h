@@ -205,15 +205,17 @@ operator OP(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1
 }\
 
 
-FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(== ,EQ, scalar_type);
-FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(<  ,LT, scalar_type);
-FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(>  ,GT, scalar_type);
-FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(<= ,LE, scalar_type);
-FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(>= ,GE, scalar_type);
-FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(&& ,AND, scalar_type);
-FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(|| ,OR, scalar_type);
+FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(== ,EQ, scalar_type)
+FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(!= ,NEQ,scalar_type)
+FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(<  ,LT, scalar_type)
+FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(>  ,GT, scalar_type)
+FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(<= ,LE, scalar_type)
+FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(>= ,GE, scalar_type)
+FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(&& ,AND,scalar_type)
+FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(|| ,OR, scalar_type)
 
-}
+
+} // end of namespace Fastor
 
 
 #endif // BINARY_CMP_OPS
