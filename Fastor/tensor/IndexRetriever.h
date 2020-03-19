@@ -7,7 +7,7 @@
 // views and such the index may be different
 //----------------------------------------------------------------------------------------------------------//
 template<typename U>
-FASTOR_INLINE int get_mem_index(U index) const {
+FASTOR_INLINE U get_mem_index(U index) const {
 #ifdef BOUNDSCHECK
     FASTOR_ASSERT((index>=0 && index<Size), "INDEX OUT OF BOUNDS");
 #endif

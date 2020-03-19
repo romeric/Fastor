@@ -35,7 +35,7 @@ inline std::string itoa(const std::array<T,N>& arr) {
 
 
 #ifndef _WIN32
-inline int set_stack_size(int size) {
+inline size_t set_stack_size(size_t size) {
     // If the function does not work, copy-paste it within
     // the body of the main
 
@@ -45,7 +45,7 @@ inline int set_stack_size(int size) {
     struct rlimit rl;
     int result;
     result = getrlimit(RLIMIT_STACK, &rl);
-    int old = rl.rlim_cur = stacksize;
+    rlim_t old = rl.rlim_cur = stacksize;
     if (result==0) {
         if (rl.rlim_cur < stacksize) {
             rl.rlim_cur = stacksize;
