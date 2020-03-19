@@ -20,7 +20,7 @@ void run() {
         FASTOR_EXIT_ASSERT(abs(II_ijkl(1,1,0,0) - 1) < Tol);
         FASTOR_EXIT_ASSERT(abs(II_ijkl(1,1,1,1) - 1) < Tol);
         auto II_ijkl2 = outer(II,II);
-        // FASTOR_EXIT_ASSERT(II_ijkl==II_ijkl2);
+        FASTOR_EXIT_ASSERT(all_of(II_ijkl==II_ijkl2));
         auto II_ikjl = permutation<Index<i,k,j,l>>(II_ijkl);
         FASTOR_EXIT_ASSERT(abs(II_ikjl(0,0,0,0) - 1) < Tol);
         FASTOR_EXIT_ASSERT(abs(II_ikjl(0,1,0,1) - 1) < Tol);
@@ -98,7 +98,7 @@ void run() {
         FASTOR_EXIT_ASSERT(abs(II_ijkl(2,2,1,1) - 1) < Tol);
         FASTOR_EXIT_ASSERT(abs(II_ijkl(2,2,2,2) - 1) < Tol);
         auto II_ijkl2 = outer(II,II);
-        // FASTOR_EXIT_ASSERT(II_ijkl==II_ijkl2);
+        FASTOR_EXIT_ASSERT(all_of(II_ijkl==II_ijkl2));
         auto II_ikjl = permutation<Index<i,k,j,l>>(II_ijkl);
         FASTOR_EXIT_ASSERT(abs(II_ikjl(0,0,0,0) - 1) < Tol);
         FASTOR_EXIT_ASSERT(abs(II_ikjl(0,1,0,1) - 1) < Tol);

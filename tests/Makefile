@@ -71,7 +71,7 @@ test_binary_cmp_ops:
 
 
 
-run: run_auxiliary run_simd_vectors run_basics run_linalg run_einsum run_views run_complex_expressions
+run: run_auxiliary run_simd_vectors run_basics run_linalg run_einsum run_views run_complex_expressions run_binary_cmp_ops
 
 run_auxiliary:
 	./test_auxiliary.exe

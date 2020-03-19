@@ -190,6 +190,50 @@ matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM
 }
 
 
+
+
+template<class Derived, size_t DIMS>
+FASTOR_INLINE bool all_of(const AbstractTensor<Derived,DIMS> &_src) {
+    static_assert(internal::is_binary_cmp_op<Derived>::value,"INPUT SHOULD BE A BOOLEAN EXPRESSION");
+    const Derived &src = _src.self();
+    bool val = true;
+    for (FASTOR_INDEX i = 0; i < src.size(); ++i) {
+        if (src.template eval_s<bool>(i) == false) {
+            val = false;
+            break;
+        }
+    }
+    return val;
+}
+
+template<class Derived, size_t DIMS>
+FASTOR_INLINE bool any_of(const AbstractTensor<Derived,DIMS> &_src) {
+    static_assert(internal::is_binary_cmp_op<Derived>::value,"INPUT SHOULD BE A BOOLEAN EXPRESSION");
+    const Derived &src = _src.self();
+    bool val = false;
+    for (FASTOR_INDEX i = 0; i < src.size(); ++i) {
+        if (src.template eval_s<bool>(i) == true) {
+            val = true;
+            break;
+        }
+    }
+    return val;
+}
+
+template<class Derived, size_t DIMS>
+FASTOR_INLINE bool none_of(const AbstractTensor<Derived,DIMS> &_src) {
+    static_assert(internal::is_binary_cmp_op<Derived>::value,"INPUT SHOULD BE A BOOLEAN EXPRESSION");
+    const Derived &src = _src.self();
+    bool val = false;
+    for (FASTOR_INDEX i = 0; i < src.size(); ++i) {
+        if (src.template eval_s<bool>(i) == true) {
+            val = true;
+            break;
+        }
+    }
+    return val;
+}
+
 }
 
 

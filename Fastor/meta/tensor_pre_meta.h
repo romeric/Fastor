@@ -9,6 +9,12 @@ namespace Fastor {
 template<typename T, size_t ... Rest>
 class Tensor;
 
+template<typename T, size_t ... Rest>
+class TensorMap;
+
+template<typename T, size_t ... Rest>
+class SingleValueTensor;
+
 // traits
 namespace internal {
 //----------------------------------------------------------------------------------------------------------//
@@ -30,6 +36,19 @@ FASTOR_MAKE_IS_BINARY_CMP_OP(LE)
 FASTOR_MAKE_IS_BINARY_CMP_OP(GE)
 FASTOR_MAKE_IS_BINARY_CMP_OP(AND)
 FASTOR_MAKE_IS_BINARY_CMP_OP(OR)
+
+template<size_t ... Rest>
+struct is_binary_cmp_op<Tensor<bool,Rest...>> {
+    static constexpr bool value = true;
+};
+template<size_t ... Rest>
+struct is_binary_cmp_op<TensorMap<bool,Rest...>> {
+    static constexpr bool value = true;
+};
+template<size_t ... Rest>
+struct is_binary_cmp_op<SingleValueTensor<bool,Rest...>> {
+    static constexpr bool value = true;
+};
 //----------------------------------------------------------------------------------------------------------//
 
 
