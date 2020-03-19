@@ -33,7 +33,6 @@ Tensor<T,N,M> transpose(const Tensor<T,M,N>& a) {
     const T *a_data = a.data();
     using V = SIMDVector<T,DEFAULT_ABI>;
     constexpr size_t SIZE_ = V::Size;
-    const int ROUND = ROUND_DOWN(M,(int)SIZE_);
 
     T FASTOR_ALIGN v[SIZE_*SIZE_];
     T FASTOR_ALIGN v_out[SIZE_*SIZE_];
