@@ -192,7 +192,7 @@ template<typename Derived, size_t DIMS, typename std::enable_if<
     DIMS!=2 &&
     DIMS==sizeof...(Rest),bool>::type=0>
 FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
-    using scalar_type_ = typename scalar_type_finder<Derived>::type;
+    // using scalar_type_ = typename scalar_type_finder<Derived>::type;
     // constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
     const Derived &src = src_.self();
 #ifndef NDEBUG
