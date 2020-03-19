@@ -24,7 +24,7 @@ struct fseq {
     constexpr FASTOR_INLINE int size() const {return range_detector<F,L,S>::value;}
 };
 
-constexpr fseq<0,-1,1> fall;
+static constexpr fseq<0,-1,1> fall;
 
 
 struct seq {
@@ -63,10 +63,12 @@ struct seq {
 
 };
 
-constexpr int first = 0;
-constexpr int last = -1;
+static constexpr int first = 0;
+static constexpr int last = -1;
 
 static constexpr seq all = seq(0,-1,1);
+// why not this?
+// static constexpr fseq<0,-1,1> all;
 
 
 

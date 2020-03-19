@@ -102,12 +102,12 @@ struct has_tensor_fixed_view_2d<TensorFixedViewExpr2D<Tensor<T,M,N>,Seq0,Seq1,2>
 };
 template<template<typename,size_t> class UnaryExpr, typename Expr, size_t DIM>
 struct has_tensor_fixed_view_2d<UnaryExpr<Expr,DIM>> {
-    static constexpr bool value = is_tensor_fixed_view_2d<Expr>::value ? true : has_tensor_view<Expr>::value;
+    static constexpr bool value = is_tensor_fixed_view_2d<Expr>::value ? true : has_tensor_fixed_view_2d<Expr>::value;
 };
 template<template<class,class,size_t> class BinaryExpr, typename TLhs, typename TRhs, size_t DIMS>
 struct has_tensor_fixed_view_2d<BinaryExpr<TLhs,TRhs,DIMS>> {
     static constexpr bool value = (std::is_arithmetic<TLhs>::value ? is_tensor_fixed_view_2d<TRhs>::value : is_tensor_fixed_view_2d<TLhs>::value) ? true :
-        (std::is_arithmetic<TLhs>::value ? has_tensor_view<TRhs>::value : has_tensor_view<TLhs>::value);
+        (std::is_arithmetic<TLhs>::value ? has_tensor_fixed_view_2d<TRhs>::value : has_tensor_fixed_view_2d<TLhs>::value);
 };
 //----------------------------------------------------------------------------------------------------------//
 
