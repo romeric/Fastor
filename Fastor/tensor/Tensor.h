@@ -380,18 +380,6 @@ public:
         }
     }
 
-    template<typename U, size_t ... RestOther>
-    FASTOR_INLINE bool operator ==(const Tensor<U,RestOther...> &other) const {
-        //! Two tensors are equal if they have the same type, rank, size and elements
-            return is_equal(other);
-    }
-
-    template<typename U, size_t ... RestOther>
-    FASTOR_INLINE bool operator !=(const Tensor<U,RestOther...> &other) const {
-        //! Two tensors are equal if they have the same type, rank, size and elements
-            return !is_equal(other);
-    }
-
     FASTOR_INLINE bool is_orthogonal() const {
         //! A second order tensor A is orthogonal if A*A'= I
         if (!is_uniform())

@@ -42,15 +42,24 @@ FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
         FASTOR_ASSERT(src.dimension(i)==this->dimension(i), "TENSOR SHAPE MISMATCH");
     }
 #endif
-    constexpr int M = get_value<1,Rest...>::value;
-    constexpr int N = get_value<2,Rest...>::value;
-    for (int i = 0; i <M; ++i) {
-        int j;
-        for (j = 0; j <ROUND_DOWN(N,Stride_); j+=Stride_) {
-            src.template eval<T>(i,j).store(&_data[i*N+j], false);
+    constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
+    constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
+    FASTOR_IF_CONSTEXPR(!internal::is_binary_cmp_op<Derived>::value) {
+        for (FASTOR_INDEX i = 0; i <M; ++i) {
+            FASTOR_INDEX j;
+            for (j = 0; j <ROUND_DOWN(N,Stride_); j+=Stride_) {
+                src.template eval<T>(i,j).store(&_data[i*N+j], false);
+            }
+            for (; j <N; ++j) {
+                _data[i*N+j] = src.template eval_s<T>(i,j);
+            }
         }
-        for (j = 0; j <N; ++j) {
-            _data[i*N+j] = src.template eval_s<T>(i,j);
+    }
+    else {
+        for (FASTOR_INDEX i = 0; i <M; ++i) {
+            for (FASTOR_INDEX j = 0; j <N; ++j) {
+                _data[i*N+j] = src.template eval_s<T>(i,j);
+            }
         }
     }
 }
@@ -141,7 +150,47 @@ FASTOR_INLINE Tensor(const TensorViewExpr<Tensor<T,Rest1...>,sizeof...(Rest)>& s
 
 #ifndef FASTOR_DISABLE_SPECIALISED_CTR
 
-template<typename Derived, size_t DIMS, typename std::enable_if<internal::has_tensor_view<Derived>::value && DIMS==sizeof...(Rest),bool>::type=0>
+template<typename Derived, size_t DIMS, typename std::enable_if<
+    internal::has_tensor_view<Derived>::value &&
+    DIMS==2 &&
+    DIMS==sizeof...(Rest),bool>::type=0>
+FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
+    using scalar_type_ = typename scalar_type_finder<Derived>::type;
+    constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
+    const Derived &src = src_.self();
+#ifndef NDEBUG
+    FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
+    for (FASTOR_INDEX i = 0; i<sizeof...(Rest); ++i) {
+        FASTOR_ASSERT(src.dimension(i)==this->dimension(i), "TENSOR SHAPE MISMATCH");
+    }
+#endif
+    constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
+    constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
+    FASTOR_IF_CONSTEXPR(!internal::is_binary_cmp_op<Derived>::value) {
+        for (FASTOR_INDEX i = 0; i <M; ++i) {
+            FASTOR_INDEX j;
+            for (j = 0; j <ROUND_DOWN(N,Stride_); j+=Stride_) {
+                src.template eval<T>(i,j).store(&_data[i*N+j], false);
+            }
+            for (; j < N; ++j) {
+                _data[i*N+j] = src.template eval_s<T>(i,j);
+            }
+        }
+    }
+    else {
+        for (FASTOR_INDEX i = 0; i <M; ++i) {
+            for (FASTOR_INDEX j = 0; j < N; ++j) {
+                _data[i*N+j] = src.template eval_s<T>(i,j);
+            }
+        }
+    }
+}
+
+
+template<typename Derived, size_t DIMS, typename std::enable_if<
+    internal::has_tensor_view<Derived>::value &&
+    DIMS!=2 &&
+    DIMS==sizeof...(Rest),bool>::type=0>
 FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
     using scalar_type_ = typename scalar_type_finder<Derived>::type;
     // constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
@@ -159,7 +208,7 @@ FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
 
     while(counter < Size)
     {
-        _data[counter] = src.template teval_s<scalar_type_>(as);
+        _data[counter] = src.template teval_s<T>(as);
 
         counter++;
         for(jt = Dimension-1; jt>=0; jt--)

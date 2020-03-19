@@ -152,7 +152,7 @@ public:
                                    std::is_arithmetic<RExpr>::value,bool>::type = 0>
     FASTOR_INLINE SIMDVector<FASTOR_BD_OP_EVAL_TYPE,DEFAULT_ABI> helper(FASTOR_INDEX i, FASTOR_INDEX j) const {
 #ifndef FASTOR_UNSAFE_MATH
-        return lhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i,j) / rhs;
+        return lhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i,j) / (FASTOR_BD_OP_EVAL_TYPE)rhs;
         // return lhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i,j) * (1./(FASTOR_BD_OP_EVAL_TYPE)rhs);
 #else
         return lhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i,j) * rcp(SIMDVector<FASTOR_BD_OP_EVAL_TYPE,DEFAULT_ABI>(rhs));

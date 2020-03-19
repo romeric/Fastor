@@ -14,7 +14,7 @@ endif
 
 
 all: tests
-tests: test_auxiliary test_simd_vectors test_basics test_linalg test_einsum test_views test_mixed_views test_tensormap test_complex_expressions
+tests: test_auxiliary test_simd_vectors test_basics test_linalg test_einsum test_views test_mixed_views test_tensormap test_complex_expressions test_binary_cmp_ops
 
 test_auxiliary:
 	$(CXX) test_auxiliary.cpp -o test_auxiliary.exe $(CXX_FLAGS) $(INCLUDES)
@@ -66,6 +66,9 @@ test_complex_expressions:
 	$(CXX) test_complex_expressions.cpp -o test_complex_expressions.exe $(CXX_FLAGS) $(INCLUDES)
 	$(CXX) test_complex_expressions.cpp -o test_complex_expressions_vec.exe $(CXX_FLAGS) $(INCLUDES) -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
 
+test_binary_cmp_ops:
+	$(CXX) test_binary_cmp_ops.cpp -o test_binary_cmp_ops.exe $(CXX_FLAGS) $(INCLUDES)
+
 
 
 run: run_auxiliary run_simd_vectors run_basics run_linalg run_einsum run_views run_complex_expressions
@@ -114,7 +117,8 @@ run_complex_expressions:
 	./test_complex_expressions.exe
 	./test_complex_expressions_vec.exe
 
-
+run_binary_cmp_ops:
+	./test_binary_cmp_ops.exe
 
 clean:
 	rm -rf *.exe

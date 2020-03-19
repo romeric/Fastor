@@ -150,19 +150,6 @@ public:
         if (std::fabs(_data[0]-other_data[0])>Tol) return false;
         return true;
     }
-
-    template<typename U, size_t ... RestOther>
-    FASTOR_INLINE bool operator ==(const SingleValueTensor<U,RestOther...> &other) const {
-        //! Two tensors are equal if they have the same type, rank, size and elements
-            return is_equal(other);
-    }
-
-    template<typename U, size_t ... RestOther>
-    FASTOR_INLINE bool operator !=(const SingleValueTensor<U,RestOther...> &other) const {
-        //! Two tensors are equal if they have the same type, rank, size and elements
-            return !is_equal(other);
-    }
-
 };
 
 // template<typename T, size_t ...Rest>
