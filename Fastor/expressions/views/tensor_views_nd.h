@@ -297,7 +297,7 @@ public:
 
         if (_is_vectorisable) {
             using V=SIMDVector<T,DEFAULT_ABI>;
-            constexpr FASTOR_INDEX stride = V::Size;
+            // constexpr FASTOR_INDEX stride = V::Size;
             V _vec;
             while(counter < total)
             {
@@ -375,7 +375,7 @@ public:
 
         if (_is_vectorisable) {
             using V=SIMDVector<T,DEFAULT_ABI>;
-            constexpr FASTOR_INDEX stride = V::Size;
+            // constexpr FASTOR_INDEX stride = V::Size;
             V _vec;
             V _vec_out;
             while(counter < total)
@@ -455,7 +455,7 @@ public:
 
         if (_is_vectorisable) {
             using V=SIMDVector<T,DEFAULT_ABI>;
-            constexpr FASTOR_INDEX stride = V::Size;
+            // constexpr FASTOR_INDEX stride = V::Size;
             V _vec;
             V _vec_out;
             while(counter < total)
@@ -535,7 +535,7 @@ public:
 
         if (_is_vectorisable) {
             using V=SIMDVector<T,DEFAULT_ABI>;
-            constexpr FASTOR_INDEX stride = V::Size;
+            // constexpr FASTOR_INDEX stride = V::Size;
             V _vec;
             V _vec_out;
             while(counter < total)
@@ -615,7 +615,7 @@ public:
 
         if (_is_vectorisable) {
             using V=SIMDVector<T,DEFAULT_ABI>;
-            constexpr FASTOR_INDEX stride = V::Size;
+            // constexpr FASTOR_INDEX stride = V::Size;
             V _vec;
             V _vec_out;
             while(counter < total)
