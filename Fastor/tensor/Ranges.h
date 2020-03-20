@@ -66,9 +66,9 @@ struct seq {
 static constexpr int first = 0;
 static constexpr int last = -1;
 
-static constexpr seq all = seq(0,-1,1);
+// static constexpr seq all = seq(0,-1,1);
 // why not this?
-// static constexpr fseq<0,-1,1> all;
+static constexpr fseq<0,-1,1> all;
 
 
 

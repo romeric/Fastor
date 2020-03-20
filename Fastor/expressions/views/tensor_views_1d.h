@@ -88,9 +88,7 @@ private:
     Tensor<T,N> &expr;
     seq _seq;
     bool does_alias = false;
-
     constexpr FASTOR_INLINE Tensor<T,N> get_tensor() const {return expr;}
-    constexpr FASTOR_INLINE seq get_sequence() const {return _seq;}
 public:
     using scalar_type = T;
     static constexpr FASTOR_INDEX Dimension = 1;

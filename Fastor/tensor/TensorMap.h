@@ -31,6 +31,9 @@ public:
         const FASTOR_INDEX DimensionHolder[sizeof...(Rest)] = {Rest...};
         return DimensionHolder[dim];
     }
+    FASTOR_INLINE Tensor<T,Rest...>& noalias() {
+        return *this;
+    }
 
     // Constructors
     //----------------------------------------------------------------------------------------------------------//

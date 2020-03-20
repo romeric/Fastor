@@ -105,11 +105,7 @@ private:
     seq _seq1;
     bool does_alias = false;
     // std::array<FASTOR_INDEX,2> _dims;
-
-
     constexpr FASTOR_INLINE Tensor<T,M,N> get_tensor() const {return expr;};
-    // constexpr FASTOR_INLINE std::array<seq,sizeof...(Rest)> get_sequences() {return _seqs;}
-
 public:
     using scalar_type = T;
     static constexpr FASTOR_INDEX Dimension = 2;

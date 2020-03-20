@@ -78,6 +78,8 @@ struct TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1> :
     public AbstractTensor<TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1>,1> {
 private:
     Tensor<T,N> &expr;
+    bool does_alias = false;
+    constexpr FASTOR_INLINE Tensor<T,N> get_tensor() const {return expr;}
 public:
     using scalar_type = T;
     static constexpr FASTOR_INDEX Dimension = 1;
@@ -89,8 +91,10 @@ public:
         return range_detector<F0,L0,S0>::value;
     }
 
-    FASTOR_INLINE TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1>& nolias() {
-        FASTOR_ASSERT(false,"FIXED 1D VIEWS DO NOT SUPPORT OVERLAPPING ASSIGNMENTS");
+    FASTOR_INLINE TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1>& noalias() {
+        // FASTOR_ASSERT(false,"FIXED 1D VIEWS DO NOT SUPPORT OVERLAPPING ASSIGNMENTS");
+        does_alias = true;
+        return *this;
     }
 
     constexpr FASTOR_INLINE TensorFixedViewExpr1D(Tensor<T,N> &_ex) : expr(_ex) {}
@@ -98,6 +102,19 @@ public:
 
     //----------------------------------------------------------------------------------//
     void operator=(const TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1> &other_src) {
+#ifndef FASTOR_NO_ALIAS
+        if (does_alias) {
+            does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other_src;
+            // assign temporary to this
+            this->operator=(tmp);
+            return;
+        }
+#endif
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -125,6 +142,19 @@ public:
     }
 
     void operator+=(const TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1> &other_src) {
+#ifndef FASTOR_NO_ALIAS
+        if (does_alias) {
+            does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other_src;
+            // assign temporary to this
+            this->operator=(tmp);
+            return;
+        }
+#endif
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -152,6 +182,19 @@ public:
     }
 
     void operator-=(const TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1> &other_src) {
+#ifndef FASTOR_NO_ALIAS
+        if (does_alias) {
+            does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other_src;
+            // assign temporary to this
+            this->operator=(tmp);
+            return;
+        }
+#endif
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -179,6 +222,19 @@ public:
     }
 
     void operator*=(const TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1> &other_src) {
+#ifndef FASTOR_NO_ALIAS
+        if (does_alias) {
+            does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other_src;
+            // assign temporary to this
+            this->operator=(tmp);
+            return;
+        }
+#endif
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -206,6 +262,19 @@ public:
     }
 
     void operator/=(const TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1> &other_src) {
+#ifndef FASTOR_NO_ALIAS
+        if (does_alias) {
+            does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other_src;
+            // assign temporary to this
+            this->operator=(tmp);
+            return;
+        }
+#endif
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -235,6 +304,19 @@ public:
     //----------------------------------------------------------------------------------//
     template<typename Derived, size_t DIMS>
     void operator=(const AbstractTensor<Derived,DIMS> &other) {
+#ifndef FASTOR_NO_ALIAS
+        if (does_alias) {
+            does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other;
+            // assign temporary to this
+            this->operator=(tmp);
+            return;
+        }
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -285,6 +367,19 @@ public:
 
     template<typename Derived, size_t DIMS>
     void operator-=(const AbstractTensor<Derived,DIMS> &other) {
+#ifndef FASTOR_NO_ALIAS
+        if (does_alias) {
+            does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other;
+            // assign temporary to this
+            this->operator=(tmp);
+            return;
+        }
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -310,6 +405,19 @@ public:
 
     template<typename Derived, size_t DIMS>
     void operator*=(const AbstractTensor<Derived,DIMS> &other) {
+#ifndef FASTOR_NO_ALIAS
+        if (does_alias) {
+            does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other;
+            // assign temporary to this
+            this->operator=(tmp);
+            return;
+        }
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -335,6 +443,19 @@ public:
 
     template<typename Derived, size_t DIMS>
     void operator/=(const AbstractTensor<Derived,DIMS> &other) {
+#ifndef FASTOR_NO_ALIAS
+        if (does_alias) {
+            does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other;
+            // assign temporary to this
+            this->operator=(tmp);
+            return;
+        }
+#endif
         const Derived& other_src = other.self();
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");

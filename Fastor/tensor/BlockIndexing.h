@@ -123,6 +123,18 @@ FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,2> operator()(seq _s0, seq _s1) {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     return TensorViewExpr<Tensor<T,Rest...>,2>(*this,_s0,_s1);
 }
+template<int F0, int L0, int S0>
+FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,2>
+operator()(fseq<F0,L0,S0> _s0, seq _s1) {
+    static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+    return TensorViewExpr<Tensor<T,Rest...>,2>(*this,_s0,_s1);
+}
+template<int F0, int L0, int S0>
+FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,2>
+operator()(seq _s0, fseq<F0,L0,S0> _s1) {
+    static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+    return TensorViewExpr<Tensor<T,Rest...>,2>(*this,_s0,_s1);
+}
 template<typename Int, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
 FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,2> operator()(seq _s0, Int num) {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
@@ -189,7 +201,6 @@ operator()(fseq<F0,L0,S0>, fseq<F1,L1,S1>) {
         typename to_positive<fseq<F0,L0,S0>,get_value<1,Rest...>::value>::type,
         typename to_positive<fseq<F1,L1,S1>,get_value<2,Rest...>::value>::type,2>(*this);
 }
-
 
 
 template<int F0, int L0, int S0, typename Int, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>

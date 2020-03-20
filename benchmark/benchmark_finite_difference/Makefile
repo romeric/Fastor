@@ -40,12 +40,12 @@ all:
 	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_seq_alias.exe $(CXXFLAGS) -DUSE_SEQ_ALIAS
 	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_seq_noalias.exe $(CXXFLAGS) -DUSE_SEQ_NOALIAS -DFASTOR_NO_ALIAS
 	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_iseq.exe $(CXXFLAGS) -DUSE_ISEQ
-	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_fseq.exe $(CXXFLAGS) -DUSE_FSEQ
+	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_fseq.exe $(CXXFLAGS) -DUSE_FSEQ -DFASTOR_NO_ALIAS
 
 	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_seq_alias_vec.exe $(CXXFLAGS) -DUSE_SEQ_ALIAS -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
 	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_seq_noalias_vec.exe $(CXXFLAGS) -DUSE_SEQ_NOALIAS -DFASTOR_NO_ALIAS -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
 	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_iseq_vec.exe $(CXXFLAGS) -DUSE_ISEQ -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
-	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_fseq_vec.exe $(CXXFLAGS) -DUSE_FSEQ -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
+	$(CXX) -I../../ benchmark_finite_difference.cpp -o out_fseq_vec.exe $(CXXFLAGS) -DUSE_FSEQ -DFASTOR_USE_VECTORISED_EXPR_ASSIGN -DFASTOR_NO_ALIAS
 
 N=100
 
