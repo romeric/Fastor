@@ -155,7 +155,8 @@ FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,sizeof...(Seq)> operator()(Seq ..
 // if fseq == fall - then just return a reference to the tensor
 template<int F0, int L0, int S0,
     typename std::enable_if<
-    internal::fseq_range_detector<typename to_positive<fseq<F0,L0,S0>,get_value<1,Rest...>::value>::type>::value == get_value<1,Rest...>::value,
+    internal::fseq_range_detector<typename to_positive<fseq<F0,L0,S0>,
+    get_value<1,Rest...>::value>::type>::value == get_value<1,Rest...>::value,
     bool>::type =0>
 FASTOR_INLINE Tensor<T,Rest...>&
 operator()(fseq<F0,L0,S0>) {
@@ -165,7 +166,8 @@ operator()(fseq<F0,L0,S0>) {
 // if fseq != fall - return a view
 template<int F0, int L0, int S0,
     typename std::enable_if<
-    internal::fseq_range_detector<typename to_positive<fseq<F0,L0,S0>,get_value<1,Rest...>::value>::type>::value != get_value<1,Rest...>::value,
+    internal::fseq_range_detector<typename to_positive<fseq<F0,L0,S0>,
+    get_value<1,Rest...>::value>::type>::value != get_value<1,Rest...>::value,
     bool>::type =0>
 FASTOR_INLINE TensorFixedViewExpr1D<Tensor<T,Rest...>,
         typename to_positive<fseq<F0,L0,S0>,prod<Rest...>::value>::type,1>
@@ -202,18 +204,39 @@ operator()(fseq<F0,L0,S0>, fseq<F1,L1,S1>) {
         typename to_positive<fseq<F1,L1,S1>,get_value<2,Rest...>::value>::type,2>(*this);
 }
 
-
 template<int F0, int L0, int S0, typename Int, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
 FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,2> operator()(fseq<F0,L0,S0> _s, Int num) {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     return TensorViewExpr<Tensor<T,Rest...>,2>(*this,seq(_s),seq(num));
 }
-
-template<int F0, int L0, int S0, typename Int, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
+template<int F0, int L0, int S0, typename Int,
+    typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
 FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,2> operator()(Int num, fseq<F0,L0,S0> _s) {
     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     return TensorViewExpr<Tensor<T,Rest...>,2>(*this,seq(num),seq(_s));
 }
+
+// Selecting a row and returning a TensorMap - does not seem to speed up the code
+//----------------------------------------------------------------------------------------------------------//
+// template<int F0, int L0, int S0, typename Int,
+//     typename std::enable_if<std::is_integral<Int>::value &&
+//     internal::fseq_range_detector<typename to_positive<fseq<F0,L0,S0>,
+//     get_value<2,Rest...>::value>::type>::value != get_value<2,Rest...>::value,bool>::type=0>
+// FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,2> operator()(Int num, fseq<F0,L0,S0> _s) {
+//     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+//     return TensorViewExpr<Tensor<T,Rest...>,2>(*this,seq(num),seq(_s));
+// }
+// // Selecting a row from a 2D tensor returns a TensorMap
+// template<typename Int, int F0, int L0, int S0,
+//     typename std::enable_if<std::is_integral<Int>::value &&
+//     internal::fseq_range_detector<typename to_positive<fseq<F0,L0,S0>,
+//     get_value<2,Rest...>::value>::type>::value == get_value<2,Rest...>::value,bool>::type=0>
+// FASTOR_INLINE TensorMap<T,get_value<2,Rest...>::value> operator()(Int num, fseq<F0,L0,S0> _s) {
+//     static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+//     constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
+//     return TensorMap<T,N>(&_data[num*N]);
+// }
+//----------------------------------------------------------------------------------------------------------//
 
 template<typename Int, size_t N, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
 FASTOR_INLINE TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,N>,1> operator()(const Tensor<Int,N> &_it) {
