@@ -13,8 +13,7 @@
 #endif
 
 
-#ifndef _COLORS_
-#define _COLORS_
+#ifndef FASTOR_NO_COLOUR_PRINT
 
 /* FOREGROUND */
 #define RST  "\x1B[0m"
@@ -37,12 +36,34 @@
 #define BOLD(x) "\x1B[1m" x RST
 #define UNDL(x) "\x1B[4m" x RST
 
+#else
+
+#define RST
+#define KRED
+#define KGRN
+#define KYEL
+#define KBLU
+#define KMAG
+#define KCYN
+#define KWHT
+
+#define FRED(x) x
+#define FGRN(x) x
+#define FYEL(x) x
+#define FBLU(x) x
+#define FMAG(x) x
+#define FCYN(x) x
+#define FWHT(x) x
+
+#define BOLD(x) x
+#define UNDL(x) x
+
+
+#endif // FASTOR_NO_COLOUR_PRINT
+
 #ifndef NO_CYCLES
 #define CYCLES
 #endif
-
-#endif
-/* _COLORS_ */
 
 namespace Fastor {
 
