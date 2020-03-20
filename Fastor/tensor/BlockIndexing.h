@@ -140,15 +140,46 @@ FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,sizeof...(Seq)> operator()(Seq ..
     return TensorViewExpr<Tensor<T,Rest...>,sizeof...(Seq)>(*this, {_seqs...});
 }
 
-template<int F0, int L0, int S0>
+// if fseq == fall - then just return a reference to the tensor
+template<int F0, int L0, int S0,
+    typename std::enable_if<
+    internal::fseq_range_detector<typename to_positive<fseq<F0,L0,S0>,get_value<1,Rest...>::value>::type>::value == get_value<1,Rest...>::value,
+    bool>::type =0>
+FASTOR_INLINE Tensor<T,Rest...>&
+operator()(fseq<F0,L0,S0>) {
+    static_assert(Dimension==1,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+    return (*this);
+}
+// if fseq != fall - return a view
+template<int F0, int L0, int S0,
+    typename std::enable_if<
+    internal::fseq_range_detector<typename to_positive<fseq<F0,L0,S0>,get_value<1,Rest...>::value>::type>::value != get_value<1,Rest...>::value,
+    bool>::type =0>
 FASTOR_INLINE TensorFixedViewExpr1D<Tensor<T,Rest...>,
-        typename to_positive<fseq<F0,L0,S0>,prod<Rest...>::value>::type,1> operator()(fseq<F0,L0,S0>) {
+        typename to_positive<fseq<F0,L0,S0>,prod<Rest...>::value>::type,1>
+operator()(fseq<F0,L0,S0>) {
     static_assert(Dimension==1,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     return TensorFixedViewExpr1D<Tensor<T,Rest...>,
         typename to_positive<fseq<F0,L0,S0>,prod<Rest...>::value>::type,1>(*this);
 }
 
-template<int F0, int L0, int S0, int F1, int L1, int S1>
+// if fseq == fall - then just return a reference to the tensor
+template<int F0, int L0, int S0, int F1, int L1, int S1,
+    typename std::enable_if<
+    internal::fseq_range_detector<typename to_positive<fseq<F0,L0,S0>,get_value<1,Rest...>::value>::type>::value == get_value<1,Rest...>::value &&
+    internal::fseq_range_detector<typename to_positive<fseq<F1,L1,S1>,get_value<2,Rest...>::value>::type>::value == get_value<2,Rest...>::value,
+    bool>::type =0>
+FASTOR_INLINE Tensor<T,Rest...>&
+operator()(fseq<F0,L0,S0>, fseq<F1,L1,S1>) {
+    static_assert(Dimension==2,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+    return (*this);
+}
+// if fseq != fall - return a view
+template<int F0, int L0, int S0, int F1, int L1, int S1,
+    typename std::enable_if<
+    internal::fseq_range_detector<typename to_positive<fseq<F0,L0,S0>,get_value<1,Rest...>::value>::type>::value != get_value<1,Rest...>::value ||
+    internal::fseq_range_detector<typename to_positive<fseq<F1,L1,S1>,get_value<2,Rest...>::value>::type>::value != get_value<2,Rest...>::value,
+    bool>::type =0>
 FASTOR_INLINE TensorFixedViewExpr2D<Tensor<T,Rest...>,
         typename to_positive<fseq<F0,L0,S0>,get_value<1,Rest...>::value>::type,
         typename to_positive<fseq<F1,L1,S1>,get_value<2,Rest...>::value>::type,2>
@@ -158,6 +189,8 @@ operator()(fseq<F0,L0,S0>, fseq<F1,L1,S1>) {
         typename to_positive<fseq<F0,L0,S0>,get_value<1,Rest...>::value>::type,
         typename to_positive<fseq<F1,L1,S1>,get_value<2,Rest...>::value>::type,2>(*this);
 }
+
+
 
 template<int F0, int L0, int S0, typename Int, typename std::enable_if<std::is_integral<Int>::value,bool>::type=0>
 FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,2> operator()(fseq<F0,L0,S0> _s, Int num) {

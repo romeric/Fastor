@@ -98,16 +98,22 @@ constexpr T size_proder_(T one, T two, Ts ... ts) {
 
 
 //-----------
-// template<size_t first, size_t last, size_t step>
-// struct range_detector {
-//     static constexpr size_t range = last - first;
-//     static constexpr size_t value = range % step==0 ? range/step : range/step+1;
-// };
 template<int first, int last, int step>
 struct range_detector {
     static constexpr int range = last - first;
     static constexpr int value = range % step==0 ? range/step : range/step+1;
 };
+
+namespace internal {
+template<class Seq>
+struct fseq_range_detector;
+
+template<template<int,int,int> class Seq, int first, int last, int step>
+struct fseq_range_detector<Seq<first,last,step>> {
+    static constexpr int range = last - first;
+    static constexpr int value = range % step==0 ? range/step : range/step+1;
+};
+}
 //-----------
 
 
