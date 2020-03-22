@@ -71,7 +71,9 @@ struct RecursiveCartesianPerm<Index<Idx...>, Tensor<T,Rest...>,Last>
     static constexpr std::array<size_t,sizeof...(Rest)> products_out = nprods<maxes_out_type,
         typename std_ext::make_index_sequence<a_dim>::type>::values;
 
-    static void Do(const T *a_data, T *out_data, std::array<int,out_dim> &as, std::array<int,out_dim> &idx)
+    static
+    FASTOR_INLINE
+    void Do(const T *a_data, T *out_data, std::array<int,out_dim> &as, std::array<int,out_dim> &idx)
     {
         constexpr size_t stride = 1;
         for (size_t i=0; i<Last; i+=stride) {
@@ -160,7 +162,7 @@ struct RecursiveCartesianPermDispatcher<Index<Idx...>, Tensor<T,Rest...>, Index<
 {
     static constexpr int out_dim =  sizeof...(Rest);
 
-    static inline void Do(const T *a_data, T *out_data,
+    static FASTOR_INLINE void Do(const T *a_data, T *out_data,
       std::array<int,out_dim> &as, std::array<int,out_dim> &idx) {
       return RecursiveCartesianPerm<Index<Idx...>,Tensor<T,Rest...>, Args...>::Do(a_data, out_data, as, idx);
     }
@@ -179,6 +181,7 @@ struct extractor_perm<Index<Idx...> > {
 
     template<typename T, size_t ... Rest>
     static
+    FASTOR_INLINE
     typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
     typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type
     permutation_impl(const Tensor<T,Rest...> &a) {
@@ -274,6 +277,7 @@ struct extractor_perm<Index<Idx...> > {
     // Generic abstract permute
     template<typename Derived, size_t DIMS>
     static
+    FASTOR_INLINE
     typename permute_impl<typename scalar_type_finder<Derived>::type,
     Index<Idx...>, typename tensor_type_finder<Derived>::type,
     typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type
@@ -341,6 +345,7 @@ struct extractor_perm<Index<Idx...> > {
 
 
 template<class Index_I, typename T, size_t ... Rest>
+FASTOR_INLINE
 typename permute_impl<T,Index_I, Tensor<T,Rest...>,
     typename std_ext::make_index_sequence<sizeof...(Rest)>::type>::type permutation(const Tensor<T, Rest...> &a) {
     return extractor_perm<Index_I>::permutation_impl(a);
@@ -348,6 +353,7 @@ typename permute_impl<T,Index_I, Tensor<T,Rest...>,
 
 
 template<class Index_I, typename Derived, size_t DIMS>
+FASTOR_INLINE
 typename permute_impl<typename scalar_type_finder<Derived>::type,Index_I,
         typename tensor_type_finder<Derived>::type,
     typename std_ext::make_index_sequence<DIMS>::type>::type permutation(const AbstractTensor<Derived, DIMS> &a) {

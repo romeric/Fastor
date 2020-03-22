@@ -125,6 +125,8 @@ inline double timeit(T (*func)(Params...), Args...args)
 
         // Run the function
         func(std::forward<Params>(args)...);
+        // ignore the few first runs
+        // if (iter < 3) continue;
 
 #ifdef CYCLES
         cycle = rdtsc() - cycle;
@@ -141,7 +143,7 @@ inline double timeit(T (*func)(Params...), Args...args)
         cycles += cycle;
 #endif
 
-        if (elapsed_seconds.count() < best_time) {
+        if (elapsed_seconds.count() < best_time && elapsed_seconds.count() != 0.0) {
             best_time = elapsed_seconds.count();
         };
 

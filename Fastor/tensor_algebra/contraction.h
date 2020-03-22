@@ -123,13 +123,13 @@ struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Te
             }
 
             // out_data[index_out] += a_data[index_a]*b_data[index_b];
-            _vec_a.set(*(a_data+index_a));
+            // _vec_a.set(*(a_data+index_a));
+            _vec_a.set(a_data[index_a]);
             // V _vec_out = _vec_a*V(b_data+index_b) +  V(out_data+index_out);
-            V _vec_out = fmadd(_vec_a,V(b_data+index_b),  V(out_data+index_out));
+            V _vec_out = fmadd(_vec_a,V(&b_data[index_b]),  V(&out_data[index_out]));
             // _vec_out.store(out_data+index_out);
-            _vec_out.aligned_store(out_data+index_out);
+            _vec_out.aligned_store(&out_data[index_out]);
         }
-
         return;
     }
 };
@@ -176,7 +176,7 @@ struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Te
 //     static constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
 
 //     using Index_with_dims = typename put_dims_in_Index<OutTensor>::type;
-//     static constexpr std::array<size_t,OutTensor::Dimension> products_out = 
+//     static constexpr std::array<size_t,OutTensor::Dimension> products_out =
 //           nprods<Index_with_dims,typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::values;
 
 // #ifndef FASTOR_DONT_VECTORISE
@@ -236,7 +236,7 @@ struct RecursiveCartesianDispatcher<Index<Idx0...>, Index<Idx1...>, Tensor<T,Res
 {
     static constexpr int out_dim =  no_of_unique<Idx0...,Idx1...>::value;
 
-    static inline void Do(const T *a_data, const T *b_data, T *out_data,
+    static FASTOR_INLINE void Do(const T *a_data, const T *b_data, T *out_data,
       std::array<int,out_dim> &as, std::array<int,out_dim> &idx) {
       return RecursiveCartesian<Index<Idx0...>, Index<Idx1...>,
         Tensor<T,Rest0...>, Tensor<T,Rest1...>, Args...>::Do(a_data, b_data, out_data, as, idx);
@@ -254,6 +254,7 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
 
     template<typename T, size_t ... Rest0, size_t ... Rest1>
       static
+      FASTOR_INLINE
       typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
                typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type
       contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
@@ -654,6 +655,7 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
 
 template<class Index_I, class Index_J,
          typename T, size_t ... Rest0, size_t ... Rest1>
+FASTOR_INLINE
 auto contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
 -> decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
     return extractor_contract_2<Index_I,Index_J>::contract_impl(a,b);

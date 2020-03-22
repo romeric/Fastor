@@ -4,6 +4,7 @@
 #include "Fastor/tensor/Tensor.h"
 #include "Fastor/tensor_algebra/indicial.h"
 #include "Fastor/meta/tensor_post_meta.h"
+#include "Fastor/meta/opmin_meta.h"
 
 
 namespace Fastor {
@@ -103,8 +104,7 @@ struct extractor_abstract_contract<Index<Idx0...>, Index<Idx1...>> {
 //               // using V = SIMDVector<T,DEFAULT_ABI>;
 // #endif
 
-        int as[out_dim];
-        std::fill(as,as+out_dim,0);
+        int as[out_dim] = {};
         int it;
 
         int i = 0;
@@ -226,7 +226,7 @@ struct extractor_abstract_contract_3<Index<Idx0...>, Index<Idx1...>, Index<Idx2.
             tensor_type_0,tensor_type_1,tensor_type_2>;
 
         using resulting_index_0 = typename cost_model::resulting_index_0;
-        // using resulting_index_1 = typename cost_model::resulting_index_1;
+        using resulting_index_1 = typename cost_model::resulting_index_1;
         using resulting_index_2 = typename cost_model::resulting_index_2;
 
         constexpr int which_variant = cost_model::which_variant;
@@ -236,23 +236,17 @@ struct extractor_abstract_contract_3<Index<Idx0...>, Index<Idx1...>, Index<Idx2.
         print(flop_cost);
 #endif
 
-        if (which_variant == 0) {
+        FASTOR_IF_CONSTEXPR (which_variant == 0) {
             auto tmp = einsum<Index<Idx0...>,Index<Idx1...>>(a,b);
             return einsum<resulting_index_0,Index<Idx2...>>(tmp,c);
         }
-        // leads to incorrect results
-        // else if (which_variant == 1) {
-        //     auto tmp = einsum<Index<Idx0...>,Index<Idx2...>>(a,c);
-        //     return einsum<Index<Idx1...>,resulting_index_1>(b,tmp);
-        // }
-        else if (which_variant == 2) {
-            auto tmp = einsum<Index<Idx1...>,Index<Idx2...>>(b,c);
-            return einsum<Index<Idx0...>,resulting_index_2>(a,tmp);
+        else FASTOR_IF_CONSTEXPR (which_variant == 1) {
+            auto tmp = einsum<Index<Idx0...>,Index<Idx2...>>(a,c);
+            return einsum<Index<Idx1...>,resulting_index_1>(b,tmp);
         }
         else {
-            // actual implementation goes here
-            auto tmp = einsum<Index<Idx0...>,Index<Idx1...>>(a,b);
-            return einsum<resulting_index_0,Index<Idx2...>>(tmp,c);
+            auto tmp = einsum<Index<Idx1...>,Index<Idx2...>>(b,c);
+            return einsum<Index<Idx0...>,resulting_index_2>(a,tmp);
         }
     }
 

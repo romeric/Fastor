@@ -157,70 +157,68 @@ struct is_greater_equal {
 
 
 //-------
-template <int ... rest>
+template<size_t ... rest>
 struct meta_min;
 
-template <int m, int n, int ... rest>
+template<size_t m, size_t n, size_t ... rest>
 struct meta_min<m,n,rest...> {
-    static constexpr int pval = meta_min<m,n>::value;
-    static const int value = (pval <= meta_min<pval,rest...>::value) ?
+    static constexpr size_t pval = meta_min<m,n>::value;
+    static const size_t value = (pval <= meta_min<pval,rest...>::value) ?
                 pval : meta_min<pval,rest...>::value;
 };
 
-template <int m, int n>
+template <size_t m, size_t n>
 struct meta_min<m,n> {
-    static const int value = (m<=n) ? m : n;
+    static const size_t value = (m<=n) ? m : n;
 };
 
 
-template <int ... rest>
+template<size_t ... rest>
 struct meta_max;
 
-template <int m, int n, int ... rest>
+template<size_t m, size_t n, size_t ... rest>
 struct meta_max<m,n,rest...> {
-    static constexpr int pval = meta_max<m,n>::value;
-    static const int value = (pval >= meta_max<pval,rest...>::value) ?
+    static constexpr size_t pval = meta_max<m,n>::value;
+    static const size_t value = (pval >= meta_max<pval,rest...>::value) ?
                 pval : meta_max<pval,rest...>::value;
 };
 
-template <int m, int n>
+template<size_t m, size_t n>
 struct meta_max<m,n> {
-    static const int value = (m>=n) ? m : n;
+    static const size_t value = (m>=n) ? m : n;
 };
+
 //-------
-template<int ... rest>
+template<size_t ... rest>
 struct meta_argmin;
 
-template<int m, int n, int ... rest>
+template<size_t m, size_t n, size_t ... rest>
 struct meta_argmin<m,n,rest...> {
-    static constexpr int pval = meta_min<m,n>::value;
-    static const int value = (pval <= meta_min<pval,rest...>::value) ?
+    static constexpr size_t pval = meta_min<m,n>::value;
+    static const size_t value = (pval <= meta_min<pval,rest...>::value) ?
                 meta_argmin<m,n>::value : meta_argmin<pval,rest...>::value+1;
 };
 
-template<int m, int n>
+template<size_t m, size_t n>
 struct meta_argmin<m,n> {
-    static const int value = (m<n) ? 0 : 1;
+    static const size_t value = (m<n) ? 0 : 1;
 };
 
-//-------
 
-//-------
-template<int ... rest>
+template<size_t ... rest>
 struct meta_argmax;
 
-template<int m, int n, int ... rest>
+template<size_t m, size_t n, size_t ... rest>
 struct meta_argmax<m,n,rest...> {
-    static constexpr int pval = meta_max<m,n>::value;
-    static const int value = (pval >= meta_max<pval,rest...>::value) ?
+    static constexpr size_t pval = meta_max<m,n>::value;
+    static const size_t value = (pval >= meta_max<pval,rest...>::value) ?
                 meta_argmax<m,n>::value : meta_argmax<pval,rest...>::value+1;
 };
 
-template<int m, int n>
+template<size_t m, size_t n>
 struct meta_argmax<m,n> {
-    static const int value = (m>n) ? 0 : 1;
+    static const size_t value = (m>n) ? 0 : 1;
 };
-
 //-------
 
 //---------------

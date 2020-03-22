@@ -303,6 +303,30 @@ void run() {
         FASTOR_EXIT_ASSERT(abs(c3(3) - 5984.) < Tol);
     }
 
+    // Catches the bug in 3 network contraction
+    {
+        enum {a,b,c,d,e,f,g,h,i,j,k,l};
+
+        Tensor<double,3,3> A = 0;
+        A(0,0) = 1;
+        A(1,1) = 1;
+        A(2,2) = -1;
+
+        Tensor<double,3,3,3> B = 0;
+        B(0,0,0) = 1;
+        B(0,2,2) = 1;
+
+        B(1,0,1) = 1;
+        B(1,1,0) = -1;
+
+        B(2,0,2) = -1;
+        B(2,2,0) = 1;
+
+        auto C = einsum<Index<a,c>,Index<f,g>,Index<c,f,b>,Index<g,d,a>>(A, A, B, B);
+        FASTOR_EXIT_ASSERT(abs(C(0,0) + 1.) < Tol);
+        FASTOR_EXIT_ASSERT(abs(C(1,1)) < BigTol);
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 }
 
