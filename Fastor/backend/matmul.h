@@ -522,6 +522,12 @@ void _matmul_3x3xn(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T *
 
 
 
+// Forward declare
+template<typename T, size_t M, size_t N>
+void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out);
+//
+
+
 
 // Non-sqaure matrices
 #ifndef USE_LIBXSMM_BACKEND
@@ -540,13 +546,19 @@ template<typename T, size_t M, size_t K, size_t N,
 FASTOR_INLINE
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
+    // Matrix-vector specialisation
+    FASTOR_IF_CONSTEXPR (N==1) {
+        _matvecmul<T,M,K>(a,b,out);
+        return;
+    }
+
     // The following specialisations don't make much of a difference (at least for SP)
     // Need thorough performance checks
-    if (M==3 && K==3 && N!=K) {
+    FASTOR_IF_CONSTEXPR (M==3 && K==3 && N!=K) {
         _matmul_3x3xn<T,M,N>(a,b,out);
         return;
     }
-    else if (M==2 && K==2 && N!=K) {
+    else FASTOR_IF_CONSTEXPR (M==2 && K==2 && N!=K) {
         _matmul_2x2xn<T,M,N>(a,b,out);
         return;
     }
@@ -1361,6 +1373,78 @@ FASTOR_INLINE void _matmul<float,4,4,4>(const float * FASTOR_RESTRICT a, const f
 
 //!----------------------------------------------------------------------
 //! Matrix-vector multiplication
+
+// Don't call this function directly as it's name is unconventional
+// It gets called from within matmul anyway so always call matmul
+template<typename T, size_t M, size_t N>
+FASTOR_INLINE
+void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+
+    using V = SIMDVector<T,DEFAULT_ABI>;
+    constexpr int ROUND = ROUND_DOWN(N,V::Size);
+
+    // V _vec_a, _vec_b;
+    // for (int i=0; i< M; ++i) {
+    //     V _vec_out;
+    //     int j = 0;
+    //     for (; j< ROUND; j+=V::Size) {
+    //         _vec_a.load(&a[i*N+j]);
+    //         _vec_b.load(&b[j]);
+    //         _vec_out += _vec_a*_vec_b;
+    //     }
+    //     // _vec_out.store(&out[i]);
+    //     T out_s = 0;
+    //     for (; j< ROUND; j+=V::Size) {
+    //         out_s += a[i*N+j]*b[j];
+    //     }
+    //     out[i]= _vec_out.sum() + out_s;
+    // }
+
+    // Unroll the outer loop to get two independent parallel chains
+    // of accumulators
+    V _vec_a0, _vec_a1, _vec_b;
+    int i=0;
+    for (; i<ROUND_DOWN(M,2); i+=2) {
+        V _vec_out0;
+        V _vec_out1;
+        int j = 0;
+        for (; j< ROUND; j+=V::Size) {
+            _vec_a0.load(&a[i*N+j]);
+            _vec_a1.load(&a[(i+1)*N+j]);
+            _vec_b.load(&b[j]);
+            // _vec_out0 += _vec_a0*_vec_b;
+            // _vec_out1 += _vec_a1*_vec_b;
+            _vec_out0 = fmadd(_vec_a0,_vec_b,_vec_out0);
+            _vec_out1 = fmadd(_vec_a1,_vec_b,_vec_out1);
+        }
+        T out_s0 = 0;
+        T out_s1 = 0;
+        for (; j< N; j+=1) {
+            out_s0 += a[i*N+j]*b[j];
+            out_s1 += a[(i+1)*N+j]*b[j];
+        }
+        out[i]= _vec_out0.sum() + out_s0;
+        out[i+1]= _vec_out1.sum() + out_s1;
+    }
+
+    for (; i<M; ++i) {
+        V _vec_out0;
+        int j = 0;
+        for (; j< ROUND; j+=V::Size) {
+            _vec_a0.load(&a[i*N+j]);
+            _vec_b.load(&b[j]);
+            // _vec_out0 += _vec_a0*_vec_b;
+            _vec_out0 = fmadd(_vec_a0,_vec_b,_vec_out0);
+        }
+        T out_s0 = 0;
+        for (; j< N; j+=1) {
+            out_s0 += a[i*N+j]*b[j];
+        }
+        out[i]= _vec_out0.sum() + out_s0;
+    }
+}
+
+
 #ifdef __SSE4_2__
 template<>
 FASTOR_INLINE
