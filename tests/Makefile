@@ -26,6 +26,9 @@ test_basics:
 	$(CXX) test_basics.cpp -o test_basics.exe $(CXX_FLAGS) $(INCLUDES)
 
 test_einsum:
+	$(CXX) test_contraction.cpp -o test_contraction_0.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14
+	$(CXX) test_contraction.cpp -o test_contraction_1.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14 -DCONTRACT_OPT=1
+	$(CXX) test_contraction.cpp -o test_contraction_2.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14 -DCONTRACT_OPT=-1
 	$(CXX) test_einsum.cpp -o test_einsum_0.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14
 	$(CXX) test_einsum.cpp -o test_einsum_1.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14 -DCONTRACT_OPT=1
 	$(CXX) test_einsum.cpp -o test_einsum_2.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14 -DCONTRACT_OPT=-1
@@ -86,6 +89,9 @@ run_linalg:
 	./test_linalg.exe
 
 run_einsum:
+	./test_contraction_0.exe
+	./test_contraction_1.exe
+	./test_contraction_2.exe
 	./test_einsum_0.exe
 	./test_einsum_1.exe
 	./test_einsum_2.exe
