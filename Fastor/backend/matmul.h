@@ -86,6 +86,93 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 #endif
 
 
+
+
+// This is a generic version of matmul based on 2k2/3k3/4k4 variants. It builds on the same philosophy
+// and outerperforms the main version in almost all cases if K is large enough and M and N are small.
+// In fact for large Ks it is as performant as libxsmm and Eigen
+//-----------------------------------------------------------------------------------------------------------
+template<typename T, size_t M, size_t K, size_t N>
+void _matmul_mKn(const T * FASTOR_RESTRICT a_data, const T * FASTOR_RESTRICT b_data, T * FASTOR_RESTRICT out_data) {
+
+    using V = SIMDVector<T,DEFAULT_ABI>;
+    // constexpr size_t UNROLL_LENGTH = 4UL;
+    constexpr size_t UNROLL_LENGTH = 5UL;
+    constexpr size_t ROUND_M = (M / UNROLL_LENGTH) * UNROLL_LENGTH;
+    constexpr size_t ROUND_N = (N / V::Size) * V::Size;
+    std::array<V, M > ymm_a;
+    std::array<std::array<V, M >, N / V::Size > ymm_o;
+    std::array<std::array<T, M >, N % V::Size > t_o = {};
+    for (size_t i=0; i<K; ++i) {
+        size_t k=0;
+        size_t counter = 0;
+        for (; k<ROUND_N; k+=V::Size) {
+            const V ymm0 = V(&b_data[i*N+k],false);
+            size_t j=0;
+            for (; j<ROUND_M; j+=UNROLL_LENGTH) {
+                ymm_a[j+0] = V(a_data[j*K+i]);
+                ymm_a[j+1] = V(a_data[(j+1)*K+i]);
+                ymm_a[j+2] = V(a_data[(j+2)*K+i]);
+                ymm_a[j+3] = V(a_data[(j+3)*K+i]);
+                ymm_a[j+4] = V(a_data[(j+4)*K+i]);
+
+                ymm_o[counter][j+0] = fmadd(ymm0,ymm_a[j+0],ymm_o[counter][j+0]);
+                ymm_o[counter][j+1] = fmadd(ymm0,ymm_a[j+1],ymm_o[counter][j+1]);
+                ymm_o[counter][j+2] = fmadd(ymm0,ymm_a[j+2],ymm_o[counter][j+2]);
+                ymm_o[counter][j+3] = fmadd(ymm0,ymm_a[j+3],ymm_o[counter][j+3]);
+                ymm_o[counter][j+4] = fmadd(ymm0,ymm_a[j+4],ymm_o[counter][j+4]);
+            }
+
+            for (; j<M; ++j) {
+                const V ymm1 = V(a_data[j*K+i]);
+                ymm_o[counter][j] = fmadd(ymm0,ymm1,ymm_o[counter][j]);
+            }
+            counter++;
+        }
+
+        counter = 0;
+        for (; k<N; ++k) {
+            const T t0 = b_data[i*N+k];
+            size_t j=0;
+            for (; j<ROUND_M; j+=UNROLL_LENGTH) {
+                const T t1 = a_data[j*K+i];
+                const T t2 = a_data[(j+1)*K+i];
+                const T t3 = a_data[(j+2)*K+i];
+                const T t4 = a_data[(j+3)*K+i];
+                const T t5 = a_data[(j+4)*K+i];
+
+                t_o[counter][j+0] += t0*t1;
+                t_o[counter][j+1] += t0*t2;
+                t_o[counter][j+2] += t0*t3;
+                t_o[counter][j+3] += t0*t4;
+                t_o[counter][j+4] += t0*t5;
+            }
+            for (; j<M; ++j) {
+                const T t1 = a_data[j*K+i];
+                t_o[counter][j] += t0*t1;
+            }
+            counter++;
+        }
+    }
+
+
+    for (size_t k=0; k< N / V::Size; ++k) {
+        for (size_t j=0; j<M; ++j) {
+            ymm_o[k][j].store(&out_data[j*N+k*V::Size],false);
+        }
+    }
+
+    for (size_t k=0; k< N % V::Size; ++k) {
+        for (size_t j=0; j<M; ++j) {
+            out_data[j*N+ROUND_N+k] = t_o[k][j];
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------------------------------------
+
+
+
 #ifdef __SSE4_2__
 
 // (2xk) x (kx2) matrices
@@ -150,6 +237,12 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     _mm_store_ps(out,_mm_shuffle_ps(out_row0,out_row1,_MM_SHUFFLE(1,0,1,0)));
 }
 
+#else
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<M!=K && M==N && M==2,bool>::type = 0>
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+    _matmul_mKn<T,M,K,N>(a,b,out);
+}
 #endif
 
 #ifdef __AVX__
@@ -197,6 +290,12 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     _mm_store_sd (out+8, _mm256_extractf128_pd(out_row2, 1));
 }
 
+#else
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<M!=K && M==N && M==3 && std::is_same<T,double>::value,bool>::type = 0>
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+    _matmul_mKn<T,M,K,N>(a,b,out);
+}
 #endif
 
 #ifdef __SSE4_2__
@@ -241,6 +340,12 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     _mm_storeu_ps(out+6,out_row2);
 }
 
+#else
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<(M!=K && M==N && M==3 && std::is_same<T,float>::value),bool>::type = 0>
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+    _matmul_mKn<T,M,K,N>(a,b,out);
+}
 #endif
 
 #ifdef __AVX__
@@ -287,12 +392,20 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 #endif
     }
     _mm256_store_pd(out,out_row0);
-    _mm256_store_pd(out+4,out_row1);
-    _mm256_store_pd(out+8,out_row2);
-    _mm256_store_pd(out+12,out_row3);
+    _mm256_store_pd(&out[4],out_row1);
+    _mm256_store_pd(&out[8],out_row2);
+    _mm256_store_pd(&out[12],out_row3);
 }
 
+#else
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<M!=K && M==N && M==4 && std::is_same<T,double>::value,bool>::type = 0>
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+    _matmul_mKn<T,M,K,N>(a,b,out);
+}
 #endif
+
+
 #ifdef __SSE4_2__
 
 // (4xk) x (kx4) matrices
@@ -333,13 +446,13 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
         out_row2 = _mm_fmadd_ps(a_vec2,brow,out_row2);
         // row 3
         __m128 a_vec3 = _mm_set1_ps(a[3*K+i]);
-        out_row3 = _mm_fmadd_ps(out_row3,brow,a_vec3);
+        out_row3 = _mm_fmadd_ps(a_vec3,brow,out_row3);
 #endif
     }
     _mm_store_ps(out,out_row0);
-    _mm_store_ps(out+4,out_row1);
-    _mm_store_ps(out+8,out_row2);
-    _mm_store_ps(out+12,out_row3);
+    _mm_store_ps(&out[4],out_row1);
+    _mm_store_ps(&out[8],out_row2);
+    _mm_store_ps(&out[12],out_row3);
 
 
     /*
@@ -378,6 +491,12 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     */
 }
 
+#else
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<M!=K && M==N && M==4 && std::is_same<T,float>::value,bool>::type = 0>
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+    _matmul_mKn<T,M,K,N>(a,b,out);
+}
 #endif
 
 
@@ -552,53 +671,41 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
         return;
     }
 
-    // The following specialisations don't make much of a difference (at least for SP)
-    // Need thorough performance checks
-    FASTOR_IF_CONSTEXPR (M==3 && K==3 && N!=K) {
-        _matmul_3x3xn<T,M,N>(a,b,out);
-        return;
-    }
-    else FASTOR_IF_CONSTEXPR (M==2 && K==2 && N!=K) {
-        _matmul_2x2xn<T,M,N>(a,b,out);
-        return;
-    }
+    // // Use new faster matmul - this hueristics need to be changed
+    // // if matmul implementation changes
+    // constexpr bool should_be_dispatched = (K > 32 ||
+    //     (N==4 && std::is_same<T,double>::value)   ||
+    //     (N==8 && std::is_same<T,float>::value)      ) ? true : false;
+    // FASTOR_IF_CONSTEXPR(should_be_dispatched) {
+    //     _matmul_mKn<T,M,K,N>(a,b,out);
+    //     return;
+    // }
 
-    using V256 = SIMDVector<T,256>;
-    using V128 = SIMDVector<T,128>;
+    // // The following specialisations don't make much of a difference (at least for SP)
+    // // Need thorough performance checks
+    // FASTOR_IF_CONSTEXPR (M==3 && K==3 && N!=K) {
+    //     _matmul_3x3xn<T,M,N>(a,b,out);
+    //     return;
+    // }
+    // else FASTOR_IF_CONSTEXPR (M==2 && K==2 && N!=K) {
+    //     _matmul_2x2xn<T,M,N>(a,b,out);
+    //     return;
+    // }
 
-    constexpr int SIZE_AVX = V256::Size;
-    constexpr int SIZE_SSE = V128::Size;
-    constexpr int ROUND_AVX = ROUND_DOWN(N,(int)SIZE_AVX);
-    constexpr int ROUND_SSE = ROUND_DOWN(N,(int)SIZE_SSE);
+    using V = SIMDVector<T,DEFAULT_ABI>;
 
+    constexpr int SIZE_ = V::Size;
+    constexpr int ROUND_ = ROUND_DOWN(N,SIZE_);
 
 #if FASTOR_MATMUL_UNROLL_LENGTH==2
 
     size_t j=0;
     for (; j<ROUND_DOWN(M,2); j+=2) {
         int k=0;
-        for (; k<ROUND_AVX; k+=SIZE_AVX) {
-            V256 out_row0, out_row1, vec_a0, vec_a1;
+        for (; k<ROUND_; k+=SIZE_) {
+            V out_row0, out_row1, vec_a0, vec_a1;
             for (size_t i=0; i<K; ++i) {
-                V256 brow; brow.load(&b[i*N+k],false);
-                vec_a0.set(a[j*K+i]);
-                vec_a1.set(a[(j+1)*K+i]);
-#ifndef __FMA__
-                out_row0 += vec_a0*brow;
-                out_row1 += vec_a1*brow;
-#else
-                out_row0 = fmadd(vec_a0,brow,out_row0);
-                out_row1 = fmadd(vec_a1,brow,out_row1);
-#endif
-            }
-            out_row0.store(out+k+N*j,false);
-            out_row1.store(out+k+N*(j+1),false);
-        }
-
-        for (; k<ROUND_SSE; k+=SIZE_SSE) {
-            V128 out_row0, out_row1, vec_a0, vec_a1;
-            for (size_t i=0; i<K; ++i) {
-                V128 brow; brow.load(&b[i*N+k],false);
+                V brow; brow.load(&b[i*N+k],false);
                 vec_a0.set(a[j*K+i]);
                 vec_a1.set(a[(j+1)*K+i]);
 #ifndef __FMA__
@@ -626,26 +733,11 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     }
 
     for (; j<M; ++j) {
-        int k=0;
-        for (; k<ROUND_AVX; k+=SIZE_AVX) {
-            V256 out_row, vec_a;
+        size_t k=0;
+        for (; k<ROUND_; k+=SIZE_) {
+            V out_row, vec_a;
             for (size_t i=0; i<K; ++i) {
-                V256 brow; brow.load(&b[i*N+k],false);
-                vec_a.set(a[j*K+i]);
-                out_row += vec_a*brow;
-#ifndef __FMA__
-                out_row += vec_a*brow;
-#else
-                out_row = fmadd(vec_a,brow,out_row);
-#endif
-            }
-            out_row.store(out+k+N*j,false);
-        }
-
-        for (; k<ROUND_SSE; k+=SIZE_SSE) {
-            V128 out_row, vec_a;
-            for (size_t i=0; i<K; ++i) {
-                V128 brow; brow.load(&b[i*N+k],false);
+                V brow; brow.load(&b[i*N+k],false);
                 vec_a.set(a[j*K+i]);
 #ifndef __FMA__
                 out_row += vec_a*brow;
@@ -671,10 +763,10 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     size_t j=0;
     for (; j<ROUND_DOWN(M,4); j+=4) {
         int k=0;
-        for (; k<ROUND_AVX; k+=SIZE_AVX) {
-            V256 out_row0, out_row1, out_row2, out_row3, vec_a0, vec_a1, vec_a2, vec_a3;
+        for (; k<ROUND_; k+=SIZE_) {
+            V out_row0, out_row1, out_row2, out_row3, vec_a0, vec_a1, vec_a2, vec_a3;
             for (size_t i=0; i<K; ++i) {
-                V256 brow; brow.load(&b[i*N+k],false);
+                V brow; brow.load(&b[i*N+k],false);
                 vec_a0.set(a[j*K+i]);
                 vec_a1.set(a[(j+1)*K+i]);
                 vec_a2.set(a[(j+2)*K+i]);
@@ -683,32 +775,6 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
                 out_row1 += vec_a1*brow;
                 out_row2 += vec_a2*brow;
                 out_row3 += vec_a3*brow;
-#ifndef __FMA__
-                out_row0 += vec_a0*brow;
-                out_row1 += vec_a1*brow;
-                out_row2 += vec_a2*brow;
-                out_row3 += vec_a3*brow;
-#else
-                out_row0 = fmadd(vec_a0,brow,out_row0);
-                out_row1 = fmadd(vec_a1,brow,out_row1);
-                out_row2 = fmadd(vec_a2,brow,out_row2);
-                out_row3 = fmadd(vec_a3,brow,out_row3);
-#endif
-            }
-            out_row0.store(out+k+N*j,false);
-            out_row1.store(out+k+N*(j+1),false);
-            out_row2.store(out+k+N*(j+2),false);
-            out_row3.store(out+k+N*(j+3),false);
-        }
-
-        for (; k<ROUND_SSE; k+=SIZE_SSE) {
-            V128 out_row0, out_row1, out_row2, out_row3, vec_a0, vec_a1, vec_a2, vec_a3;
-            for (int i=0; i<K; ++i) {
-                V128 brow; brow.load(&b[i*N+k],false);
-                vec_a0.set(a[j*K+i]);
-                vec_a1.set(a[(j+1)*K+i]);
-                vec_a2.set(a[(j+2)*K+i]);
-                vec_a3.set(a[(j+3)*K+i]);
 #ifndef __FMA__
                 out_row0 += vec_a0*brow;
                 out_row1 += vec_a1*brow;
@@ -745,10 +811,10 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
     for (; j<M; ++j) {
         int k=0;
-        for (; k<ROUND_AVX; k+=SIZE_AVX) {
-            V256 out_row, vec_a;
+        for (; k<ROUND_; k+=SIZE_) {
+            V out_row, vec_a;
             for (int i=0; i<K; ++i) {
-                V256 brow; brow.load(&b[i*N+k],false);
+                V brow; brow.load(&b[i*N+k],false);
                 vec_a.set(a[j*K+i]);
 #ifndef __FMA__
                 out_row += vec_a*brow;
@@ -756,21 +822,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
                 out_row = fmadd(vec_a,brow,out_row);
 #endif
             }
-            out_row.store(out+k+N*j,false);
-        }
-
-        for (; k<ROUND_SSE; k+=SIZE_SSE) {
-            V128 out_row, vec_a;
-            for (int i=0; i<K; ++i) {
-                V128 brow; brow.load(&b[i*N+k],false);
-                vec_a.set(a[j*K+i]);
-#ifndef __FMA__
-                out_row += vec_a*brow;
-#else
-                out_row = fmadd(vec_a,brow,out_row);
-#endif
-            }
-            out_row.store(out+k+N*j,false);
+            out_row.store(&out[k+N*j],false);
         }
 
         for (; k<N; k++) {
@@ -786,10 +838,10 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
     for (size_t j=0; j<M; ++j) {
         size_t k=0;
-        for (; k<ROUND_AVX; k+=SIZE_AVX) {
-            V256 out_row, vec_a;
+        for (; k<ROUND_; k+=SIZE_) {
+            V out_row, vec_a;
             for (size_t i=0; i<K; ++i) {
-                V256 brow; brow.load(&b[i*N+k],false);
+                V brow; brow.load(&b[i*N+k],false);
                 vec_a.set(a[j*K+i]);
 #ifndef __FMA__
                 out_row += vec_a*brow;
@@ -797,23 +849,8 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
                 out_row = fmadd(vec_a,brow,out_row);
 #endif
             }
-            out_row.store(out+k+N*j,false);
+            out_row.store(&out[k+N*j],false);
         }
-
-        for (; k<ROUND_SSE; k+=SIZE_SSE) {
-            V128 out_row, vec_a;
-            for (size_t i=0; i<K; ++i) {
-                V128 brow; brow.load(&b[i*N+k],false);
-                vec_a.set(a[j*K+i]);
-#ifndef __FMA__
-                out_row += vec_a*brow;
-#else
-                out_row = fmadd(vec_a,brow,out_row);
-#endif
-            }
-            out_row.store(out+k+N*j,false);
-        }
-
         for (; k<N; k++) {
             T out_row = 0.;
             for (size_t i=0; i<K; ++i) {
@@ -832,12 +869,12 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
     for (size_t j=0; j<M; ++j) {
         int k=0;
-        for (; k<ROUND_AVX; k+=SIZE_AVX) {
-            V256 out_row, out_row0, out_row1, vec_a0, vec_a1;
+        for (; k<ROUND_; k+=SIZE_) {
+            V out_row, out_row0, out_row1, vec_a0, vec_a1;
             int i=0;
             for (; i<INNER_UNROLL; i+=2) {
-                V256 brow0; brow0.load(&b[i*N+k],false);
-                V256 brow1; brow1.load(&b[(i+1)*N+k],false);
+                V brow0; brow0.load(&b[i*N+k],false);
+                V brow1; brow1.load(&b[(i+1)*N+k],false);
                 vec_a0.set(a[j*K+i]);
                 vec_a1.set(a[j*K+i+1]);
 #ifndef __FMA__
@@ -849,32 +886,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 #endif
             }
             for (; i<K; ++i) {
-                V256 brow; brow.load(&b[i*N+k],false);
-                vec_a0.set(a[j*K+i]);
-                out_row += vec_a0*brow;
-            }
-            out_row += out_row0 + out_row1;
-            out_row.store(out+k+N*j,false);
-        }
-
-        for (; k<ROUND_SSE; k+=SIZE_SSE) {
-            V128 out_row, out_row0, out_row1, vec_a0, vec_a1;
-            int i=0;
-            for (; i<INNER_UNROLL; i+=2) {
-                V128 brow0; brow0.load(&b[i*N+k],true);
-                V128 brow1; brow1.load(&b[(i+1)*N+k],false);
-                vec_a0.set(a[j*K+i]);
-                vec_a1.set(a[j*K+i+1]);
-#ifndef __FMA__
-                out_row0 += vec_a0*brow0;
-                out_row1 += vec_a1*brow1;
-#else
-                out_row0 = fmadd(vec_a0,brow0,out_row0);
-                out_row1 = fmadd(vec_a1,brow1,out_row1);
-#endif
-            }
-            for (; i<K; ++i) {
-                V128 brow; brow.load(&b[i*N+k],false);
+                V brow; brow.load(&b[i*N+k],false);
                 vec_a0.set(a[j*K+i]);
                 out_row += vec_a0*brow;
             }
@@ -915,7 +927,6 @@ template<>
 FASTOR_INLINE
 void _matmul<float,2,2,2>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
 
-#ifndef USE_OLD_VERSION
     // 17 OPS
     __m128 ar = _mm_load_ps(a);
     __m128 br = _mm_load_ps(b);
@@ -925,28 +936,12 @@ void _matmul<float,2,2,2>(const float * FASTOR_RESTRICT a, const float * FASTOR_
     __m128 br1 = _mm_shuffle_ps(br,br,_MM_SHUFFLE(3,2,3,2));
     __m128 res = _mm_add_ps(_mm_mul_ps(ar0,br0),_mm_mul_ps(ar1,br1));
     _mm_store_ps(out,res);
-#else
-    // 24 OPS
-    __m128 ar = _mm_load_ps(a);
-    __m128 br = _mm_load_ps(b);
-    __m128 r0 = _mm_shuffle_ps(br,br,_MM_SHUFFLE(3,1,2,0));
-    __m128 r1 = _mm_shuffle_ps(ar,ar,_MM_SHUFFLE(1,0,3,2));
-    __m128 c0 = _mm_mul_ps(ar,r0);
-    __m128 c1 = _mm_mul_ps(r1,r0);
-    c0 = _mm_hadd_ps(c0,c0);
-    c1 = _mm_hadd_ps(c1,c1);
-    __m128 c = _mm_shuffle_ps(c0,c1,_MM_SHUFFLE(1,0,1,0));
-    c = _mm_shuffle_ps(c,c,_MM_SHUFFLE(1,2,3,0));
-
-    _mm_store_ps(out,c);
-#endif
 }
 
 template<>
 FASTOR_INLINE
 void _matmul<float,3,3,3>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
 
-#ifndef USE_OLD_VERSION
     // 63 OPS + 3 OPS
     // This is a completely vectorised approach that reduces
     // (27 scalar mul + 18 scalar add) to (9 SSE mul + 6 SEE add)
@@ -987,292 +982,16 @@ void _matmul<float,3,3,3>(const float * FASTOR_RESTRICT a, const float * FASTOR_
         ai2 = _mm_mul_ps(ai2,brow2);
         _mm_storeu_ps(out+6,_mm_add_ps(ai0,_mm_add_ps(ai1,ai2)));
     }
-
-#else
-
-    // 144 OPS with store_ss
-    // 150 OPS with store_ps
-    __m128 arow0 = _mm_shift1_ps(_mm_load_ps(a));
-    __m128 arow1 = _mm_shift1_ps(_mm_loadu_ps(a+3));
-    __m128 arow2 = _mm_shift1_ps(_mm_loadu_ps(a+6));
-
-    __m128 brow0 = _mm_load_ps(b);
-    __m128 brow1 = _mm_load_ps(b+4);
-    __m128 brow2 = _mm_load_ss(b+8);
-
-    __m128 r0 = _mm_shuffle_ps(brow0,brow1,_MM_SHUFFLE(1,2,3,0));
-    __m128 bcol0 = _mm_shift1_ps(r0);
-    __m128 r1 = _mm_shuffle_ps(brow0,brow1,_MM_SHUFFLE(3,0,3,1));
-    __m128 bcol1 = _mm_shift1_ps(_mm_shuffle_ps(r1,r1,_MM_SHUFFLE(1,3,2,0)));
-    __m128 r2 = _mm_shuffle_ps(brow0,brow1,_MM_SHUFFLE(3,1,3,2));
-    __m128 bcol2 = _mm_shift1_ps(_mm_shuffle_ps(r2,brow2,_MM_SHUFFLE(3,0,2,0)));
-
-    // Using horizontal addition hadd instrunction (This is slow even in Skylake)
-#ifdef USE_HADD
-    // Row 0
-    __m128 out_00 = _mm_mul_ps(arow0,bcol0);
-    out_00 = _mm_hadd_ps(out_00,out_00);
-    out_00 = _mm_hadd_ps(out_00,out_00);
-    __m128 out_01 = _mm_mul_ps(arow0,bcol1);
-    out_01 = _mm_hadd_ps(out_01,out_01);
-    out_01 = _mm_hadd_ps(out_01,out_01);
-    __m128 out_02 = _mm_mul_ps(arow0,bcol2);
-    out_02 = _mm_hadd_ps(out_02,out_02);
-    out_02 = _mm_hadd_ps(out_02,out_02);
-    // Row 1
-    __m128 out_10 = _mm_mul_ps(arow1,bcol0);
-    out_10 = _mm_hadd_ps(out_10,out_10);
-    out_10 = _mm_hadd_ps(out_10,out_10);
-    __m128 out_11 = _mm_mul_ps(arow1,bcol1);
-    out_11 = _mm_hadd_ps(out_11,out_11);
-    out_11 = _mm_hadd_ps(out_11,out_11);
-    __m128 out_12 = _mm_mul_ps(arow1,bcol2);
-    out_12 = _mm_hadd_ps(out_12,out_12);
-    out_12 = _mm_hadd_ps(out_12,out_12);
-    // Row 2
-    __m128 out_20 = _mm_mul_ps(arow2,bcol0);
-    out_20 = _mm_hadd_ps(out_20,out_20);
-    out_20 = _mm_hadd_ps(out_20,out_20);
-    __m128 out_21 = _mm_mul_ps(arow2,bcol1);
-    out_21 = _mm_hadd_ps(out_21,out_21);
-    out_21 = _mm_hadd_ps(out_21,out_21);
-    __m128 out_22 = _mm_mul_ps(arow2,bcol2);
-    out_22 = _mm_hadd_ps(out_22,out_22);
-    out_22 = _mm_hadd_ps(out_22,out_22);
-#else
-    // Row 0
-    __m128 out_00 = _mm_mul_ps(arow0,bcol0);
-    __m128 shuf = _mm_movehdup_ps(out_00);        // line up elements 3,1 with 2,0
-    __m128 sums = _mm_add_ps(out_00, shuf);
-    shuf = _mm_movehl_ps(shuf, sums); // high half -> low half
-    out_00 = _mm_add_ss(sums, shuf);
-
-    __m128 out_01 = _mm_mul_ps(arow0,bcol1);
-    shuf = _mm_movehdup_ps(out_01);
-    sums = _mm_add_ps(out_01, shuf);
-    shuf = _mm_movehl_ps(shuf, sums);
-    out_01 = _mm_add_ss(sums, shuf);
-
-    __m128 out_02 = _mm_mul_ps(arow0,bcol2);
-    shuf = _mm_movehdup_ps(out_02);
-    sums = _mm_add_ps(out_02, shuf);
-    shuf = _mm_movehl_ps(shuf, sums);
-    out_02 = _mm_add_ss(sums, shuf);
-    // Row 1
-    __m128 out_10 = _mm_mul_ps(arow1,bcol0);
-    shuf = _mm_movehdup_ps(out_10);
-    sums = _mm_add_ps(out_10, shuf);
-    shuf        = _mm_movehl_ps(shuf, sums);
-    out_10        = _mm_add_ss(sums, shuf);
-    __m128 out_11 = _mm_mul_ps(arow1,bcol1);
-    shuf = _mm_movehdup_ps(out_11);
-    sums = _mm_add_ps(out_11, shuf);
-    shuf        = _mm_movehl_ps(shuf, sums);
-    out_11        = _mm_add_ss(sums, shuf);
-    __m128 out_12 = _mm_mul_ps(arow1,bcol2);
-    shuf = _mm_movehdup_ps(out_12);
-    sums = _mm_add_ps(out_12, shuf);
-    shuf = _mm_movehl_ps(shuf, sums);
-    out_12 = _mm_add_ss(sums, shuf);
-    // Row 2
-    __m128 out_20 = _mm_mul_ps(arow2,bcol0);
-    shuf = _mm_movehdup_ps(out_20);
-    sums = _mm_add_ps(out_20, shuf);
-    shuf = _mm_movehl_ps(shuf, sums);
-    out_20 = _mm_add_ss(sums, shuf);
-    __m128 out_21 = _mm_mul_ps(arow2,bcol1);
-    shuf = _mm_movehdup_ps(out_21);
-    sums = _mm_add_ps(out_21, shuf);
-    shuf = _mm_movehl_ps(shuf, sums);
-    out_21 = _mm_add_ss(sums, shuf);
-    __m128 out_22 = _mm_mul_ps(arow2,bcol2);
-    shuf = _mm_movehdup_ps(out_22);
-    sums = _mm_add_ps(out_22, shuf);
-    shuf = _mm_movehl_ps(shuf, sums);
-    out_22 = _mm_add_ss(sums, shuf);
-#endif
-
-    // This is equally fast
-    _mm_store_ss(out,out_00);
-    _mm_store_ss(out+1,out_01);
-    _mm_store_ss(out+2,out_02);
-    _mm_store_ss(out+3,out_10);
-    _mm_store_ss(out+4,out_11);
-    _mm_store_ss(out+5,out_12);
-    _mm_store_ss(out+6,out_20);
-    _mm_store_ss(out+7,out_21);
-    _mm_store_ss(out+8,out_22);
-
-#endif
-
 }
 
-#endif
-
-#ifdef __AVX__
-template<>
-FASTOR_INLINE
-void _matmul<double,2,2,2>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
-
-#ifndef USE_OLD_VERSION
-
-    const double a0 = a[0], a1=a[1], a2=a[2], a3=a[3];
-    __m256d ar0 = _mm256_setr_pd(a0,a0,a2,a2);
-    __m256d ar1 = _mm256_setr_pd(a1,a1,a3,a3);
-    __m128d brl = _mm_load_pd(b);
-    __m256d br0 = _mm256_castpd128_pd256(brl);
-    br0 = _mm256_insertf128_pd(br0,brl,0x1);
-    __m128d brh = _mm_load_pd(b+2);
-    __m256d br1 = _mm256_castpd128_pd256(brh);
-    br1 = _mm256_insertf128_pd(br1,brh,0x1);
-
-    __m256d res = _mm256_add_pd(_mm256_mul_pd(ar0,br0),_mm256_mul_pd(ar1,br1));
-
-    _mm256_store_pd(out,res);
-
-#else
-    __m256d ar = _mm256_load_pd(a);
-    __m256d br = _mm256_load_pd(b);
-
-    // arrage as [b11 b21 b12 b22]
-    __m128d d1 = _mm256_castpd256_pd128(br);
-    __m128d d2 = _mm256_extractf128_pd(br, 0x1);
-    auto dd1 = _mm_shuffle_pd(d1,d2,0x0);
-    auto dd2 = _mm_shuffle_pd(d1,d2,0x3);
-    br = _mm256_castpd128_pd256(dd1);
-    br = _mm256_insertf128_pd(br,dd2,1);
-
-    auto mul0 = _mm256_mul_pd(ar,br);
-    ar = _mm256_permute2f128_pd(ar,ar,0x1);
-    auto mul1 = _mm256_mul_pd(ar,br);
-    mul0 = _mm256_hadd_pd(mul0,mul0);
-    mul1 = _mm256_hadd_pd(mul1,mul1);
-
-    d1 = _mm256_castpd256_pd128(mul0);
-    d2 = _mm256_extractf128_pd(mul0,1);
-    _mm_store_sd(out,d1);
-    _mm_store_sd(out+3,d2);
-
-    d1 = _mm256_castpd256_pd128(mul1);
-    d2 = _mm256_extractf128_pd(mul1,1);
-    _mm_store_sd(out+2,d1);
-    _mm_store_sd(out+1,d2);
-
-#endif
-}
 
 template<>
-FASTOR_INLINE
-void _matmul<double,3,3,3>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
+FASTOR_INLINE void _matmul<float,4,4,4>(const float * FASTOR_RESTRICT b, const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
 
-
-#ifndef USE_OLD_VERSION
-    // 63 OPS + (3 OPS IVY)/(9 OPS HW)
-    // This is a completely vectorised approach that reduces
-    // (27 scalar mul + 18 scalar add) to (9 SSE mul + 6 SEE add)
-
-    __m256d brow0 = _mm256_loadl3_pd(b);
-    __m256d brow1 = _mm256_loadul3_pd(b+3);
-    __m256d brow2 = _mm256_loadul3_pd(b+6);
-
-    {
-        __m256d ai0 = _mm256_set1_pd(a[0]);
-        __m256d ai1 = _mm256_set1_pd(a[1]);
-        __m256d ai2 = _mm256_set1_pd(a[2]);
-
-        ai0 = _mm256_mul_pd(ai0,brow0);
-        ai1 = _mm256_mul_pd(ai1,brow1);
-        ai2 = _mm256_mul_pd(ai2,brow2);
-        _mm256_store_pd(out,_mm256_add_pd(ai0,_mm256_add_pd(ai1,ai2)));
-    }
-
-    {
-        __m256d ai0 = _mm256_set1_pd(a[3]);
-        __m256d ai1 = _mm256_set1_pd(a[4]);
-        __m256d ai2 = _mm256_set1_pd(a[5]);
-
-        ai0 = _mm256_mul_pd(ai0,brow0);
-        ai1 = _mm256_mul_pd(ai1,brow1);
-        ai2 = _mm256_mul_pd(ai2,brow2);
-        _mm256_storeu_pd(out+3,_mm256_add_pd(ai0,_mm256_add_pd(ai1,ai2)));
-    }
-
-    {
-        __m256d ai0 = _mm256_set1_pd(a[6]);
-        __m256d ai1 = _mm256_set1_pd(a[7]);
-        __m256d ai2 = _mm256_set1_pd(a[8]);
-
-        ai0 = _mm256_mul_pd(ai0,brow0);
-        ai1 = _mm256_mul_pd(ai1,brow1);
-        ai2 = _mm256_mul_pd(ai2,brow2);
-        _mm256_storeu_pd(out+6,_mm256_add_pd(ai0,_mm256_add_pd(ai1,ai2)));
-    }
-
-#else
-
-    // IVY 135 OPS / HW 162 OPS
-    __m256d arow0 = _mm256_insertf128_pd(_mm256_castpd128_pd256(_mm_load_pd(a)),_mm_load_sd(a+2),0x1);
-    __m256d arow1 = _mm256_insertf128_pd(_mm256_castpd128_pd256(_mm_loadu_pd(a+3)),_mm_load_sd(a+5),0x1);
-    __m256d arow2 = _mm256_insertf128_pd(_mm256_castpd128_pd256(_mm_loadu_pd(a+6)),_mm_load_sd(a+8),0x1);
-
-    __m128d b00 = _mm_load_sd(b);
-    __m128d b01 = _mm_load_sd(b+1);
-    __m128d b02 = _mm_load_sd(b+2);
-    __m128d b10 = _mm_load_sd(b+3);
-    __m128d b11 = _mm_load_sd(b+4);
-    __m128d b12 = _mm_load_sd(b+5);
-    __m128d b20 = _mm_load_sd(b+6);
-    __m128d b21 = _mm_load_sd(b+7);
-    __m128d b22 = _mm_load_sd(b+8);
-
-    __m128d r0 = _mm_shuffle_pd(b00,b10,0x0);
-    __m256d bcol0 = _mm256_castpd128_pd256(r0);
-    bcol0 = _mm256_insertf128_pd(bcol0,b20,0x1);
-    __m128d r1 = _mm_shuffle_pd(b01,b11,0x0);
-    __m256d bcol1 = _mm256_castpd128_pd256(r1);
-    bcol1 = _mm256_insertf128_pd(bcol1,b21,0x1);
-    __m128d r2 = _mm_shuffle_pd(b02,b12,0x0);
-    __m256d bcol2 = _mm256_castpd128_pd256(r2);
-    bcol2 = _mm256_insertf128_pd(bcol2,b22,0x1);
-    // Row 0
-    __m256d vout_00 = _mm256_mul_pd(arow0,bcol0);
-    __m128d out_00 = _add_pd(vout_00);
-    __m256d vout_01 = _mm256_mul_pd(arow0,bcol1);
-    __m128d out_01 = _add_pd(vout_01);
-    __m256d vout_02 = _mm256_mul_pd(arow0,bcol2);
-    __m128d out_02 = _add_pd(vout_02);
-    // Row 1
-    __m256d vout_10 = _mm256_mul_pd(arow1,bcol0);
-    __m128d out_10 = _add_pd(vout_10);
-    __m256d vout_11 = _mm256_mul_pd(arow1,bcol1);
-    __m128d out_11 = _add_pd(vout_11);
-    __m256d vout_12 = _mm256_mul_pd(arow1,bcol2);
-    __m128d out_12 = _add_pd(vout_12);
-    // Row 2
-    __m256d vout_20 = _mm256_mul_pd(arow2,bcol0);
-    __m128d out_20 = _add_pd(vout_20);
-    __m256d vout_21 = _mm256_mul_pd(arow2,bcol1);
-    __m128d out_21 = _add_pd(vout_21);
-    __m256d vout_22 = _mm256_mul_pd(arow2,bcol2);
-    __m128d out_22 = _add_pd(vout_22);
-    // Store
-    _mm_store_sd(out,out_00);
-    _mm_store_sd(out+1,out_01);
-    _mm_store_sd(out+2,out_02);
-    _mm_store_sd(out+3,out_10);
-    _mm_store_sd(out+4,out_11);
-    _mm_store_sd(out+5,out_12);
-    _mm_store_sd(out+6,out_20);
-    _mm_store_sd(out+7,out_21);
-    _mm_store_sd(out+8,out_22);
-#endif
-
-}
-#endif
-
-#ifdef __SSE4_2__
-template<>
-FASTOR_INLINE void _matmul<float,4,4,4>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
+    // Note that a and b are swapped here
+    // 16 SSE mul + 12 SSE add + 16 shuffles
+    // Haswell 132 cycle
+    // Skylake 116 cycle
 
     __m128 a0 = _mm_load_ps(a);
     __m128 a1 = _mm_load_ps(a+4);
@@ -1356,11 +1075,75 @@ FASTOR_INLINE void _matmul<float,4,4,4>(const float * FASTOR_RESTRICT a, const f
         _mm_store_ps(out+12,c2);
     }
 }
-
 #endif
 
 
+#ifdef __AVX__
+template<>
+FASTOR_INLINE
+void _matmul<double,2,2,2>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
 
+    const double a0 = a[0], a1=a[1], a2=a[2], a3=a[3];
+    __m256d ar0 = _mm256_setr_pd(a0,a0,a2,a2);
+    __m256d ar1 = _mm256_setr_pd(a1,a1,a3,a3);
+    __m128d brl = _mm_load_pd(b);
+    __m256d br0 = _mm256_castpd128_pd256(brl);
+    br0 = _mm256_insertf128_pd(br0,brl,0x1);
+    __m128d brh = _mm_load_pd(b+2);
+    __m256d br1 = _mm256_castpd128_pd256(brh);
+    br1 = _mm256_insertf128_pd(br1,brh,0x1);
+
+    __m256d res = _mm256_add_pd(_mm256_mul_pd(ar0,br0),_mm256_mul_pd(ar1,br1));
+
+    _mm256_store_pd(out,res);
+}
+
+template<>
+FASTOR_INLINE
+void _matmul<double,3,3,3>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
+
+    // 63 OPS + (3 OPS IVY)/(9 OPS HW)
+    // This is a completely vectorised approach that reduces
+    // (27 scalar mul + 18 scalar add) to (9 SSE mul + 6 SEE add)
+
+    __m256d brow0 = _mm256_loadl3_pd(b);
+    __m256d brow1 = _mm256_loadul3_pd(b+3);
+    __m256d brow2 = _mm256_loadul3_pd(b+6);
+
+    {
+        __m256d ai0 = _mm256_set1_pd(a[0]);
+        __m256d ai1 = _mm256_set1_pd(a[1]);
+        __m256d ai2 = _mm256_set1_pd(a[2]);
+
+        ai0 = _mm256_mul_pd(ai0,brow0);
+        ai1 = _mm256_mul_pd(ai1,brow1);
+        ai2 = _mm256_mul_pd(ai2,brow2);
+        _mm256_store_pd(out,_mm256_add_pd(ai0,_mm256_add_pd(ai1,ai2)));
+    }
+
+    {
+        __m256d ai0 = _mm256_set1_pd(a[3]);
+        __m256d ai1 = _mm256_set1_pd(a[4]);
+        __m256d ai2 = _mm256_set1_pd(a[5]);
+
+        ai0 = _mm256_mul_pd(ai0,brow0);
+        ai1 = _mm256_mul_pd(ai1,brow1);
+        ai2 = _mm256_mul_pd(ai2,brow2);
+        _mm256_storeu_pd(out+3,_mm256_add_pd(ai0,_mm256_add_pd(ai1,ai2)));
+    }
+
+    {
+        __m256d ai0 = _mm256_set1_pd(a[6]);
+        __m256d ai1 = _mm256_set1_pd(a[7]);
+        __m256d ai2 = _mm256_set1_pd(a[8]);
+
+        ai0 = _mm256_mul_pd(ai0,brow0);
+        ai1 = _mm256_mul_pd(ai1,brow1);
+        ai2 = _mm256_mul_pd(ai2,brow2);
+        _mm256_storeu_pd(out+6,_mm256_add_pd(ai0,_mm256_add_pd(ai1,ai2)));
+    }
+}
+#endif
 
 
 

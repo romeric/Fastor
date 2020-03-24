@@ -14,7 +14,7 @@ endif
 
 
 all: tests
-tests: test_auxiliary test_simd_vectors test_basics test_linalg test_einsum test_views test_mixed_views test_tensormap test_complex_expressions test_binary_cmp_ops
+tests: test_auxiliary test_simd_vectors test_basics test_matmul test_linalg test_einsum test_views test_mixed_views test_tensormap test_complex_expressions test_binary_cmp_ops
 
 test_auxiliary:
 	$(CXX) test_auxiliary.cpp -o test_auxiliary.exe $(CXX_FLAGS) $(INCLUDES)
@@ -25,6 +25,13 @@ test_simd_vectors:
 test_basics:
 	$(CXX) test_basics.cpp -o test_basics.exe $(CXX_FLAGS) $(INCLUDES)
 
+test_matmul:
+	$(CXX) test_matmul.cpp -o test_matmul_1.exe $(INCLUDES) -std=c++14
+	$(CXX) test_matmul.cpp -o test_matmul_2.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14
+
+test_linalg:
+	$(CXX) test_linalg.cpp -o test_linalg.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14
+
 test_einsum:
 	$(CXX) test_contraction.cpp -o test_contraction_0.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14
 	$(CXX) test_contraction.cpp -o test_contraction_1.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14 -DCONTRACT_OPT=1
@@ -33,8 +40,6 @@ test_einsum:
 	$(CXX) test_einsum.cpp -o test_einsum_1.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14 -DCONTRACT_OPT=1
 	$(CXX) test_einsum.cpp -o test_einsum_2.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14 -DCONTRACT_OPT=-1
 
-test_linalg:
-	$(CXX) test_linalg.cpp -o test_linalg.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14
 
 test_views:
 	$(CXX) test_views_1d.cpp -o test_views_1d.exe $(CXX_FLAGS) $(INCLUDES)
@@ -74,7 +79,7 @@ test_binary_cmp_ops:
 
 
 
-run: run_auxiliary run_simd_vectors run_basics run_linalg run_einsum run_views run_complex_expressions run_binary_cmp_ops
+run: run_auxiliary run_simd_vectors run_basics run_matmul run_linalg run_einsum run_views run_mixed_views run_complex_expressions run_tensormap run_binary_cmp_ops
 
 run_auxiliary:
 	./test_auxiliary.exe
@@ -84,6 +89,10 @@ run_simd_vectors:
 
 run_basics:
 	./test_basics.exe
+
+run_matmul:
+	./test_matmul_1.exe
+	./test_matmul_2.exe
 
 run_linalg:
 	./test_linalg.exe

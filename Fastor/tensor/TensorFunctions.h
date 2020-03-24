@@ -122,10 +122,16 @@ FASTOR_INLINE Tensor<T,I> matmul(const Tensor<T,I,J> &a, const Tensor<T,J> &b) {
     return out;
 }
 
-template<typename T, size_t I, size_t J>
-FASTOR_INLINE Tensor<T,I> matmul(const Tensor<T,J> &b, const Tensor<T,J,I> &a) {
-    Tensor<T,I> out;
-    _matmul<T,J,I,1>(a.data(),b.data(),out.data());
+template<typename T, size_t J, size_t K>
+FASTOR_INLINE Tensor<T,K> matmul(const Tensor<T,J> &a, const Tensor<T,J,K> &b) {
+    Tensor<T,K> out;
+    _matmul<T,1,J,K>(a.data(),b.data(),out.data());
+    return out;
+}
+
+template<typename T, size_t K>
+FASTOR_INLINE Tensor<T,1,1> matmul(const Tensor<T,1,K> &a, const Tensor<T,K,1> &b) {
+    Tensor<T,1,1> out(_doublecontract<T,K,1>(a.data(),b.data()));
     return out;
 }
 

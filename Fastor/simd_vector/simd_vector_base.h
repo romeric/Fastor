@@ -103,8 +103,7 @@ struct SIMDVector {
     }
 
     FASTOR_INLINE SIMDVector<T,ABI> operator=(T num) {
-        for (FASTOR_INDEX i=0; i<Size;++i)
-            value[i] = num;
+        std::fill(value, value+Size, num);
         return *this;
     }
     FASTOR_INLINE SIMDVector<T,ABI> operator=(const SIMDVector<T,ABI> &a) {
