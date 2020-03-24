@@ -20,6 +20,7 @@ namespace Fastor {
 
 
 // Single tensor
+  //-----------------------------------------------------------------------------------------------------------------------//
 // This does not make sense
 //template<class Index_I, typename T, size_t ... Rest0,
 //         typename std::enable_if<is_single_reduction<Index_I>::value,bool>::type=0>
@@ -38,10 +39,13 @@ auto einsum(const Tensor<T,Rest0...> &a)
                   "INDICES FOR EINSUM FUNCTION CANNOT APPEAR MORE THAN TWICE. USE CONTRACTION INSTEAD");
     return extractor_contract_1<Index_I>::contract_impl(a);
 }
+//-----------------------------------------------------------------------------------------------------------------------//
 
 
-// Two tensor
-
+// Two tensor (by-pair)
+//-----------------------------------------------------------------------------------------------------------------------//
+// Inner product case
+//-----------------------------------------------------------------------------------------------------------------------//
 template<class Index_I, class Index_J,
          typename T, size_t ... Rest0, size_t ... Rest1,
          typename std::enable_if<is_reduction<Index_I,Index_J>::value,bool>::type=0>
@@ -51,12 +55,15 @@ auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
     return inner(a,b);
 }
 
-
+// General by-pair product cases
+//-----------------------------------------------------------------------------------------------------------------------//
 template<class Index_I, class Index_J,
          typename T, size_t ... Rest0, size_t ... Rest1,
          typename std::enable_if<!is_reduction<Index_I,Index_J>::value &&
-         !is_generalised_matrix_vector<Index_I,Index_J>::value &&
-         !is_generalised_vector_matrix<Index_I,Index_J>::value,bool>::type=0>
+         !internal::is_generalised_matrix_vector<Index_I,Index_J>::value &&
+         !internal::is_generalised_vector_matrix<Index_I,Index_J>::value &&
+         !internal::is_generalised_matrix_matrix<Index_I,Index_J>::value
+         ,bool>::type=0>
 FASTOR_INLINE
 auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
 -> decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
@@ -81,15 +88,15 @@ auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
 template<class Index_I, class Index_J,
          typename T, size_t ...Rest0, size_t ...Rest1,
          typename std::enable_if<
-         is_generalised_matrix_vector<Index_I,Index_J>::value,
+         internal::is_generalised_matrix_vector<Index_I,Index_J>::value,
          bool>::type = 0>
 FASTOR_INLINE
 auto
 einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
 -> decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
 
-    constexpr size_t which_one_is_vector = is_generalised_matrix_vector<Index_I,Index_J>::which_one_is_vector;
-    constexpr size_t matches_up_to = is_generalised_matrix_vector<Index_I,Index_J>::matches_up_to;
+    constexpr size_t which_one_is_vector = internal::is_generalised_matrix_vector<Index_I,Index_J>::which_one_is_vector;
+    constexpr size_t matches_up_to = internal::is_generalised_matrix_vector<Index_I,Index_J>::matches_up_to;
     constexpr size_t rest0[sizeof...(Rest0)] = {Rest0...};
     constexpr size_t rest1[sizeof...(Rest1)] = {Rest1...};
     constexpr size_t product = which_one_is_vector == 1 ? partial_prod(rest0, matches_up_to) :  partial_prod(rest1, matches_up_to);
@@ -104,15 +111,15 @@ einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
 template<class Index_I, class Index_J,
         typename T, size_t ...Rest0, size_t ...Rest1,
         typename std::enable_if<
-        is_generalised_vector_matrix<Index_I,Index_J>::value,
+        internal::is_generalised_vector_matrix<Index_I,Index_J>::value,
         bool>::type = 0>
 FASTOR_INLINE
 auto
 einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
 -> decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
 
-    constexpr size_t which_one_is_vector = is_generalised_vector_matrix<Index_I,Index_J>::which_one_is_vector;
-    constexpr size_t matches_up_to = is_generalised_vector_matrix<Index_I,Index_J>::matches_up_to;
+    constexpr size_t which_one_is_vector = internal::is_generalised_vector_matrix<Index_I,Index_J>::which_one_is_vector;
+    constexpr size_t matches_up_to = internal::is_generalised_vector_matrix<Index_I,Index_J>::matches_up_to;
     constexpr size_t rest0[sizeof...(Rest0)] = {Rest0...};
     constexpr size_t rest1[sizeof...(Rest1)] = {Rest1...};
     constexpr size_t product = which_one_is_vector == 1 ? partial_prod_reverse(rest0, matches_up_to) :  partial_prod_reverse(rest1, matches_up_to);
@@ -122,6 +129,29 @@ einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
       _matmul<T,1,vec_product,product>(a.data(),b.data(),out.data());
     return out;
 }
+
+template<class Index_I, class Index_J,
+        typename T, size_t ...Rest0, size_t ...Rest1,
+        typename std::enable_if<
+        internal::is_generalised_matrix_matrix<Index_I,Index_J>::value,
+        bool>::type = 0>
+FASTOR_INLINE
+auto
+einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
+-> decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
+
+    // decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) out;
+    // constexpr size_t matches_up_to = internal::is_generalised_matrix_matrix<Index_I,Index_J>::ncontracted;
+    // constexpr size_t rest0[sizeof...(Rest0)] = {Rest0...};
+    // constexpr size_t rest1[sizeof...(Rest1)] = {Rest1...};
+    // constexpr size_t K_product = partial_prod(rest1, matches_up_to - 1);
+    // constexpr size_t M = partial_prod(rest0, sizeof...(Rest0) - matches_up_to - 1);
+    // constexpr size_t N = partial_prod_reverse(rest1, sizeof...(Rest1) - matches_up_to);
+    // _matmul<T,M,K_product,N>(a.data(),b.data(),out.data());
+    // return out;
+    return extractor_contract_2<Index_I,Index_J>::contract_impl(a,b);
+}
+//-----------------------------------------------------------------------------------------------------------------------//
 
 
 // matmul dispatcher for 2nd order tensors (matrix-matrix)

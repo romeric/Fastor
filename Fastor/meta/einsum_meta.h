@@ -495,11 +495,11 @@ struct general_stride_finder<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Te
 
 
 
-
+namespace internal {
 //--------------------------------------------------------------------------------------------------------------------//
 //! Given the einsum indices of two tensors, matches their indices to see
 //! if it is a genearalised matrix-vector multiplication. If either the indices
-//! of the first tensor or the second tensor disappears while matching indices
+//! of the first tensor or the second tensor disappear while matching indices
 //! from the end, then it is a genearalised matrix-vector multiplication.
 //! Note that this function matches indices from the end in that it can detect
 //! generalised matrix-vector product of the forms <ijk,jk> or <jk,ijk> (it can detect swapping)
@@ -534,7 +534,7 @@ inline T match_indices_from_end_index(const T (&ind0)[N0],
 
 //! Given the einsum indices of two tensors, matches their indices to see
 //! if it is a genearalised vector-matrix multiplication. If either the indices
-//! of the first tensor or the second tensor disappears while matching indices
+//! of the first tensor or the second tensor disappear while matching indices
 //! from the beggining, then it is a genearalised vector-matrix multiplication.
 //! Note that this function matches indices from the beggingin in that it can detect
 //! generalised vector-matrix product of the forms <ijk,ij> or <ij,ijk> (it can detect swapping)
@@ -566,6 +566,26 @@ inline T match_indices_from_start_index(const T (&ind0)[N0],
 }
 
 
+//! Given the einsum indices of two tensors, matches their indices to see
+//! if it is a standard genearalised matrix-matrix multiplication.
+//! By standard we mean <ijk,jkl>. This function cannot detect transposed cases of
+//! gemm such as <ijk,ljk> and so on.
+//! Note that this function matches indices from the two ends but it also detects
+//! <ijk,ijk> as gemm. So it should be used in conjunction with is_vector_matrix/is_matrix_vec
+//! and is_inner. Look at the corresponding struct that uses it
+template<class T, T N0, T N1>
+constexpr
+inline bool match_indices_from_two_ends(const T (&ind0)[N0],
+    const T (&ind1)[N1], int ncontracted, T num0=N0-1, T num1=0) {
+    return ncontracted != 0 ?
+        (ncontracted == 1 ? (ind1[num1] == ind0[num0 - ncontracted + 1] ? true : false)
+        : (ind1[num1] == ind0[num0 - ncontracted + 1] ?
+        match_indices_from_two_ends(ind0, ind1, ncontracted-1, num0, num1 + 1) :
+        false)) :
+        false;
+}
+
+
 
 
 template<class Idx0, class Idx1>
@@ -592,8 +612,23 @@ struct is_generalised_vector_matrix<Index<Idx0...>,Index<Idx1...> > {
     static constexpr bool value = match_indices_from_start(idx0, idx1) && sizeof...(Idx0) != sizeof...(Idx1);
     static constexpr size_t matches_up_to = match_indices_from_start_index(idx0, idx1);
 };
-//--------------------------------------------------------------------------------------------------------------------//
 
+
+template<class Idx0, class Idx1>
+struct is_generalised_matrix_matrix;
+
+template<size_t ... Idx0, size_t ... Idx1>
+struct is_generalised_matrix_matrix<Index<Idx0...>,Index<Idx1...> > {
+    static constexpr bool is_mat_vec = is_generalised_matrix_vector<Index<Idx0...>,Index<Idx1...>>::value;
+    static constexpr bool is_vec_mat = is_generalised_vector_matrix<Index<Idx0...>,Index<Idx1...>>::value;
+    static constexpr int ncontracted = sizeof...(Idx0) + sizeof...(Idx1) - no_of_unique<Idx0...,Idx1...>::value;
+    static constexpr bool is_inner = sizeof...(Idx0) == sizeof...(Idx1) && no_of_unique<Idx0...,Idx1...>::value == sizeof...(Idx1);
+    static constexpr size_t idx0[sizeof...(Idx0)] = {Idx0...};
+    static constexpr size_t idx1[sizeof...(Idx1)] = {Idx1...};
+    static constexpr bool value = !is_mat_vec && !is_vec_mat && !is_inner && match_indices_from_two_ends(idx0, idx1, ncontracted);
+};
+//--------------------------------------------------------------------------------------------------------------------//
+} // namespace internal
 
 
 
