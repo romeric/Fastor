@@ -845,7 +845,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
                 out_row1 += vec_a1*brow1;
 #else
                 out_row0 = fmadd(vec_a0,brow0,out_row0);
-                out_row1 = fmadd(vec_a1,brow1,out_row1)
+                out_row1 = fmadd(vec_a1,brow1,out_row1);
 #endif
             }
             for (; i<K; ++i) {
@@ -870,7 +870,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
                 out_row1 += vec_a1*brow1;
 #else
                 out_row0 = fmadd(vec_a0,brow0,out_row0);
-                out_row1 = fmadd(vec_a1,brow1,out_row1)
+                out_row1 = fmadd(vec_a1,brow1,out_row1);
 #endif
             }
             for (; i<K; ++i) {
