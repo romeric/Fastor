@@ -30,8 +30,8 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     constexpr size_t UnrollOuterloop = M % 8 == 0 ? 8 : V::Size;
 
     // The row index (for a and c) is unrolled using the UnrollOuterloop stride. Therefore
-    // the last rows may need special treatment if N is not a multiple of UnrollOuterloop.
-    // N0 is the number of rows that can safely be iterated with a stride of
+    // the last rows may need special treatment if M is not a multiple of UnrollOuterloop.
+    // i0 is the number of rows that can safely be iterated with a stride of
     // UnrollOuterloop.
     constexpr size_t i0 = M / UnrollOuterloop * UnrollOuterloop;
     for (size_t i = 0; i < i0; i += UnrollOuterloop) {
@@ -88,7 +88,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 //-----------------------------------------------------------------------------------------------------------
 
 
-// For general non-square matrices with arbitrary alignment/padding excluding vector-matrix multiplication
+// For general non-square matrices with arbitrary alignment/padding excluding outer product (K==1)
 //-----------------------------------------------------------------------------------------------------------
 template<typename T, size_t M, size_t K, size_t N>
 FASTOR_INLINE
@@ -101,8 +101,8 @@ void _matmul_mkn(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * F
     constexpr bool isPadded = N % V::Size == 0;
 
     // The row index (for a and c) is unrolled using the UnrollOuterloop stride. Therefore
-    // the last rows may need special treatment if N is not a multiple of UnrollOuterloop.
-    // N0 is the number of rows that can safely be iterated with a stride of
+    // the last rows may need special treatment if M is not a multiple of UnrollOuterloop.
+    // i0 is the number of rows that can safely be iterated with a stride of
     // UnrollOuterloop.
     constexpr size_t i0 = M / UnrollOuterloop * UnrollOuterloop;
     constexpr size_t i1 = N / V::Size * V::Size;
