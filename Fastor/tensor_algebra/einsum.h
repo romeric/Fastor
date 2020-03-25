@@ -157,9 +157,9 @@ einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
     //     _matmul<T,M,K_product,N>(a.data(),b.data(),out.data());
     //     return out;
     // }
-    // For non-square matrices of SIMD wide - this has the same performance as above but with unaligned load/stores
-    FASTOR_IF_CONSTEXPR(K_product >= VSize && N % VSize == 0 && M>=8) {
-        _matmul_mkN<T,M,K_product,N>(a.data(),b.data(),out.data());
+    // For non-square matrices - this has the same performance as above but with unaligned load/stores
+    FASTOR_IF_CONSTEXPR(K_product >= VSize && M>=8 && N>1) {
+        _matmul_mkn<T,M,K_product,N>(a.data(),b.data(),out.data());
         return out;
     }
     // For general non-square matrices - this hueristics need to be changed
