@@ -187,6 +187,30 @@ void run() {
         SINGLE_TEST(a,b);
     }
 
+    {
+        Tensor<T,2,3> a; a.iota(-5);
+        Tensor<T,3,12> b; b.iota(0);
+        SINGLE_TEST(a,b);
+        a(1,1) = -2;
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,2,3> a; a.iota(-5);
+        Tensor<T,3,24> b; b.iota(0);
+        SINGLE_TEST(a,b);
+        a(1,1) = -2;
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,7,1> a; a.iota(-5);
+        Tensor<T,1,7> b; b.iota(0);
+        SINGLE_TEST(a,b);
+        a(3,0) = -200;
+        SINGLE_TEST(a,b);
+    }
+
     // matrix-vector and vector-matrix
     {
         Tensor<T,1,2> a; a.iota(-5);

@@ -151,17 +151,22 @@ einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
     // Recursive contraction is actually quite fast in comparison to
     // matmul at the moment so decide wether to dispatch to matmul or not
 
+    constexpr size_t VSize = SIMDVector<T,DEFAULT_ABI>::Size;
     // For square matrices
-    if (M==N==K_product && M % SIMDVector<T,DEFAULT_ABI>::Size == 0 && M>=8) {
+    FASTOR_IF_CONSTEXPR(M==N==K_product && M % VSize == 0 && M>=8) {
         _matmul<T,M,K_product,N>(a.data(),b.data(),out.data());
+        return out;
+    }
+    // For non-square matrices of SIMD wide
+    else FASTOR_IF_CONSTEXPR(K_product >= VSize && N % VSize == 0 && M>=8) {
+        _matmul_mkN<T,M,K_product,N>(a.data(),b.data(),out.data());
         return out;
     }
     // For general non-square matrices - this hueristics need to be changed
     // if matmul implementation changes
-    constexpr bool should_be_dispatched_matmul =
-      (N % 2 != 0 && K_product > 40 && M*N < 2000) || (N % 2 == 0 && K_product > 64 && M*N < 200) ? true : false;
-
-    FASTOR_IF_CONSTEXPR(should_be_dispatched_matmul) {
+    else FASTOR_IF_CONSTEXPR
+      ((N % 2 != 0 && K_product > 64 && M*N < 2000) || (N % 2 == 0 && K_product > 64 && M*N < 200) ? true : false)
+    {
         _matmul_mKn<T,M,K_product,N>(a.data(),b.data(),out.data());
         return out;
     }

@@ -8,14 +8,14 @@ namespace Fastor {
 
 // The non-voigt version of outer product
 
-// dyadic template parameters are based on size as to variadic packs
-// will not be well informed
+// dyadic template parameters are based on size
+// of the two tensors
 
 template<typename T, size_t size0, size_t size1>
 FASTOR_INLINE
 void _dyadic(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
-    using V  = SIMDVector<T,256>;
+    using V  = SIMDVector<T,DEFAULT_ABI>;
     constexpr int VSIZE = static_cast<int>(V::Size);
 
     constexpr int A_DIM = size0;
@@ -59,7 +59,7 @@ void _dyadic(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
         int j=0;
         for (; j<VROUND_INNER; j+=VSIZE) {
             vec_out = vec_a*V(&b[j]);
-            vec_out.store(out+j+i*B_DIM);
+            vec_out.store(&out[j+i*B_DIM]);
         }
         for (; j<B_DIM; ++j) {
             out[j+i*B_DIM] = a0*b[j];
@@ -68,26 +68,17 @@ void _dyadic(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
 #else
 
-    // non-unrolled version
-    using V128 = SIMDVector<T,128>;
-    constexpr int VSIZE_SSE = static_cast<int>(V128::Size);
-    constexpr int VROUND_INNER_SSE = ROUND_DOWN(B_DIM,VSIZE_SSE);
-    V vec_out; V128 vec_out_sse;
+    V vec_out;
     for (int i=0; i<A_DIM; ++i) {
         T a0 = a[i];
         V vec_a(a0);
         int j=0;
         for (; j<VROUND_INNER; j+=VSIZE) {
             vec_out = vec_a*V(&b[j]);
-            vec_out.store(out+j+i*B_DIM,false);
-        }
-        V128 vec_a1(a0);
-        for (; j<VROUND_INNER_SSE; j+=VSIZE_SSE) {
-            vec_out_sse = vec_a1*V128(&b[j]);
-            vec_out_sse.store(out+j+i*B_DIM,false);
+            vec_out.store(&out[i*B_DIM+j],false);
         }
         for (; j<B_DIM; ++j) {
-            out[j+i*B_DIM] = a0*b[j];
+            out[i*B_DIM+j] = a0*b[j];
         }
     }
 

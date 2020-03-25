@@ -13,7 +13,8 @@
 namespace Fastor {
 
 
-// For square matrices
+// For square matrices with multiple of SIMD register width
+//-----------------------------------------------------------------------------------------------------------
 #ifndef USE_LIBXSMM_BACKEND
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<M==N && M==K && N % SIMDVector<T,DEFAULT_ABI>::Size ==0,bool>::type = 0>
@@ -26,18 +27,18 @@ FASTOR_INLINE
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
 
     using V = SIMDVector<T,DEFAULT_ABI>;
-    constexpr size_t UnrollOuterloop = V::size();
+    constexpr size_t UnrollOuterloop = M % 8 == 0 ? 8 : V::Size;
 
     // The row index (for a and c) is unrolled using the UnrollOuterloop stride. Therefore
     // the last rows may need special treatment if N is not a multiple of UnrollOuterloop.
     // N0 is the number of rows that can safely be iterated with a stride of
     // UnrollOuterloop.
-    constexpr size_t i0 = N / UnrollOuterloop * UnrollOuterloop;
+    constexpr size_t i0 = M / UnrollOuterloop * UnrollOuterloop;
     for (size_t i = 0; i < i0; i += UnrollOuterloop) {
-        // The iteration over the column index of b and c uses a stride of V::size(). This
+        // The iteration over the column index of b and c uses a stride of V::Size. This
         // enables row-vector loads (from b) and stores (to c). The matrix storage is
         // padded accordingly, ensuring correct bounds and alignment.
-        for (size_t j = 0; j < N; j += V::size()) {
+        for (size_t j = 0; j < N; j += V::Size) {
             // This temporary variables are used to accumulate the results of the products
             // producing the new values for the c matrix. This variable is necessary
             // because we need a V object for data-parallel accumulation. Storing to c
@@ -45,32 +46,32 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
             // data-parallel (SIMD) addition.
             V c_ij[UnrollOuterloop];
             for (size_t n = 0; n < UnrollOuterloop; ++n) {
-                c_ij[n] = a[(i + n)*N]*V(&b[j]);
+                c_ij[n] = a[(i + n)*K]*V(&b[j]);
             }
             for (size_t k = 1; k < N - 1; ++k) {
                 for (size_t n = 0; n < UnrollOuterloop; ++n) {
-                    c_ij[n] += a[(i + n)*N+k] * V(&b[k*N+j]);
+                    c_ij[n] += a[(i + n)*K+k] * V(&b[k*N+j]);
                 }
             }
             for (size_t n = 0; n < UnrollOuterloop; ++n) {
-                c_ij[n] += a[(i + n)*N+(N - 1)] * V(&b[(N - 1)*N+j]);
+                c_ij[n] += a[(i + n)*K+(K - 1)] * V(&b[(K - 1)*N+j]);
                 c_ij[n].store(&c[(i + n)*N+j]);
             }
         }
     }
     // This final loop treats the remaining NN - N0 rows.
-    for (size_t j = 0; j < N; j += V::size()) {
+    for (size_t j = 0; j < N; j += V::Size) {
         V c_ij[UnrollOuterloop];
-        for (size_t n = i0; n < N; ++n) {
-            c_ij[n - i0] = a[n*N] * V(&b[j]);
+        for (size_t n = i0; n < M; ++n) {
+            c_ij[n - i0] = a[n*K] * V(&b[j]);
         }
-        for (size_t k = 1; k < N - 1; ++k) {
-            for (size_t n = i0; n < N; ++n) {
-                c_ij[n - i0] += a[n*N+k] * V(&b[k*N+j]);
+        for (size_t k = 1; k < K - 1; ++k) {
+            for (size_t n = i0; n < M; ++n) {
+                c_ij[n - i0] += a[n*K+k] * V(&b[k*N+j]);
             }
         }
-        for (size_t n = i0; n < N; ++n) {
-            c_ij[n - i0] += a[n*N+(N - 1)] * V(&b[(N - 1)*N+j]);
+        for (size_t n = i0; n < M; ++n) {
+            c_ij[n - i0] += a[n*K+(K - 1)] * V(&b[(K - 1)*N+j]);
             c_ij[n - i0].store(&c[n*N+j]);
         }
     }
@@ -84,6 +85,70 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     blas::matmul_libxsmm<T,M,K,N>(a,b,c);
 }
 #endif
+//-----------------------------------------------------------------------------------------------------------
+
+
+// For non-square matrices with N == multiple of SIMD register width
+//-----------------------------------------------------------------------------------------------------------
+template<typename T, size_t M, size_t K, size_t N>
+FASTOR_INLINE
+void _matmul_mkN(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
+
+    // This variant strictly cannot deal outer-product i.e. with K==1
+
+    using V = SIMDVector<T,DEFAULT_ABI>;
+    // constexpr size_t UnrollOuterloop = V::Size;
+    // constexpr size_t UnrollOuterloop = 1;
+    constexpr size_t UnrollOuterloop = M < V::Size ? 1 : (M % 8 == 0 && N > 16 ? 8 : V::Size);
+
+    // The row index (for a and c) is unrolled using the UnrollOuterloop stride. Therefore
+    // the last rows may need special treatment if N is not a multiple of UnrollOuterloop.
+    // N0 is the number of rows that can safely be iterated with a stride of
+    // UnrollOuterloop.
+    constexpr size_t i0 = M / UnrollOuterloop * UnrollOuterloop;
+    for (size_t i = 0; i < i0; i += UnrollOuterloop) {
+        // The iteration over the column index of b and c uses a stride of V::size(). This
+        // enables row-vector loads (from b) and stores (to c). The matrix storage is
+        // padded accordingly, ensuring correct bounds and alignment.
+        for (size_t j = 0; j < N; j += V::Size) {
+            // This temporary variables are used to accumulate the results of the products
+            // producing the new values for the c matrix. This variable is necessary
+            // because we need a V object for data-parallel accumulation. Storing to c
+            // directly stores to scalar objects and thus would drop the ability for
+            // data-parallel (SIMD) addition.
+            V c_ij[UnrollOuterloop];
+            for (size_t n = 0; n < UnrollOuterloop; ++n) { // correct
+                c_ij[n] = a[(i + n)*K]*V(&b[j], false);
+            }
+            for (size_t k = 1; k < K - 1; ++k) { // correct
+                for (size_t n = 0; n < UnrollOuterloop; ++n) {
+                    c_ij[n] += a[(i + n)*K+k] * V(&b[k*N+j], false);
+                }
+            }
+            for (size_t n = 0; n < UnrollOuterloop; ++n) { // correct
+                c_ij[n] += a[(i + n)*K+(K - 1)] * V(&b[(K - 1)*N+j], false);
+                c_ij[n].store(&c[(i + n)*N+j]);
+            }
+        }
+    }
+    // This final loop treats the remaining NN - N0 rows.
+    for (size_t j = 0; j < N; j += V::Size) {
+        V c_ij[UnrollOuterloop];
+        for (size_t n = i0; n < M; ++n) { // correct
+            c_ij[n - i0] = a[n*K] * V(&b[j]);
+        }
+        for (size_t k = 1; k < K - 1; ++k) { // correct
+            for (size_t n = i0; n < M; ++n) { // correct
+                c_ij[n - i0] += a[n*K+k] * V(&b[k*N+j], false);
+            }
+        }
+        for (size_t n = i0; n < M; ++n) { // correct
+            c_ij[n - i0] += a[n*K+(K - 1)] * V(&b[(K - 1)*N+j], false);
+            c_ij[n - i0].store(&c[n*N+j]);
+        }
+    }
+}
+//-----------------------------------------------------------------------------------------------------------
 
 
 
@@ -671,8 +736,16 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
         return;
     }
 
-    // // Use new faster matmul - this hueristics need to be changed
-    // // if matmul implementation changes
+
+    using V = SIMDVector<T,DEFAULT_ABI>;
+
+    // Use new faster matmul variants - this hueristics need to be changed
+    // if matmul implementation changes
+    FASTOR_IF_CONSTEXPR(M>=V::Size && K>=V::Size && N % V::Size == 0) {
+        _matmul_mkN<T,M,K,N>(a,b,out);
+        return;
+    }
+
     // constexpr bool should_be_dispatched = (K > 32 ||
     //     (N==4 && std::is_same<T,double>::value)   ||
     //     (N==8 && std::is_same<T,float>::value)      ) ? true : false;
@@ -692,7 +765,6 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     //     return;
     // }
 
-    using V = SIMDVector<T,DEFAULT_ABI>;
 
     constexpr int SIZE_ = V::Size;
     constexpr int ROUND_ = ROUND_DOWN(N,SIZE_);

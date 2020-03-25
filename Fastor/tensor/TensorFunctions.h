@@ -106,7 +106,7 @@ FASTOR_INLINE double norm(const Tensor<T,Rest...> &a) {
 // matmul - matvec overloads
 template<typename T, size_t I, size_t J, size_t K>
 FASTOR_INLINE Tensor<T,I,K> matmul(const Tensor<T,I,J> &a, const Tensor<T,J,K> &b) {
-    Tensor<T,I,K> out; out.zeros();
+    Tensor<T,I,K> out;
     _matmul<T,I,J,K>(a.data(),b.data(),out.data());
     return out;
 }
@@ -132,6 +132,13 @@ FASTOR_INLINE Tensor<T,K> matmul(const Tensor<T,J> &a, const Tensor<T,J,K> &b) {
 template<typename T, size_t K>
 FASTOR_INLINE Tensor<T,1,1> matmul(const Tensor<T,1,K> &a, const Tensor<T,K,1> &b) {
     Tensor<T,1,1> out(_doublecontract<T,K,1>(a.data(),b.data()));
+    return out;
+}
+
+template<typename T, size_t I, size_t K>
+FASTOR_INLINE Tensor<T,I,K> matmul(const Tensor<T,I,1> &a, const Tensor<T,1,K> &b) {
+    Tensor<T,I,K> out;
+    _dyadic<T,I,K>(a.data(),b.data(),out.data());
     return out;
 }
 
