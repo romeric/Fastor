@@ -6,6 +6,8 @@ using namespace Fastor;
 template<typename T, FASTOR_INDEX mm, FASTOR_INDEX nn>
 void run_fixed_size() {
 
+    constexpr seq sall = seq(0,-1,1);
+
     {
         Tensor<T,mm,nn> a; a.iota(5);
         Tensor<bool,mm,nn> ba1 = a == a;
@@ -112,25 +114,25 @@ void run_fixed_size() {
         }
 
         // views
-        ba5(all,all) = a == a;
+        ba5(sall,sall) = a == a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
                 FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
             }
         }
-        ba5(all,all) = a < a;
+        ba5(sall,sall) = a < a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
                 FASTOR_EXIT_ASSERT(ba5(i,j) == false, "TEST FAILED");
             }
         }
-        ba5(all,all) = a > a;
+        ba5(sall,sall) = a > a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
                 FASTOR_EXIT_ASSERT(ba5(i,j) == false, "TEST FAILED");
             }
         }
-        ba5(all,all) = a <= a;
+        ba5(sall,sall) = a <= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
                 FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
@@ -182,37 +184,37 @@ void run_fixed_size() {
         }
 
         // expr view
-        ba5(all,all) = a + 1 == a;
+        ba5(sall,sall) = a + 1 == a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
                 FASTOR_EXIT_ASSERT(ba5(i,j) == false, "TEST FAILED");
             }
         }
-        ba5(all,all) = a + 1 != a;
+        ba5(sall,sall) = a + 1 != a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
                 FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
             }
         }
-        ba5(all,all) = a + 1 > a;
+        ba5(sall,sall) = a + 1 > a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
                 FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
             }
         }
-        ba5(all,all) = a - 1 < a;
+        ba5(sall,sall) = a - 1 < a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
                 FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
             }
         }
-        ba5(all,all) = a * 1 <= a;
+        ba5(sall,sall) = a * 1 <= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
                 FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
             }
         }
-        ba5(all,all) = a * 2 >= a;
+        ba5(sall,sall) = a * 2 >= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
                 FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
@@ -283,7 +285,7 @@ void run_fixed_size() {
     }
 
     {
-        Tensor<T> a(2); 
+        Tensor<T> a(2);
         Tensor<bool> ba = a==2;
         FASTOR_EXIT_ASSERT(ba.toscalar() == true, "TEST FAILED");
         ba = a>2;
