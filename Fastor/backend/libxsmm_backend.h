@@ -3,7 +3,7 @@
 
 #include <Fastor/tensor/Tensor.h>
 
-#ifdef USE_LIBXSMM_BACKEND
+#ifdef FASTOR_USE_LIBXSMM
 
 #include <libxsmm.h>
 
@@ -204,6 +204,6 @@ void matmul_libxsmm(
 } // end of namespace blas
 } // end of namespace Fastor
 
-#endif // USE_LIBXSMM_BACKEND
+#endif // FASTOR_USE_LIBXSMM
 
 #endif // LIBXSMM_BACKEND_H

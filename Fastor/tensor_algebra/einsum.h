@@ -146,19 +146,19 @@ einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
     constexpr size_t rest1[sizeof...(Rest1)] = {Rest1...};
     constexpr size_t K_product = partial_prod(rest1, matches_up_to - 1);
     constexpr size_t M = partial_prod(rest0, sizeof...(Rest0) - matches_up_to - 1);
-    constexpr size_t N = partial_prod_reverse(rest1, sizeof...(Rest1) - matches_up_to);
+    constexpr size_t N = partial_prod(rest1, sizeof...(Rest1) - 1, matches_up_to);
 
-    // Recursive contraction is actually quite fast in comparison to
+#ifndef FASTOR_USE_LIBXSMM
+    // Recursive contraction is quite fast in comparison to certain variants of
     // matmul at the moment so decide wether to dispatch to matmul or not
-
     constexpr size_t VSize = SIMDVector<T,DEFAULT_ABI>::Size;
-    // For square matrices
-    FASTOR_IF_CONSTEXPR(M==N==K_product && M % VSize == 0 && M>=8) {
-        _matmul<T,M,K_product,N>(a.data(),b.data(),out.data());
-        return out;
-    }
-    // For non-square matrices of SIMD wide
-    else FASTOR_IF_CONSTEXPR(K_product >= VSize && N % VSize == 0 && M>=8) {
+    // For square matrices - do not call square matrices kernel as it assumes perfect alignment
+    // FASTOR_IF_CONSTEXPR(M==N==K_product && M % VSize == 0 && M>=8) {
+    //     _matmul<T,M,K_product,N>(a.data(),b.data(),out.data());
+    //     return out;
+    // }
+    // For non-square matrices of SIMD wide - this has the same performance as above but with unaligned load/stores
+    FASTOR_IF_CONSTEXPR(K_product >= VSize && N % VSize == 0 && M>=8) {
         _matmul_mkN<T,M,K_product,N>(a.data(),b.data(),out.data());
         return out;
     }
@@ -173,6 +173,11 @@ einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
     else {
         return extractor_contract_2<Index_I,Index_J>::contract_impl(a,b);
     }
+#else
+    // In case libxsmm is available we dispatch unconditionally
+    _matmul<T,M,K_product,N>(a.data(),b.data(),out.data());
+    return out;
+#endif
 }
 //-----------------------------------------------------------------------------------------------------------------------//
 

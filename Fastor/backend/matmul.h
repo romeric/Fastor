@@ -6,7 +6,7 @@
 #include "Fastor/simd_vector/SIMDVector.h"
 #include "Fastor/meta/tensor_meta.h"
 
-#ifdef USE_LIBXSMM_BACKEND
+#ifdef FASTOR_USE_LIBXSMM
 #include "libxsmm_backend.h"
 #endif
 
@@ -15,7 +15,7 @@ namespace Fastor {
 
 // For square matrices with multiple of SIMD register width
 //-----------------------------------------------------------------------------------------------------------
-#ifndef USE_LIBXSMM_BACKEND
+#ifndef FASTOR_USE_LIBXSMM
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<M==N && M==K && N % SIMDVector<T,DEFAULT_ABI>::Size ==0,bool>::type = 0>
 #else
@@ -76,7 +76,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
         }
     }
 }
-#ifdef USE_LIBXSMM_BACKEND
+#ifdef FASTOR_USE_LIBXSMM
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<M==N && M==K && N % SIMDVector<T,DEFAULT_ABI>::Size ==0
          && is_greater<N,BLAS_SWITCH_MATRIX_SIZE_S>::value,bool>::type = 0>
@@ -714,7 +714,7 @@ void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FA
 
 
 // Non-sqaure matrices
-#ifndef USE_LIBXSMM_BACKEND
+#ifndef FASTOR_USE_LIBXSMM
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<(M==K && K!=N) || (M!=K && K==N) || (M!=K && K!=N && M!=N)
                                  || (M!=K && M==N && M!=2 && M!=3 && M!=4)
@@ -978,7 +978,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 #endif
 }
 
-#ifdef USE_LIBXSMM_BACKEND
+#ifdef FASTOR_USE_LIBXSMM
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<((M==K && K!=N) || (M!=K && K==N) || (M!=K && K!=N && M!=N)
                                  || (M!=K && M==N && M!=2 && M!=3 && M!=4)

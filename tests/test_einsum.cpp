@@ -303,7 +303,8 @@ void run() {
         FASTOR_EXIT_ASSERT(abs(c3(3) - 5984.) < Tol);
     }
 
-    // Catches the bug in 3 network contraction
+    // Catches the bug in 3 network contraction and
+    // tests matmul dispatcher for general matrix-matrix
     {
         enum {a,b,c,d,e,f,g,h,i,j,k,l};
 
@@ -325,6 +326,26 @@ void run() {
         auto C = einsum<Index<a,c>,Index<f,g>,Index<c,f,b>,Index<g,d,a>>(A, A, B, B);
         FASTOR_EXIT_ASSERT(abs(C(0,0) + 1.) < Tol);
         FASTOR_EXIT_ASSERT(abs(C(1,1)) < BigTol);
+    }
+
+    // Tests matmul dispatcher for general matrix-matrix
+    {
+        Tensor<T,8,8,8> a; a.iota(3);
+        Tensor<T,8,8,8> b; b.arange(4);
+        auto c1 = einsum<Index<i,j,k>,Index<j,k,l>>(a,b);
+        Tensor<T,8,8> c2; //c2.zeros();
+        _matmul<T,8,64,8>(a.data(),b.data(),c2.data());
+        FASTOR_EXIT_ASSERT(abs(c1.sum()-c2.sum()) < Tol);
+    }
+
+    // Tests matmul dispatcher for general matrix-matrix
+    {
+        Tensor<T,3,1,2,3,15> a; a.iota(-300);
+        Tensor<T,1,2,3,15,5> b; b.arange(4);
+        auto c1 = einsum<Index<i,j,k,l,m>,Index<j,k,l,m,n>>(a,b);
+        Tensor<T,3,5> c2; //c2.zeros();
+        _matmul<T,3,90,5>(a.data(),b.data(),c2.data());
+        FASTOR_EXIT_ASSERT(abs(c1.sum()-c2.sum()) < BigTol);
     }
 
     print(FGRN(BOLD("All tests passed successfully")));
