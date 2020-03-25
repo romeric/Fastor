@@ -162,14 +162,6 @@ einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
         _matmul_mkn<T,M,K_product,N>(a.data(),b.data(),out.data());
         return out;
     }
-    // For general non-square matrices - this hueristics need to be changed
-    // if matmul implementation changes
-    else FASTOR_IF_CONSTEXPR
-      ((N % 2 != 0 && K_product > 64 && M*N < 2000) || (N % 2 == 0 && K_product > 64 && M*N < 200) ? true : false)
-    {
-        _matmul_mKn<T,M,K_product,N>(a.data(),b.data(),out.data());
-        return out;
-    }
     else {
         return extractor_contract_2<Index_I,Index_J>::contract_impl(a,b);
     }
