@@ -49,7 +49,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
             for (size_t n = 0; n < UnrollOuterloop; ++n) {
                 c_ij[n] = a[(i + n)*K]*V(&b[j]);
             }
-            for (size_t k = 1; k < N - 1; ++k) {
+            for (size_t k = 1; k < K - 1; ++k) {
                 for (size_t n = 0; n < UnrollOuterloop; ++n) {
                     c_ij[n] += a[(i + n)*K+k] * V(&b[k*N+j]);
                 }
