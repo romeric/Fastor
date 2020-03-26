@@ -27,7 +27,8 @@ FASTOR_INLINE
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
 
     using V = SIMDVector<T,DEFAULT_ABI>;
-    constexpr size_t UnrollOuterloop = M % 8 == 0 ? 8 : V::Size;
+    // Get 10 parallel independent chains of accumulators for bigger matrices
+    constexpr size_t UnrollOuterloop = M >= 64 ? 10 : (M % 8 == 0 ? 8 : V::Size);
 
     // The row index (for a and c) is unrolled using the UnrollOuterloop stride. Therefore
     // the last rows may need special treatment if M is not a multiple of UnrollOuterloop.
@@ -59,22 +60,23 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
             }
         }
     }
-    // This final loop treats the remaining M - i0 rows.
-    for (size_t j = 0; j < N; j += V::Size) {
-        V c_ij[UnrollOuterloop];
-        for (size_t n = i0; n < M; ++n) {
-            c_ij[n - i0] = a[n*K] * V(&b[j]);
-        }
-        for (size_t k = 1; k < K - 1; ++k) {
-            for (size_t n = i0; n < M; ++n) {
-                c_ij[n - i0] += a[n*K+k] * V(&b[k*N+j]);
-            }
-        }
-        for (size_t n = i0; n < M; ++n) {
-            c_ij[n - i0] += a[n*K+(K - 1)] * V(&b[(K - 1)*N+j]);
-            c_ij[n - i0].store(&c[n*N+j]);
-        }
-    }
+    // Not necessary for square matrices
+    // // This final loop treats the remaining M - i0 rows.
+    // for (size_t j = 0; j < N; j += V::Size) {
+    //     V c_ij[UnrollOuterloop];
+    //     for (size_t n = i0; n < M; ++n) {
+    //         c_ij[n - i0] = a[n*K] * V(&b[j]);
+    //     }
+    //     for (size_t k = 1; k < K - 1; ++k) {
+    //         for (size_t n = i0; n < M; ++n) {
+    //             c_ij[n - i0] += a[n*K+k] * V(&b[k*N+j]);
+    //         }
+    //     }
+    //     for (size_t n = i0; n < M; ++n) {
+    //         c_ij[n - i0] += a[n*K+(K - 1)] * V(&b[(K - 1)*N+j]);
+    //         c_ij[n - i0].store(&c[n*N+j]);
+    //     }
+    // }
 }
 #ifdef FASTOR_USE_LIBXSMM
 template<typename T, size_t M, size_t K, size_t N,
@@ -97,7 +99,9 @@ void _matmul_mkn(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * F
     // This variant strictly cannot deal outer-product i.e. with K==1
 
     using V = SIMDVector<T,DEFAULT_ABI>;
-    constexpr size_t UnrollOuterloop = M < V::Size ? 1 : (M % 8 == 0 && N > 16 ? 8 : V::Size);
+    // Get 10 parallel independent chains of accumulators for bigger matrices
+    constexpr size_t UnrollOuterloop = M < V::Size ? 1 :
+        (( M >= 64 && K > 10 && N > V::Size ) ? 10 : (M % 8 == 0 && N > V::Size ? 8 : V::Size));
     constexpr bool isPadded = N % V::Size == 0;
 
     // The row index (for a and c) is unrolled using the UnrollOuterloop stride. Therefore
