@@ -174,9 +174,9 @@ inline void print(const AbstractTensor<Expr,DIM> &src) {
 template<typename T>
 inline void println(const std::vector<T> &v) {
     for (auto &k: v) {
-        std::cout << k << " ";
+        std::cout << k << ' ';
     }
-    std::cout << std::endl;
+    std::cout << '\n';
 }
 
 template<typename T, std::size_t N>
@@ -184,7 +184,7 @@ inline void println(const std::array<T,N> &arr) {
     for (std::size_t i=0; i<N; i++) {
         std::cout << arr[i] << " ";
     }
-    std::cout << std::endl;
+    std::cout << '\n';
 }
 
 template<typename T,std::size_t N>
@@ -192,23 +192,24 @@ inline void println(const T *arr) {
     for (std::size_t i=0; i<N; i++) {
         std::cout << arr[i] << " ";
     }
-    std::cout << std::endl;
+    std::cout << '\n';
 }
 
 
 template<typename T>
 inline void println(const T &a) {
-    std::cout << a << " ";
+    std::cout << a;
 }
 
 template<typename T, typename ... Rest>
 inline void println(const T &first, const Rest& ... rest) {
     println(first);
+    std::cout << ' ';
     println(rest...);
 }
 
 inline void println() {
-    std::cout << " ";
+    std::cout << ' ';
 }
 /*--------------------------------------*/
 

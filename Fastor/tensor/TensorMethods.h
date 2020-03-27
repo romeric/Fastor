@@ -14,12 +14,12 @@ FASTOR_INLINE void fill(U num0) {
 
 template<typename U=T>
 FASTOR_INLINE void iota(U num0=0) {
-    std::iota(_data, &_data[prod<Rest...>::value], num0);
+    std::iota(_data, &_data[Size], num0);
 }
 
 template<typename U=T>
 FASTOR_INLINE void arange(U num0=0) {
-    std::iota(_data, &_data[prod<Rest...>::value], num0);
+    std::iota(_data, &_data[Size], num0);
     // T num = static_cast<T>(num0);
     // SIMDVector<T,DEFAULT_ABI> _vec;
     // FASTOR_INDEX i=0;

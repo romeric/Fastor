@@ -28,7 +28,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
     using V = SIMDVector<T,DEFAULT_ABI>;
     // Get 10 parallel independent chains of accumulators for bigger matrices
-    constexpr size_t UnrollOuterloop = M >= 64 ? 10 : (M % 8 == 0 ? 8 : V::Size);
+    constexpr size_t UnrollOuterloop = M >= 64 ? 10UL : (M % 8 == 0 ? 8UL : V::Size);
 
     // The row index (for a and c) is unrolled using the UnrollOuterloop stride. Therefore
     // the last rows may need special treatment if M is not a multiple of UnrollOuterloop.
@@ -100,8 +100,8 @@ void _matmul_mkn(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * F
 
     using V = SIMDVector<T,DEFAULT_ABI>;
     // Get 10 parallel independent chains of accumulators for bigger matrices
-    constexpr size_t UnrollOuterloop = M < V::Size ? 1 :
-        (( M >= 64 && K > 10 && N > V::Size ) ? 10 : (M % 8 == 0 && N > V::Size ? 8 : V::Size));
+    constexpr size_t UnrollOuterloop = M < V::Size ? 1UL :
+        (( M >= 64 && K > 10 && N > V::Size ) ? 10UL : (M % 8 == 0 && N > V::Size ? 8UL : V::Size));
     constexpr bool isPadded = N % V::Size == 0;
 
     // The row index (for a and c) is unrolled using the UnrollOuterloop stride. Therefore
