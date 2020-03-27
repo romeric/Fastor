@@ -1,12 +1,12 @@
 # Fastor
-**Fastor** is a stack-based high performance tensor (multi-dimensional array) library written in modern C++ [C++11/14/17] with powerful in-built tensor algebraic functionalities (tensor contraction, permutation, reductions, special tensor groups etc). There are multiple paradigms that Fastor exploits:
+**Fastor** is a stack-based high performance tensor (multi-dimensional array) library written in modern C++ [C++11/14/17] with powerful in-built tensor algebraic functionalities (tensor contraction, permutation, reductions, special tensor groups etc) and focus on specialised highly efficient tensor product kernels. There are multiple paradigms that Fastor exploits:
 
-- **Operation minimisation or low FLOP/complexity reducing algorithms:** Fastor relies on a domain-aware Expression Template (ET) engine that can not only perform lazy and delayed evaluation but also sophisticated mathematical transformation at *compile time* such as graph optimisation, nearly symbolic tensor algebraic manipulation to reduce the complexity of evaluation of BLAS and/or non-BLAS type expressions by orders of magnitude. Some of these functionalities are non-existent in other available C++ ET linear algebra libraries.
+- **Operation minimisation or FLOP reducing algorithms:** Fastor relies on a domain-aware Expression Template (ET) engine that can not only perform lazy and delayed evaluation but also sophisticated mathematical transformations at *compile time* such as graph optimisation, nearly symbolic tensor algebraic manipulation to reduce the complexity of evaluation of BLAS and/or non-BLAS type expressions by orders of magnitude. Some of these functionalities are non-existent in other available C++ ET linear algebra libraries.
 - **SIMD/Data parallelism/Stream computing** Fastor utilises explicit SIMD instructions (from SSE all the way to AVX512 and FMA).
-- **Zero overhead tensor algebraic functions** Fastor incorporates statically dispatched bespoke kernels for a variety of tensor products using a priori knowledge of tensors either through compile-time specialisation or advanced topological studies or both.
+- **High performance zero overhead tensor kernels** Combining sophisticated metaprogramming capabilities with statically dispatched bespoke kernels, makes Fastor a highly efficient framework for tensor operations that can rival specialised vendor libraries like [MKL-JIT](https://software.intel.com/en-us/articles/intel-math-kernel-library-improved-small-matrix-performance-using-just-in-time-jit-code) and [LIBXSMM](https://github.com/hfp/libxsmm).
 
 ### Documentation
-Full documenation can be found under the [Wiki](https://github.com/romeric/Fastor/wiki) pages.
+Documenation can be found under the [Wiki](https://github.com/romeric/Fastor/wiki) pages.
 
 ### High-level API
 Fastor provides a high level interface for tensor algebra. As a first example consider the following
