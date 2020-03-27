@@ -184,29 +184,32 @@ This will incur almost no runtime cost. As where if the tensors were of type `Te
 
 
 ### Smart expression templates
-A must have feature of every numerical linear algebra and even more so tensor contraction frameworks is lazy evaluation of arbitrary chained operations. Consider the following expression
+Expression templates are useful in tensor contraction frameworks for lazy evaluation of arbitrary chained operations. Consider the following expression
 
 ~~~c++
-Tensor<float,16,16,16,16> tn1 ,tn2, tn3, tn4;
+Tensor<float,16,16,16,16> tn1 ,tn2, tn3;
 tn1.random(); tn2.random(); tn3.random();
-tn4 = 2*tn1+sqrt(tn2-tn3);
+auto tn4 = 2*tn1+sqrt(tn2-tn3);
 ~~~
-The above code is transparently converted to a single `AVX` loop
+
+Here `tn4` is not a tensor but a an expression that is not yet evaluated. The expression gets evaluated if you assign it to another tensor explicitly or call the free function `evaluate` on the expression
+
 ~~~c++
-for (size_t i=0; i<tn4.Size; i+=tn4.Stride)
-    _mm256_store_ps(tn4._data+i,_mm256_set1_ps(static_cast<float>(2))*_mm256_load_ps(tn1._data+i)+
-    _mm256_sqrt_ps(_mm256_sub_ps(_mm256_load_ps(tn2._data+i),_mm256_load_ps(tn3._data+i)));
+Tensor<float,16,16,16,16> tn5 = tn4;
+// or
+auto tn6 = evaluate(tn4);
 ~~~
-avoiding any need for temporary memory allocation. As a DSL, Fastor has a much deeper understanding of the domain. By employing template metaprogrommaing techniques it ventures into the realm of *smart* expression templates to mathematically transform expression and/or apply compile time graph optimisation to find optimal contraction indices of complex tensor networks. As an example, the `trace(matmul(transpose(A),B))` which is `O(n^3)` in computational complexity is determined to be inefficient and Fastor statically dispatches the call to an equivalent but much more efficient routine, in this case `A_ijB_ij` or `doublecontract(A,B)` which is `O(n^2)`. Further examples of such mathemtical transformation include (not inclusive)
+
+this mechanism helps chain the operation and avoid any need for intermediate memory allocations. As a DSL, Fastor has a much deeper understanding of the domain. By employing template metaprogrommaing techniques it ventures into the realm of *smart* expression templates to mathematically transform expressions and/or apply compile time graph optimisation to find optimal contraction indices of complex tensor networks. As an example, the `trace(matmul(transpose(A),B))` which is `O(n^3)` in computational complexity is determined to be inefficient and Fastor statically dispatches the call to an equivalent but much more efficient routine, in this case `A_ij*B_ij` or `doublecontract(A,B)` which is `O(n^2)`. Further examples of such mathemtical transformation include (not inclusive)
 ~~~c++
 // the l in-front of the names stands for 'lazy'
-ldeterminant(linverse(A)); // transformed to 1/ldeterminant(A), O(n^3) reduction in computation
-ltranspose(lcofactor(A));  // transformed to ladjoint(A), O(n^2) reduction in memory access
-ltranspose(ladjoint(A));   // transformed to lcofactor(A), O(n^2) reduction in memory access
-lmatmul(lmatmul(A,B),b);   // transformed to lmatmul(A,lmatmul(B,b)), O(n) reduction in computation
+determinant(inverse(A)); // transformed to 1/determinant(A), O(n^3) reduction in computation
+transpose(cofactor(A));  // transformed to adjoint(A), O(n^2) reduction in memory access
+transpose(adjoint(A));   // transformed to cofactor(A), O(n^2) reduction in memory access
+matmul(matmul(A,B),b);   // transformed to matmul(A,matmul(B,b)), O(n) reduction in computation
 // and many more
 ~~~
-Note that there are situations that the user may write a complex chain of operations in the most verbose way, perhaps for readibility purposes, but Fastor delays the evaluation of the expression and checks if an equivalent but efficient expression can be computed. The computed expression always binds back to the base tensor, overhead free without a runtime (virtual table/pointer) penalty.
+Note that there are situations that the user may write a complex chain of operations in the most verbose/obvious way perhaps for readibility purposes, but Fastor delays the evaluation of the expression and checks if an equivalent but efficient expression can be computed.
 
 For tensor networks comprising of many higher rank tensors, a full generalisation of the above mathematical transformation can be performed through a constructive graph search optimisation. This typically involves finding the most optimal pattern of tensor contraction by studying the indices of contraction wherein tensor pairs are multiplied, summed over and factorised out in all possible combinations in order to come up with a cost model. Once again, knowing the dimensions of the tensor and the contraction pattern, Fastor performs this operation minimisation step at *compile time* and further checks the SIMD vectorisability of the tensor contraction loop nest (i.e. full/partial/broadcast vectorisation). In nutshell, it not only minimises the the number of floating point operations but also generates the most optimum vectorisable loop nest for computing those FLOPs. The following figures show the run time benefit of operation minimisation (FLOP optimal) over a single expression evaluation (Memory-saving) approach in contracting a three-tensor-network fitting in `L1`, `L2` and `L3` caches, respectively
 <p align="left">
