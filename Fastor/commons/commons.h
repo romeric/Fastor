@@ -108,12 +108,8 @@
 //#define FASTOR_DISPATCH_DIV_TO_MUL_EXPR // CHANGE BINARY_DIV_OP TO BINARY_MUL_OP
 //#define FASTOR_DISABLE_SPECIALISED_CTR
 
-#ifndef BLAS_SWITCH_MATRIX_SIZE_NS
-#define BLAS_SWITCH_MATRIX_SIZE_NS 13
-#endif
-
-#ifndef BLAS_SWITCH_MATRIX_SIZE_S
-#define BLAS_SWITCH_MATRIX_SIZE_S 16
+#ifndef FASTOR_BLAS_SWITCH_MATRIX_SIZE
+#define FASTOR_BLAS_SWITCH_MATRIX_SIZE 16
 #endif
 
 // This changes the behaviour of all expression templates (apart from views)
