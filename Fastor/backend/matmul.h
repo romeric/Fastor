@@ -28,14 +28,14 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
     using V = SIMDVector<T,DEFAULT_ABI>;
     // Get 10 parallel independent chains of accumulators for bigger matrices
-    constexpr size_t UnrollOuterloop = M >= 64 ? 10UL : (M % 8 == 0 ? 8UL : V::Size);
+    constexpr size_t unrollOuterloop = M >= 64 ? 10UL : (M % 8 == 0 ? 8UL : V::Size);
 
-    // The row index (for a and c) is unrolled using the UnrollOuterloop stride. Therefore
-    // the last rows may need special treatment if M is not a multiple of UnrollOuterloop.
-    // i0 is the number of rows that can safely be iterated with a stride of
-    // UnrollOuterloop.
-    constexpr size_t i0 = M / UnrollOuterloop * UnrollOuterloop;
-    for (size_t i = 0; i < i0; i += UnrollOuterloop) {
+    // The row index (for a and c) is unrolled using the unrollOuterloop stride. Therefore
+    // the last rows may need special treatment if M is not a multiple of unrollOuterloop.
+    // M0 is the number of rows that can safely be iterated with a stride of
+    // unrollOuterloop.
+    constexpr size_t M0 = M / unrollOuterloop * unrollOuterloop;
+    for (size_t i = 0; i < M0; i += unrollOuterloop) {
         // The iteration over the column index of b and c uses a stride of V::Size. This
         // enables row-vector loads (from b) and stores (to c). The matrix storage is
         // padded accordingly, ensuring correct bounds and alignment.
@@ -45,38 +45,21 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
             // because we need a V object for data-parallel accumulation. Storing to c
             // directly stores to scalar objects and thus would drop the ability for
             // data-parallel (SIMD) addition.
-            V c_ij[UnrollOuterloop];
-            for (size_t n = 0; n < UnrollOuterloop; ++n) {
+            V c_ij[unrollOuterloop];
+            for (size_t n = 0; n < unrollOuterloop; ++n) {
                 c_ij[n] = a[(i + n)*K]*V(&b[j]);
             }
             for (size_t k = 1; k < K - 1; ++k) {
-                for (size_t n = 0; n < UnrollOuterloop; ++n) {
+                for (size_t n = 0; n < unrollOuterloop; ++n) {
                     c_ij[n] += a[(i + n)*K+k] * V(&b[k*N+j]);
                 }
             }
-            for (size_t n = 0; n < UnrollOuterloop; ++n) {
+            for (size_t n = 0; n < unrollOuterloop; ++n) {
                 c_ij[n] += a[(i + n)*K+(K - 1)] * V(&b[(K - 1)*N+j]);
                 c_ij[n].store(&c[(i + n)*N+j]);
             }
         }
     }
-    // Not necessary for square matrices
-    // // This final loop treats the remaining M - i0 rows.
-    // for (size_t j = 0; j < N; j += V::Size) {
-    //     V c_ij[UnrollOuterloop];
-    //     for (size_t n = i0; n < M; ++n) {
-    //         c_ij[n - i0] = a[n*K] * V(&b[j]);
-    //     }
-    //     for (size_t k = 1; k < K - 1; ++k) {
-    //         for (size_t n = i0; n < M; ++n) {
-    //             c_ij[n - i0] += a[n*K+k] * V(&b[k*N+j]);
-    //         }
-    //     }
-    //     for (size_t n = i0; n < M; ++n) {
-    //         c_ij[n - i0] += a[n*K+(K - 1)] * V(&b[(K - 1)*N+j]);
-    //         c_ij[n - i0].store(&c[n*N+j]);
-    //     }
-    // }
 }
 #ifdef FASTOR_USE_LIBXSMM
 template<typename T, size_t M, size_t K, size_t N,
@@ -100,18 +83,18 @@ void _matmul_mkn(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * F
 
     using V = SIMDVector<T,DEFAULT_ABI>;
     // Get 10 parallel independent chains of accumulators for bigger matrices
-    constexpr size_t UnrollOuterloop = M < V::Size ? 1UL :
+    constexpr size_t unrollOuterloop = M < V::Size ? 1UL :
         (( M >= 64 && K > 10 && N > V::Size ) ? 10UL : (M % 8 == 0 && N > V::Size ? 8UL : V::Size));
     constexpr bool isPadded = N % V::Size == 0;
 
-    // The row index (for a and c) is unrolled using the UnrollOuterloop stride. Therefore
-    // the last rows may need special treatment if M is not a multiple of UnrollOuterloop.
-    // i0 is the number of rows that can safely be iterated with a stride of
-    // UnrollOuterloop.
-    constexpr size_t i0 = M / UnrollOuterloop * UnrollOuterloop;
+    // The row index (for a and c) is unrolled using the unrollOuterloop stride. Therefore
+    // the last rows may need special treatment if M is not a multiple of unrollOuterloop.
+    // M0 is the number of rows that can safely be iterated with a stride of
+    // unrollOuterloop.
+    constexpr size_t M0 = M / unrollOuterloop * unrollOuterloop;
     constexpr size_t i1 = N / V::Size * V::Size;
-    // constexpr size_t i1 = N;
-    for (size_t i = 0; i < i0; i += UnrollOuterloop) {
+
+    for (size_t i = 0; i < M0; i += unrollOuterloop) {
         // The iteration over the column index of b and c uses a stride of V::size(). This
         // enables row-vector loads (from b) and stores (to c). The matrix storage is
         // padded accordingly, ensuring correct bounds and alignment.
@@ -122,16 +105,16 @@ void _matmul_mkn(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * F
             // because we need a V object for data-parallel accumulation. Storing to c
             // directly stores to scalar objects and thus would drop the ability for
             // data-parallel (SIMD) addition.
-            V c_ij[UnrollOuterloop];
-            for (size_t n = 0; n < UnrollOuterloop; ++n) { // correct
+            V c_ij[unrollOuterloop];
+            for (size_t n = 0; n < unrollOuterloop; ++n) { // correct
                 c_ij[n] = a[(i + n)*K]*V(&b[j], isPadded);
             }
             for (size_t k = 1; k < K - 1; ++k) { // correct
-                for (size_t n = 0; n < UnrollOuterloop; ++n) {
+                for (size_t n = 0; n < unrollOuterloop; ++n) {
                     c_ij[n] += a[(i + n)*K+k] * V(&b[k*N+j], false);
                 }
             }
-            for (size_t n = 0; n < UnrollOuterloop; ++n) { // correct
+            for (size_t n = 0; n < unrollOuterloop; ++n) { // correct
                 c_ij[n] += a[(i + n)*K+(K - 1)] * V(&b[(K - 1)*N+j], false);
                 c_ij[n].store(&c[(i + n)*N+j], isPadded);
             }
@@ -139,53 +122,53 @@ void _matmul_mkn(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * F
 
         // Remainder N - i1 columns
         for (; j < N; ++j) {
-            T c_ij[UnrollOuterloop];
-            for (size_t n = 0; n < UnrollOuterloop; ++n) { // correct
+            T c_ij[unrollOuterloop];
+            for (size_t n = 0; n < unrollOuterloop; ++n) { // correct
                 c_ij[n] = a[(i + n)*K]*b[j];
             }
             for (size_t k = 1; k < K - 1; ++k) { // correct
-                for (size_t n = 0; n < UnrollOuterloop; ++n) {
+                for (size_t n = 0; n < unrollOuterloop; ++n) {
                     c_ij[n] += a[(i + n)*K+k] * b[k*N+j];
                 }
             }
-            for (size_t n = 0; n < UnrollOuterloop; ++n) { // correct
+            for (size_t n = 0; n < unrollOuterloop; ++n) { // correct
                 c_ij[n] += a[(i + n)*K+(K - 1)] * b[(K - 1)*N+j];
                 c[(i + n)*N+j] = c_ij[n];
             }
         }
     }
 
-    // This final loop treats the remaining M - i0 rows.
+    // This final loop treats the remaining M - M0 rows.
     size_t j = 0;
     for (; j < i1; j += V::Size) {
-        V c_ij[UnrollOuterloop];
-        for (size_t n = i0; n < M; ++n) { // correct
-            c_ij[n - i0] = a[n*K] * V(&b[j], isPadded);
+        V c_ij[M-M0];
+        for (size_t n = M0; n < M; ++n) { // correct
+            c_ij[n - M0] = a[n*K] * V(&b[j], isPadded);
         }
         for (size_t k = 1; k < K - 1; ++k) { // correct
-            for (size_t n = i0; n < M; ++n) { // correct
-                c_ij[n - i0] += a[n*K+k] * V(&b[k*N+j], false);
+            for (size_t n = M0; n < M; ++n) { // correct
+                c_ij[n - M0] += a[n*K+k] * V(&b[k*N+j], false);
             }
         }
-        for (size_t n = i0; n < M; ++n) { // correct
-            c_ij[n - i0] += a[n*K+(K - 1)] * V(&b[(K - 1)*N+j], false);
-            c_ij[n - i0].store(&c[n*N+j], isPadded);
+        for (size_t n = M0; n < M; ++n) { // correct
+            c_ij[n - M0] += a[n*K+(K - 1)] * V(&b[(K - 1)*N+j], false);
+            c_ij[n - M0].store(&c[n*N+j], isPadded);
         }
     }
 
     for (; j < N; ++j) {
-        T c_ij[UnrollOuterloop];
-        for (size_t n = i0; n < M; ++n) { // correct
-            c_ij[n - i0] = a[n*K] * b[j];
+        T c_ij[M-M0];
+        for (size_t n = M0; n < M; ++n) { // correct
+            c_ij[n - M0] = a[n*K] * b[j];
         }
         for (size_t k = 1; k < K - 1; ++k) { // correct
-            for (size_t n = i0; n < M; ++n) { // correct
-                c_ij[n - i0] += a[n*K+k] * b[k*N+j];
+            for (size_t n = M0; n < M; ++n) { // correct
+                c_ij[n - M0] += a[n*K+k] * b[k*N+j];
             }
         }
-        for (size_t n = i0; n < M; ++n) { // correct
-            c_ij[n - i0] += a[n*K+(K - 1)] * b[(K - 1)*N+j];
-            c[n*N+j] = c_ij[n - i0];
+        for (size_t n = M0; n < M; ++n) { // correct
+            c_ij[n - M0] += a[n*K+(K - 1)] * b[(K - 1)*N+j];
+            c[n*N+j] = c_ij[n - M0];
         }
     }
 
@@ -624,10 +607,10 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     for (size_t j=0; j<M; ++j) {
         size_t k=0;
         for (; k<ROUND_; k+=SIZE_) {
-            V out_row, vec_a;
+            V out_row;
             for (size_t i=0; i<K; ++i) {
-                V brow; brow.load(&b[i*N+k],false);
-                vec_a.set(a[j*K+i]);
+                V brow(&b[i*N+k],false);
+                V vec_a(a[j*K+i]);
 #ifndef __FMA__
                 out_row += vec_a*brow;
 #else

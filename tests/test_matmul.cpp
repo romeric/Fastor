@@ -124,6 +124,38 @@ void run() {
     }
 
     {
+        Tensor<T,8,3> a; a.iota(9);
+        Tensor<T,3,12> b; b.iota(-4);
+        SINGLE_TEST(a,b);
+        a(1,1) = -2;
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,12,3> a; a.iota(9);
+        Tensor<T,3,8> b; b.iota(-4);
+        SINGLE_TEST(a,b);
+        a(1,1) = -2;
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,12,3> a; a.iota(9);
+        Tensor<T,3,20> b; b.iota(-4);
+        SINGLE_TEST(a,b);
+        a(1,1) = -2;
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,20,3> a; a.iota(9);
+        Tensor<T,3,12> b; b.iota(-4);
+        SINGLE_TEST(a,b);
+        a(1,1) = -2;
+        SINGLE_TEST(a,b);
+    }
+
+    {
         Tensor<T,5,2> a; a.iota(9);
         Tensor<T,2,3> b; b.iota(-4);
         SINGLE_TEST(a,b);
