@@ -1,10 +1,7 @@
 #ifndef MATMUL_H
 #define MATMUL_H
 
-#include "Fastor/commons/commons.h"
-#include "Fastor/extended_intrinsics/extintrin.h"
-#include "Fastor/simd_vector/SIMDVector.h"
-#include "Fastor/meta/tensor_meta.h"
+#include "Fastor/backend/matmul_kernels.h"
 
 #ifdef FASTOR_USE_LIBXSMM
 #include "libxsmm_backend.h"
@@ -13,253 +10,88 @@
 namespace Fastor {
 
 
-// For square matrices with N == multiple of SIMD register width
+
+// Forward declare
+//-----------------------------------------------------------------------------------------------------------
+namespace internal {
+template<typename T, size_t M, size_t N>
+void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out);
+} // internal
+//-----------------------------------------------------------------------------------------------------------
+
+
+//-----------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------
 #ifndef FASTOR_USE_LIBXSMM
 template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<M==N && M==K && N % SIMDVector<T,DEFAULT_ABI>::Size ==0,bool>::type = 0>
+         typename std::enable_if<!(M!=K && M==N && (M==2 || M==3 || M==4)),bool>::type = 0>
 #else
 template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<M==N && M==K && N % SIMDVector<T,DEFAULT_ABI>::Size ==0
-         && is_less_equal<N,BLAS_SWITCH_MATRIX_SIZE_S>::value,bool>::type = 0>
+         typename std::enable_if<!(M!=K && M==N && (M==2 || M==3 || M==4))
+                                 && is_less_equal<M*N*K/BLAS_SWITCH_MATRIX_SIZE_NS/BLAS_SWITCH_MATRIX_SIZE_NS/BLAS_SWITCH_MATRIX_SIZE_NS,
+                                 1>::value ,bool>::type = 0>
 #endif
 FASTOR_INLINE
-void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+
+    // Matrix-vector specialisation
+    FASTOR_IF_CONSTEXPR (N==1) {
+        internal::_matvecmul<T,M,K>(a,b,out);
+        return;
+    }
 
     using V = SIMDVector<T,DEFAULT_ABI>;
-    // Get 10 parallel independent chains of accumulators for bigger matrices
-    constexpr size_t unrollOuterloop = M >= 64 ? 10UL : (M % 8 == 0 ? 8UL : V::Size);
+    // Use new faster matmul variants - this hueristics need to be changed
+    // if matmul implementation changes
+    FASTOR_IF_CONSTEXPR(M>=V::Size && K>=V::Size && N>1) {
+        // internal::_matmul_mkn<T,M,K,N>(a,b,out);
+        internal::_matmul_base<T,M,K,N>(a,b,out);
+        return;
+    }
 
-    // The row index (for a and c) is unrolled using the unrollOuterloop stride. Therefore
-    // the last rows may need special treatment if M is not a multiple of unrollOuterloop.
-    // M0 is the number of rows that can safely be iterated with a stride of
-    // unrollOuterloop.
-    constexpr size_t M0 = M / unrollOuterloop * unrollOuterloop;
-    for (size_t i = 0; i < M0; i += unrollOuterloop) {
-        // The iteration over the column index of b and c uses a stride of V::Size. This
-        // enables row-vector loads (from b) and stores (to c). The matrix storage is
-        // padded accordingly, ensuring correct bounds and alignment.
-        for (size_t j = 0; j < N; j += V::Size) {
-            // This temporary variables are used to accumulate the results of the products
-            // producing the new values for the c matrix. This variable is necessary
-            // because we need a V object for data-parallel accumulation. Storing to c
-            // directly stores to scalar objects and thus would drop the ability for
-            // data-parallel (SIMD) addition.
-            V c_ij[unrollOuterloop];
-            for (size_t n = 0; n < unrollOuterloop; ++n) {
-                c_ij[n] = a[(i + n)*K]*V(&b[j]);
+    constexpr int SIZE_ = V::Size;
+    constexpr int ROUND_ = ROUND_DOWN(N,SIZE_);
+
+    for (size_t j=0; j<M; ++j) {
+        size_t k=0;
+        for (; k<ROUND_; k+=SIZE_) {
+            V out_row;
+            for (size_t i=0; i<K; ++i) {
+                V brow(&b[i*N+k],false);
+                V vec_a(a[j*K+i]);
+#ifndef __FMA__
+                out_row += vec_a*brow;
+#else
+                out_row = fmadd(vec_a,brow,out_row);
+#endif
             }
-            for (size_t k = 1; k < K - 1; ++k) {
-                for (size_t n = 0; n < unrollOuterloop; ++n) {
-                    c_ij[n] += a[(i + n)*K+k] * V(&b[k*N+j]);
-                }
+            out_row.store(&out[k+N*j],false);
+        }
+        for (; k<N; k++) {
+            T out_row = 0.;
+            for (size_t i=0; i<K; ++i) {
+                out_row += a[j*K+i]*b[i*N+k];
             }
-            for (size_t n = 0; n < unrollOuterloop; ++n) {
-                c_ij[n] += a[(i + n)*K+(K - 1)] * V(&b[(K - 1)*N+j]);
-                c_ij[n].store(&c[(i + n)*N+j]);
-            }
+            out[N*j+k] = out_row;
         }
     }
 }
+
+
 #ifdef FASTOR_USE_LIBXSMM
 template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<M==N && M==K && N % SIMDVector<T,DEFAULT_ABI>::Size ==0
-         && is_greater<N,BLAS_SWITCH_MATRIX_SIZE_S>::value,bool>::type = 0>
+         typename std::enable_if<!(M!=K && M==N && (M==2 || M==3 || M==4))
+                                 && is_greater<M*N*K/BLAS_SWITCH_MATRIX_SIZE_NS/BLAS_SWITCH_MATRIX_SIZE_NS/BLAS_SWITCH_MATRIX_SIZE_NS,1>::value,
+                                 bool>::type = 0>
 FASTOR_INLINE
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
     blas::matmul_libxsmm<T,M,K,N>(a,b,c);
 }
 #endif
 //-----------------------------------------------------------------------------------------------------------
-
-
-// For general non-square matrices with arbitrary alignment/padding excluding outer product (K==1)
-//-----------------------------------------------------------------------------------------------------------
-template<typename T, size_t M, size_t K, size_t N>
-FASTOR_INLINE
-void _matmul_mkn(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
-
-    // This variant strictly cannot deal outer-product i.e. with K==1
-
-    using V = SIMDVector<T,DEFAULT_ABI>;
-    // Get 10 parallel independent chains of accumulators for bigger matrices
-    constexpr size_t unrollOuterloop = M < V::Size ? 1UL :
-        (( M >= 64 && K > 10 && N > V::Size ) ? 10UL : (M % 8 == 0 && N > V::Size ? 8UL : V::Size));
-    constexpr bool isPadded = N % V::Size == 0;
-
-    // The row index (for a and c) is unrolled using the unrollOuterloop stride. Therefore
-    // the last rows may need special treatment if M is not a multiple of unrollOuterloop.
-    // M0 is the number of rows that can safely be iterated with a stride of
-    // unrollOuterloop.
-    constexpr size_t M0 = M / unrollOuterloop * unrollOuterloop;
-    constexpr size_t i1 = N / V::Size * V::Size;
-
-    for (size_t i = 0; i < M0; i += unrollOuterloop) {
-        // The iteration over the column index of b and c uses a stride of V::size(). This
-        // enables row-vector loads (from b) and stores (to c). The matrix storage is
-        // padded accordingly, ensuring correct bounds and alignment.
-        size_t j = 0;
-        for (; j < i1; j += V::Size) {
-            // This temporary variables are used to accumulate the results of the products
-            // producing the new values for the c matrix. This variable is necessary
-            // because we need a V object for data-parallel accumulation. Storing to c
-            // directly stores to scalar objects and thus would drop the ability for
-            // data-parallel (SIMD) addition.
-            V c_ij[unrollOuterloop];
-            for (size_t n = 0; n < unrollOuterloop; ++n) { // correct
-                c_ij[n] = a[(i + n)*K]*V(&b[j], isPadded);
-            }
-            for (size_t k = 1; k < K - 1; ++k) { // correct
-                for (size_t n = 0; n < unrollOuterloop; ++n) {
-                    c_ij[n] += a[(i + n)*K+k] * V(&b[k*N+j], false);
-                }
-            }
-            for (size_t n = 0; n < unrollOuterloop; ++n) { // correct
-                c_ij[n] += a[(i + n)*K+(K - 1)] * V(&b[(K - 1)*N+j], false);
-                c_ij[n].store(&c[(i + n)*N+j], isPadded);
-            }
-        }
-
-        // Remainder N - i1 columns
-        for (; j < N; ++j) {
-            T c_ij[unrollOuterloop];
-            for (size_t n = 0; n < unrollOuterloop; ++n) { // correct
-                c_ij[n] = a[(i + n)*K]*b[j];
-            }
-            for (size_t k = 1; k < K - 1; ++k) { // correct
-                for (size_t n = 0; n < unrollOuterloop; ++n) {
-                    c_ij[n] += a[(i + n)*K+k] * b[k*N+j];
-                }
-            }
-            for (size_t n = 0; n < unrollOuterloop; ++n) { // correct
-                c_ij[n] += a[(i + n)*K+(K - 1)] * b[(K - 1)*N+j];
-                c[(i + n)*N+j] = c_ij[n];
-            }
-        }
-    }
-
-    // This final loop treats the remaining M - M0 rows.
-    size_t j = 0;
-    for (; j < i1; j += V::Size) {
-        V c_ij[M-M0];
-        for (size_t n = M0; n < M; ++n) { // correct
-            c_ij[n - M0] = a[n*K] * V(&b[j], isPadded);
-        }
-        for (size_t k = 1; k < K - 1; ++k) { // correct
-            for (size_t n = M0; n < M; ++n) { // correct
-                c_ij[n - M0] += a[n*K+k] * V(&b[k*N+j], false);
-            }
-        }
-        for (size_t n = M0; n < M; ++n) { // correct
-            c_ij[n - M0] += a[n*K+(K - 1)] * V(&b[(K - 1)*N+j], false);
-            c_ij[n - M0].store(&c[n*N+j], isPadded);
-        }
-    }
-
-    for (; j < N; ++j) {
-        T c_ij[M-M0];
-        for (size_t n = M0; n < M; ++n) { // correct
-            c_ij[n - M0] = a[n*K] * b[j];
-        }
-        for (size_t k = 1; k < K - 1; ++k) { // correct
-            for (size_t n = M0; n < M; ++n) { // correct
-                c_ij[n - M0] += a[n*K+k] * b[k*N+j];
-            }
-        }
-        for (size_t n = M0; n < M; ++n) { // correct
-            c_ij[n - M0] += a[n*K+(K - 1)] * b[(K - 1)*N+j];
-            c[n*N+j] = c_ij[n - M0];
-        }
-    }
-
-}
 //-----------------------------------------------------------------------------------------------------------
 
 
-
-
-// This is a generic version of matmul based on 2k2/3k3/4k4 variants. It builds on the same philosophy
-// and outerperforms the main version in almost all cases if K is large enough and M and N are small.
-// In fact for large Ks it is as performant as libxsmm and Eigen
-//-----------------------------------------------------------------------------------------------------------
-template<typename T, size_t M, size_t K, size_t N>
-void _matmul_mKn(const T * FASTOR_RESTRICT a_data, const T * FASTOR_RESTRICT b_data, T * FASTOR_RESTRICT out_data) {
-
-    using V = SIMDVector<T,DEFAULT_ABI>;
-    // constexpr size_t UNROLL_LENGTH = 4UL;
-    constexpr size_t UNROLL_LENGTH = 5UL;
-    constexpr size_t ROUND_M = (M / UNROLL_LENGTH) * UNROLL_LENGTH;
-    constexpr size_t ROUND_N = (N / V::Size) * V::Size;
-    std::array<V, M > ymm_a;
-    std::array<std::array<V, M >, N / V::Size > ymm_o;
-    std::array<std::array<T, M >, N % V::Size > t_o = {};
-    for (size_t i=0; i<K; ++i) {
-        size_t k=0;
-        size_t counter = 0;
-        for (; k<ROUND_N; k+=V::Size) {
-            const V ymm0 = V(&b_data[i*N+k],false);
-            size_t j=0;
-            for (; j<ROUND_M; j+=UNROLL_LENGTH) {
-                ymm_a[j+0] = V(a_data[j*K+i]);
-                ymm_a[j+1] = V(a_data[(j+1)*K+i]);
-                ymm_a[j+2] = V(a_data[(j+2)*K+i]);
-                ymm_a[j+3] = V(a_data[(j+3)*K+i]);
-                ymm_a[j+4] = V(a_data[(j+4)*K+i]);
-
-                ymm_o[counter][j+0] = fmadd(ymm0,ymm_a[j+0],ymm_o[counter][j+0]);
-                ymm_o[counter][j+1] = fmadd(ymm0,ymm_a[j+1],ymm_o[counter][j+1]);
-                ymm_o[counter][j+2] = fmadd(ymm0,ymm_a[j+2],ymm_o[counter][j+2]);
-                ymm_o[counter][j+3] = fmadd(ymm0,ymm_a[j+3],ymm_o[counter][j+3]);
-                ymm_o[counter][j+4] = fmadd(ymm0,ymm_a[j+4],ymm_o[counter][j+4]);
-            }
-
-            for (; j<M; ++j) {
-                const V ymm1 = V(a_data[j*K+i]);
-                ymm_o[counter][j] = fmadd(ymm0,ymm1,ymm_o[counter][j]);
-            }
-            counter++;
-        }
-
-        counter = 0;
-        for (; k<N; ++k) {
-            const T t0 = b_data[i*N+k];
-            size_t j=0;
-            for (; j<ROUND_M; j+=UNROLL_LENGTH) {
-                const T t1 = a_data[j*K+i];
-                const T t2 = a_data[(j+1)*K+i];
-                const T t3 = a_data[(j+2)*K+i];
-                const T t4 = a_data[(j+3)*K+i];
-                const T t5 = a_data[(j+4)*K+i];
-
-                t_o[counter][j+0] += t0*t1;
-                t_o[counter][j+1] += t0*t2;
-                t_o[counter][j+2] += t0*t3;
-                t_o[counter][j+3] += t0*t4;
-                t_o[counter][j+4] += t0*t5;
-            }
-            for (; j<M; ++j) {
-                const T t1 = a_data[j*K+i];
-                t_o[counter][j] += t0*t1;
-            }
-            counter++;
-        }
-    }
-
-
-    for (size_t k=0; k< N / V::Size; ++k) {
-        for (size_t j=0; j<M; ++j) {
-            ymm_o[k][j].store(&out_data[j*N+k*V::Size],false);
-        }
-    }
-
-    for (size_t k=0; k< N % V::Size; ++k) {
-        for (size_t j=0; j<M; ++j) {
-            out_data[j*N+ROUND_N+k] = t_o[k][j];
-        }
-    }
-}
-
-//-----------------------------------------------------------------------------------------------------------
 
 
 
@@ -331,7 +163,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<M!=K && M==N && M==2,bool>::type = 0>
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
-    _matmul_mKn<T,M,K,N>(a,b,out);
+    internal::_matmul_base<T,M,K,N>(a,b,out);
 }
 #endif
 
@@ -384,7 +216,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<M!=K && M==N && M==3 && std::is_same<T,double>::value,bool>::type = 0>
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
-    _matmul_mKn<T,M,K,N>(a,b,out);
+    internal::_matmul_base<T,M,K,N>(a,b,out);
 }
 #endif
 
@@ -434,7 +266,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<(M!=K && M==N && M==3 && std::is_same<T,float>::value),bool>::type = 0>
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
-    _matmul_mKn<T,M,K,N>(a,b,out);
+    internal::_matmul_base<T,M,K,N>(a,b,out);
 }
 #endif
 
@@ -491,7 +323,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<M!=K && M==N && M==4 && std::is_same<T,double>::value,bool>::type = 0>
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
-    _matmul_mKn<T,M,K,N>(a,b,out);
+    internal::_matmul_base<T,M,K,N>(a,b,out);
 }
 #endif
 
@@ -549,97 +381,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<M!=K && M==N && M==4 && std::is_same<T,float>::value,bool>::type = 0>
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
-    _matmul_mKn<T,M,K,N>(a,b,out);
-}
-#endif
-
-
-
-// Forward declare
-template<typename T, size_t M, size_t N>
-void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out);
-//
-
-
-
-// Non-sqaure matrices
-#ifndef FASTOR_USE_LIBXSMM
-template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<(M==K && K!=N) || (M!=K && K==N) || (M!=K && K!=N && M!=N)
-                                 || (M!=K && M==N && M!=2 && M!=3 && M!=4)
-                                 || ((M==N && M==K) && N % SIMDVector<T,DEFAULT_ABI>::Size !=0),bool>::type = 0>
-#else
-template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<((M==K && K!=N) || (M!=K && K==N) || (M!=K && K!=N && M!=N)
-                                 || (M!=K && M==N && M!=2 && M!=3 && M!=4)
-                                 || ((M==N && M==K) && N % SIMDVector<T,DEFAULT_ABI>::Size !=0))
-                                 && is_less_equal<M*N*K/BLAS_SWITCH_MATRIX_SIZE_NS/BLAS_SWITCH_MATRIX_SIZE_NS/BLAS_SWITCH_MATRIX_SIZE_NS,
-                                 1>::value ,bool>::type = 0>
-#endif
-FASTOR_INLINE
-void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
-
-    // Matrix-vector specialisation
-    FASTOR_IF_CONSTEXPR (N==1) {
-        _matvecmul<T,M,K>(a,b,out);
-        return;
-    }
-
-    using V = SIMDVector<T,DEFAULT_ABI>;
-    // Use new faster matmul variants - this hueristics need to be changed
-    // if matmul implementation changes
-    FASTOR_IF_CONSTEXPR(M>=V::Size && K>=V::Size && N>1) {
-        _matmul_mkn<T,M,K,N>(a,b,out);
-        return;
-    }
-
-    // constexpr bool should_be_dispatched = (K > 32 ||
-    //     (N==4 && std::is_same<T,double>::value)   ||
-    //     (N==8 && std::is_same<T,float>::value)      ) ? true : false;
-    // FASTOR_IF_CONSTEXPR(should_be_dispatched) {
-    //     _matmul_mKn<T,M,K,N>(a,b,out);
-    //     return;
-    // }
-
-    constexpr int SIZE_ = V::Size;
-    constexpr int ROUND_ = ROUND_DOWN(N,SIZE_);
-
-    for (size_t j=0; j<M; ++j) {
-        size_t k=0;
-        for (; k<ROUND_; k+=SIZE_) {
-            V out_row;
-            for (size_t i=0; i<K; ++i) {
-                V brow(&b[i*N+k],false);
-                V vec_a(a[j*K+i]);
-#ifndef __FMA__
-                out_row += vec_a*brow;
-#else
-                out_row = fmadd(vec_a,brow,out_row);
-#endif
-            }
-            out_row.store(&out[k+N*j],false);
-        }
-        for (; k<N; k++) {
-            T out_row = 0.;
-            for (size_t i=0; i<K; ++i) {
-                out_row += a[j*K+i]*b[i*N+k];
-            }
-            out[N*j+k] = out_row;
-        }
-    }
-}
-
-
-#ifdef FASTOR_USE_LIBXSMM
-template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<((M==K && K!=N) || (M!=K && K==N) || (M!=K && K!=N && M!=N)
-                                 || (M!=K && M==N && M!=2 && M!=3 && M!=4)
-                                 || ((M==N && M==K) && N % SIMDVector<T,DEFAULT_ABI>::Size !=0))
-                                 && is_greater<M*N*K/BLAS_SWITCH_MATRIX_SIZE_NS/BLAS_SWITCH_MATRIX_SIZE_NS/BLAS_SWITCH_MATRIX_SIZE_NS,1>::value,
-                                 bool>::type = 0>
-FASTOR_INLINE
-void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
-    blas::matmul_libxsmm<T,M,K,N>(a,b,c);
+    internal::_matmul_base<T,M,K,N>(a,b,out);
 }
 #endif
 
@@ -878,11 +620,14 @@ void _matmul<double,3,3,3>(const double * FASTOR_RESTRICT a, const double * FAST
 
 
 
-//!----------------------------------------------------------------------
-//! Matrix-vector multiplication
 
+
+//! Matrix-vector multiplication
+//-----------------------------------------------------------------------------------------------------------
 // Don't call this function directly as it's name is unconventional
 // It gets called from within matmul anyway so always call matmul
+namespace internal {
+
 template<typename T, size_t M, size_t N>
 FASTOR_INLINE
 void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
@@ -909,18 +654,15 @@ void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FA
 
     // Unroll the outer loop to get two independent parallel chains
     // of accumulators
-    V _vec_a0, _vec_a1, _vec_b;
     int i=0;
     for (; i<ROUND_DOWN(M,2); i+=2) {
-        V _vec_out0;
-        V _vec_out1;
+        V _vec_out0, _vec_out1;
         int j = 0;
         for (; j< ROUND; j+=V::Size) {
-            _vec_a0.load(&a[i*N+j]);
-            _vec_a1.load(&a[(i+1)*N+j]);
-            _vec_b.load(&b[j]);
-            // _vec_out0 += _vec_a0*_vec_b;
-            // _vec_out1 += _vec_a1*_vec_b;
+            V _vec_a0(&a[i*N+j]);
+            V _vec_a1(&a[(i+1)*N+j]);
+            V _vec_b(&b[j]);
+
             _vec_out0 = fmadd(_vec_a0,_vec_b,_vec_out0);
             _vec_out1 = fmadd(_vec_a1,_vec_b,_vec_out1);
         }
@@ -938,9 +680,9 @@ void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FA
         V _vec_out0;
         int j = 0;
         for (; j< ROUND; j+=V::Size) {
-            _vec_a0.load(&a[i*N+j]);
-            _vec_b.load(&b[j]);
-            // _vec_out0 += _vec_a0*_vec_b;
+            V _vec_a0(&a[i*N+j]);
+            V _vec_b(&b[j]);
+
             _vec_out0 = fmadd(_vec_a0,_vec_b,_vec_out0);
         }
         T out_s0 = 0;
@@ -949,6 +691,8 @@ void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FA
         }
         out[i]= _vec_out0.sum() + out_s0;
     }
+}
+
 }
 
 

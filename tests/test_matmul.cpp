@@ -27,7 +27,7 @@ void SINGLE_TEST(const Tensor<T,M,K> &a, const Tensor<T,K,N> &b) {
     auto c1 = matmul_ref(a,b);
     Tensor<T,M,N> c2 = matmul(a,b);
     Tensor<T,M,N> c3;
-    _matmul_mKn<T,M,K,N>(a.data(),b.data(),c3.data());
+    internal::_matmul_base<T,M,K,N>(a.data(),b.data(),c3.data());
 
     // print(c1,"\n",c2);
     // print(std::abs(sum(c1-c2)));
@@ -43,7 +43,7 @@ void SINGLE_TEST(const Tensor<T,K> &a, const Tensor<T,K,N> &b) {
     Tensor<T,N> c1 = matmul_ref<T,1,K,N>(a,b);
     auto c2 = matmul(a,b);
     Tensor<T,N> c3;
-    _matmul_mKn<T,1,K,N>(a.data(),b.data(),c3.data());
+    internal::_matmul_base<T,1,K,N>(a.data(),b.data(),c3.data());
 
     FASTOR_EXIT_ASSERT(std::abs(sum(c1-c2)) < Tol);
     FASTOR_EXIT_ASSERT(std::abs(sum(c1-c3)) < Tol);
@@ -56,7 +56,7 @@ void SINGLE_TEST(const Tensor<T,M,K> &a, const Tensor<T,K> &b) {
     auto c1 = matmul_ref<T,M,K,1>(a,b);
     auto c2 = matmul(a,b);
     Tensor<T,M,1> c3;
-    _matmul_mKn<T,M,K,1>(a.data(),b.data(),c3.data());
+    internal::_matmul_base<T,M,K,1>(a.data(),b.data(),c3.data());
 
     FASTOR_EXIT_ASSERT(std::abs(sum(c1-c2)) < Tol);
     FASTOR_EXIT_ASSERT(std::abs(sum(c1-c3)) < Tol);

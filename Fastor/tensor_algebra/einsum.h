@@ -152,14 +152,8 @@ einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
     // Recursive contraction is quite fast in comparison to certain variants of
     // matmul at the moment so decide wether to dispatch to matmul or not
     constexpr size_t VSize = SIMDVector<T,DEFAULT_ABI>::Size;
-    // For square matrices - do not call square matrices kernel as it assumes perfect alignment
-    // FASTOR_IF_CONSTEXPR(M==N==K_product && M % VSize == 0 && M>=8) {
-    //     _matmul<T,M,K_product,N>(a.data(),b.data(),out.data());
-    //     return out;
-    // }
-    // For non-square matrices - this has the same performance as above but with unaligned load/stores
     FASTOR_IF_CONSTEXPR(K_product >= VSize && M>=8 && N>1) {
-        _matmul_mkn<T,M,K_product,N>(a.data(),b.data(),out.data());
+        internal::_matmul_base<T,M,K_product,N>(a.data(),b.data(),out.data());
         return out;
     }
     else {
