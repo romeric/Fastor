@@ -8,7 +8,7 @@
 namespace Fastor {
 
 
-#ifndef __AVX__
+#ifndef FASTOR_AVX_IMPL
 template<typename T, size_t M, size_t N, typename std::enable_if<M==2 && N==2, bool>::type=0>
 #else
 template<typename T, size_t M, size_t N, typename std::enable_if<!std::is_same<T,double>::value &&
@@ -19,7 +19,7 @@ FASTOR_INLINE T _det(const T* FASTOR_RESTRICT a) {
 }
 
 
-#ifndef __AVX__
+#ifndef FASTOR_AVX_IMPL
 template<typename T, size_t M, size_t N, typename std::enable_if<M==3 && N==3, bool>::type=0>
 #else
 template<typename T, size_t M, size_t N, typename std::enable_if<!std::is_same<T,double>::value &&
@@ -52,7 +52,7 @@ FASTOR_INLINE T _det(const T* FASTOR_RESTRICT a) {
 }
 
 
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 template<typename T, size_t M, size_t N, typename std::enable_if<!std::is_same<T,double>::value &&
     std::is_same<T,float>::value && M==2 && N==2, bool>::type=0>
 FASTOR_INLINE T _det(const T* FASTOR_RESTRICT a) {

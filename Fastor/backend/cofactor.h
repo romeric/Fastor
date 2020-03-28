@@ -33,7 +33,7 @@ FASTOR_HINT_INLINE void _cofactor(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRI
     }
 }
 
-#ifdef __SSE4_2__
+#ifdef FASTOR_SSE4_2_IMPL
 template<>
 FASTOR_HINT_INLINE void _cofactor<float,2,2>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
     // 4 OPS

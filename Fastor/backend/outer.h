@@ -19,7 +19,7 @@ FASTOR_HINT_INLINE void _outer(const T * FASTOR_RESTRICT a, const T * FASTOR_RES
     }
 }
 
-#ifdef __SSE4_2__
+#ifdef FASTOR_SSE4_2_IMPL
 
 // The followings are Voigt overloads
 
@@ -194,7 +194,7 @@ FASTOR_HINT_INLINE void _outer<float,3,3,3,3>(const float * FASTOR_RESTRICT a, c
 
 }
 #endif
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 template<>
 FASTOR_HINT_INLINE void _outer<double,2,2,2,2>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
     // Fetch a to L1-cache

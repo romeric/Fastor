@@ -85,7 +85,7 @@ FASTOR_INLINE T inner(const Tensor<T,Rest...> &a, const Tensor<T,Rest...> &b) {
     }
 }
 
-#ifdef __SSE4_2__
+#ifdef FASTOR_SSE4_2_IMPL
 // Specialisation for inner product of small vectors.
 // This is similar to _doublecontract, but _doublecontract
 // is specialised for 2nd order tensors
@@ -120,7 +120,7 @@ FASTOR_INLINE double inner<double,2>(const Tensor<double,2> &a, const Tensor<dou
     return _mm_sum_pd(_mm_mul_pd(_mm_load_pd(a.data()),_mm_load_pd(b.data())));
 }
 #endif
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 template<>
 FASTOR_INLINE double inner<double,3>(const Tensor<double,3> &a, const Tensor<double,3> &b) {
     // IVY 13 OPS - HW - 15 OPS

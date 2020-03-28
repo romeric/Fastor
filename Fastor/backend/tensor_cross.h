@@ -11,7 +11,7 @@ inline void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b
     assert(false && "CROSS PRODUCT IS ONLY A 3D OPERATOR");
 }
 
-#ifdef __SSE4_2__
+#ifdef FASTOR_SSE4_2_IMPL
 
 template<>
 FASTOR_INLINE void _crossproduct<double,2,2,2>(const double *FASTOR_RESTRICT a, const double *FASTOR_RESTRICT b, double *FASTOR_RESTRICT c) {
@@ -28,7 +28,7 @@ FASTOR_INLINE void _crossproduct<double,2,2,2>(const double *FASTOR_RESTRICT a, 
     __m128d b_11 = _mm_load_sd(b+4);
 
     // compute element by element
-#ifdef USE_HADD
+#ifdef FASTOR_USE_HADD
     // c_22
     __m128d tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_11,0x0),_mm_shuffle_pd(b_11,b_00,0x0));
     tmp0 = _mm_hadd_pd(tmp0,tmp0);
@@ -44,7 +44,7 @@ FASTOR_INLINE void _crossproduct<double,2,2,2>(const double *FASTOR_RESTRICT a, 
 
     _mm_store_sd(c+8,c_22);
     // Zero out the rest
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
     _mm256_store_pd(c,VZEROPD);
     _mm256_store_pd(c+4,VZEROPD);
 #else
@@ -79,7 +79,7 @@ FASTOR_INLINE void _crossproduct<double,3,3,3>(const double *FASTOR_RESTRICT a, 
     __m128d b_21 = _mm_load_sd(b+7);
     __m128d b_22 = _mm_load_sd(b+8);
 
-#ifdef USE_HADD
+#ifdef FASTOR_USE_HADD
     // Using hadd
     // compute element by element
     // c_00
@@ -207,7 +207,7 @@ FASTOR_INLINE void _crossproduct<float,2,2,2>(const float *FASTOR_RESTRICT a, co
 
     _mm_store_ss(c+8,c_22);
     // Zero the rest
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
     _mm256_store_ps(c,VZEROPS);
 #else
     _mm_store_ps(c,ZEROPS);
@@ -317,7 +317,7 @@ FASTOR_INLINE void _crossproduct<double,FASTOR_PlaneStrain>(const double *FASTOR
 //    __m128d c_22 = _mm_sub_pd(_add_pd(tmp0),_add_pd(tmp1));
 
     // zero first
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
     _mm256_store_pd(c,VZEROPD);
 #else
     _mm_store_pd(c,ZEROPD);
@@ -378,7 +378,7 @@ FASTOR_INLINE void _crossproduct<float,FASTOR_PlaneStrain>(const float *FASTOR_R
                                         _mm_shuffle_ps(b1,b0,_MM_SHUFFLE(0,1,1,0))));
 
     // zero first
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
     _mm256_store_ps(c,VZEROPS);
 #else
     _mm_store_ps(c,ZEROPS);

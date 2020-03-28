@@ -50,21 +50,16 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
         return;
     }
 
-    constexpr int SIZE_ = V::Size;
-    constexpr int ROUND_ = ROUND_DOWN(N,SIZE_);
+    constexpr int ROUND_ = ROUND_DOWN(N,V::Size);
 
     for (size_t j=0; j<M; ++j) {
         size_t k=0;
-        for (; k<ROUND_; k+=SIZE_) {
+        for (; k<ROUND_; k+=V::Size) {
             V out_row;
             for (size_t i=0; i<K; ++i) {
-                V brow(&b[i*N+k],false);
-                V vec_a(a[j*K+i]);
-#ifndef __FMA__
-                out_row += vec_a*brow;
-#else
+                const V brow(&b[i*N+k],false);
+                const V vec_a(a[j*K+i]);
                 out_row = fmadd(vec_a,brow,out_row);
-#endif
             }
             out_row.store(&out[k+N*j],false);
         }
@@ -97,7 +92,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
 
 
-#ifdef __SSE4_2__
+#ifdef FASTOR_SSE4_2_IMPL
 
 // (2xk) x (kx2) matrices
 template<typename T, size_t M, size_t K, size_t N,
@@ -169,7 +164,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 }
 #endif
 
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 
 // (3xk) x (kx3) matrices
 template<typename T, size_t M, size_t K, size_t N,
@@ -222,7 +217,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 }
 #endif
 
-#ifdef __SSE4_2__
+#ifdef FASTOR_SSE4_2_IMPL
 
 // (3xk) x (kx3) matrices
 template<typename T, size_t M, size_t K, size_t N,
@@ -272,7 +267,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 }
 #endif
 
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 
 // (4xk) x (kx4) matrices
 template<typename T, size_t M, size_t K, size_t N,
@@ -330,7 +325,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 #endif
 
 
-#ifdef __SSE4_2__
+#ifdef FASTOR_SSE4_2_IMPL
 
 // (4xk) x (kx4) matrices
 template<typename T, size_t M, size_t K, size_t N,
@@ -389,7 +384,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
 
 
-#ifdef __SSE4_2__
+#ifdef FASTOR_SSE4_2_IMPL
 
 template<>
 FASTOR_INLINE
@@ -546,7 +541,7 @@ FASTOR_INLINE void _matmul<float,4,4,4>(const float * FASTOR_RESTRICT b, const f
 #endif
 
 
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 template<>
 FASTOR_INLINE
 void _matmul<double,2,2,2>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
@@ -698,7 +693,7 @@ void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FA
 }
 
 
-#ifdef __SSE4_2__
+#ifdef FASTOR_SSE4_2_IMPL
 template<>
 FASTOR_INLINE
 void _matmul<float,2,2,1>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
@@ -736,7 +731,7 @@ FASTOR_INLINE void _matmul<float,3,3,1>(const float * FASTOR_RESTRICT a, const f
     _mm_store_ss(out+2,c2);
 }
 #endif
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 template<>
 FASTOR_INLINE void _matmul<double,2,2,1>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
     // IVY 15 OPS - HW 19 OPS

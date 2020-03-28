@@ -7,7 +7,7 @@
 namespace Fastor {
 
 // BLAS/LAPACK/Tensor cross routines
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 template<typename T, size_t I, size_t J,
     // typename std::enable_if<I!=J || is_less_equal<J,8>::value,bool>::type=0>
     typename std::enable_if<I!=J || (I==J && J % SIMDVector<T,DEFAULT_ABI>::Size!= 0)
@@ -21,7 +21,7 @@ FASTOR_INLINE Tensor<T,J,I> transpose(const Tensor<T,I,J> &a) {
     return out;
 }
 
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 template<typename T, size_t M, size_t N,
     typename std::enable_if<M==N && M % SIMDVector<T,DEFAULT_ABI>::Size == 0
     && is_greater<M,9>::value,bool>::type=0>

@@ -180,7 +180,7 @@ public:
             constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
-                src.template eval<T>(i).store(&_data[i], IS_ALIGNED);
+                src.template eval<T>(i).store(&_data[i], FASTOR_ALIGNED);
             }
             for (; i < src.size(); ++i) {
                 _data[i] = src.template eval_s<T>(i);
@@ -209,7 +209,7 @@ public:
             constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
-                src.template eval<T>(i).store(&_data[i], IS_ALIGNED);
+                src.template eval<T>(i).store(&_data[i], FASTOR_ALIGNED);
             }
             for (; i < src.size(); ++i) {
                 _data[i] = src.template eval_s<T>(i);

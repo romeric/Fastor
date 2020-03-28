@@ -89,7 +89,7 @@ void _dyadic(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
 
 
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 
 // Outer product (2x2) x (2x2)
 template<>

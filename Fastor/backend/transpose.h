@@ -14,7 +14,7 @@ FASTOR_INLINE void _transpose(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT o
             out[j*M+i] = a[i*N+j];
 }
 
-#ifdef __SSE4_2__
+#ifdef FASTOR_SSE4_2_IMPL
 template<>
 FASTOR_INLINE void _transpose<float,2,2>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
     __m128 a_reg = _mm_load_ps(a);
@@ -53,7 +53,7 @@ FASTOR_INLINE void _transpose<float,4,4>(const float * FASTOR_RESTRICT a, float 
 }
 #endif
 
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 template<>
 FASTOR_INLINE void _transpose<float,8,8>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
     __m256 row1 = _mm256_load_ps(a);
@@ -90,7 +90,7 @@ FASTOR_INLINE void _transpose<double,2,2>(const double* FASTOR_RESTRICT a, doubl
 }
 #endif
 
-#ifdef __SSE4_2__
+#ifdef FASTOR_SSE4_2_IMPL
 template<>
 FASTOR_INLINE void _transpose<double,3,3>(const double* FASTOR_RESTRICT a, double* FASTOR_RESTRICT out) {
     /*-------------------------------------------------------*/
@@ -133,7 +133,7 @@ FASTOR_INLINE void _transpose<double,3,3>(const double* FASTOR_RESTRICT a, doubl
 }
 #endif
 
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 template<>
 FASTOR_INLINE void _transpose<double,4,4>(const double * FASTOR_RESTRICT a, double * FASTOR_RESTRICT out) {
     __m256d row1 = _mm256_load_pd(a);

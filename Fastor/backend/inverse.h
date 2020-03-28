@@ -34,7 +34,7 @@ FASTOR_INLINE void _inverse<float,2>(const float *FASTOR_RESTRICT src, float *FA
     dst[1] *= det;
     dst[2] *= det;
     dst[3] *= det;
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
     // This might hurt the performance as the data is already loaded
 //    _mm256_store_pd(dst,_mm256_mul_pd(_mm256_load_pd(dst),_mm256_set1_pd(det)));
 #endif
@@ -109,7 +109,7 @@ FASTOR_INLINE void _inverse<double,2>(const double *FASTOR_RESTRICT src, double 
     dst[1] *= det;
     dst[2] *= det;
     dst[3] *= det;
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
     // This might hurt the performance as the data is already loaded
 //    _mm256_store_pd(dst,_mm256_mul_pd(_mm256_load_pd(dst),_mm256_set1_pd(det)));
 #endif
@@ -158,7 +158,7 @@ FASTOR_INLINE void _inverse<double,3>(const double *FASTOR_RESTRICT src, double 
     dst[7] *= det;
     dst[8] *= det;
 
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
     // This might hurt the performance as the data is already loaded
 //    __m256d v0 = _mm256_set1_pd(det);
 //    _mm256_store_pd(dst,_mm256_mul_pd(_mm256_load_pd(dst),v0));
@@ -168,7 +168,7 @@ FASTOR_INLINE void _inverse<double,3>(const double *FASTOR_RESTRICT src, double 
 
 }
 
-#ifdef __SSE4_2__
+#ifdef FASTOR_SSE4_2_IMPL
 
 FASTOR_INLINE __m128 _mm_dot_ps(__m128 v1, __m128 v2)
 {

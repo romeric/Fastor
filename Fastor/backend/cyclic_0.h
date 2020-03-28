@@ -22,7 +22,7 @@ FASTOR_HINT_INLINE void _cyclic(const T * FASTOR_RESTRICT a, const T * FASTOR_RE
     }
 }
 
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 template<>
 FASTOR_HINT_INLINE void _cyclic<double,2,2,2,2>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
     __m256d as = _mm256_load_pd(a);

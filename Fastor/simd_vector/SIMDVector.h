@@ -182,26 +182,26 @@ FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> tanh(const SIMDVector<T,DEFAULT_ABI> &a)
 // Broadcasting vectorisation on general strides [gather operations]
 //----------------------------------------------------------------------------------------------------------------
 // 4 word scalar
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==4 && ABI==32,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==4 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==32,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int ) {
     vec.set(data[idx]);
 }
 // 4 word in an 8 - for compatibility
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==4 && ABI==64,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==4 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==64,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
     vec.set(data[idx+general_stride],data[idx]);
 }
 // 4 word SSE
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==4 && ABI==128,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==4 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==128,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
     vec.set(data[idx+3*general_stride],data[idx+2*general_stride],data[idx+general_stride],data[idx]);
 }
 // 4 word AVX
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==4 && ABI==256,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==4 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==256,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
     vec.set(data[idx+7*general_stride],data[idx+6*general_stride],
             data[idx+5*general_stride],data[idx+4*general_stride],
@@ -209,8 +209,8 @@ FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx,
             data[idx+general_stride],data[idx]);
 }
 // 4 word AVX 512
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==4 && ABI==512,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==4 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==512,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
     vec.set(data[idx+15*general_stride],data[idx+14*general_stride],
             data[idx+13*general_stride],data[idx+12*general_stride],
@@ -223,27 +223,27 @@ FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx,
 }
 
 // 8 word scalar
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==8 && ABI==64,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==8 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==64,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int ) {
     vec.set(data[idx]);
 }
 // 8 word SSE
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==8 && ABI==128,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==8 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==128,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
     vec.set(data[idx+general_stride],data[idx]);
 }
 // 8 word AVX
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==8 && ABI==256,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==8 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==256,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
     vec.set(data[idx+3*general_stride],data[idx+2*general_stride],
             data[idx+general_stride],data[idx]);
 }
 // 8 word AVX 512
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==8 && ABI==512,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==8 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==512,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
     vec.set(data[idx+7*general_stride],data[idx+6*general_stride],
             data[idx+5*general_stride],data[idx+4*general_stride],
@@ -253,25 +253,25 @@ FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx,
 
 // // 16 word scalar
 // template<typename T, int ABI,
-//          typename std::enable_if<sizeof(T)==16 && ABI==64,bool>::type=0>
+//          typename std::enable_if<sizeof(T)==16 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==64,bool>::type=0>
 // FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
 //     vec.set(data[idx]);
 // }
 // 16 word scalar/SSE
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==16 && ABI==128,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==16 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==128,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
     vec.set(data[idx]);
 }
 // 16 word AVX
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==16 && ABI==256,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==16 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==256,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
     vec.set(data[idx+general_stride],data[idx]);
 }
 // 16 word AVX 512
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==16 && ABI==512,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==16 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==512,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
     vec.set(data[idx+3*general_stride],data[idx+2*general_stride],
             data[idx+general_stride],data[idx]);
@@ -282,33 +282,33 @@ FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx,
 // [Gather operations], when strides are not constant (i.e totally random)
 //----------------------------------------------------------------------------------------------------------------
 // 4 word scalar
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==4 && ABI==32,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==4 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==32,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,1> &a) {
     vec.set(data[a[0]]);
 }
 // 4 word in an 8 - for compatibility
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==4 && ABI==64,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==4 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==64,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,2> &a) {
     vec.set(data[a[1]],data[a[0]]);
 }
 // 4 word SSE
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==4 && ABI==128,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==4 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==128,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,4> a) {
     vec.set(data[a[3]],data[a[2]],data[a[1]],data[a[0]]);
 }
 // 4 word AVX
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==4 && ABI==256,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==4 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==256,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,8> a) {
     vec.set(data[a[7]],data[a[6]],data[a[5]],data[a[4]],
             data[a[3]],data[a[2]],data[a[1]],data[a[0]]);
 }
 // 4 word AVX 512
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==4 && ABI==512,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==4 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==512,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,16> a) {
     vec.set(data[a[15]],data[a[14]],data[a[13]],data[a[12]],
             data[a[11]],data[a[10]],data[a[9]],data[a[8]],
@@ -317,46 +317,46 @@ FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const st
 }
 
 // 8 word scalar
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==8 && ABI==64,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==8 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==64,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,1> &a) {
     vec.set(data[a[0]]);
 }
 // 8 word SSE
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==8 && ABI==128,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==8 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==128,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,2> a) {
     vec.set(data[a[1]],data[a[0]]);
 }
 // 8 word AVX
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==8 && ABI==256,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==8 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==256,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,4> a) {
     vec.set(data[a[3]],data[a[2]],data[a[1]],data[a[0]]);
 }
 // 8 word AVX 512
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==8 && ABI==512,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==8 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==512,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,8> a) {
     vec.set(data[a[7]],data[a[6]],data[a[5]],data[a[4]],
             data[a[3]],data[a[2]],data[a[1]],data[a[0]]);
 }
 
 // 16 word scalar/SSE
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==16 && ABI==128,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==16 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==128,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,1> &a) {
     vec.set(data[a[0]]);
 }
 // 16 word AVX
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==16 && ABI==256,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==16 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==256,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,2> a) {
     vec.set(data[a[1]],data[a[0]]);
 }
 // 16 word AVX 512
-template<typename T, int ABI,
-         typename std::enable_if<sizeof(T)==16 && ABI==512,bool>::type=0>
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==16 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==512,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,4> a) {
     vec.set(data[a[3]],data[a[2]],data[a[1]],data[a[0]]);
 }
@@ -369,21 +369,21 @@ FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const st
 // Scatter operations
 //----------------------------------------------------------------------------------------------------------------
 // 4 word scalar
-template<typename T, int ABI, typename Int,
-         typename std::enable_if<sizeof(T)==4 && ABI==32,bool>::type=0>
+template<typename T, typename ABI, typename Int,
+         typename std::enable_if<sizeof(T)==4 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==32,bool>::type=0>
 FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int ) {
     data[idx] = vec.value;
 }
 // 4 word in an 8 - for compatibility
-template<typename T, int ABI, typename Int,
-         typename std::enable_if<sizeof(T)==4 && ABI==64,bool>::type=0>
+template<typename T, typename ABI, typename Int,
+         typename std::enable_if<sizeof(T)==4 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==64,bool>::type=0>
 FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride=1) {
     data[idx] = vec[0];
     data[idx+general_stride] = vec[1];
 }
 // 4 word SSE
-template<typename T, int ABI, typename Int,
-         typename std::enable_if<sizeof(T)==4 && ABI==128,bool>::type=0>
+template<typename T, typename ABI, typename Int,
+         typename std::enable_if<sizeof(T)==4 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==128,bool>::type=0>
 FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride=1) {
     data[idx] = vec[0];
     data[idx+general_stride] = vec[1];
@@ -391,8 +391,8 @@ FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> 
     data[idx+3*general_stride] = vec[3];
 }
 // 4 word AVX
-template<typename T, int ABI, typename Int,
-         typename std::enable_if<sizeof(T)==4 && ABI==256,bool>::type=0>
+template<typename T, typename ABI, typename Int,
+         typename std::enable_if<sizeof(T)==4 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==256,bool>::type=0>
 FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride=1) {
     data[idx] = vec[0];
     data[idx+general_stride] = vec[1];
@@ -404,8 +404,8 @@ FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> 
     data[idx+7*general_stride] = vec[7];
 }
 // 4 word AVX 512
-template<typename T, int ABI, typename Int,
-         typename std::enable_if<sizeof(T)==4 && ABI==512,bool>::type=0>
+template<typename T, typename ABI, typename Int,
+         typename std::enable_if<sizeof(T)==4 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==512,bool>::type=0>
 FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride=1) {
     data[idx] = vec[0];
     data[idx+general_stride] = vec[1];
@@ -426,21 +426,21 @@ FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> 
 }
 
 // 8 word scalar
-template<typename T, int ABI, typename Int,
-         typename std::enable_if<sizeof(T)==8 && ABI==64,bool>::type=0>
+template<typename T, typename ABI, typename Int,
+         typename std::enable_if<sizeof(T)==8 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==64,bool>::type=0>
 FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int ) {
     data[idx] = vec.value;
 }
 // 8 word SSE
-template<typename T, int ABI, typename Int,
-         typename std::enable_if<sizeof(T)==8 && ABI==128,bool>::type=0>
+template<typename T, typename ABI, typename Int,
+         typename std::enable_if<sizeof(T)==8 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==128,bool>::type=0>
 FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride) {
     data[idx] = vec[0];
     data[idx+general_stride] = vec[1];
 }
 // 8 word AVX
-template<typename T, int ABI, typename Int,
-         typename std::enable_if<sizeof(T)==8 && ABI==256,bool>::type=0>
+template<typename T, typename ABI, typename Int,
+         typename std::enable_if<sizeof(T)==8 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==256,bool>::type=0>
 FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride) {
     data[idx] = vec[0];
     data[idx+general_stride] = vec[1];
@@ -448,8 +448,8 @@ FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> 
     data[idx+3*general_stride] = vec[3];
 }
 // 8 word AVX 512
-template<typename T, int ABI, typename Int,
-         typename std::enable_if<sizeof(T)==8 && ABI==512,bool>::type=0>
+template<typename T, typename ABI, typename Int,
+         typename std::enable_if<sizeof(T)==8 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==512,bool>::type=0>
 FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride) {
     data[idx] = vec[0];
     data[idx+general_stride] = vec[1];
@@ -462,21 +462,21 @@ FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> 
 }
 
 // 16 word scalar/SSE
-template<typename T, int ABI, typename Int,
-         typename std::enable_if<sizeof(T)==16 && ABI==128,bool>::type=0>
+template<typename T, typename ABI, typename Int,
+         typename std::enable_if<sizeof(T)==16 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==128,bool>::type=0>
 FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int ) {
     data[idx] = vec.value;
 }
 // 16 word AVX
-template<typename T, int ABI, typename Int,
-         typename std::enable_if<sizeof(T)==16 && ABI==256,bool>::type=0>
+template<typename T, typename ABI, typename Int,
+         typename std::enable_if<sizeof(T)==16 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==256,bool>::type=0>
 FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride) {
     data[idx] = vec[0];
     data[idx+general_stride] = vec[1];
 }
 // 16 word AVX 512
-template<typename T, int ABI, typename Int,
-         typename std::enable_if<sizeof(T)==16 && ABI==512,bool>::type=0>
+template<typename T, typename ABI, typename Int,
+         typename std::enable_if<sizeof(T)==16 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==512,bool>::type=0>
 FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> &vec, Int idx, int general_stride) {
     data[idx] = vec[0];
     data[idx+general_stride] = vec[1];
@@ -495,73 +495,73 @@ FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> 
 
 // FMAs
 //----------------------------------------------------------------------------------------------------------------
-template<typename T, int ABI>
-FASTOR_INLINE SIMDVector<T,ABI> fmadd(SIMDVector<T,ABI> a, SIMDVector<T,ABI> b, SIMDVector<T,ABI> c) {
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> fmadd(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b, const SIMDVector<T,ABI> &c) {
     return a*b+c;
 }
 // Note that fmsub alternatively adds and subtracts simd vectors
-template<typename T, int ABI>
-FASTOR_INLINE SIMDVector<T,ABI> fmsub(SIMDVector<T,ABI> a, SIMDVector<T,ABI> b, SIMDVector<T,ABI> c) {
-    return a*b+c;
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> fmsub(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b, const SIMDVector<T,ABI> &c) {
+    return a*b-c;
 }
 
-#ifdef __FMA__
+#ifdef FASTOR_FMA_IMPL
 
 template<>
-FASTOR_INLINE SIMDVector<float,FASTOR_SSE> fmadd<float,FASTOR_SSE>(SIMDVector<float,FASTOR_SSE> a,
-    SIMDVector<float,FASTOR_SSE> b, SIMDVector<float,FASTOR_SSE> c) {
-    SIMDVector<float,FASTOR_SSE> out;
+FASTOR_INLINE SIMDVector<float,simd_abi::sse> fmadd<float,simd_abi::sse>(
+    const SIMDVector<float,simd_abi::sse> &a, const SIMDVector<float,simd_abi::sse> &b, const SIMDVector<float,simd_abi::sse> &c) {
+    SIMDVector<float,simd_abi::sse> out;
     out.value = _mm_fmadd_ps(a.value,b.value,c.value);
     return out;
 }
 template<>
-FASTOR_INLINE SIMDVector<float,FASTOR_AVX> fmadd<float,FASTOR_AVX>(SIMDVector<float,FASTOR_AVX> a,
-    SIMDVector<float,FASTOR_AVX> b, SIMDVector<float,FASTOR_AVX> c) {
-    SIMDVector<float,FASTOR_AVX> out;
+FASTOR_INLINE SIMDVector<float,simd_abi::avx> fmadd<float,simd_abi::avx>(
+    const SIMDVector<float,simd_abi::avx> &a, const SIMDVector<float,simd_abi::avx> &b, const SIMDVector<float,simd_abi::avx> &c) {
+    SIMDVector<float,simd_abi::avx> out;
     out.value = _mm256_fmadd_ps(a.value,b.value,c.value);
     return out;
 }
 template<>
-FASTOR_INLINE SIMDVector<double,FASTOR_SSE> fmadd<double,FASTOR_SSE>(SIMDVector<double,FASTOR_SSE> a,
-    SIMDVector<double,FASTOR_SSE> b, SIMDVector<double,FASTOR_SSE> c) {
-    SIMDVector<double,FASTOR_SSE> out;
+FASTOR_INLINE SIMDVector<double,simd_abi::sse> fmadd<double,simd_abi::sse>(
+    const SIMDVector<double,simd_abi::sse> &a, const SIMDVector<double,simd_abi::sse> &b, const SIMDVector<double,simd_abi::sse> &c) {
+    SIMDVector<double,simd_abi::sse> out;
     out.value = _mm_fmadd_pd(a.value,b.value,c.value);
     return out;
 }
 template<>
-FASTOR_INLINE SIMDVector<double,FASTOR_AVX> fmadd<double,FASTOR_AVX>(SIMDVector<double,FASTOR_AVX> a,
-    SIMDVector<double,FASTOR_AVX> b, SIMDVector<double,FASTOR_AVX> c) {
-    SIMDVector<double,FASTOR_AVX> out;
+FASTOR_INLINE SIMDVector<double,simd_abi::avx> fmadd<double,simd_abi::avx>(
+    const SIMDVector<double,simd_abi::avx> &a, const SIMDVector<double,simd_abi::avx> &b, const SIMDVector<double,simd_abi::avx> &c) {
+    SIMDVector<double,simd_abi::avx> out;
     out.value = _mm256_fmadd_pd(a.value,b.value,c.value);
     return out;
 }
 
 template<>
-FASTOR_INLINE SIMDVector<float,FASTOR_SSE> fmsub<float,FASTOR_SSE>(SIMDVector<float,FASTOR_SSE> a,
-    SIMDVector<float,FASTOR_SSE> b, SIMDVector<float,FASTOR_SSE> c) {
-    SIMDVector<float,FASTOR_SSE> out;
-    out.value = _mm_fmadd_ps(a.value,b.value,c.value);
+FASTOR_INLINE SIMDVector<float,simd_abi::sse> fmsub<float,simd_abi::sse>(
+    const SIMDVector<float,simd_abi::sse> &a, const SIMDVector<float,simd_abi::sse> &b, const SIMDVector<float,simd_abi::sse> &c) {
+    SIMDVector<float,simd_abi::sse> out;
+    out.value = _mm_fmsub_ps(a.value,b.value,c.value);
     return out;
 }
 template<>
-FASTOR_INLINE SIMDVector<float,FASTOR_AVX> fmsub<float,FASTOR_AVX>(SIMDVector<float,FASTOR_AVX> a,
-    SIMDVector<float,FASTOR_AVX> b, SIMDVector<float,FASTOR_AVX> c) {
-    SIMDVector<float,FASTOR_AVX> out;
-    out.value = _mm256_fmadd_ps(a.value,b.value,c.value);
+FASTOR_INLINE SIMDVector<float,simd_abi::avx> fmsub<float,simd_abi::avx>(
+    const SIMDVector<float,simd_abi::avx> &a, const SIMDVector<float,simd_abi::avx> &b, const SIMDVector<float,simd_abi::avx> &c) {
+    SIMDVector<float,simd_abi::avx> out;
+    out.value = _mm256_fmsub_ps(a.value,b.value,c.value);
     return out;
 }
 template<>
-FASTOR_INLINE SIMDVector<double,FASTOR_SSE> fmsub<double,FASTOR_SSE>(SIMDVector<double,FASTOR_SSE> a,
-    SIMDVector<double,FASTOR_SSE> b, SIMDVector<double,FASTOR_SSE> c) {
-    SIMDVector<double,FASTOR_SSE> out;
-    out.value = _mm_fmadd_pd(a.value,b.value,c.value);
+FASTOR_INLINE SIMDVector<double,simd_abi::sse> fmsub<double,simd_abi::sse>(
+    const SIMDVector<double,simd_abi::sse> &a, const SIMDVector<double,simd_abi::sse> &b, const SIMDVector<double,simd_abi::sse> &c) {
+    SIMDVector<double,simd_abi::sse> out;
+    out.value = _mm_fmsub_pd(a.value,b.value,c.value);
     return out;
 }
 template<>
-FASTOR_INLINE SIMDVector<double,FASTOR_AVX> fmsub<double,FASTOR_AVX>(SIMDVector<double,FASTOR_AVX> a,
-    SIMDVector<double,FASTOR_AVX> b, SIMDVector<double,FASTOR_AVX> c) {
-    SIMDVector<double,FASTOR_AVX> out;
-    out.value = _mm256_fmadd_pd(a.value,b.value,c.value);
+FASTOR_INLINE SIMDVector<double,simd_abi::avx> fmsub<double,simd_abi::avx>(
+    const SIMDVector<double,simd_abi::avx> &a, const SIMDVector<double,simd_abi::avx> &b, const SIMDVector<double,simd_abi::avx> &c) {
+    SIMDVector<double,simd_abi::avx> out;
+    out.value = _mm256_fmsub_pd(a.value,b.value,c.value);
     return out;
 }
 

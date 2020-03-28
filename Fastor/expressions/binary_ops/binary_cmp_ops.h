@@ -16,7 +16,7 @@ struct BinaryCmpOp##NAME: public AbstractTensor<BinaryCmpOp##NAME<TLhs, TRhs, DI
     static constexpr FASTOR_INDEX Dimension = DIM0;\
     static constexpr FASTOR_INDEX rank() {return DIM0;}\
     using scalar_type = typename scalar_type_finder<BinaryCmpOp##NAME<TLhs, TRhs, DIM0>>::type;\
-    static constexpr int ABI = stride_finder<scalar_type>::value*8*sizeof(bool);\
+    using ABI = simd_abi::fixed_size<SIMDVector<scalar_type,DEFAULT_ABI>::Size>;\
     FASTOR_INLINE BinaryCmpOp##NAME(typename ExprBinderType<TLhs>::type lhs, typename ExprBinderType<TRhs>::type rhs) : lhs(lhs), rhs(rhs) {}\
     FASTOR_INLINE FASTOR_INDEX size() const {return helper_size<TLhs,TRhs>();}\
     template<class LExpr, class RExpr,\

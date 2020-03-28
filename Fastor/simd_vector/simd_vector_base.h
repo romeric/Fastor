@@ -2,80 +2,21 @@
 #define SIMD_VECTOR_BASE_H
 
 #include "Fastor/commons/commons.h"
+#include "Fastor/simd_vector/simd_vector_abi.h"
 #include "Fastor/extended_intrinsics/extintrin.h"
 #include "Fastor/math/internal_math.h"
-#include <complex>
+
 
 
 namespace Fastor {
 
-namespace internal {
-
-template<typename T,int ABI=256>
-struct get_vector_size {
-    static const FASTOR_INDEX size = ABI/sizeof(T)/8;
-};
-
-template<>
-struct get_vector_size<double,256> {
-    static const FASTOR_INDEX size = 4;
-};
-template<>
-struct get_vector_size<float,256> {
-    static const FASTOR_INDEX size = 8;
-};
-template<>
-struct get_vector_size<int,256> {
-    static const FASTOR_INDEX size = 8;
-};
-template<>
-struct get_vector_size<Int64,256> {
-    static const FASTOR_INDEX size = 4;
-};
-template<>
-struct get_vector_size<std::complex<double>,256> {
-    static const FASTOR_INDEX size = 2;
-};
-template<>
-struct get_vector_size<std::complex<float>,256> {
-    static const FASTOR_INDEX size = 4;
-};
-
-template<>
-struct get_vector_size<double,128> {
-    static const FASTOR_INDEX size = 2;
-};
-template<>
-struct get_vector_size<float,128> {
-    static const FASTOR_INDEX size = 4;
-};
-template<>
-struct get_vector_size<int,128> {
-    static const FASTOR_INDEX size = 4;
-};
-template<>
-struct get_vector_size<Int64,128> {
-    static const FASTOR_INDEX size = 2;
-};
-template<>
-struct get_vector_size<std::complex<double>,128> {
-    static const FASTOR_INDEX size = 1;
-};
-template<>
-struct get_vector_size<std::complex<float>,128> {
-    static const FASTOR_INDEX size = 2;
-};
-
-} // end of namesapce internal
-
-
-
-// THE DEFAULT SIMDVector TAKES CARE OF FALLING BACK TO SCALAR CODE
-// WHEREEVER SIMD IS NOT AVAILABLE
-template <typename T, int ABI=256>
+// The default SIMDVector class that falls back to scalar implementation
+// if SIMD types are not available or if vectorisation is disallowed
+//--------------------------------------------------------------------------------------------------------------------//
+template <typename T, typename ABI = simd_abi::native>
 struct SIMDVector {
-    static constexpr FASTOR_INDEX Size = internal::get_vector_size<T,ABI>::size;
-    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return internal::get_vector_size<T,ABI>::size;}
+    static constexpr FASTOR_INDEX Size = internal::get_simd_vector_size<SIMDVector<T,ABI>>::value;
+    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return internal::get_simd_vector_size<SIMDVector<T,ABI>>::value;}
     static constexpr int unroll_size(FASTOR_INDEX size) {return (static_cast<int>(size) - static_cast<int>(Size));}
     using value_type = T[Size];
 
@@ -246,7 +187,7 @@ struct SIMDVector {
     T FASTOR_ALIGN value[Size];
 };
 
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<T,ABI> a) {
     os << "[";
     for (FASTOR_INDEX i=0; i<a.size(); ++i)
@@ -255,54 +196,54 @@ FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<T,ABI> 
     return os;
 }
 
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> operator+(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
         out.value[i] = a.value[i] + b.value[i];
     return out;
 }
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> operator+(const SIMDVector<T,ABI> &a, T b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
         out.value[i] = a.value[i] + b;
     return out;
 }
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> operator+(T a, const SIMDVector<T,ABI> &b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
         out.value[i] = a + b.value[i];
     return out;
 }
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> operator+(const SIMDVector<T,ABI> &b) {
     return b;
 }
 
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> operator-(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
         out.value[i] = a.value[i] - b.value[i];
     return out;
 }
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> operator-(const SIMDVector<T,ABI> &a, T b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
         out.value[i] = a.value[i] - b;
     return out;
 }
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> operator-(T a, const SIMDVector<T,ABI> &b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
         out.value[i] = a - b.value[i];
     return out;
 }
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> operator-(const SIMDVector<T,ABI> &b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
@@ -310,21 +251,21 @@ FASTOR_INLINE SIMDVector<T,ABI> operator-(const SIMDVector<T,ABI> &b) {
     return out;
 }
 
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> operator*(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
         out.value[i] = a.value[i] * b.value[i];
     return out;
 }
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> operator*(const SIMDVector<T,ABI> &a, T b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
         out.value[i] = a.value[i] * b;
     return out;
 }
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> operator*(T a, const SIMDVector<T,ABI> &b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
@@ -332,21 +273,21 @@ FASTOR_INLINE SIMDVector<T,ABI> operator*(T a, const SIMDVector<T,ABI> &b) {
     return out;
 }
 
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> operator/(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
         out.value[i] = a.value[i] / b.value[i];
     return out;
 }
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> operator/(const SIMDVector<T,ABI> &a, T b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
         out.value[i] = a.value[i] / b;
     return out;
 }
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> operator/(T a, const SIMDVector<T,ABI> &b) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; ++i)
@@ -354,7 +295,7 @@ FASTOR_INLINE SIMDVector<T,ABI> operator/(T a, const SIMDVector<T,ABI> &b) {
     return out;
 }
 
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> rcp(const SIMDVector<T,ABI> &a) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<a.Size; ++i)
@@ -362,7 +303,7 @@ FASTOR_INLINE SIMDVector<T,ABI> rcp(const SIMDVector<T,ABI> &a) {
     return out;
 }
 
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> sqrt(const SIMDVector<T,ABI> &a) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<a.Size; ++i)
@@ -370,7 +311,7 @@ FASTOR_INLINE SIMDVector<T,ABI> sqrt(const SIMDVector<T,ABI> &a) {
     return out;
 }
 
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> rsqrt(const SIMDVector<T,ABI> &a) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<a.Size; ++i)
@@ -378,7 +319,7 @@ FASTOR_INLINE SIMDVector<T,ABI> rsqrt(const SIMDVector<T,ABI> &a) {
     return out;
 }
 
-template<typename T, int ABI>
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> abs(const SIMDVector<T,ABI> &a) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<a.Size; ++i)
@@ -392,14 +333,14 @@ FASTOR_INLINE SIMDVector<T,ABI> abs(const SIMDVector<T,ABI> &a) {
 // Binary comparison ops
 //----------------------------------------------------------------------------------------------------------------//
 #define FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(OP) \
-template<typename T, int ABI> \
-FASTOR_INLINE SIMDVector<bool,SIMDVector<T,ABI>::Size*sizeof(bool)*8> operator OP(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b) { \
+template<typename T, typename ABI> \
+FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> operator OP(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b) { \
     constexpr FASTOR_INDEX Size = SIMDVector<T,ABI>::Size;\
     T FASTOR_ALIGN val_a[Size];\
     a.store(val_a);\
     T FASTOR_ALIGN val_b[Size];\
     b.store(val_b);\
-    SIMDVector<bool,Size*sizeof(bool)*8> out;\
+    SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;\
     bool FASTOR_ALIGN val_out[Size];\
     out.store(val_out);\
     for (FASTOR_INDEX i=0; i<Size; ++i) {\
@@ -420,12 +361,12 @@ FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(||);
 
 
 #define FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(OP) \
-template<typename T, typename U, int ABI> \
-FASTOR_INLINE SIMDVector<bool,SIMDVector<T,ABI>::Size*sizeof(bool)*8> operator OP(const SIMDVector<T,ABI> &a, U b) { \
+template<typename T, typename U, typename ABI> \
+FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> operator OP(const SIMDVector<T,ABI> &a, U b) { \
     constexpr FASTOR_INDEX Size = SIMDVector<T,ABI>::Size;\
     T FASTOR_ALIGN val_a[Size];\
     a.store(val_a);\
-    SIMDVector<bool,Size*sizeof(bool)*8> out;\
+    SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;\
     bool FASTOR_ALIGN val_out[Size];\
     out.store(val_out);\
     for (FASTOR_INDEX i=0; i<Size; ++i) {\
@@ -446,12 +387,12 @@ FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(||);
 
 
 #define FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(OP) \
-template<typename T, typename U, int ABI> \
-FASTOR_INLINE SIMDVector<bool,SIMDVector<T,ABI>::Size*sizeof(bool)*8> operator OP(U a, const SIMDVector<T,ABI> &b) { \
+template<typename T, typename U, typename ABI> \
+FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> operator OP(U a, const SIMDVector<T,ABI> &b) { \
     constexpr FASTOR_INDEX Size = SIMDVector<T,ABI>::Size;\
     T FASTOR_ALIGN val_b[Size];\
     b.store(val_b);\
-    SIMDVector<bool,Size*sizeof(bool)*8> out;\
+    SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;\
     bool FASTOR_ALIGN val_out[Size];\
     out.store(val_out);\
     for (FASTOR_INDEX i=0; i<Size; ++i) {\

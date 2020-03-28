@@ -56,7 +56,7 @@ FASTOR_INLINE T _norm(const T* FASTOR_RESTRICT a) {
     return sqrts(vec_out.sum() + scalar);
 }
 
-#ifdef __SSE4_2__
+#ifdef FASTOR_SSE4_2_IMPL
 template<>
 FASTOR_INLINE float _norm<float,4>(const float * FASTOR_RESTRICT a) {
     // IVY 33 OPS / HW 31 OPS
@@ -64,7 +64,7 @@ FASTOR_INLINE float _norm<float,4>(const float * FASTOR_RESTRICT a) {
     return _mm_cvtss_f32(_mm_sqrt_ps(_add_ps(_mm_mul_ps(a_reg,a_reg))));
 }
 #endif
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 template<>
 FASTOR_INLINE float _norm<float,9>(const float * FASTOR_RESTRICT a) {
     // IVY & HW 61 OPS

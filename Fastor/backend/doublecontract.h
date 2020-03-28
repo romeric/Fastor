@@ -31,7 +31,7 @@ FASTOR_INLINE T _doublecontract(const T* FASTOR_RESTRICT a, const T* FASTOR_REST
     return vec_out.sum() + scalar;
 }
 
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 
 template<>
 FASTOR_INLINE float _doublecontract<float,2,2>(const float* FASTOR_RESTRICT a, const float* FASTOR_RESTRICT b) {

@@ -15,7 +15,7 @@ FASTOR_INLINE T _trace(const T * FASTOR_RESTRICT a) {
     return sum;
 }
 
-#ifdef __SSE4_2__
+#ifdef FASTOR_SSE4_2_IMPL
 template<>
 FASTOR_INLINE double _trace<double,2,2>(const double * FASTOR_RESTRICT a) {
     // AVX VERSION
@@ -44,7 +44,7 @@ FASTOR_INLINE float _trace<float,2,2>(const float * FASTOR_RESTRICT a) {
 }
 #endif
 
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 template<>
 FASTOR_INLINE float _trace<float,3,3>(const float * FASTOR_RESTRICT a) {
     __m256 a_reg = _mm256_load_ps(a);

@@ -8,10 +8,10 @@
 #include <string>
 #include <sstream>
 
-#ifdef __SSE2__
+#ifdef FASTOR_SSE2_IMPL
 #include <emmintrin.h>
 #endif
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 #include <immintrin.h>
 #endif
 
@@ -53,7 +53,7 @@ struct IOFormat {
 
 
 
-#ifdef __SSE2__
+#ifdef FASTOR_SSE2_IMPL
 inline void print(__m128 b) {
     const float* a = (const float*)&b;
     std::cout << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << '\n';
@@ -63,7 +63,7 @@ inline void print(__m128d b) {
     std::cout << a[0] << " " << a[1] << '\n';
 }
 #endif
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 inline void print(__m256 b) {
     const float* a = (const float*)&b;
     std::cout << a[0] << " " << a[1] << " " << a[2] << " " << a[3] <<  " " <<

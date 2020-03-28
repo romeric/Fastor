@@ -11,7 +11,7 @@ namespace Fastor {
 #ifdef HAS_VDT
 #include <vdt/vdtMath.h>
 
-#ifdef __SSE4_2__
+#ifdef FASTOR_SSE4_2_IMPL
 inline __m128 internal_exp(__m128 a) {
    __m128 out;
    for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
@@ -129,7 +129,7 @@ inline __m128d internal_atan(__m128d a) {
 }
 #endif
 
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 inline __m256 internal_exp(__m256 a) {
    __m256 out;
    for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
@@ -344,7 +344,7 @@ inline T internal_atan(T a) {
    return out;
 }
 
-#ifdef __SSE4_2__
+#ifdef FASTOR_SSE4_2_IMPL
 template<>
 inline __m128 internal_exp(__m128 a) {
    __m128 out;
@@ -491,7 +491,7 @@ inline __m128d internal_atan(__m128d a) {
    return out;
 }
 #endif
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 template<>
 inline __m256 internal_exp(__m256 a) {
    __m256 out;

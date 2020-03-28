@@ -244,7 +244,7 @@ einsum(const Tensor<T,J> &a, const Tensor<T,I,J> &b) {
 
 
 
-#ifdef __AVX__
+#ifdef FASTOR_AVX_IMPL
 
 // Specific overloads
 

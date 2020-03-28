@@ -2,12 +2,17 @@
 #define TENSOR_META_H
 
 #include "Fastor/commons/commons.h"
+#include "Fastor/simd_vector/simd_vector_abi.h"
 
 namespace Fastor {
 
+// Forward declare
+template <typename T, typename ABI>
+struct SIMDVector;
+
 
 template<typename T> struct stride_finder {
-    static constexpr size_t value = DEFAULT_ABI /  8 / sizeof(T);
+    static constexpr size_t value = internal::get_simd_vector_size<SIMDVector<T,DEFAULT_ABI>>::value;
 };
 
 template<size_t Idx, size_t ... Rest>
@@ -134,7 +139,7 @@ struct ExprBinderType {
 //-----------
 template<size_t I, size_t J>
 struct is_less {
-    static constexpr bool value = I < J;
+    static constexpr bool value = (I < J);
 };
 
 //-----------
