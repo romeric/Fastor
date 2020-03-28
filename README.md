@@ -224,17 +224,17 @@ The x-axis shows the number FLOPS saved/reduced over single expression evaluatio
 
 
 ### Domain-aware numerical analysis
-In nonlinear mechanics, it is customary to transform high order tensors to low rank tensors using Voigt transformation. Fastor has domain-specific features for such tensorial operations. For example, consider the dyadic product `A_ik*B_jl`, that can be computed in Fastor like
+Fastor tensors are not just multi-dimensional arrays like in other C++ libraries. Fastor tensors have a notion of index notation (which is why it is possible to perform different operatrion minimisations on them) and manifold transformation. For instance, in the field of computational mechanics it is customary to transform high order tensors to low rank tensors using a given transformation operator such as Voigt transformation. Fastor has domain-specific features for such tensorial operations. For example, consider the dyadic product `A_ik*B_jl`, that can be computed in Fastor like
 ~~~c++
 Tensor<double,3,3> A,B;
 A.random(); B.random();
-Tensor<double,6,6> C = einsum<Index<0,2>,Index<1,3>,FASTOR_Voigt>(A,B);
+Tensor<double,6,6> C = einsum<Index<0,2>,Index<1,3>,Fastor::voigt>(A,B);
 // or alternatively
 enum {I,J,K,L};
-Tensor<double,6,6> D = einsum<Index<I,K>,Index<J,L>,FASTOR_Voigt>(A,B);
+Tensor<double,6,6> D = einsum<Index<I,K>,Index<J,L>,Fastor::voigt>(A,B);
 ~~~
 
-As you notice, all indices are resolved and the Voigt transformation is performed at compile time, keeping only the cost of computation at runtime. Equivalent implementation of this in C/Fortran requires either low-level for loop style programming that has an O(n^4) computational complexity and non-contiguous memory access, or if a function like einsum is desired the indices will need to be passed requiring potentially extra register allocation. Here is performance benchmark between Ctran (C/Fortran) for loop code and the equivalent Fastor implementation for the above example, run over a million times (both compiled using `-O3 -mavx`, on `Intel(R) Xeon(R) CPU E5-2650 v2 @2.60GHz` running `Ubuntu 14.04`):
+This is generalised to any n-dimensional tensor. As you notice, all indices are resolved and the Voigt transformation is performed at compile time, keeping only the cost of computation at runtime. Equivalent implementation of this in C/Fortran requires either low-level for loop style programming that has an O(n^4) computational complexity and non-contiguous memory access, or if a function like einsum is desired the indices will need to be passed at run-time requiring potential extra register allocation. Here is the benchmark between Ctran (C/Fortran) for loop code and the equivalent Fastor implementation for the above example, run over a million times (both compiled using `-O3 -mavx`, on `Intel(R) Xeon(R) CPU E5-2650 v2 @2.60GHz` running `Ubuntu 14.04`):
 
 
 <p align="center">
@@ -244,7 +244,7 @@ As you notice, all indices are resolved and the Voigt transformation is performe
 
 Notice that by compiling with the same flags, it is meant that the compiler is permitted to auto-vectorise the C/tran code as well. The real performance of Fastor comes from the fact, that when a Voigt transformation is requested, Fastor does not compute the elements which are not needed.
 ### The tensor cross product and its associated algebra
-Building upon its domain specific features, Fastor implements the tensor cross product family of algebra recently introduced by [Bonet et. al.](http://dx.doi.org/10.1016/j.ijsolstr.2015.12.030) in the context of numerical analysis of nonlinear classical mechanics which can significantly reduce the amount algebra involved in tensor derivatives of functionals which are forbiddingly complex to derive using a standard approach. The tensor cross product of two second order tensors is defined as `C_iI = e_ijk*e_IJK*A_jJ*b_kK` where `e` is the third order permutation tensor. As can be seen this product is O(n^6) in computational complexity (furthermore a cross product is essentially defined in 3-dimensional space i.e. perfectly suitable for stack allocation). Using Fastor the equivalent code is only 81 SSE intrinsics
+Building upon its domain specific features, Fastor implements the tensor cross product family of algebra by [Bonet et. al.](http://dx.doi.org/10.1016/j.ijsolstr.2015.12.030) in the context of numerical analysis of nonlinear classical mechanics which can significantly reduce the amount algebra involved in tensor derivatives of functionals which are forbiddingly complex to derive using a standard approach. The tensor cross product of two second order tensors is defined as `C_iI = e_ijk*e_IJK*A_jJ*b_kK` where `e` is the third order permutation tensor. As can be seen this product is O(n^6) in computational complexity. Using Fastor the equivalent code is only 81 SSE intrinsics
 ~~~c++
 // A and B are second order tensors
 using Fastor::LeviCivita_pd;
