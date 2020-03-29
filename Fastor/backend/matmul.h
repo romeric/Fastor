@@ -42,10 +42,13 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     }
 
     using V = SIMDVector<T,DEFAULT_ABI>;
-    // Use new faster matmul variants - this hueristics need to be changed
-    // if matmul implementation changes
+    // Use specialised kernels
+    FASTOR_IF_CONSTEXPR( M==N && M==K && (M==12UL || M==24UL) && std::is_same<T,float>::value) {
+        internal::_matmul_mkn_square<T,M,K,N>(a,b,out);
+        return;
+    }
+
     FASTOR_IF_CONSTEXPR(M>=V::Size && K>=V::Size && N>1) {
-        // internal::_matmul_mkn<T,M,K,N>(a,b,out);
         internal::_matmul_base<T,M,K,N>(a,b,out);
         return;
     }
