@@ -108,7 +108,7 @@ template<typename T, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_
 FASTOR_INLINE
 void interior_block_matmul_impl(
     const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c,
-    const size_t i, const size_t j, const size_t k, const size_t ii) {
+    const size_t i, const size_t j, const size_t ii) {
 
     using V = SIMDVector<T,DEFAULT_ABI>;
 
@@ -179,7 +179,8 @@ void _matmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * 
     constexpr size_t numSIMDRows = M % (unrollOuterloop * 3UL) == 0 ? 3UL : 2UL;
 
     // Unroll the columns of (b and c) (N) by [numSIMDCols * V::Size]
-    constexpr size_t numSIMDCols = N % (V::Size * 3UL) == 0 ? 3UL : 2UL;
+    // constexpr size_t numSIMDCols = N % (V::Size * 3UL) == 0 ? 3UL : 2UL;
+    constexpr size_t numSIMDCols = (N % (V::Size * 3UL) == 0 && N > 24UL) ? 3UL : 2UL;
 
     // The goal is to get 10 parallel independent chains of accumulators
     // to saturate the pipeline by having a completely unrolled block of
