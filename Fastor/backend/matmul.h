@@ -108,7 +108,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
     for (size_t i=0; i<K; ++i) {
         __m128d brow = _mm_loadu_pd(&b[i*2]);
-#ifndef __FMA__
+#ifndef FASTOR_FMA_IMPL
         // row 0
         __m128d a_vec0 = _mm_set1_pd(a[i]);
         out_row0 = _mm_add_pd(out_row0,_mm_mul_pd(a_vec0,brow));
@@ -140,7 +140,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
     for (size_t i=0; i<K; i++) {
         __m128 brow = _mm_loadu_ps(&b[i*2]);
-#ifndef __FMA__
+#ifndef FASTOR_FMA_IMPL
         // row 0
         __m128 a_vec0 = _mm_set1_ps(a[i]);
         out_row0 = _mm_add_ps(out_row0,_mm_mul_ps(a_vec0,brow));
@@ -181,7 +181,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
     for (size_t i=0; i<K; ++i) {
         __m256d brow = _mm256_loadul3_pd(&b[i*3]);
-#ifndef __FMA__
+#ifndef FASTOR_FMA_IMPL
         // row 0
         __m256d a_vec0 = _mm256_set1_pd(a[i]);
         out_row0 = _mm256_add_pd(out_row0,_mm256_mul_pd(a_vec0,brow));
@@ -234,7 +234,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
     for (size_t i=0; i<K; ++i) {
         __m128 brow = _mm_loadul3_ps(&b[i*3]);
-#ifndef __FMA__
+#ifndef FASTOR_FMA_IMPL
         // row 0
         __m128 a_vec0 = _mm_set1_ps(a[i]);
         out_row0 = _mm_add_ps(out_row0,_mm_mul_ps(a_vec0,brow));
@@ -285,7 +285,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
     for (size_t i=0; i<K; ++i) {
         __m256d brow = _mm256_load_pd(&b[i*4]);
-#ifndef __FMA__
+#ifndef FASTOR_FMA_IMPL
         // row 0
         __m256d a_vec0 = _mm256_set1_pd(a[i]);
         out_row0 = _mm256_add_pd(out_row0,_mm256_mul_pd(a_vec0,brow));
@@ -343,7 +343,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
     for (size_t i=0; i<K; ++i) {
         __m128 brow = _mm_load_ps(&b[i*4]);
-#ifndef __FMA__
+#ifndef FASTOR_FMA_IMPL
         // row 0
         __m128 a_vec0 = _mm_set1_ps(a[i]);
         out_row0 = _mm_add_ps(out_row0,_mm_mul_ps(a_vec0,brow));
