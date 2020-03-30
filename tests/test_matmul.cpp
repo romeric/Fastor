@@ -71,7 +71,7 @@ void run() {
         Tensor<T,2,2> a; a.iota(99);
         Tensor<T,2,2> b; b.iota(21);
         SINGLE_TEST(a,b);
-        a(1,1) = -2;
+        a(1,1) = -2.5;
         SINGLE_TEST(a,b);
     }
 
@@ -79,7 +79,7 @@ void run() {
         Tensor<T,3,3> a; a.iota(9);
         Tensor<T,3,3> b; b.iota(-4);
         SINGLE_TEST(a,b);
-        a(1,1) = -2;
+        a(1,1) = -2.5;
         SINGLE_TEST(a,b);
     }
 
@@ -87,7 +87,7 @@ void run() {
         Tensor<T,4,4> a; a.iota(9);
         Tensor<T,4,4> b; b.iota(-4);
         SINGLE_TEST(a,b);
-        a(1,1) = -2;
+        a(1,1) = -2.5;
         SINGLE_TEST(a,b);
     }
 
@@ -172,8 +172,8 @@ void run() {
     }
 
     {
-        Tensor<T,2,50> a; a.iota(-5);
-        Tensor<T,50,8> b; b.iota(0);
+        Tensor<T,2,20> a; a.iota(-5);
+        Tensor<T,20,8> b; b.iota(0);
         SINGLE_TEST(a,b);
         a(1,1) = -2;
         SINGLE_TEST(a,b);
@@ -188,24 +188,24 @@ void run() {
     }
 
     {
-        Tensor<T,3,50> a; a.iota(-5);
-        Tensor<T,50,3> b; b.iota(0);
+        Tensor<T,3,20> a; a.iota(-5);
+        Tensor<T,20,3> b; b.iota(0);
         SINGLE_TEST(a,b);
         a(1,1) = -2;
         SINGLE_TEST(a,b);
     }
 
     {
-        Tensor<T,4,50> a; a.iota(-5);
-        Tensor<T,50,4> b; b.iota(0);
+        Tensor<T,4,20> a; a.iota(-5);
+        Tensor<T,20,4> b; b.iota(0);
         SINGLE_TEST(a,b);
         a(1,10) = -2;
         SINGLE_TEST(a,b);
     }
 
     {
-        Tensor<T,3,50> a; a.iota(-5);
-        Tensor<T,50,4> b; b.iota(0);
+        Tensor<T,3,20> a; a.iota(-5);
+        Tensor<T,20,4> b; b.iota(0);
         SINGLE_TEST(a,b);
         a(1,1) = -2;
         SINGLE_TEST(a,b);
@@ -244,6 +244,42 @@ void run() {
     }
 
     // matrix-vector and vector-matrix
+    {
+        Tensor<T,1,2> a; a.iota(-5.1);
+        Tensor<T,2,2> b; b.iota(2.3);
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,1,3> a; a.iota(-5.1);
+        Tensor<T,3,3> b; b.iota(2.3);
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,1,4> a; a.iota(-5.1);
+        Tensor<T,4,4> b; b.iota(2.3);
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,2,2> a; a.iota(-5.1);
+        Tensor<T,2,1> b; b.iota(2.4);
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,3,3> a; a.iota(-5.1);
+        Tensor<T,3,1> b; b.iota(2.4);
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,4,4> a; a.iota(-5);
+        Tensor<T,4,1> b; b.iota(2.4);
+        SINGLE_TEST(a,b);
+    }
+
     {
         Tensor<T,1,2> a; a.iota(-5);
         Tensor<T,2,4> b; b.iota(0);

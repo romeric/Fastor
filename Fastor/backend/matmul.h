@@ -4,7 +4,7 @@
 #include "Fastor/backend/matmul_kernels.h"
 
 #ifdef FASTOR_USE_LIBXSMM
-#include "libxsmm_backend.h"
+#include "Fastor/backend/libxsmm_backend.h"
 #endif
 
 namespace Fastor {
@@ -16,6 +16,10 @@ namespace Fastor {
 namespace internal {
 template<typename T, size_t M, size_t N>
 void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out);
+
+template<typename T, size_t M, size_t K, size_t N,
+    typename std::enable_if<std::is_same<T,float>::value,bool>::type = 0 >
+void _matmul8k8_float(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out);
 } // internal
 //-----------------------------------------------------------------------------------------------------------
 
@@ -24,11 +28,11 @@ void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FA
 //-----------------------------------------------------------------------------------------------------------
 #ifndef FASTOR_USE_LIBXSMM
 template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<!(M!=K && M==N && (M==2 || M==3 || M==4)),bool>::type = 0>
+         typename std::enable_if<!(M!=K && M==N && (M==2UL || M==3UL || M==4UL || M==8UL)),bool>::type = 0>
 #else
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<
-            !(M!=K && M==N && (M==2 || M==3 || M==4))
+            !(M!=K && M==N && (M==2UL || M==3UL || M==4UL|| M==8UL))
             && is_less_equal<M*N*K/FASTOR_BLAS_SWITCH_MATRIX_SIZE/FASTOR_BLAS_SWITCH_MATRIX_SIZE/FASTOR_BLAS_SWITCH_MATRIX_SIZE,1>::value,
             bool>::type = 0>
 #endif
@@ -42,7 +46,13 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     }
 
     using V = SIMDVector<T,DEFAULT_ABI>;
+
     // Use specialised kernels
+    FASTOR_IF_CONSTEXPR( M<=16UL && (N==V::Size && V::Size!=1)) {
+        internal::_matmul_mk_simd_width<T,M,K,N>(a,b,out);
+        return;
+    }
+
     FASTOR_IF_CONSTEXPR( M==N && M==K && (M==12UL || M==24UL) && std::is_same<T,float>::value) {
         internal::_matmul_mkn_square<T,M,K,N>(a,b,out);
         return;
@@ -258,8 +268,8 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
     }
     _mm_store_ps(out,out_row0);
-    _mm_storeu_ps(out+3,out_row1);
-    _mm_storeu_ps(out+6,out_row2);
+    _mm_storeu_ps(&out[3],out_row1);
+    _mm_storeu_ps(&out[6],out_row2);
 }
 
 #else
@@ -386,6 +396,27 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 #endif
 
 
+// (8xk) x (kx8) matrices
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<M!=K && M==N && M==8 && std::is_same<T,double>::value,bool>::type = 0>
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+    internal::_matmul_base<T,M,K,N>(a,b,out);
+}
+
+#ifdef FASTOR_AVX_IMPL
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<M!=K && M==N && M==8 && std::is_same<T,float>::value,bool>::type = 0>
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+    internal::_matmul8k8_float<T,M,K,N>(a,b,out);
+    return;
+}
+#else
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<M!=K && M==N && M==8 && std::is_same<T,float>::value,bool>::type = 0>
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+    internal::_matmul_base<T,M,K,N>(a,b,out);
+}
+#endif
 
 #ifdef FASTOR_SSE4_2_IMPL
 
@@ -449,7 +480,6 @@ void _matmul<float,3,3,3>(const float * FASTOR_RESTRICT a, const float * FASTOR_
         _mm_storeu_ps(out+6,_mm_add_ps(ai0,_mm_add_ps(ai1,ai2)));
     }
 }
-
 
 template<>
 FASTOR_INLINE void _matmul<float,4,4,4>(const float * FASTOR_RESTRICT b, const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
@@ -541,6 +571,100 @@ FASTOR_INLINE void _matmul<float,4,4,4>(const float * FASTOR_RESTRICT b, const f
         _mm_store_ps(out+12,c2);
     }
 }
+#endif
+
+#ifdef FASTOR_AVX_IMPL
+
+namespace internal {
+
+// This is the common interface for 8k8 matmul and not only for 888 so do not
+// make it specific to 888 floats
+template<typename T, size_t M, size_t K, size_t N,
+    typename std::enable_if<std::is_same<T,float>::value,bool>::type>
+void _matmul8k8_float(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+
+    __m256 out_row0 = VZEROPS;
+    __m256 out_row1 = VZEROPS;
+    __m256 out_row2 = VZEROPS;
+    __m256 out_row3 = VZEROPS;
+    __m256 out_row4 = VZEROPS;
+    __m256 out_row5 = VZEROPS;
+    __m256 out_row6 = VZEROPS;
+    __m256 out_row7 = VZEROPS;
+
+    for (size_t i=0; i<K; ++i) {
+        __m256 brow = _mm256_load_ps(&b[i*8]);
+#ifndef FASTOR_FMA_IMPL
+        // row 0
+        __m256 a_vec0 = _mm256_set1_ps(a[i]);
+        out_row0 = _mm256_add_ps(out_row0,_mm256_mul_ps(a_vec0,brow));
+        // row 1
+        __m256 a_vec1 = _mm256_set1_ps(a[K+i]);
+        out_row1 = _mm256_add_ps(out_row1,_mm256_mul_ps(a_vec1,brow));
+        // row 2
+        __m256 a_vec2 = _mm256_set1_ps(a[2*K+i]);
+        out_row2 = _mm256_add_ps(out_row2,_mm256_mul_ps(a_vec2,brow));
+        // row 3
+        __m256 a_vec3 = _mm256_set1_ps(a[3*K+i]);
+        out_row3 = _mm256_add_ps(out_row3,_mm256_mul_ps(a_vec3,brow));
+        // row 4
+        __m256 a_vec4 = _mm256_set1_ps(a[4*K+i]);
+        out_row4 = _mm256_add_ps(out_row4,_mm256_mul_ps(a_vec4,brow));
+        // row 5
+        __m256 a_vec5 = _mm256_set1_ps(a[5*K+i]);
+        out_row5 = _mm256_add_ps(out_row5,_mm256_mul_ps(a_vec5,brow));
+        // row 6
+        __m256 a_vec6 = _mm256_set1_ps(a[6*K+i]);
+        out_row6 = _mm256_add_ps(out_row6,_mm256_mul_ps(a_vec6,brow));
+        // row 7
+        __m256 a_vec7 = _mm256_set1_ps(a[7*K+i]);
+        out_row7 = _mm256_add_ps(out_row7,_mm256_mul_ps(a_vec7,brow));
+#else
+        // row 0
+        __m256 a_vec0 = _mm256_set1_ps(a[i]);
+        out_row0 = _mm256_fmadd_ps(a_vec0,brow,out_row0);
+        // row 1
+        __m256 a_vec1 = _mm256_set1_ps(a[K+i]);
+        out_row1 = _mm256_fmadd_ps(a_vec1,brow,out_row1);
+        // row 2
+        __m256 a_vec2 = _mm256_set1_ps(a[2*K+i]);
+        out_row2 = _mm256_fmadd_ps(a_vec2,brow,out_row2);
+        // row 3
+        __m256 a_vec3 = _mm256_set1_ps(a[3*K+i]);
+        out_row3 = _mm256_fmadd_ps(a_vec3,brow,out_row3);
+        // row 4
+        __m256 a_vec4 = _mm256_set1_ps(a[4*K+i]);
+        out_row4 = _mm256_fmadd_ps(a_vec4,brow,out_row4);
+        // row 5
+        __m256 a_vec5 = _mm256_set1_ps(a[5*K+i]);
+        out_row5 = _mm256_fmadd_ps(a_vec5,brow,out_row5);
+        // row 6
+        __m256 a_vec6 = _mm256_set1_ps(a[6*K+i]);
+        out_row6 = _mm256_fmadd_ps(a_vec6,brow,out_row6);
+        // row 7
+        __m256 a_vec7 = _mm256_set1_ps(a[7*K+i]);
+        out_row7 = _mm256_fmadd_ps(a_vec7,brow,out_row7);
+#endif
+    }
+    _mm256_store_ps(out,out_row0);
+    _mm256_store_ps(&out[8],out_row1);
+    _mm256_store_ps(&out[16],out_row2);
+    _mm256_store_ps(&out[24],out_row3);
+    _mm256_store_ps(&out[32],out_row4);
+    _mm256_store_ps(&out[40],out_row5);
+    _mm256_store_ps(&out[48],out_row6);
+    _mm256_store_ps(&out[56],out_row7);
+}
+
+}
+
+template<>
+FASTOR_INLINE void _matmul<float,8,8,8>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
+    internal::_matmul8k8_float<float,8,8,8>(a,b,out);
+    return;
+}
+
+
 #endif
 
 
@@ -714,24 +838,23 @@ void _matmul<float,2,2,1>(const float * FASTOR_RESTRICT a, const float * FASTOR_
 
 template<>
 FASTOR_INLINE void _matmul<float,3,3,1>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
-    // 47 OPS
-    __m128 a0 = _mm_load_ps(a);
-    __m128 row0 = _mm_shift1_ps(a0);
-    __m128 a1 = _mm_load_ps(a+4);
-    __m128 row1 = _mm_shift1_ps(_mm_reverse_ps(_mm_shift1_ps(_mm_shuffle_ps(a1,a0,_MM_SHUFFLE(3,3,1,0)))));
+    // IVY/HW 47 OPS
 
-    __m128 a2 = _mm_load_ss(a+8);
-    __m128 row2 = _mm_shift1_ps(_mm_shuffle_ps(a1,a2,_MM_SHUFFLE(1,0,3,2)));
+    // 12 ss loads so probably inefficent
+    __m128 amm0 = _mm_loadul3_ps(a);
+    __m128 amm1 = _mm_loadul3_ps(&a[3]);
+    __m128 amm2 = _mm_loadul3_ps(&a[6]);
+    __m128 bmm  = _mm_loadul3_ps(b);
 
-    __m128 vec_b = _mm_shift1_ps(_mm_load_ps(b));
+    // This is probably more efficient but compiler depdendent
+    // __m128 amm0 = _mm_setr_ps(a[0],a[1],a[2],0.f);
+    // __m128 amm1 = _mm_setr_ps(a[3],a[4],a[5],0.f);
+    // __m128 amm2 = _mm_setr_ps(a[6],a[7],a[8],0.f);
+    // __m128 bmm  = _mm_setr_ps(b[0],b[1],b[2],0.f);
 
-    __m128 c0 = _add_ps(_mm_mul_ps(row0,vec_b));
-    __m128 c1 = _add_ps(_mm_mul_ps(row1,vec_b));
-    __m128 c2 = _add_ps(_mm_mul_ps(row2,vec_b));
-
-    _mm_store_ss(out,c0);
-    _mm_store_ss(out+1,c1);
-    _mm_store_ss(out+2,c2);
+    out[0] =_mm_sum_ps(_mm_mul_ps(amm0,bmm));
+    out[1] =_mm_sum_ps(_mm_mul_ps(amm1,bmm));
+    out[2] =_mm_sum_ps(_mm_mul_ps(amm2,bmm));
 }
 #endif
 #ifdef FASTOR_AVX_IMPL
