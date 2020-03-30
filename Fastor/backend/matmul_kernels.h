@@ -176,7 +176,7 @@ void _matmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * 
     constexpr size_t unrollOuterloop = M % 5UL == 0 ? 5UL : 4UL;
 
     // Unroll the rows of (a and c) (M) by [numSIMDRows * V::Size]
-    constexpr size_t numSIMDRows = M % (unrollOuterloop * 3UL) == 0 ? 3UL : 2UL;
+    constexpr size_t numSIMDRows = M % (unrollOuterloop * 3UL) == 0 ? 3UL : (M==V::Size ? 1UL : 2UL);
 
     // Unroll the columns of (b and c) (N) by [numSIMDCols * V::Size]
     // constexpr size_t numSIMDCols = N % (V::Size * 3UL) == 0 ? 3UL : 2UL;

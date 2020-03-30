@@ -32,14 +32,15 @@ void em_0() {
 
 template<typename T>
 void run() {
-    print(FBLU(BOLD("Numerical intergration time")));
     timeit(static_cast<void (*)()>(&em_0<T>));
 }
 
 
 int main() {
 
+    print(FBLU(BOLD("Numerical intergration time: single precision")));
     run<float>();
+    print(FBLU(BOLD("Numerical intergration time: double precision")));
     run<double>();
     return 0;
 }

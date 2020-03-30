@@ -15,11 +15,18 @@ namespace Fastor {
 //-----------------------------------------------------------------------------------------------------------
 namespace internal {
 template<typename T, size_t M, size_t N>
+FASTOR_INLINE
 void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out);
 
 template<typename T, size_t M, size_t K, size_t N,
-    typename std::enable_if<std::is_same<T,float>::value,bool>::type = 0 >
+    typename std::enable_if<M==N && M==8 && std::is_same<T,float>::value,bool>::type = 0 >
+FASTOR_INLINE
 void _matmul8k8_float(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out);
+
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<M==N && M==4 && std::is_same<T,double>::value,bool>::type = 0>
+FASTOR_INLINE
+void _matmul4k4_double(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out);
 } // internal
 //-----------------------------------------------------------------------------------------------------------
 
@@ -287,46 +294,8 @@ template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<(M!=K && M==N && M==4 && std::is_same<T,double>::value),bool>::type = 0>
 FASTOR_INLINE
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
-
-    __m256d out_row0 = VZEROPD;
-    __m256d out_row1 = VZEROPD;
-    __m256d out_row2 = VZEROPD;
-    __m256d out_row3 = VZEROPD;
-
-    for (size_t i=0; i<K; ++i) {
-        __m256d brow = _mm256_load_pd(&b[i*4]);
-#ifndef FASTOR_FMA_IMPL
-        // row 0
-        __m256d a_vec0 = _mm256_set1_pd(a[i]);
-        out_row0 = _mm256_add_pd(out_row0,_mm256_mul_pd(a_vec0,brow));
-        // row 1
-        __m256d a_vec1 = _mm256_set1_pd(a[K+i]);
-        out_row1 = _mm256_add_pd(out_row1,_mm256_mul_pd(a_vec1,brow));
-        // row 2
-        __m256d a_vec2 = _mm256_set1_pd(a[2*K+i]);
-        out_row2 = _mm256_add_pd(out_row2,_mm256_mul_pd(a_vec2,brow));
-        // row 3
-        __m256d a_vec3 = _mm256_set1_pd(a[3*K+i]);
-        out_row3 = _mm256_add_pd(out_row3,_mm256_mul_pd(a_vec3,brow));
-#else
-        // row 0
-        __m256d a_vec0 = _mm256_set1_pd(a[i]);
-        out_row0 = _mm256_fmadd_pd(a_vec0,brow,out_row0);
-        // row 1
-        __m256d a_vec1 = _mm256_set1_pd(a[K+i]);
-        out_row1 = _mm256_fmadd_pd(a_vec1,brow,out_row1);
-        // row 2
-        __m256d a_vec2 = _mm256_set1_pd(a[2*K+i]);
-        out_row2 = _mm256_fmadd_pd(a_vec2,brow,out_row2);
-        // row 3
-        __m256d a_vec3 = _mm256_set1_pd(a[3*K+i]);
-        out_row3 = _mm256_fmadd_pd(a_vec3,brow,out_row3);
-#endif
-    }
-    _mm256_store_pd(out,out_row0);
-    _mm256_store_pd(&out[4],out_row1);
-    _mm256_store_pd(&out[8],out_row2);
-    _mm256_store_pd(&out[12],out_row3);
+    internal::_matmul4k4_double<T,M,K,N>(a,b,out);
+    return;
 }
 
 #else
@@ -417,6 +386,10 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     internal::_matmul_base<T,M,K,N>(a,b,out);
 }
 #endif
+
+
+
+
 
 #ifdef FASTOR_SSE4_2_IMPL
 
@@ -580,7 +553,8 @@ namespace internal {
 // This is the common interface for 8k8 matmul and not only for 888 so do not
 // make it specific to 888 floats
 template<typename T, size_t M, size_t K, size_t N,
-    typename std::enable_if<std::is_same<T,float>::value,bool>::type>
+    typename std::enable_if<M==N && M==8 && std::is_same<T,float>::value,bool>::type>
+FASTOR_INLINE
 void _matmul8k8_float(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
     __m256 out_row0 = VZEROPS;
@@ -733,6 +707,68 @@ void _matmul<double,3,3,3>(const double * FASTOR_RESTRICT a, const double * FAST
         _mm256_storeu_pd(out+6,_mm256_add_pd(ai0,_mm256_add_pd(ai1,ai2)));
     }
 }
+
+
+namespace internal {
+
+// This is the common interface for 4k4 matmul and not only for 444 so do not
+// make it specific to 444 doubles
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<M==N && M==4 && std::is_same<T,double>::value,bool>::type>
+FASTOR_INLINE
+void _matmul4k4_double(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+
+    __m256d out_row0 = VZEROPD;
+    __m256d out_row1 = VZEROPD;
+    __m256d out_row2 = VZEROPD;
+    __m256d out_row3 = VZEROPD;
+
+    for (size_t i=0; i<K; ++i) {
+        __m256d brow = _mm256_load_pd(&b[i*4]);
+#ifndef FASTOR_FMA_IMPL
+        // row 0
+        __m256d a_vec0 = _mm256_set1_pd(a[i]);
+        out_row0 = _mm256_add_pd(out_row0,_mm256_mul_pd(a_vec0,brow));
+        // row 1
+        __m256d a_vec1 = _mm256_set1_pd(a[K+i]);
+        out_row1 = _mm256_add_pd(out_row1,_mm256_mul_pd(a_vec1,brow));
+        // row 2
+        __m256d a_vec2 = _mm256_set1_pd(a[2*K+i]);
+        out_row2 = _mm256_add_pd(out_row2,_mm256_mul_pd(a_vec2,brow));
+        // row 3
+        __m256d a_vec3 = _mm256_set1_pd(a[3*K+i]);
+        out_row3 = _mm256_add_pd(out_row3,_mm256_mul_pd(a_vec3,brow));
+#else
+        // row 0
+        __m256d a_vec0 = _mm256_set1_pd(a[i]);
+        out_row0 = _mm256_fmadd_pd(a_vec0,brow,out_row0);
+        // row 1
+        __m256d a_vec1 = _mm256_set1_pd(a[K+i]);
+        out_row1 = _mm256_fmadd_pd(a_vec1,brow,out_row1);
+        // row 2
+        __m256d a_vec2 = _mm256_set1_pd(a[2*K+i]);
+        out_row2 = _mm256_fmadd_pd(a_vec2,brow,out_row2);
+        // row 3
+        __m256d a_vec3 = _mm256_set1_pd(a[3*K+i]);
+        out_row3 = _mm256_fmadd_pd(a_vec3,brow,out_row3);
+#endif
+    }
+    _mm256_store_pd(out,out_row0);
+    _mm256_store_pd(&out[4],out_row1);
+    _mm256_store_pd(&out[8],out_row2);
+    _mm256_store_pd(&out[12],out_row3);
+}
+
+
+}
+
+template<>
+FASTOR_INLINE
+void _matmul<double,4,4,4>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
+    internal::_matmul4k4_double<double,4,4,4>(a,b,out);
+    return;
+}
+
 #endif
 
 
