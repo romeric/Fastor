@@ -220,7 +220,7 @@ SOFTWARE.
 
 
 // Conservative alignment for SIMD
-#if defined(FASTOR_CONSERVATIVE_ALIGN) && defined(FASTOR_DONT_VECTORISE)
+#if defined(FASTOR_CONSERVATIVE_ALIGN) || defined(FASTOR_DONT_VECTORISE)
     #define FASTOR_ALIGNED false
 #else
     #define FASTOR_ALIGNED true
@@ -242,7 +242,7 @@ SOFTWARE.
 #if defined(__FAST_MATH__)
 #define FASTOR_FAST_MATH
 // Use the following for unsafe math
-// Only for GCC & Clang, affects tensor divisions.
+// Only for GCC & Clang, activates fast div/rcp
 //#define FASTOR_UNSAFE_MATH
 #endif
 

@@ -60,12 +60,16 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
         return;
     }
 
-    FASTOR_IF_CONSTEXPR( M==N && M==K && (M==12UL || M==24UL) && std::is_same<T,float>::value) {
+    FASTOR_IF_CONSTEXPR( M==N && M==K && ((M==12UL || M==24UL) && std::is_same<T,float>::value)) {
         internal::_matmul_mkn_square<T,M,K,N>(a,b,out);
         return;
     }
+    FASTOR_IF_CONSTEXPR( M==N && M==K && ((M==33) && std::is_same<T,float>::value)) {
+        internal::_matmul_mkn_non_square<T,M,K,N>(a,b,out);
+        return;
+    }
 
-    FASTOR_IF_CONSTEXPR(M>=V::Size && K>=V::Size && N>1) {
+    FASTOR_IF_CONSTEXPR(M>=V::Size && K>=V::Size) {
         internal::_matmul_base<T,M,K,N>(a,b,out);
         return;
     }
