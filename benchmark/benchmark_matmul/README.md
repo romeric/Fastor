@@ -12,6 +12,8 @@ To run the benchmarks
 make run >> benchmark_results_double.txt
 ~~~
 
+Note that you will have to run the benchmark a few times to get a sense of where each library stands.
+
 To plot the the results, you need python with numpy and matplotlib
 
 ~~~
