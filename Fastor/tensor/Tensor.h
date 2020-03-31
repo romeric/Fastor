@@ -316,19 +316,6 @@ public:
     #include "TensorEvaluator.h"
     //----------------------------------------------------------------------------------------------------------//
 
-    // FMA overloads
-    //----------------------------------------------------------------------------------------------------------//
-    // Disable this as these are not treated as specialisations and
-    // hence lead to compilation errors concerning ambiguoity.
-    // Ultimately -ffp-contract=fast should achieve the same thing
-// #ifdef __FMA__
-//     #include "FMAPlugin.h"
-// #endif
-    //----------------------------------------------------------------------------------------------------------//
-    // Disable this as these are not treated as specialisations and
-    // hence lead to compilation errors concerning ambiguoity.
-    // Ultimately -ffp-contract=fast should achieve the same thing
-    // #include "AuxiliaryPlugin.h"
     //----------------------------------------------------------------------------------------------------------//
     #include "SmartExpressionsPlugin.h"
     //----------------------------------------------------------------------------------------------------------//
