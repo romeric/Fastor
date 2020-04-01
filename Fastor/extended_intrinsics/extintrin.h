@@ -31,6 +31,10 @@
 #define VTOWPD (_mm256_set1_pd(2.0))
 #endif
 
+
+namespace Fastor {
+
+
 #ifdef FASTOR_SSE4_2_IMPL
 FASTOR_INLINE __m128 _mm_loadl3_ps(const float *value) {
     //! Align load a vector into the first three elements of an xmm
@@ -65,6 +69,8 @@ FASTOR_INLINE __m256d _mm256_loadul3_pd(const double *value) {
 //    __m256d vec  = _mm256_castpd128_pd256(xy);
 //    return _mm256_insertf128_pd(vec, z,0x1);
     // Alternatively
+    // _mm256_maskload_pd has a pretty high latency on icelake (8).
+    // On skylake it is 1 cycle only though
     __m256i mask = _mm256_set_epi64x(0,-1,-1,-1);
     return _mm256_maskload_pd(value,(__m256i) mask);
 }
@@ -146,7 +152,7 @@ FASTOR_INLINE double _mm256_sum_pd(__m256d a) {
     // IVY 9 OPS - HW - 11 OPS
     __m256d sum = _mm256_hadd_pd(a, a);
 #else
-    // IVY 8 OPS - HW - 10 OPS
+    // IVY 8 OPS - HW 10 OPS - SKY 11 OPS (BUT 2 PARALLEL ADDS SO POTENTIALLY 7OPS)
     __m256d sum = _mm256_add_pd(a, _mm256_shuffle_pd(a,a,0x5));
 #endif
     __m128d sum_high = _mm256_extractf128_pd(sum, 0x1);
@@ -824,6 +830,10 @@ FASTOR_INLINE double sqrts<>(double a) {return _mm_cvtsd_f64(_mm_sqrt_pd(_mm_set
 #endif
 
 #endif
+
+
+
+} // end of namespace Fastor
 
 
 #endif // EXT_INTRIN_H
