@@ -3,19 +3,19 @@
 
 
 #include "Fastor/extended_intrinsics/extintrin.h"
-#include "transpose.h"
-#include "trace.h"
-#include "doublecontract.h"
-#include "determinant.h"
-#include "adjoint.h"
-#include "cofactor.h"
-#include "matmul.h"
-#include "outer.h"
-#include "dyadic.h"
-#include "cyclic_0.h"
-#include "tensor_cross.h"
-#include "norm.h"
-#include "inverse.h"
+#include "Fastor/backend/transpose.h"
+#include "Fastor/backend/trace.h"
+#include "Fastor/backend/doublecontract.h"
+#include "Fastor/backend/determinant.h"
+#include "Fastor/backend/adjoint.h"
+#include "Fastor/backend/cofactor.h"
+#include "Fastor/backend/matmul/matmul.h"
+#include "Fastor/backend/outer.h"
+#include "Fastor/backend/dyadic.h"
+#include "Fastor/backend/cyclic_0.h"
+#include "Fastor/backend/tensor_cross.h"
+#include "Fastor/backend/norm.h"
+#include "Fastor/backend/inverse.h"
 
 #endif // BACKEND_H
 

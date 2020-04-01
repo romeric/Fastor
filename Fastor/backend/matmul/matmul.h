@@ -1,10 +1,10 @@
 #ifndef MATMUL_H
 #define MATMUL_H
 
-#include "Fastor/backend/matmul_kernels.h"
+#include "Fastor/backend/matmul/matmul_kernels.h"
 
 #ifdef FASTOR_USE_LIBXSMM
-#include "Fastor/backend/libxsmm_backend.h"
+#include "Fastor/backend/matmul/libxsmm_backend.h"
 #endif
 
 namespace Fastor {
@@ -105,7 +105,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
 //-----------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------
-#include "Fastor/backend/matmul_specialisations_kernels.h"
+#include "Fastor/backend/matmul/matmul_specialisations_kernels.h"
 //-----------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------
 
