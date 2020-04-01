@@ -12,6 +12,7 @@ namespace Fastor {
 template <>
 struct SIMDVector<double, simd_abi::avx> {
     using value_type = __m256d;
+    using scalar_value_type = double;
     static constexpr FASTOR_INDEX Size = internal::get_simd_vector_size<SIMDVector<double,simd_abi::avx>>::value;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return internal::get_simd_vector_size<SIMDVector<double,simd_abi::avx>>::value;}
     static constexpr int unroll_size(FASTOR_INDEX size) {return (static_cast<int>(size) - static_cast<int>(Size));}
@@ -281,6 +282,7 @@ FASTOR_INLINE SIMDVector<double,simd_abi::avx> abs(const SIMDVector<double,simd_
 template <>
 struct SIMDVector<double, simd_abi::sse> {
     using value_type = __m128d;
+    using scalar_value_type = double;
     static constexpr FASTOR_INDEX Size = internal::get_simd_vector_size<SIMDVector<double,simd_abi::sse>>::value;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return internal::get_simd_vector_size<SIMDVector<double,simd_abi::sse>>::value;}
     static constexpr int unroll_size(FASTOR_INDEX size) {return (static_cast<int>(size) - static_cast<int>(Size));}
@@ -545,6 +547,7 @@ FASTOR_INLINE SIMDVector<double,simd_abi::sse> abs(const SIMDVector<double,simd_
 template <>
 struct SIMDVector<double, simd_abi::scalar> {
     using value_type = double;
+    using scalar_value_type = double;
     static constexpr FASTOR_INDEX Size = 1;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return 1;}
     static constexpr int unroll_size(FASTOR_INDEX size) {return (static_cast<int>(size) - 1);}
