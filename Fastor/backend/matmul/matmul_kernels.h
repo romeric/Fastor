@@ -32,8 +32,10 @@ void interior_block_matmul_impl(
     V c_ij[unrollOuterloop*numSIMDCols];
     // Loop over columns of a (rows of b)
     for (size_t k = 0; k < K; ++k) {
+
+        const V bmm0(&b[k*N+j],false);
+
         for (size_t n = 0; n < unrollOuterloop; ++n) {
-            const V bmm0(&b[k*N+j],false);
 
             const V amm0 = a[(i+ii*unrollOuterloop+n)*K+k];
 
@@ -56,9 +58,11 @@ void interior_block_matmul_impl(
     V c_ij[unrollOuterloop*numSIMDCols];
     // Loop over columns of a (rows of b)
     for (size_t k = 0; k < K; ++k) {
+
+        const V bmm0(&b[k*N+j],false);
+        const V bmm1(&b[k*N+j+V::Size],false);
+
         for (size_t n = 0; n < unrollOuterloop; ++n) {
-            const V bmm0(&b[k*N+j],false);
-            const V bmm1(&b[k*N+j+V::Size],false);
 
             const V amm0 = a[(i+ii*unrollOuterloop+n)*K+k];
 
@@ -84,10 +88,12 @@ void interior_block_matmul_impl(
     V c_ij[unrollOuterloop*numSIMDCols];
     // Loop over columns of a (rows of b)
     for (size_t k = 0; k < K; ++k) {
+
+        const V bmm0(&b[k*N+j],false);
+        const V bmm1(&b[k*N+j+V::Size],false);
+        const V bmm2(&b[k*N+j+2*V::Size],false);
+
         for (size_t n = 0; n < unrollOuterloop; ++n) {
-            const V bmm0(&b[k*N+j],false);
-            const V bmm1(&b[k*N+j+V::Size],false);
-            const V bmm2(&b[k*N+j+2*V::Size],false);
 
             const V amm0 = a[(i+ii*unrollOuterloop+n)*K+k];
 
@@ -115,11 +121,13 @@ void interior_block_matmul_impl(
     V c_ij[unrollOuterloop*numSIMDCols];
     // Loop over columns of a (rows of b)
     for (size_t k = 0; k < K; ++k) {
+
+        const V bmm0(&b[k*N+j],false);
+        const V bmm1(&b[k*N+j+V::Size],false);
+        const V bmm2(&b[k*N+j+2*V::Size],false);
+        const V bmm3(&b[k*N+j+3*V::Size],false);
+
         for (size_t n = 0; n < unrollOuterloop; ++n) {
-            const V bmm0(&b[k*N+j],false);
-            const V bmm1(&b[k*N+j+V::Size],false);
-            const V bmm2(&b[k*N+j+2*V::Size],false);
-            const V bmm3(&b[k*N+j+3*V::Size],false);
 
             const V amm0 = a[(i+ii*unrollOuterloop+n)*K+k];
 
@@ -147,8 +155,8 @@ void interior_block_matmul_scalar_impl(
     T c_ij[unrollOuterloop*numSIMDCols] = {};
     // Loop over columns of a (rows of b)
     for (size_t k = 0; k < K; ++k) {
+        const T bmm0(b[k*N+j]);
         for (size_t n = 0; n < unrollOuterloop; ++n) {
-            const T bmm0(b[k*N+j]);
 
             const T amm0 = a[(i+ii*unrollOuterloop+n)*K+k];
 
