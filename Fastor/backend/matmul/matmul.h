@@ -30,7 +30,7 @@ template<typename T, size_t M, size_t K, size_t N,
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<
             !(M!=K && M==N && (M==2UL || M==3UL || M==4UL|| M==8UL))
-            && is_less_equal<M*N*K/FASTOR_BLAS_SWITCH_MATRIX_SIZE/FASTOR_BLAS_SWITCH_MATRIX_SIZE/FASTOR_BLAS_SWITCH_MATRIX_SIZE,1>::value,
+            && is_less_equal<M*N*K/internal::meta_cube<FASTOR_BLAS_SWITCH_MATRIX_SIZE>::value,1>::value,
             bool>::type = 0>
 #endif
 FASTOR_INLINE
@@ -104,7 +104,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<
             !(M!=K && M==N && (M==2 || M==3 || M==4))
-            && is_greater<M*N*K/FASTOR_BLAS_SWITCH_MATRIX_SIZE/FASTOR_BLAS_SWITCH_MATRIX_SIZE/FASTOR_BLAS_SWITCH_MATRIX_SIZE,1>::value,
+            && is_greater<M*N*K/internal::meta_cube<FASTOR_BLAS_SWITCH_MATRIX_SIZE>::value,1>::value,
             bool>::type = 0>
 FASTOR_INLINE
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
