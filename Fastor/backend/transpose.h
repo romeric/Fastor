@@ -4,15 +4,56 @@
 
 #include "Fastor/commons/commons.h"
 #include "Fastor/extended_intrinsics/extintrin.h"
+#include "Fastor/simd_vector/SIMDVector.h"
 
 namespace Fastor {
 
+
+#ifdef FASTOR_AVX_IMPL
+template<typename T, size_t M, size_t N,
+    typename std::enable_if<M!=N || (M==N && N % SIMDVector<T,DEFAULT_ABI>::Size!= 0)
+    || is_less_equal<M,9>::value,bool>::type=0>
+#else
 template<typename T, size_t M, size_t N>
+#endif
 FASTOR_INLINE void _transpose(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT out) {
     for (size_t j=0; j<N; ++j)
         for (size_t i=0; i< M; ++i)
             out[j*M+i] = a[i*N+j];
 }
+
+#ifdef FASTOR_AVX_IMPL
+template<typename T, size_t M, size_t N,
+    typename std::enable_if<M==N && M % SIMDVector<T,DEFAULT_ABI>::Size == 0
+    && is_greater<M,9>::value,bool>::type=0>
+FASTOR_INLINE void _transpose(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT out) {
+
+    using V = SIMDVector<T,DEFAULT_ABI>;
+    constexpr size_t innerBlock = V::Size;
+    constexpr size_t outerBlock = V::Size;
+
+    T FASTOR_ALIGN v[outerBlock*innerBlock];
+    T FASTOR_ALIGN v_out[outerBlock*innerBlock];
+
+    for (size_t j=0; j<N; j+=outerBlock) {
+        for (size_t i=0; i< M; i+=innerBlock) {
+            V _vec;
+            for (size_t ii=0; ii<innerBlock; ++ii) {
+                _vec.load(&a[(i+ii)*N+(j)],false);
+                _vec.store(&v[ii*outerBlock]);
+            }
+            _transpose<T,innerBlock,outerBlock>(v,v_out);
+            for (size_t jj=0; jj<outerBlock; ++jj) {
+                _vec.load(&v_out[jj*innerBlock]);
+                _vec.store(&out[(j+jj)*M+(i)],false);
+            }
+
+        }
+    }
+}
+#endif
+
+
 
 #ifdef FASTOR_SSE4_2_IMPL
 template<>
