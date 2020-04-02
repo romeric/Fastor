@@ -59,30 +59,41 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
         return;
     }
 
-    FASTOR_IF_CONSTEXPR(M>=V::Size && K>=V::Size) {
+#ifndef FASTOR_AVX_IMPL
+    FASTOR_IF_CONSTEXPR( M*N*K > 27UL ) {
         internal::_matmul_base<T,M,K,N>(a,b,out);
         return;
     }
-
-    constexpr int ROUND_ = ROUND_DOWN(N,V::Size);
-
-    for (size_t j=0; j<M; ++j) {
-        size_t k=0;
-        for (; k<ROUND_; k+=V::Size) {
-            V out_row;
-            for (size_t i=0; i<K; ++i) {
-                const V brow(&b[i*N+k],false);
-                const V vec_a(a[j*K+i]);
-                out_row = fmadd(vec_a,brow,out_row);
+#else
+    FASTOR_IF_CONSTEXPR( M*N*K > 27UL && N % V::Size == 0) {
+        internal::_matmul_base<T,M,K,N>(a,b,out);
+        return;
+    }
+    else FASTOR_IF_CONSTEXPR( M*N*K > 27UL && N % V::Size != 0) {
+        internal::_matmul_base_masked<T,M,K,N>(a,b,out);
+        return;
+    }
+#endif
+    else {
+        constexpr int ROUND_ = ROUND_DOWN(N,V::Size);
+        for (size_t j=0; j<M; ++j) {
+            size_t k=0;
+            for (; k<ROUND_; k+=V::Size) {
+                V out_row;
+                for (size_t i=0; i<K; ++i) {
+                    const V brow(&b[i*N+k],false);
+                    const V vec_a(a[j*K+i]);
+                    out_row = fmadd(vec_a,brow,out_row);
+                }
+                out_row.store(&out[k+N*j],false);
             }
-            out_row.store(&out[k+N*j],false);
-        }
-        for (; k<N; k++) {
-            T out_row = 0.;
-            for (size_t i=0; i<K; ++i) {
-                out_row += a[j*K+i]*b[i*N+k];
+            for (; k<N; k++) {
+                T out_row = 0.;
+                for (size_t i=0; i<K; ++i) {
+                    out_row += a[j*K+i]*b[i*N+k];
+                }
+                out[N*j+k] = out_row;
             }
-            out[N*j+k] = out_row;
         }
     }
 }

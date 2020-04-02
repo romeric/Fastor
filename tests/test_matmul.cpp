@@ -1,7 +1,7 @@
 #include <Fastor/Fastor.h>
 using namespace Fastor;
 
-#define Tol 1e-12
+#define Tol 1e-09
 #define BigTol 1e-5
 
 template<typename T, size_t M, size_t K, size_t N>
@@ -22,7 +22,7 @@ Tensor<T,M,N> matmul_ref(const Tensor<T,M,K> &a, const Tensor<T,K,N> &b) {
 
 
 template<typename T, size_t M, size_t K, size_t N>
-void SINGLE_TEST(const Tensor<T,M,K> &a, const Tensor<T,K,N> &b) {
+void SINGLE_TEST(const Tensor<T,M,K> &a, const Tensor<T,K,N> &b, T tol=Tol) {
 
     auto c1 = matmul_ref(a,b);
     Tensor<T,M,N> c2 = matmul(a,b);
@@ -32,8 +32,8 @@ void SINGLE_TEST(const Tensor<T,M,K> &a, const Tensor<T,K,N> &b) {
     // print(c1,"\n",c2);
     // print(std::abs(sum(c1-c2)));
     // print(std::abs(sum(c1-c3)));
-    FASTOR_EXIT_ASSERT(std::abs(sum(c1-c2)) < Tol);
-    FASTOR_EXIT_ASSERT(std::abs(sum(c1-c3)) < Tol);
+    FASTOR_EXIT_ASSERT(std::abs(sum(c1-c2)) < tol);
+    FASTOR_EXIT_ASSERT(std::abs(sum(c1-c3)) < tol);
 }
 
 
@@ -156,6 +156,14 @@ void run() {
     }
 
     {
+        Tensor<T,17,17> a; a.iota(9);
+        Tensor<T,17,19> b; b.iota(-4);
+        SINGLE_TEST(a,b);
+        a(1,1) = -2;
+        SINGLE_TEST(a,b);
+    }
+
+    {
         Tensor<T,5,2> a; a.iota(9);
         Tensor<T,2,3> b; b.iota(-4);
         SINGLE_TEST(a,b);
@@ -180,8 +188,8 @@ void run() {
     }
 
     {
-        Tensor<T,2,50> a; a.iota(-5);
-        Tensor<T,50,2> b; b.iota(0);
+        Tensor<T,2,18> a; a.iota(-5);
+        Tensor<T,18,2> b; b.iota(0);
         SINGLE_TEST(a,b);
         a(1,1) = -2;
         SINGLE_TEST(a,b);
@@ -247,7 +255,7 @@ void run() {
     {
         Tensor<T,1,2> a; a.iota(-5.1);
         Tensor<T,2,2> b; b.iota(2.3);
-        SINGLE_TEST(a,b);
+        SINGLE_TEST(a,b,(T)BigTol);
     }
 
     {
@@ -289,7 +297,6 @@ void run() {
     {
         Tensor<T,2> a; a.iota(-5);
         Tensor<T,2,4> b; b.iota(0);
-        // print(a,b);
         SINGLE_TEST(a,b);
     }
 

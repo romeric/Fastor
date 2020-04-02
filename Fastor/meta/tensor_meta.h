@@ -226,6 +226,21 @@ struct meta_argmax<m,n> {
 };
 //-------
 
+
+//---------------
+namespace internal {
+template<size_t Val>
+struct meta_square {
+    static constexpr size_t value = Val*Val;
+};
+
+template<size_t Val>
+struct meta_cube {
+    static constexpr size_t value = Val*Val*Val;
+};
+}
+//---------------
+
 //---------------
 //square root of integers at compile time, use like meta_sqrt<36>::ret
 template<int Y,

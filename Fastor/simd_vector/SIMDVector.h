@@ -493,6 +493,126 @@ FASTOR_INLINE void data_setter(T *FASTOR_RESTRICT data, const SIMDVector<T,ABI> 
 
 
 
+// Mask load and store operations implemented as free functions till SIMDVector finds a proper
+// companion masked vector. Note that these require at least AVX even the SSE variants
+//----------------------------------------------------------------------------------------------------------------
+template<typename V>
+FASTOR_INLINE V
+maskload(const typename V::scalar_value_type * FASTOR_RESTRICT a, const int (&maska)[V::Size]) {
+    // masked array is reversed like other intrinsics
+    typename V::scalar_value_type val_out[V::Size] = {}; // zero out the rest
+    for (FASTOR_INDEX i=0; i<V::Size; ++i) {
+        if (maska[i] == -1) {
+            val_out[V::Size - i - 1] = a[V::Size - i - 1];
+        }
+    }
+    return val_out;
+}
+#ifdef FASTOR_AVX_IMPL
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::avx>
+maskload<SIMDVector<double,simd_abi::avx>>(const double * FASTOR_RESTRICT a, const int (&maska)[4]) {
+    __m256i mask = _mm256_set_epi64x(maska[0],maska[1],maska[2],maska[3]);
+    return _mm256_maskload_pd(a,(__m256i) mask);
+}
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::avx>
+maskload<SIMDVector<float,simd_abi::avx>>(const float * FASTOR_RESTRICT a, const int (&maska)[8]) {
+    __m256i mask = _mm256_set_epi32(maska[0],maska[1],maska[2],maska[3],maska[4],maska[5],maska[6],maska[7]);
+    return _mm256_maskload_ps(a,(__m256i) mask);
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::sse>
+maskload<SIMDVector<double,simd_abi::sse>>(const double * FASTOR_RESTRICT a, const int (&maska)[2]) {
+    __m128i mask = _mm_set_epi64x(maska[0],maska[1]);
+    return _mm_maskload_pd(a,(__m128i) mask);
+}
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::sse>
+maskload<SIMDVector<float,simd_abi::sse>>(const float * FASTOR_RESTRICT a, const int (&maska)[4]) {
+    __m128i mask = _mm_set_epi32(maska[0],maska[1],maska[2],maska[3]);
+    return _mm_maskload_ps(a,(__m128i) mask);
+}
+#endif // FASTOR_AVX_IMPL
+
+
+// Ideally this style should be followed to be compatible with actual intrinsics signatures
+#if 0
+template<typename V>
+FASTOR_INLINE V
+maskload(V &vec, const typename V::scalar_value_type * FASTOR_RESTRICT a, const int (&maska)[V::Size]);
+#ifdef FASTOR_AVX_IMPL
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::avx>
+maskload(SIMDVector<double,simd_abi::avx> &vec, const double * FASTOR_RESTRICT a, const int (&maska)[4]) {
+    __m256i mask = _mm256_set_epi64x(maska[0],maska[1],maska[2],maska[3]);
+    vec.value(_mm256_maskload_pd(a,(__m256i) mask));
+}
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::avx>
+maskload(SIMDVector<float,simd_abi::avx> &vec, const float * FASTOR_RESTRICT a, const int (&maska)[8]) {
+    __m256i mask = _mm256_set_epi32(maska[0],maska[1],maska[2],maska[3],maska[4],maska[5],maska[6],maska[7]);
+    vec.value(_mm256_maskload_ps(a,(__m256i) mask));
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::sse>
+maskload(SIMDVector<double,simd_abi::sse> &vec, const double * FASTOR_RESTRICT a, const int (&maska)[2]) {
+    __m128i mask = _mm_set_epi64x(maska[0],maska[1]);
+    vec.value(_mm_maskload_pd(a,(__m128i) mask));
+}
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::sse>
+maskload(SIMDVector<float,simd_abi::sse> &vec, const float * FASTOR_RESTRICT a, const int (&maska)[4]) {
+    __m128i mask = _mm_set_epi32(maska[0],maska[1],maska[2],maska[3]);
+    vec.value(_mm_maskload_ps(a,(__m128i) mask));
+}
+#endif // FASTOR_AVX_IMPL
+#endif
+
+
+template<typename V>
+FASTOR_INLINE
+void maskstore(typename V::scalar_value_type * FASTOR_RESTRICT a, const int (&maska)[V::Size], V& v) {
+    for (FASTOR_INDEX i=0; i<V::Size; ++i) {
+        if (maska[i] == -1) {
+            a[V::Size - i - 1] = v[V::Size - i - 1];
+        }
+    }
+}
+#ifdef FASTOR_AVX_IMPL
+template<>
+FASTOR_INLINE
+void maskstore(double * FASTOR_RESTRICT a, const int (&maska)[4], SIMDVector<double,simd_abi::avx> &v) {
+    __m256i mask = _mm256_set_epi64x(maska[0],maska[1],maska[2],maska[3]);
+    _mm256_maskstore_pd(a,(__m256i) mask, v.value);
+}
+template<>
+FASTOR_INLINE
+void maskstore(float * FASTOR_RESTRICT a, const int (&maska)[8], SIMDVector<float,simd_abi::avx> &v) {
+    __m256i mask = _mm256_set_epi32(maska[0],maska[1],maska[2],maska[3],maska[4],maska[5],maska[6],maska[7]);
+    _mm256_maskstore_ps(a,(__m256i) mask, v.value);
+}
+template<>
+FASTOR_INLINE
+void maskstore(double * FASTOR_RESTRICT a, const int (&maska)[2], SIMDVector<double,simd_abi::sse> &v) {
+    __m128i mask = _mm_set_epi64x(maska[0],maska[1]);
+    _mm_maskstore_pd(a,(__m128i) mask, v.value);
+}
+template<>
+FASTOR_INLINE
+void maskstore(float * FASTOR_RESTRICT a, const int (&maska)[4], SIMDVector<float,simd_abi::sse> &v) {
+    __m128i mask = _mm_set_epi32(maska[0],maska[1],maska[2],maska[3]);
+    _mm_maskstore_ps(a,(__m128i) mask, v.value);
+}
+#endif // FASTOR_AVX_IMPL
+//----------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
 // FMAs
 //----------------------------------------------------------------------------------------------------------------
 template<typename T, typename ABI>

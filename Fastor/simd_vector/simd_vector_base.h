@@ -188,11 +188,14 @@ struct SIMDVector {
     T FASTOR_ALIGN value[Size];
 };
 
+template <typename T, typename ABI>
+constexpr FASTOR_INDEX SIMDVector<T,ABI>::Size;
+
 template<typename T, typename ABI>
 FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<T,ABI> a) {
     os << "[";
     for (FASTOR_INDEX i=0; i<a.size(); ++i)
-        os << a.value[i] << " ";
+        os << a.value[i] << ' ';
     os << "]";
     return os;
 }
