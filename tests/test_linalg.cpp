@@ -73,6 +73,10 @@ void test_linalg() {
         FASTOR_EXIT_ASSERT(std::abs(norm(transpose(t1))-norm(t1))< HugeTol);
     }
     {
+        Tensor<T,17,17> t1; t1.iota(5);
+        FASTOR_EXIT_ASSERT(std::abs(norm(transpose(t1))-norm(t1))< HugeTol);
+    }
+    {
         Tensor<T,40,40> t1; t1.iota(5);
         FASTOR_EXIT_ASSERT(std::abs(norm(transpose(t1))-norm(t1))< HugeTol);
     }

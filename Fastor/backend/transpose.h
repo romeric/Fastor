@@ -10,46 +10,68 @@ namespace Fastor {
 
 
 #ifdef FASTOR_AVX_IMPL
-template<typename T, size_t M, size_t N,
-    typename std::enable_if<M!=N || (M==N && N % SIMDVector<T,DEFAULT_ABI>::Size!= 0)
-    || is_less_equal<M,9>::value,bool>::type=0>
-#else
-template<typename T, size_t M, size_t N>
-#endif
-FASTOR_INLINE void _transpose(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT out) {
-    for (size_t j=0; j<N; ++j)
-        for (size_t i=0; i< M; ++i)
-            out[j*M+i] = a[i*N+j];
-}
 
-#ifdef FASTOR_AVX_IMPL
-template<typename T, size_t M, size_t N,
-    typename std::enable_if<M==N && M % SIMDVector<T,DEFAULT_ABI>::Size == 0
-    && is_greater<M,9>::value,bool>::type=0>
+template<typename T, size_t M, size_t N>
 FASTOR_INLINE void _transpose(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT out) {
 
     using V = SIMDVector<T,DEFAULT_ABI>;
     constexpr size_t innerBlock = V::Size;
     constexpr size_t outerBlock = V::Size;
+    // constexpr size_t innerBlock = 8;
+    // constexpr size_t outerBlock = 8;
 
-    T FASTOR_ALIGN v[outerBlock*innerBlock];
-    T FASTOR_ALIGN v_out[outerBlock*innerBlock];
+    T FASTOR_ALIGN pack_a[outerBlock*innerBlock];
+    T FASTOR_ALIGN pack_out[outerBlock*innerBlock];
 
-    for (size_t j=0; j<N; j+=outerBlock) {
-        for (size_t i=0; i< M; i+=innerBlock) {
-            V _vec;
+    constexpr size_t M0 = M / innerBlock * innerBlock;
+    constexpr size_t N0 = N / outerBlock * outerBlock;
+    V _vec;
+
+    // For row-major matrices we go over N
+    // and then M to get contiguous writes
+    size_t j=0;
+    for (; j<N0; j+=outerBlock) {
+
+        size_t i=0;
+        for (; i< M0; i+=innerBlock) {
+            // Pack A
             for (size_t ii=0; ii<innerBlock; ++ii) {
                 _vec.load(&a[(i+ii)*N+(j)],false);
-                _vec.store(&v[ii*outerBlock]);
+                _vec.store(&pack_a[ii*outerBlock]);
             }
-            _transpose<T,innerBlock,outerBlock>(v,v_out);
+            // Perform transpose on pack_a and get the result
+            // on pack_out
+            _transpose<T,innerBlock,outerBlock>(pack_a,pack_out);
+            // Unpack pack_out to out
             for (size_t jj=0; jj<outerBlock; ++jj) {
-                _vec.load(&v_out[jj*innerBlock]);
+                _vec.load(&pack_out[jj*innerBlock]);
                 _vec.store(&out[(j+jj)*M+(i)],false);
             }
+        }
 
+        // Remainer M - M0 columns (of c)
+        for (; i< M; ++i) {
+            for (size_t jj=0; jj<outerBlock; ++jj) {
+                out[(j+jj)*M+(i)] = a[i*N+j+jj];
+            }
         }
     }
+
+    // Remainder N - N0 rows (of c)
+    for (; j<N; ++j) {
+        for (size_t i=0; i< M; ++i) {
+            out[(j)*M+(i)] = a[i*N+j];
+        }
+    }
+}
+
+#else
+
+template<typename T, size_t M, size_t N>
+FASTOR_INLINE void _transpose(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT out) {
+    for (size_t j=0; j<N; ++j)
+        for (size_t i=0; i< M; ++i)
+            out[j*M+i] = a[i*N+j];
 }
 #endif
 
