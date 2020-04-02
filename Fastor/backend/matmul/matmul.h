@@ -65,11 +65,12 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
         return;
     }
 #else
-    FASTOR_IF_CONSTEXPR( M*N*K > 27UL && N % V::Size == 0) {
+    // If the remainder is 1, just treat the remainders in scalar mode
+    FASTOR_IF_CONSTEXPR( M*N*K > 27UL && N % V::Size <= 1UL) {
         internal::_matmul_base<T,M,K,N>(a,b,out);
         return;
     }
-    else FASTOR_IF_CONSTEXPR( M*N*K > 27UL && N % V::Size != 0) {
+    else FASTOR_IF_CONSTEXPR( M*N*K > 27UL && N % V::Size > 1UL) {
         internal::_matmul_base_masked<T,M,K,N>(a,b,out);
         return;
     }
