@@ -246,11 +246,23 @@ SOFTWARE.
 //#define FASTOR_UNSAFE_MATH
 #endif
 
-// Bounds checking - ON by default
+// Bounds and shape checking - ON by default
 #ifndef NDEBUG
+#ifndef FASTOR_BOUNDS_CHECK
 #define FASTOR_BOUNDS_CHECK 1
+#endif
+#ifndef FASTOR_SHAPE_CHECK
 #define FASTOR_SHAPE_CHECK 1
 #endif
+#else
+#ifndef FASTOR_BOUNDS_CHECK
+#define FASTOR_BOUNDS_CHECK 0
+#endif
+#ifndef FASTOR_SHAPE_CHECK
+#define FASTOR_SHAPE_CHECK 0
+#endif
+#endif
+
 //#define FASTOR_DONT_VECTORISE
 //#define FASTOR_DONT_PERFORM_OP_MIN
 //#define FASTOR_USE_OLD_OUTER

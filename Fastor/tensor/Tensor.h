@@ -76,7 +76,7 @@ public:
     // List initialisers
     FASTOR_INLINE Tensor(const std::initializer_list<T> &lst) {
         static_assert(sizeof...(Rest)==1,"TENSOR RANK MISMATCH WITH LIST-INITIALISER");
-#ifdef FASTOR_BOUNDS_CHECK
+#if FASTOR_BOUNDS_CHECK
         FASTOR_ASSERT(prod<Rest...>::value==lst.size(), "TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
 #endif
         auto counter = 0;
