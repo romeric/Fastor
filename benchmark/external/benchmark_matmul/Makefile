@@ -1,10 +1,10 @@
 OPT = -O3 -march=native -mfma -DNDEBUG
 CXX_FLAGS = -std=c++17 $(OPT)
-CXX_FLAGS += -I.
+CXX_FLAGS += -I../
 
 EIGENROOT = /Users/roman/Downloads/eigen-master/
 BLAZEROOT = /Users/roman/Downloads/blaze-3.7/
-FASTORROOT = ../../Fastor/
+FASTORROOT = ../../../
 LIBXSMMROOT = /Users/roman/Downloads/libxsmm
 
 LIBXSMMINC = -I$(FASTORROOT) -DFASTOR_USE_LIBXSMM -DFASTOR_BLAS_SWITCH_MATRIX_SIZE=1 -I$(LIBXSMMROOT)/include

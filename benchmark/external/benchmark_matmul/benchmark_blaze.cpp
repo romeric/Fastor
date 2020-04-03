@@ -1,4 +1,4 @@
-#include "helper.h"
+#include "benchmarks_general.h"
 using benchmarks_general::println;
 using benchmarks_general::rtimeit;
 using benchmarks_general::unused;
@@ -28,7 +28,7 @@ void run_single_test() {
 
 template<typename T>
 void run_tests() {
-    TEST_RUN_BENCHMARK(run_single_test, T)
+    TEST_RUN_MATMUL_BENCHMARK(run_single_test, T)
 }
 
 
@@ -53,7 +53,7 @@ void run_single_benchmark() {
 
 template<typename T>
 void run_benchmarks() {
-    TEST_RUN_BENCHMARK(run_single_benchmark, T)
+    TEST_RUN_MATMUL_BENCHMARK(run_single_benchmark, T)
 }
 
 

@@ -1,40 +1,41 @@
-#include "helper.h"
+#include "benchmarks_general.h"
 using benchmarks_general::println;
 using benchmarks_general::rtimeit;
+using benchmarks_general::unused;
 
-#include <Fastor/Fastor.h>
+#include <Eigen/Core>
 
 template<typename T, size_t M, size_t K, size_t N>
 T single_test() {
-    using namespace Fastor;
-    Tensor<T,M,K> a(3);
-    Tensor<T,K,N> b(4);
-    Tensor<T,M,N> c = matmul(a,b);
+    using namespace Eigen;
+    Matrix<T,M,K,RowMajor> a; a.setConstant(3);
+    Matrix<T,K,N,RowMajor> b; b.setConstant(4);
+    Matrix<T,M,N,RowMajor> c = a*b;
 
-    Tensor<T,M,N> tmp(0);
+    Matrix<T,M,N,RowMajor> tmp; tmp.setConstant(0);
     benchmarks_general::matmul_ref<M,K,N>(a,b,tmp);
-    return std::abs(tmp.sum() - c.sum());
+    return std::abs(tmp.array().sum() - c.array().sum());
 }
 
 template<typename T, size_t M, size_t K, size_t N>
 void run_single_test() {
     T value = single_test<T,M,K,N>();
-    benchmarks_general::EXIT_ASSERT(value < 1e-10, "TEST FAILED");
+    benchmarks_general::EXIT_ASSERT(std::abs(value) < 1e-10, "TEST FAILED");
 }
 
 template<typename T>
 void run_tests() {
-    TEST_RUN_BENCHMARK(run_single_test, T)
+    TEST_RUN_MATMUL_BENCHMARK(run_single_test, T)
 }
 
 
 template<typename T, size_t M, size_t K, size_t N>
 void single_benchmark() {
-    using namespace Fastor;
-    Tensor<T,M,K> a(3);
-    Tensor<T,K,N> b(4);
-    Tensor<T,M,N> c = matmul(a,b);
-    benchmarks_general::unused(c);
+    using namespace Eigen;
+    Matrix<T,M,K,RowMajor> a; a.setConstant(3);
+    Matrix<T,K,N,RowMajor> b; b.setConstant(4);
+    Matrix<T,M,N,RowMajor> c = a*b;
+    unused(c);
 }
 
 template<typename T, size_t M, size_t K, size_t N>
@@ -48,19 +49,22 @@ void run_single_benchmark() {
 
 template<typename T>
 void run_benchmarks() {
-    TEST_RUN_BENCHMARK(run_single_benchmark, T)
+    TEST_RUN_MATMUL_BENCHMARK(run_single_benchmark, T)
 }
+
+
+
 
 
 
 int main() {
 
 #ifdef RUN_SINGLE
-    println("Running fastor benchmark: single precision\n");
+    println("Running eigen benchmark: single precision\n");
     run_tests<float>();
     run_benchmarks<float>();
 #else
-    println("Running fastor benchmark: double precision\n");
+    println("Running eigen benchmark: double precision\n");
     run_tests<double>();
     run_benchmarks<double>();
 #endif

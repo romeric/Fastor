@@ -8,13 +8,14 @@
 
 namespace Fastor {
 
-
-#ifdef FASTOR_AVX_IMPL
-
 // Forward declare
+namespace internal {
 template<typename T, size_t M, size_t N>
 FASTOR_INLINE void _transpose_dispatch(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT out);
+} // internal
 
+
+#ifdef FASTOR_AVX_IMPL
 
 template<typename T, size_t M, size_t N>
 FASTOR_INLINE void _transpose(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT out) {
@@ -61,7 +62,7 @@ FASTOR_INLINE void _transpose(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT o
             }
             // Perform transpose on pack_a and get the result
             // on pack_out
-            _transpose_dispatch<T,innerBlock,outerBlock>(pack_a,pack_out);
+            internal::_transpose_dispatch<T,innerBlock,outerBlock>(pack_a,pack_out);
             // Unpack pack_out to out
             for (size_t jj=0; jj<outerBlock; ++jj) {
                 _vec.load(&pack_out[jj*innerBlock]);
@@ -305,6 +306,7 @@ FASTOR_INLINE void _transpose<double,8,8>(const double * FASTOR_RESTRICT a, doub
 
 
 
+namespace internal {
 // Hacky way to get around gccs recusive inlining depth
 // This is needed to dispatch the tiled version any block size
 // as _transpose calling itself recursively would trigger gcc's
@@ -331,6 +333,7 @@ template<>
 FASTOR_INLINE void _transpose_dispatch<double,8,8>(const double * FASTOR_RESTRICT a, double * FASTOR_RESTRICT out) {
     _transpose<double,8,8>(a,out);
 }
+} // internal
 
 }
 

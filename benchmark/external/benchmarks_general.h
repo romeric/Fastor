@@ -3,7 +3,7 @@
 #include <limits>
 
 
-#define TEST_RUN_BENCHMARK(FUNC, T) \
+#define TEST_RUN_MATMUL_BENCHMARK(FUNC, T) \
     FUNC<T,3,18,3>();\
     FUNC<T,9,15,4>();\
     FUNC<T,5,13,5>();\
