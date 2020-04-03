@@ -60,16 +60,11 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     }
 
     // This is the correct logic for the time being as in
-    // when AVX is available we want mask loads and when
+    // when AVX is available we want maskloads and when
     // avx512 is available we don't since maskload/maskstores
     // are not available for avx512 only mask_load/stores are
-    // available
-#if !defined(FASTOR_AVX_IMPL) || defined(FASTOR_AVX512_IMPL)
-    FASTOR_IF_CONSTEXPR( M*N*K > 27UL ) {
-        internal::_matmul_base<T,M,K,N>(a,b,out);
-        return;
-    }
-#else
+    // available yet
+#if defined(FASTOR_AVX_IMPL) && !defined(FASTOR_AVX512_IMPL)
     // If the remainder is 1, just treat the remainders in scalar mode
     FASTOR_IF_CONSTEXPR( M*N*K > 27UL && N % V::Size <= 1UL) {
         internal::_matmul_base<T,M,K,N>(a,b,out);
@@ -77,6 +72,11 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     }
     else FASTOR_IF_CONSTEXPR( M*N*K > 27UL && N % V::Size > 1UL) {
         internal::_matmul_base_masked<T,M,K,N>(a,b,out);
+        return;
+    }
+#else
+    FASTOR_IF_CONSTEXPR( M*N*K > 27UL ) {
+        internal::_matmul_base<T,M,K,N>(a,b,out);
         return;
     }
 #endif
