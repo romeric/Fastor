@@ -311,23 +311,25 @@ void _matmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * 
     }
 
     // Now treat the remaining M-M1 rows
-    size_t j = 0;
-    for (; j < N1; j += V::Size) {
-        V c_ij[M-M1];
-        for (size_t k = 0; k < K; ++k) {
-            for (size_t n = M1; n < M; ++n) {
-                c_ij[n-M1] += a[n*K+k] * V(&b[k*N+j],false);
-                c_ij[n-M1].store(&c[n*N+j],false);
+    FASTOR_IF_CONSTEXPR (M-M1 > 0) {
+        size_t j = 0;
+        for (; j < N1; j += V::Size) {
+            V c_ij[M-M1];
+            for (size_t k = 0; k < K; ++k) {
+                for (size_t n = M1; n < M; ++n) {
+                    c_ij[n-M1] += a[n*K+k] * V(&b[k*N+j],false);
+                    c_ij[n-M1].store(&c[n*N+j],false);
+                }
             }
         }
-    }
 
-    for (; j < N; ++j) {
-        T c_ij[M-M1] = {};
-        for (size_t k = 0; k < K; ++k) {
-            for (size_t n = M1; n < M; ++n) {
-                c_ij[n-M1] += a[n*K+k] * b[k*N+j];
-                c[n*N+j] = c_ij[n-M1];
+        for (; j < N; ++j) {
+            T c_ij[M-M1] = {};
+            for (size_t k = 0; k < K; ++k) {
+                for (size_t n = M1; n < M; ++n) {
+                    c_ij[n-M1] += a[n*K+k] * b[k*N+j];
+                    c[n*N+j] = c_ij[n-M1];
+                }
             }
         }
     }
@@ -443,25 +445,27 @@ void _matmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT 
     }
 
     // Now treat the remaining M-M1 rows
-    size_t j = 0;
-    for (; j < N1; j += V::Size) {
-        V c_ij[M-M1];
-        for (size_t k = 0; k < K; ++k) {
-            for (size_t n = M1; n < M; ++n) {
-                c_ij[n-M1] += a[n*K+k] * V(&b[k*N+j],false);
-                c_ij[n-M1].store(&c[n*N+j],false);
+    FASTOR_IF_CONSTEXPR (M-M1 > 0) {
+        size_t j = 0;
+        for (; j < N1; j += V::Size) {
+            V c_ij[M-M1];
+            for (size_t k = 0; k < K; ++k) {
+                for (size_t n = M1; n < M; ++n) {
+                    c_ij[n-M1] += a[n*K+k] * V(&b[k*N+j],false);
+                    c_ij[n-M1].store(&c[n*N+j],false);
+                }
             }
         }
-    }
 
-    for (; j < N; j+=N-N1) {
-        V c_ij[M-M1] = {};
-        for (size_t k = 0; k < K; ++k) {
-            for (size_t n = M1; n < M; ++n) {
-                const V bmm0(maskload<V>(&b[k*N+j],maska));
-                const V amm0 = a[n*K+k];
-                c_ij[n-M1] = fmadd(amm0,bmm0,c_ij[n-M1]);
-                maskstore(&c[n*N+j],maska,c_ij[n-M1]);
+        for (; j < N; j+=N-N1) {
+            V c_ij[M-M1] = {};
+            for (size_t k = 0; k < K; ++k) {
+                for (size_t n = M1; n < M; ++n) {
+                    const V bmm0(maskload<V>(&b[k*N+j],maska));
+                    const V amm0 = a[n*K+k];
+                    c_ij[n-M1] = fmadd(amm0,bmm0,c_ij[n-M1]);
+                    maskstore(&c[n*N+j],maska,c_ij[n-M1]);
+                }
             }
         }
     }

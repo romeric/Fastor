@@ -52,21 +52,21 @@ FASTOR_INLINE Unary ##STRUCT_NAME ## Op<Expr, DIM0> OP_NAME(const AbstractTensor
 }\
 
 
-FASTOR_MAKE_UNARY_MATH_OPS(operator+, , , Add, scalar_type);
-FASTOR_MAKE_UNARY_MATH_OPS(operator-, -, -, Sub, scalar_type);
-FASTOR_MAKE_UNARY_MATH_OPS(abs, abs, std::abs, Abs, scalar_type);
-FASTOR_MAKE_UNARY_MATH_OPS(sqrt, sqrt, sqrts, Sqrt, scalar_type);
-FASTOR_MAKE_UNARY_MATH_OPS(exp, exp, std::exp, Exp, scalar_type);
-FASTOR_MAKE_UNARY_MATH_OPS(log, log, std::log, Log, scalar_type);
-FASTOR_MAKE_UNARY_MATH_OPS(sin, sin, std::sin, Sin, scalar_type);
-FASTOR_MAKE_UNARY_MATH_OPS(cos, cos, std::cos, Cos, scalar_type);
-FASTOR_MAKE_UNARY_MATH_OPS(tan, tan, std::tan, Tan, scalar_type);
-FASTOR_MAKE_UNARY_MATH_OPS(asin, asin, std::asin, Asin, scalar_type);
-FASTOR_MAKE_UNARY_MATH_OPS(acos, acos, std::acos, Acos, scalar_type);
-FASTOR_MAKE_UNARY_MATH_OPS(atan, atan, std::atan, Atan, scalar_type);
-FASTOR_MAKE_UNARY_MATH_OPS(sinh, sinh, std::sinh, Sinh, scalar_type);
-FASTOR_MAKE_UNARY_MATH_OPS(cosh, cosh, std::cosh, Cosh, scalar_type);
-FASTOR_MAKE_UNARY_MATH_OPS(tanh, tanh, std::tanh, Tanh, scalar_type);
+FASTOR_MAKE_UNARY_MATH_OPS(operator+, , , Add, scalar_type)
+FASTOR_MAKE_UNARY_MATH_OPS(operator-, -, -, Sub, scalar_type)
+FASTOR_MAKE_UNARY_MATH_OPS(abs, abs, std::abs, Abs, scalar_type)
+FASTOR_MAKE_UNARY_MATH_OPS(sqrt, sqrt, sqrts, Sqrt, scalar_type)
+FASTOR_MAKE_UNARY_MATH_OPS(exp, exp, std::exp, Exp, scalar_type)
+FASTOR_MAKE_UNARY_MATH_OPS(log, log, std::log, Log, scalar_type)
+FASTOR_MAKE_UNARY_MATH_OPS(sin, sin, std::sin, Sin, scalar_type)
+FASTOR_MAKE_UNARY_MATH_OPS(cos, cos, std::cos, Cos, scalar_type)
+FASTOR_MAKE_UNARY_MATH_OPS(tan, tan, std::tan, Tan, scalar_type)
+FASTOR_MAKE_UNARY_MATH_OPS(asin, asin, std::asin, Asin, scalar_type)
+FASTOR_MAKE_UNARY_MATH_OPS(acos, acos, std::acos, Acos, scalar_type)
+FASTOR_MAKE_UNARY_MATH_OPS(atan, atan, std::atan, Atan, scalar_type)
+FASTOR_MAKE_UNARY_MATH_OPS(sinh, sinh, std::sinh, Sinh, scalar_type)
+FASTOR_MAKE_UNARY_MATH_OPS(cosh, cosh, std::cosh, Cosh, scalar_type)
+FASTOR_MAKE_UNARY_MATH_OPS(tanh, tanh, std::tanh, Tanh, scalar_type)
 
 }
 
