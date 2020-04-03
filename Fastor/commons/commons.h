@@ -248,8 +248,8 @@ SOFTWARE.
 
 // Bounds checking - ON by default
 #ifndef NDEBUG
-#define BOUNDSCHECK 1
-#define SHAPE_CHECK 1
+#define FASTOR_BOUNDS_CHECK 1
+#define FASTOR_SHAPE_CHECK 1
 #endif
 //#define FASTOR_DONT_VECTORISE
 //#define FASTOR_DONT_PERFORM_OP_MIN

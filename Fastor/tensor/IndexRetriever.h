@@ -8,7 +8,7 @@
 //----------------------------------------------------------------------------------------------------------//
 template<typename U>
 FASTOR_INLINE U get_mem_index(U index) const {
-#ifdef BOUNDSCHECK
+#ifdef FASTOR_BOUNDS_CHECK
     FASTOR_ASSERT((index>=0 && index<Size), "INDEX OUT OF BOUNDS");
 #endif
     return index;
@@ -22,7 +22,7 @@ template<typename... Args, typename std::enable_if<sizeof...(Args)==1
 FASTOR_INLINE int get_flat_index(Args ... args) const {
     constexpr int M = get_value<1,Rest...>::value;
     const int i = get_index<0>(args...) < 0 ? M + get_index<0>(args...) : get_index<0>(args...);
-#ifdef BOUNDSCHECK
+#ifdef FASTOR_BOUNDS_CHECK
     FASTOR_ASSERT( ( (i>=0 && i<M)), "INDEX OUT OF BOUNDS");
 #endif
     return i;
@@ -35,7 +35,7 @@ FASTOR_INLINE int get_flat_index(Args ... args) const {
     constexpr int N = get_value<2,Rest...>::value;
     const int i = get_index<0>(args...) < 0 ? M + get_index<0>(args...) : get_index<0>(args...);
     const int j = get_index<1>(args...) < 0 ? N + get_index<1>(args...) : get_index<1>(args...);
-#ifdef BOUNDSCHECK
+#ifdef FASTOR_BOUNDS_CHECK
     FASTOR_ASSERT( ( (i>=0 && i<M) && (j>=0 && j<N)), "INDEX OUT OF BOUNDS");
 #endif
     return i*N+j;
@@ -50,7 +50,7 @@ FASTOR_INLINE int get_flat_index(Args ... args) const {
     const int i = get_index<0>(args...) < 0 ? M + get_index<0>(args...) : get_index<0>(args...);
     const int j = get_index<1>(args...) < 0 ? N + get_index<1>(args...) : get_index<1>(args...);
     const int k = get_index<2>(args...) < 0 ? P + get_index<2>(args...) : get_index<2>(args...);
-#ifdef BOUNDSCHECK
+#ifdef FASTOR_BOUNDS_CHECK
     FASTOR_ASSERT( ( (i>=0 && i<M) && (j>=0 && j<N) && (k>=0 && k<P)), "INDEX OUT OF BOUNDS");
 #endif
     return i*N*P+j*P+k;
@@ -67,7 +67,7 @@ FASTOR_INLINE int get_flat_index(Args ... args) const {
     const int j = get_index<1>(args...) < 0 ? N + get_index<1>(args...) : get_index<1>(args...);
     const int k = get_index<2>(args...) < 0 ? P + get_index<2>(args...) : get_index<2>(args...);
     const int l = get_index<3>(args...) < 0 ? Q + get_index<3>(args...) : get_index<3>(args...);
-#ifdef BOUNDSCHECK
+#ifdef FASTOR_BOUNDS_CHECK
     FASTOR_ASSERT( ( (i>=0 && i<M) && (j>=0 && j<N)
               && (k>=0 && k<P) && (l>=0 && l<Q)), "INDEX OUT OF BOUNDS");
 #endif
@@ -81,7 +81,7 @@ FASTOR_INLINE int get_flat_index(Args ... args) const {
     constexpr int DimensionHolder[Dimension] = {Rest...};
     for (int i=0; i<Dimension; ++i) {
         if (largs[i]==-1) largs[i] += DimensionHolder[i];
-#ifdef BOUNDSCHECK
+#ifdef FASTOR_BOUNDS_CHECK
         FASTOR_ASSERT( (largs[i]>=0 && largs[i]<DimensionHolder[i]), "INDEX OUT OF BOUNDS");
 #endif
     }
@@ -110,7 +110,7 @@ FASTOR_INLINE int get_flat_index(const std::array<int, Dimension> &as) const {
     for (int i=0; i<Dimension; ++i) {
         index += products_[i]*as[i];
     }
-#ifdef BOUNDSCHECK
+#ifdef FASTOR_BOUNDS_CHECK
     FASTOR_ASSERT((index>=0 && index<Size), "INDEX OUT OF BOUNDS");
 #endif
     return index;

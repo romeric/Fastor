@@ -60,7 +60,7 @@ public:
     //----------------------------------------------------------------------------------------------------------//
     template<typename U>
     FASTOR_INLINE int get_mem_index(U index) const {
-#ifdef BOUNDSCHECK
+#ifdef FASTOR_BOUNDS_CHECK
         FASTOR_ASSERT((index>=0 && index<Size), "INDEX OUT OF BOUNDS");
 #endif
         return index;
@@ -69,7 +69,7 @@ public:
     template<typename... Args, typename std::enable_if<sizeof...(Args)==Dimension_t::value &&
                                 is_arithmetic_pack<Args...>::value,bool>::type =0>
     FASTOR_INLINE int get_flat_index(Args ... args) const {
-#ifdef BOUNDSCHECK
+#ifdef FASTOR_BOUNDS_CHECK
         int largs[sizeof...(Args)] = {args...};
         constexpr int DimensionHolder[Dimension] = {Rest...};
         for (int i=0; i<Dimension; ++i) {
@@ -81,7 +81,7 @@ public:
     }
 
     FASTOR_INLINE int get_flat_index(const std::array<int, Dimension> &as) const {
-#ifdef BOUNDSCHECK
+#ifdef FASTOR_BOUNDS_CHECK
         constexpr std::array<size_t,Dimension> products_ = nprods_views<Index<Rest...>,
             typename std_ext::make_index_sequence<Dimension>::type>::values;
         int index = 0;
