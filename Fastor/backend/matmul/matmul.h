@@ -81,6 +81,8 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     }
 #endif
     else {
+        // For all other cases where M,N,K is too small
+        // this simple version is sufficient
         constexpr int ROUND_ = ROUND_DOWN(N,V::Size);
         for (size_t j=0; j<M; ++j) {
             size_t k=0;

@@ -140,7 +140,6 @@ auto
 einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
 -> decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
 
-    decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) out;
     constexpr size_t matches_up_to = internal::is_generalised_matrix_matrix<Index_I,Index_J>::ncontracted;
     constexpr size_t rest0[sizeof...(Rest0)] = {Rest0...};
     constexpr size_t rest1[sizeof...(Rest1)] = {Rest1...};
@@ -148,22 +147,9 @@ einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
     constexpr size_t M = partial_prod(rest0, sizeof...(Rest0) - matches_up_to - 1);
     constexpr size_t N = partial_prod(rest1, sizeof...(Rest1) - 1, matches_up_to);
 
-#ifndef FASTOR_USE_LIBXSMM
-    // Recursive contraction is quite fast in comparison to certain variants of
-    // matmul at the moment so decide wether to dispatch to matmul or not
-    constexpr size_t VSize = SIMDVector<T,DEFAULT_ABI>::Size;
-    FASTOR_IF_CONSTEXPR(K_product >= VSize && M>=8 && N>1) {
-        internal::_matmul_base<T,M,K_product,N>(a.data(),b.data(),out.data());
-        return out;
-    }
-    else {
-        return extractor_contract_2<Index_I,Index_J>::contract_impl(a,b);
-    }
-#else
-    // In case libxsmm is available we dispatch unconditionally
+    decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) out;
     _matmul<T,M,K_product,N>(a.data(),b.data(),out.data());
     return out;
-#endif
 }
 //-----------------------------------------------------------------------------------------------------------------------//
 

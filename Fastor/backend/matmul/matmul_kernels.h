@@ -247,7 +247,9 @@ void _matmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * 
     // to saturate the pipeline by having a completely unrolled block of
     // [(unrollOuterloop) * (numSIMDCols)] at a time. A minimum value of
     // unrollOuterloop=4 ensures a minimum of 8 independent parallel chains
-    // while a maximum of 12.
+    // while a maximum of 12 i.e. for numSIMDCols=2 and numSIMDCols=3 respectively.
+    // However, most recent X86/64 architectures can do 2 FMAs per load so
+    // so unrolling with numSIMDCols > 2 is not beneficial
 
     constexpr size_t unrollOuterBlock = numSIMDRows*unrollOuterloop;
     // Number of rows of c (M) that can be safely unrolled with this block size.
@@ -372,7 +374,9 @@ void _matmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT 
     // to saturate the pipeline by having a completely unrolled block of
     // [(unrollOuterloop) * (numSIMDCols)] at a time. A minimum value of
     // unrollOuterloop=4 ensures a minimum of 8 independent parallel chains
-    // while a maximum of 12.
+    // while a maximum of 12 i.e. for numSIMDCols=2 and numSIMDCols=3 respectively.
+    // However, most recent X86/64 architectures can do 2 FMAs per load so
+    // so unrolling with numSIMDCols > 2 is not beneficial
 
     constexpr size_t unrollOuterBlock = numSIMDRows*unrollOuterloop;
     // Number of rows of c (M) that can be safely unrolled with this block size.
@@ -635,6 +639,7 @@ void _matmul_mkn_non_square(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRI
 
 }
 //-----------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------
 
 
 
@@ -737,105 +742,6 @@ void _matmul_mk_simd_width(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRIC
 }
 #endif
 //-----------------------------------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// This is a generic version of matmul based on 2k2/3k3/4k4 variants. It builds on the same philosophy
-// and in fact for very large Ks it is as performant as libxsmm and Eigen
-//-----------------------------------------------------------------------------------------------------------
-template<typename T, size_t M, size_t K, size_t N>
-void _matmul_mKn(const T * FASTOR_RESTRICT a_data, const T * FASTOR_RESTRICT b_data, T * FASTOR_RESTRICT out_data) {
-
-    using V = SIMDVector<T,DEFAULT_ABI>;
-    // constexpr size_t UNROLL_LENGTH = 4UL;
-    constexpr size_t UNROLL_LENGTH = 5UL;
-    constexpr size_t ROUND_M = (M / UNROLL_LENGTH) * UNROLL_LENGTH;
-    constexpr size_t ROUND_N = (N / V::Size) * V::Size;
-    std::array<V, M > ymm_a;
-    std::array<std::array<V, M >, N / V::Size > ymm_o;
-    std::array<std::array<T, M >, N % V::Size > t_o = {};
-    for (size_t i=0; i<K; ++i) {
-        size_t k=0;
-        size_t counter = 0;
-        for (; k<ROUND_N; k+=V::Size) {
-            const V ymm0 = V(&b_data[i*N+k],false);
-            size_t j=0;
-            for (; j<ROUND_M; j+=UNROLL_LENGTH) {
-                ymm_a[j+0] = V(a_data[j*K+i]);
-                ymm_a[j+1] = V(a_data[(j+1)*K+i]);
-                ymm_a[j+2] = V(a_data[(j+2)*K+i]);
-                ymm_a[j+3] = V(a_data[(j+3)*K+i]);
-                ymm_a[j+4] = V(a_data[(j+4)*K+i]);
-
-                ymm_o[counter][j+0] = fmadd(ymm0,ymm_a[j+0],ymm_o[counter][j+0]);
-                ymm_o[counter][j+1] = fmadd(ymm0,ymm_a[j+1],ymm_o[counter][j+1]);
-                ymm_o[counter][j+2] = fmadd(ymm0,ymm_a[j+2],ymm_o[counter][j+2]);
-                ymm_o[counter][j+3] = fmadd(ymm0,ymm_a[j+3],ymm_o[counter][j+3]);
-                ymm_o[counter][j+4] = fmadd(ymm0,ymm_a[j+4],ymm_o[counter][j+4]);
-            }
-
-            for (; j<M; ++j) {
-                const V ymm1 = V(a_data[j*K+i]);
-                ymm_o[counter][j] = fmadd(ymm0,ymm1,ymm_o[counter][j]);
-            }
-            counter++;
-        }
-
-        counter = 0;
-        for (; k<N; ++k) {
-            const T t0 = b_data[i*N+k];
-            size_t j=0;
-            for (; j<ROUND_M; j+=UNROLL_LENGTH) {
-                const T t1 = a_data[j*K+i];
-                const T t2 = a_data[(j+1)*K+i];
-                const T t3 = a_data[(j+2)*K+i];
-                const T t4 = a_data[(j+3)*K+i];
-                const T t5 = a_data[(j+4)*K+i];
-
-                t_o[counter][j+0] += t0*t1;
-                t_o[counter][j+1] += t0*t2;
-                t_o[counter][j+2] += t0*t3;
-                t_o[counter][j+3] += t0*t4;
-                t_o[counter][j+4] += t0*t5;
-            }
-            for (; j<M; ++j) {
-                const T t1 = a_data[j*K+i];
-                t_o[counter][j] += t0*t1;
-            }
-            counter++;
-        }
-    }
-
-
-    for (size_t k=0; k< N / V::Size; ++k) {
-        for (size_t j=0; j<M; ++j) {
-            ymm_o[k][j].store(&out_data[j*N+k*V::Size],false);
-        }
-    }
-
-    for (size_t k=0; k< N % V::Size; ++k) {
-        for (size_t j=0; j<M; ++j) {
-            out_data[j*N+ROUND_N+k] = t_o[k][j];
-        }
-    }
-}
-
 //-----------------------------------------------------------------------------------------------------------
 
 } // end of namespace internal
