@@ -11,14 +11,34 @@ namespace Fastor {
 
 #ifdef FASTOR_AVX_IMPL
 
+// Forward declare
+template<typename T, size_t M, size_t N>
+FASTOR_INLINE void _transpose_dispatch(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT out);
+
+
 template<typename T, size_t M, size_t N>
 FASTOR_INLINE void _transpose(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT out) {
 
     using V = SIMDVector<T,DEFAULT_ABI>;
-    constexpr size_t innerBlock = V::Size;
-    constexpr size_t outerBlock = V::Size;
-    // constexpr size_t innerBlock = 8;
-    // constexpr size_t outerBlock = 8;
+
+    // Block sizes of 8x8 i.e. numSIMDRows=1
+    // numSIMDCols=1 and innerBlock=outerBlock=1
+    // give a much greater speed up, but causes
+    // significant slow-down for issue #42
+
+#ifndef FASTOR_TRANS_OUTER_BLOCK_SIZE
+    constexpr size_t numSIMDRows = 1UL;
+#else
+    constexpr size_t numSIMDRows = FASTOR_TRANS_OUTER_BLOCK_SIZE;
+#endif
+#ifndef FASTOR_TRANS_INNER_BLOCK_SIZE
+    constexpr size_t numSIMDCols = 1UL;
+#else
+    constexpr size_t numSIMDCols = FASTOR_TRANS_INNER_BLOCK_SIZE;
+#endif
+
+    constexpr size_t innerBlock = V::Size * numSIMDCols;
+    constexpr size_t outerBlock = V::Size * numSIMDRows;
 
     T FASTOR_ALIGN pack_a[outerBlock*innerBlock];
     T FASTOR_ALIGN pack_out[outerBlock*innerBlock];
@@ -41,7 +61,7 @@ FASTOR_INLINE void _transpose(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT o
             }
             // Perform transpose on pack_a and get the result
             // on pack_out
-            _transpose<T,innerBlock,outerBlock>(pack_a,pack_out);
+            _transpose_dispatch<T,innerBlock,outerBlock>(pack_a,pack_out);
             // Unpack pack_out to out
             for (size_t jj=0; jj<outerBlock; ++jj) {
                 _vec.load(&pack_out[jj*innerBlock]);
@@ -86,6 +106,7 @@ FASTOR_INLINE void _transpose<float,2,2>(const float * FASTOR_RESTRICT a, float 
 
 template<>
 FASTOR_INLINE void _transpose<float,3,3>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
+
     __m128 row0 = _mm_load_ps(a);
     __m128 row1 = _mm_loadu_ps(a+3);
     __m128 row2 = _mm_loadu_ps(a+6);
@@ -100,6 +121,22 @@ FASTOR_INLINE void _transpose<float,3,3>(const float * FASTOR_RESTRICT a, float 
     _mm_store_ps(out,row0);
     _mm_storeu_ps(out+3,row1);
     _mm_storeu_ps(out+6,row2);
+
+// #ifdef FASTOR_AVX2_IMPL
+//     // This is 1 cycle but gcc/clang emit vpermsps
+//     // that operate on memory (%rsp) instead of register
+//     __m256 trans07 = _mm256_loadu_ps(a);
+//     const __m256i trans_mask = _mm256_setr_epi32(
+//          0,3,6,
+//          1,4,7,
+//          2,5);
+//     // does not shuffle across 256 lanes, only 128 lanes
+//     // __m256 _res = _mm256_permutevar_ps(trans07, trans_mask);
+//     // this one shuffles correctly
+//     __m256 _res = _mm256_permutevar8x32_ps(trans07, trans_mask);
+//     _mm256_storeu_ps(out,_res);
+//     out[8] = a[8];
+// #endif
 }
 
 template<>
@@ -209,7 +246,91 @@ FASTOR_INLINE void _transpose<double,4,4>(const double * FASTOR_RESTRICT a, doub
      _mm256_store_pd(out+8, row3);
      _mm256_store_pd(out+12, row4);
 }
+
+
+template<>
+FASTOR_INLINE void _transpose<double,8,8>(const double * FASTOR_RESTRICT a, double * FASTOR_RESTRICT out) {
+
+    {
+        __m256d row1 = _mm256_load_pd(&a[0]);
+        __m256d row2 = _mm256_load_pd(&a[8]);
+        __m256d row3 = _mm256_load_pd(&a[16]);
+        __m256d row4 = _mm256_load_pd(&a[24]);
+        _MM_TRANSPOSE4_PD(row1, row2, row3, row4);
+        _mm256_store_pd(&out[0],  row1);
+        _mm256_store_pd(&out[8],  row2);
+        _mm256_store_pd(&out[16], row3);
+        _mm256_store_pd(&out[24], row4);
+    }
+
+    {
+        __m256d row1 = _mm256_load_pd(&a[32]);
+        __m256d row2 = _mm256_load_pd(&a[40]);
+        __m256d row3 = _mm256_load_pd(&a[48]);
+        __m256d row4 = _mm256_load_pd(&a[56]);
+        _MM_TRANSPOSE4_PD(row1, row2, row3, row4);
+        _mm256_store_pd(&out[4],  row1);
+        _mm256_store_pd(&out[12], row2);
+        _mm256_store_pd(&out[20], row3);
+        _mm256_store_pd(&out[28], row4);
+    }
+
+    {
+        __m256d row1 = _mm256_load_pd(&a[4]);
+        __m256d row2 = _mm256_load_pd(&a[12]);
+        __m256d row3 = _mm256_load_pd(&a[20]);
+        __m256d row4 = _mm256_load_pd(&a[28]);
+        _MM_TRANSPOSE4_PD(row1, row2, row3, row4);
+        _mm256_store_pd(&out[32], row1);
+        _mm256_store_pd(&out[40], row2);
+        _mm256_store_pd(&out[48], row3);
+        _mm256_store_pd(&out[56], row4);
+    }
+
+    {
+        __m256d row1 = _mm256_load_pd(&a[36]);
+        __m256d row2 = _mm256_load_pd(&a[44]);
+        __m256d row3 = _mm256_load_pd(&a[52]);
+        __m256d row4 = _mm256_load_pd(&a[60]);
+        _MM_TRANSPOSE4_PD(row1, row2, row3, row4);
+        _mm256_store_pd(&out[36], row1);
+        _mm256_store_pd(&out[44], row2);
+        _mm256_store_pd(&out[52], row3);
+        _mm256_store_pd(&out[60], row4);
+    }
+}
+
 #endif
+
+
+
+
+// Hacky way to get around gccs recusive inlining depth
+// This is needed to dispatch the tiled version any block size
+// as _transpose calling itself recursively would trigger gcc's
+// recursion depth error
+template<typename T, size_t M, size_t N>
+FASTOR_INLINE void _transpose_dispatch(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT out) {
+    for (size_t j=0; j<N; ++j)
+        for (size_t i=0; i< M; ++i)
+            out[j*M+i] = a[i*N+j];
+}
+template<>
+FASTOR_INLINE void _transpose_dispatch<float,4,4>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
+    _transpose<float,4,4>(a,out);
+}
+template<>
+FASTOR_INLINE void _transpose_dispatch<float,8,8>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
+    _transpose<float,8,8>(a,out);
+}
+template<>
+FASTOR_INLINE void _transpose_dispatch<double,4,4>(const double * FASTOR_RESTRICT a, double * FASTOR_RESTRICT out) {
+    _transpose<double,4,4>(a,out);
+}
+template<>
+FASTOR_INLINE void _transpose_dispatch<double,8,8>(const double * FASTOR_RESTRICT a, double * FASTOR_RESTRICT out) {
+    _transpose<double,8,8>(a,out);
+}
 
 }
 

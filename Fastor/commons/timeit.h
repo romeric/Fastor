@@ -96,9 +96,6 @@ inline double timeit(T (*func)(Params...), Args...args)
     double mean_time = 0.0;
     double best_time = 1.0e20;
     uint64_t cycles = 0;
-#ifndef FASTOR_BENCH_CYCLES
-    uint64_t cycle = 0;
-#endif
 
     for (auto iter=0; iter<1e09; ++iter)
     {
