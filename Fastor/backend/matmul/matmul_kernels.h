@@ -335,10 +335,8 @@ void _matmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * 
 // This the base implementation of matrix-matrix multiplication for all 2D tensors and
 // higher order tensor products that can be expressed as gemm
 // The function uses two level unrolling one based on block sizes and one based on register widths
-// with any remainder left treated in vector mode with masked and conditional load/stores. Note that
-// masked loading can have extreme penalties on very recent architectures like icelake however here
-// only the remainder columns are treated that way. Note that conditional load/store requires at least
-// AVX intrinsics
+// with any remainder left treated in vector mode with masked and conditional load/stores.
+// Note that conditional load/store requires at least AVX intrinsics
 template<typename T, size_t M, size_t K, size_t N>
 FASTOR_INLINE
 void _matmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
