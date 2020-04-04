@@ -2,7 +2,6 @@
 #define FASTOR_SIMD_VECTOR_ABI
 
 #include "Fastor/commons/commons.h"
-#include <complex>
 #include <type_traits>
 
 namespace Fastor {
@@ -34,6 +33,14 @@ using native = simd_abi::scalar;
 //--------------------------------------------------------------------------------------------------------------//
 
 
+
+// Forward declare
+template<size_t I, size_t J>
+struct is_less;
+template<size_t I, size_t J>
+struct is_greater;
+
+
 namespace internal {
 
 template<class __svec>
@@ -51,6 +58,86 @@ template<template<typename, typename> class __svec, typename T, size_t N>
 struct get_simd_vector_size<__svec<T,simd_abi::fixed_size<N> > > {
     static constexpr size_t bitsize = N*8UL;
     static constexpr size_t value = N;
+};
+
+
+template<class __svec>
+struct get_half_simd_type;
+template<template<typename, typename> class __svec, typename T, typename ABI>
+struct get_half_simd_type<__svec<T,ABI>> {
+    // If not a half of simd we give back the actual incoming type
+    using actual_type    = __svec<T,ABI>;
+    using type = typename std::conditional< std::is_same<ABI,simd_abi::avx512>::value, __svec<T,simd_abi::avx>,
+                        typename std::conditional< std::is_same<ABI,simd_abi::avx>::value, __svec<T,simd_abi::sse>, actual_type>::type
+                      >::type;
+};
+
+
+template<class __svec>
+struct get_quarter_simd_type;
+template<template<typename, typename> class __svec, typename T, typename ABI>
+struct get_quarter_simd_type<__svec<T,ABI>> {
+    // If not a quarter of simd we give back the actual incoming type
+    using actual_type    = __svec<T,ABI>;
+    using type = typename std::conditional< std::is_same<ABI,simd_abi::avx512>::value, __svec<T,simd_abi::sse>, actual_type>::type;
+};
+
+
+template<class __svec, size_t N>
+struct is_exact_multiple_of_smaller_simd;
+template<template<typename, typename> class __svec, typename T, typename ABI, size_t N>
+struct is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N> {
+    // If not a fraction of simd we give back the actual incoming type
+    using actual_type    = __svec<T,ABI>;
+    // if N is half simd which=2, if it is a 1/4th which=4, else which=1
+    static constexpr int which = get_simd_vector_size<__svec<T,ABI>>::value / N == 2UL ? 2UL
+                                 : (get_simd_vector_size<__svec<T,ABI>>::value / N == 4UL ? 4UL : 1UL);
+    static constexpr bool value = which != 1UL && !std::is_same<ABI,simd_abi::sse>::value ? true : false;
+
+    static constexpr bool is_half_of_avx512 = std::is_same<ABI,simd_abi::avx512>::value && which==2UL;
+    static constexpr bool is_half_of_avx = std::is_same<ABI,simd_abi::avx>::value && which==2UL;
+    static constexpr bool is_4th_of_avx512 = std::is_same<ABI,simd_abi::avx512>::value && which==4UL;
+    // static constexpr bool is_4th_of_avx = std::is_same<ABI,simd_abi::avx>::value && which==4UL;
+
+    static constexpr bool is_half_type = is_half_of_avx512 || is_half_of_avx;
+    static constexpr bool is_quarter_type = is_4th_of_avx512;
+
+    using half_type = typename std::conditional< is_half_of_avx512, __svec<T,simd_abi::avx>,
+                        typename std::conditional< is_half_of_avx, __svec<T,simd_abi::sse>, actual_type>::type
+                      >::type;
+    using quarter_type = typename std::conditional< is_4th_of_avx512, __svec<T,simd_abi::sse>, actual_type>::type;
+
+    using type = typename std::conditional<is_half_type, half_type,
+                    typename std::conditional<is_quarter_type, quarter_type, actual_type>::type
+                 >::type;
+};
+
+template<class __svec, size_t N>
+struct choose_best_simd_type;
+template<template<typename, typename> class __svec, typename T, typename ABI, size_t N>
+struct choose_best_simd_type<__svec<T,ABI>,N> {
+    using actual_type = __svec<T,ABI>;
+    static constexpr size_t _vec_size = get_simd_vector_size<__svec<T,ABI>>::value;
+    // For exact fractions simd gets proper speed up for instance for matmul
+    // using type = typename is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::type;
+    static constexpr bool is_exact_multiple = is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::value;
+    // using type = typename std::conditional<is_exact_multiple, typename is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::type,
+    //                 typename std::conditional<is_greater<_vec_size,2UL*N>::value, typename get_quarter_simd_type<__svec<T,ABI>>::type,
+    //                     typename std::conditional<is_greater<_vec_size,N>::value, typename get_half_simd_type<__svec<T,ABI>>::type, actual_type
+    //                     >::type
+    //                 >::type
+    //              >::type;
+
+    // For other fractions masking might be a better idea than, hence this special logic for remainder using is_less.
+    // For no special logic use the above case
+    using type = typename std::conditional<is_exact_multiple, typename is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::type,
+                    typename std::conditional<is_greater<_vec_size,2UL*N>::value && is_greater<_vec_size % N,1UL>::value,
+                        typename get_quarter_simd_type<__svec<T,ABI>>::type,
+                        typename std::conditional<is_greater<_vec_size,N>::value && is_greater<_vec_size % N,1UL>::value,
+                            typename get_half_simd_type<__svec<T,ABI>>::type, actual_type
+                        >::type
+                    >::type
+                 >::type;
 };
 
 } // end of namesapce internal

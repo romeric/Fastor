@@ -20,14 +20,12 @@ namespace internal {
 // A set of helper functions for the inner blocks of matmul. Almost all compilers (GCC/CLang/Intel)
 // unroll the inner-most loop (on unrollOuterloop)
 //-----------------------------------------------------------------------------------------------------------
-template<typename T, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
+template<typename T, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
     typename std::enable_if<numSIMDCols==1,bool>::type = false>
 FASTOR_INLINE
 void interior_block_matmul_impl(
     const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c,
     const size_t i, const size_t j) {
-
-    using V = SIMDVector<T,DEFAULT_ABI>;
 
     for (size_t ii = 0; ii < numSIMDRows; ++ii) {
 
@@ -49,14 +47,12 @@ void interior_block_matmul_impl(
     }
 }
 
-template<typename T, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
+template<typename T, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
     typename std::enable_if<numSIMDCols==2,bool>::type = false>
 FASTOR_INLINE
 void interior_block_matmul_impl(
     const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c,
     const size_t i, const size_t j) {
-
-    using V = SIMDVector<T,DEFAULT_ABI>;
 
     for (size_t ii = 0; ii < numSIMDRows; ++ii) {
 
@@ -82,14 +78,12 @@ void interior_block_matmul_impl(
 }
 
 
-template<typename T, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
+template<typename T, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
     typename std::enable_if<numSIMDCols==3,bool>::type = false>
 FASTOR_INLINE
 void interior_block_matmul_impl(
     const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c,
     const size_t i, const size_t j) {
-
-    using V = SIMDVector<T,DEFAULT_ABI>;
 
     for (size_t ii = 0; ii < numSIMDRows; ++ii) {
 
@@ -118,14 +112,12 @@ void interior_block_matmul_impl(
 }
 
 
-template<typename T, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
+template<typename T, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
     typename std::enable_if<numSIMDCols==4,bool>::type = false>
 FASTOR_INLINE
 void interior_block_matmul_impl(
     const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c,
     const size_t i, const size_t j) {
-
-    using V = SIMDVector<T,DEFAULT_ABI>;
 
     for (size_t ii = 0; ii < numSIMDRows; ++ii) {
 
@@ -157,7 +149,7 @@ void interior_block_matmul_impl(
 }
 
 
-template<typename T, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
+template<typename T, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
     typename std::enable_if<numSIMDCols==1,bool>::type = false>
 FASTOR_INLINE
 void interior_block_matmul_scalar_impl(
@@ -183,14 +175,12 @@ void interior_block_matmul_scalar_impl(
 }
 
 
-template<typename T, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
+template<typename T, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
     typename std::enable_if<numSIMDCols==1,bool>::type = false>
 FASTOR_INLINE
 void interior_block_matmul_mask_impl(
     const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c,
-    const size_t i, const size_t j, int (&maska)[SIMDVector<T,DEFAULT_ABI>::Size]) {
-
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    const size_t i, const size_t j, int (&maska)[V::Size]) {
 
     for (size_t ii = 0; ii < numSIMDRows; ++ii) {
 
@@ -224,7 +214,7 @@ template<typename T, size_t M, size_t K, size_t N>
 FASTOR_INLINE
 void _matmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
 
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
 
     // This parameter can be adjusted and does not need to be 4UL/8UL etc
     // constexpr size_t unrollOuterloop = M % 5UL == 0 ? 5UL : 4UL;
@@ -266,17 +256,17 @@ void _matmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * 
     for (; i < M0; i += unrollOuterBlock) {
         size_t j = 0;
         for (; j < N0; j += unrollInnerBlock) {
-            interior_block_matmul_impl<T,M,K,N,unrollOuterloop,numSIMDRows,numSIMDCols>(a,b,c,i,j);
+            interior_block_matmul_impl<T,V,M,K,N,unrollOuterloop,numSIMDRows,numSIMDCols>(a,b,c,i,j);
         }
 
         // Remaining N - N0 columns
         for (; j < N1; j += V::Size) {
-            interior_block_matmul_impl<T,M,K,N,unrollOuterloop,numSIMDRows,1>(a,b,c,i,j);
+            interior_block_matmul_impl<T,V,M,K,N,unrollOuterloop,numSIMDRows,1>(a,b,c,i,j);
         }
 
         // Remaining N - N1 columns
         for (; j < N; ++j) {
-            interior_block_matmul_scalar_impl<T,M,K,N,unrollOuterloop,numSIMDRows,1>(a,b,c,i,j);
+            interior_block_matmul_scalar_impl<T,V,M,K,N,unrollOuterloop,numSIMDRows,1>(a,b,c,i,j);
         }
 
     }
@@ -353,7 +343,7 @@ template<typename T, size_t M, size_t K, size_t N>
 FASTOR_INLINE
 void _matmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
 
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
 
     // This parameter can be adjusted and does not need to be 4UL/8UL etc
     // constexpr size_t unrollOuterloop = M % 5UL == 0 ? 5UL : 4UL;
@@ -399,17 +389,17 @@ void _matmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT 
     for (; i < M0; i += unrollOuterBlock) {
         size_t j = 0;
         for (; j < N0; j += unrollInnerBlock) {
-            interior_block_matmul_impl<T,M,K,N,unrollOuterloop,numSIMDRows,numSIMDCols>(a,b,c,i,j);
+            interior_block_matmul_impl<T,V,M,K,N,unrollOuterloop,numSIMDRows,numSIMDCols>(a,b,c,i,j);
         }
 
         // Remaining N - N0 columns
         for (; j < N1; j += V::Size) {
-            interior_block_matmul_impl<T,M,K,N,unrollOuterloop,numSIMDRows,1>(a,b,c,i,j);
+            interior_block_matmul_impl<T,V,M,K,N,unrollOuterloop,numSIMDRows,1>(a,b,c,i,j);
         }
 
         // Remaining N - N1 columns
         for (; j < N; j+= N-N1) {
-            interior_block_matmul_mask_impl<T,M,K,N,unrollOuterloop,numSIMDRows,1>(a,b,c,i,j,maska);
+            interior_block_matmul_mask_impl<T,V,M,K,N,unrollOuterloop,numSIMDRows,1>(a,b,c,i,j,maska);
         }
     }
 
@@ -506,7 +496,8 @@ template<typename T, size_t M, size_t K, size_t N>
 FASTOR_INLINE
 void _matmul_mkn_square(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
 
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
+
     // Get 10 parallel independent chains of accumulators for bigger matrices
     constexpr size_t unrollOuterloop = M >= 64 ? 10UL : (M % 8 == 0 ? 8UL : V::Size);
 
@@ -550,7 +541,8 @@ void _matmul_mkn_non_square(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRI
 
     // This variant strictly cannot deal outer-product i.e. with K==1
 
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
+
     // Get 10 parallel independent chains of accumulators for bigger matrices
     constexpr size_t unrollOuterloop = M < V::Size ? 1UL :
         (( M >= 64 && K > 10 && N > V::Size ) ? 10UL : (M % 8 == 0 && N > V::Size ? 8UL : V::Size));
@@ -695,29 +687,26 @@ struct matmul_inner_loop_unroller<from,from> {
 // performance of small tensors. This method although generalises on M it is designed for M<V::size
 // in mind and works best for small Ms as unrolling beyond a certain size certainly hurts the performance
 //------------------------------------------------------------------------------------------------//
-// template<typename T, size_t M, size_t K, size_t N,
-//         typename std::enable_if<is_less<M, SIMDVector<T,DEFAULT_ABI>::Size*3>::value &&
-//         SIMDVector<T,DEFAULT_ABI>::Size==N,bool>::type = 0>
 template<typename T, size_t M, size_t K, size_t N,
         typename std::enable_if<is_less_equal<M,16UL>::value &&
-        SIMDVector<T,DEFAULT_ABI>::Size==N,bool>::type = 0>
+        internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size==N,bool>::type = 0>
 FASTOR_INLINE
 void _matmul_mk_simd_width(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
     V c_ij[M];
 
     for (size_t i=0; i<K; ++i) {
         const V bmm0(&b[i*V::Size]);
-        matmul_inner_loop_unroller<0,M-1>::template fmadd_<M,K,T,DEFAULT_ABI>(i, a, bmm0, c_ij);
+        matmul_inner_loop_unroller<0,M-1>::template fmadd_<M,K,T,typename V::abi_type>(i, a, bmm0, c_ij);
     }
-    matmul_inner_loop_unroller<0,M-1>::template store_<M,T,DEFAULT_ABI>(c_ij, out);
+    matmul_inner_loop_unroller<0,M-1>::template store_<M,T,typename V::abi_type>(c_ij, out);
 }
 
 // This particular overload is needed for the time being
 template<typename T, size_t M, size_t K, size_t N,
         typename std::enable_if<is_greater<M,16UL>::value ||
-        SIMDVector<T,DEFAULT_ABI>::Size!=N,bool>::type = 0>
+        internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size!=N,bool>::type = 0>
 FASTOR_INLINE
 void _matmul_mk_simd_width(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
     _matmul_base<T,M,K,N>(a,b,out);
@@ -727,12 +716,12 @@ void _matmul_mk_simd_width(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRIC
 #if 0
 // This is the non-unrolled version of the above
 template<typename T, size_t M, size_t K, size_t N,
-        typename std::enable_if<is_less<M, SIMDVector<T,DEFAULT_ABI>::Size>::value &&
-        SIMDVector<T,DEFAULT_ABI>::Size==N,bool>::type = 0>
+        typename std::enable_if<is_less_equal<M,16UL>::value &&
+        internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::Size==N,bool>::type = 0>
 FASTOR_INLINE
 void _matmul_mk_simd_width(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
     V c_ij[V::Size];
 
     for (size_t j=0; j<M; ++j) {
