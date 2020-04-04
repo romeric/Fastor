@@ -95,7 +95,7 @@ struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Te
     using V = typename vectorisability::type;
 #else
     static constexpr int stride = 1;
-    using V = SIMDVector<T,sizeof(T)*8>;
+    using V = SIMDVector<T,simd_abi::scalar>;
 #endif
 
 
@@ -105,7 +105,7 @@ struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Te
     void Do(const T *a_data, const T *b_data, T *out_data, std::array<int,out_dim> &as, std::array<int,out_dim> &idx)
     {
         V _vec_a;
-        for (int i=0; i<Last; i+=stride) {
+        for (size_t i=0; i<Last; i+=stride) {
             idx[0] = i;
             std::reverse_copy(idx.begin(),idx.end(),as.begin());
 
@@ -344,7 +344,7 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
           using V = typename vectorisability::type;
 #else
           constexpr int stride = 1;
-          using V = SIMDVector<T,sizeof(T)*8>;
+          using V = SIMDVector<T,simd_abi::scalar>;
 #endif
 
           int it;

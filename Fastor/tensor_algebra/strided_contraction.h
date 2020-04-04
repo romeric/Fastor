@@ -232,7 +232,7 @@ struct extractor_reducible_contract<Index<Idx0...>, Index<Idx1...>> {
         using V = typename vectorisability::type;
 #else
         constexpr int stride = 1;
-        using V = SIMDVector<T,sizeof(T)*8>;
+        using V = SIMDVector<T,simd_abi::scalar>;
 #endif
 
         int as[out_dim];

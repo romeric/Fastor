@@ -15,12 +15,16 @@ struct avx512 {};
 struct mic {};
 template<size_t N> struct fixed_size {};
 
+#ifndef FASTOR_DONT_VECTORISE
 #if defined(FASTOR_AVX512_IMPL)
 using native = simd_abi::avx512;
 #elif defined(FASTOR_AVX_IMPL)
 using native = simd_abi::avx;
 #elif defined(FASTOR_SSE_IMPL)
 using native = simd_abi::sse;
+#else
+using native = simd_abi::scalar;
+#endif
 #else
 using native = simd_abi::scalar;
 #endif

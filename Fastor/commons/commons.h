@@ -237,6 +237,8 @@ SOFTWARE.
 
 // Fastor internal defines
 //------------------------------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // ICC's default option is fast anyway (i.e. -fp-model fast=1)
 // but it does not define the __FAST_MATH__ macro
 #if defined(__FAST_MATH__)
@@ -247,6 +249,7 @@ SOFTWARE.
 #endif
 
 // Bounds and shape checking - ON by default
+//------------------------------------------------------------------------------------------------//
 #ifndef NDEBUG
 #ifndef FASTOR_BOUNDS_CHECK
 #define FASTOR_BOUNDS_CHECK 1
@@ -262,6 +265,7 @@ SOFTWARE.
 #define FASTOR_SHAPE_CHECK 0
 #endif
 #endif
+//------------------------------------------------------------------------------------------------//
 
 #ifndef FASTOR_NO_ALIAS
 #define FASTOR_NO_ALIAS 0
