@@ -263,10 +263,15 @@ SOFTWARE.
 #endif
 #endif
 
+#ifndef FASTOR_NO_ALIAS
+#define FASTOR_NO_ALIAS 0
+#endif
+
 //#define FASTOR_DONT_VECTORISE
 //#define FASTOR_DONT_PERFORM_OP_MIN
 //#define FASTOR_USE_OLD_OUTER
 //#define FASTOR_USE_OLD_INTRINSICS
+//#define FASTOR_USE_HADD
 //#define FASTOR_USE_VECTORISED_EXPR_ASSIGN  // To use vectorised expression assignment
 //#define FASTOR_ZERO_INITIALISE
 //#define FASTOR_USE_OLD_NDVIEWS
@@ -288,12 +293,6 @@ SOFTWARE.
 #define COPY_SMART_EXPR
 #endif
 
-// Define this if hadd seems beneficial
-//#define FASTOR_USE_HADD
-
-#ifndef FASTOR_NO_ALIAS
-#define FASTOR_DISALLOW_ALIASING
-#endif
 
 #define DepthFirst -200
 #define NoDepthFirst -201

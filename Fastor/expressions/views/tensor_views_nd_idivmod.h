@@ -255,7 +255,7 @@ public:
     // Copy assignment operators [Needed in addition to generic AbstractTensor overload]
     //----------------------------------------------------------------------------------//
     void operator=(const TensorViewExpr<Tensor<T,Rest...>,DIMS> &other) {
-#ifdef FASTOR_DISALLOW_ALIASING
+#if !(FASTOR_NO_ALIAS)
         if (does_alias) {
             does_alias = false;
             // Evaluate this into a temporary
@@ -330,7 +330,7 @@ public:
     }
 
     void operator+=(const TensorViewExpr<Tensor<T,Rest...>,DIMS> &other) {
-#ifdef FASTOR_DISALLOW_ALIASING
+#if !(FASTOR_NO_ALIAS)
         if (does_alias) {
             does_alias = false;
             // Evaluate this into a temporary
@@ -403,7 +403,7 @@ public:
     }
 
     void operator-=(const TensorViewExpr<Tensor<T,Rest...>,DIMS> &other) {
-#ifdef FASTOR_DISALLOW_ALIASING
+#if !(FASTOR_NO_ALIAS)
         if (does_alias) {
             does_alias = false;
             // Evaluate this into a temporary
@@ -477,7 +477,7 @@ public:
     }
 
     void operator*=(const TensorViewExpr<Tensor<T,Rest...>,DIMS> &other) {
-#ifdef FASTOR_DISALLOW_ALIASING
+#if !(FASTOR_NO_ALIAS)
         if (does_alias) {
             does_alias = false;
             // Evaluate this into a temporary
@@ -550,7 +550,7 @@ public:
     }
 
     void operator/=(const TensorViewExpr<Tensor<T,Rest...>,DIMS> &other) {
-#ifdef FASTOR_DISALLOW_ALIASING
+#if !(FASTOR_NO_ALIAS)
         if (does_alias) {
             does_alias = false;
             // Evaluate this into a temporary
@@ -627,7 +627,7 @@ public:
     //----------------------------------------------------------------------------------//
     template<typename Derived, size_t OTHER_DIMS>
     void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
-#ifdef FASTOR_DISALLOW_ALIASING
+#if !(FASTOR_NO_ALIAS)
         if (does_alias) {
             does_alias = false;
             // Evaluate this into a temporary
@@ -698,7 +698,7 @@ public:
 
     template<typename Derived, size_t OTHER_DIMS>
     void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
-#ifdef FASTOR_DISALLOW_ALIASING
+#if !(FASTOR_NO_ALIAS)
         if (does_alias) {
             does_alias = false;
             // Evaluate this into a temporary
@@ -769,7 +769,7 @@ public:
 
     template<typename Derived, size_t OTHER_DIMS>
     void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
-#ifdef FASTOR_DISALLOW_ALIASING
+#if !(FASTOR_NO_ALIAS)
         if (does_alias) {
             does_alias = false;
             // Evaluate this into a temporary
@@ -840,7 +840,7 @@ public:
 
     template<typename Derived, size_t OTHER_DIMS>
     void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
-#ifdef FASTOR_DISALLOW_ALIASING
+#if !(FASTOR_NO_ALIAS)
         if (does_alias) {
             does_alias = false;
             // Evaluate this into a temporary
@@ -911,7 +911,7 @@ public:
 
     template<typename Derived, size_t OTHER_DIMS>
     void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
-#ifdef FASTOR_DISALLOW_ALIASING
+#if !(FASTOR_NO_ALIAS)
         if (does_alias) {
             does_alias = false;
             // Evaluate this into a temporary
