@@ -64,11 +64,7 @@ FASTOR_INLINE typename Derived::scalar_type norm(const AbstractTensor<Derived,DI
     for (i = 0; i < ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
         // Evaluate the expression once
         auto eval_vec = src.template eval<T>(i);
-#ifdef __FMA__
         _vec = fmadd(eval_vec,eval_vec,_vec);
-#else
-        _vec += eval_vec*eval_vec;
-#endif
     }
     for (; i < src.size(); ++i) {
         // Evaluate the expression once
@@ -92,11 +88,7 @@ FASTOR_INLINE typename Derived0::scalar_type inner(const AbstractTensor<Derived0
     FASTOR_INDEX i;
     T _scal=0; V _vec(_scal);
     for (i = 0; i < ROUND_DOWN(srca.size(),V::Size); i+=V::Size) {
-#ifdef __FMA__
         _vec = fmadd(srca.template eval<T>(i),srcb.template eval<T>(i),_vec);
-#else
-        _vec += srca.template eval<T>(i)*srcb.template eval<T>(i);
-#endif
     }
     for (; i < srca.size(); ++i) {
         // Evaluate the expression once
@@ -132,7 +124,7 @@ FASTOR_INLINE typename Derived::scalar_type trace(const AbstractTensor<Derived,D
 // Works as long as the return tensor is compile deducible
 // Their applicability on dynamic views should be checked
 template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
-typename std::enable_if< DIM0!=0 && DIM0<=2 && DIM1!=1 && DIM1<=2,bool>::type=0>
+typename std::enable_if<DIM0==2 && DIM1==2,bool>::type=0>
 FASTOR_INLINE
 Tensor<typename scalar_type_finder<Derived0>::type,
     get_tensor_dimensions<typename tensor_type_finder<Derived0>::type>::dims[0],
@@ -142,7 +134,6 @@ matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM
     using T = typename scalar_type_finder<Derived0>::type;
     const Derived0 &a_src = a.self();
     const Derived1 &b_src = b.self();
-    using V = SIMDVector<T,DEFAULT_ABI>;
 
     // size_t M = a_src.dimension(0);
     // size_t K = a_src.dimension(1);
@@ -151,6 +142,7 @@ matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM
     constexpr size_t K = get_tensor_dimensions<typename tensor_type_finder<Derived0>::type>::dims[1];
     constexpr size_t N = get_tensor_dimensions<typename tensor_type_finder<Derived1>::type>::dims[1];
 
+    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
     constexpr size_t SIZE_ = V::Size;
     int ROUND = ROUND_DOWN(N,(int)SIZE_);
 
@@ -167,11 +159,7 @@ matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM
                 // V brow; brow.load(&b[i*N+k],false);
                 V brow = b_src.template eval<T>(i*N+k);
                 vec_a.set(a_src.template eval_s<T>(j*K+i));
-#ifndef __FMA__
-                out_row += vec_a*brow;
-#else
                 out_row = fmadd(vec_a,brow,out_row);
-#endif
             }
             out_row.store(out_data+k+N*j,false);
         }
