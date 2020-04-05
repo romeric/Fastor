@@ -298,33 +298,21 @@ SOFTWARE.
 #endif
 
 
-#define DepthFirst -200
-#define NoDepthFirst -201
 //------------------------------------------------------------------------------------------------//
 
 
 
+
+//------------------------------------------------------------------------------------------------//
+#define ROUND_DOWN2(x, s) ((x) & ~((s)-1))
+#define ROUND_DOWN(x, s) ROUND_DOWN2(x,s)
+
+
+#define FASTOR_NIL 0
+//------------------------------------------------------------------------------------------------//
 
 // FASTOR CONSTRUCTS
 //------------------------------------------------------------------------------------------------//
-#define FASTOR_Symmetric -100
-#define FASTOR_NonSymmetric -101
-#define FASTOR_AntiSymmetric -102
-#define FASTOR_Identity -103
-#define FASTOR_One -104
-#define FASTOR_Zero -105
-
-#define FASTOR_ThreeD -150
-#define FASTOR_TwoD -151
-#define FASTOR_PlaneStrain -152
-#define FASTOR_PlaneStress -153
-#define FASTOR_Voigt -106
-
-
-#define ROUND_DOWN2(x, s) ((x) & ~((s)-1))
-#define ROUND_DOWN(x, s) ROUND_DOWN2(x,s)
-#define PRECI_TOL 1e-14
-
 namespace Fastor {
 
 using FASTOR_INDEX = size_t;
@@ -335,6 +323,25 @@ using FASTOR_VINDEX = volatile size_t;
 
 constexpr int RowMajor = 0;
 constexpr int ColumnMajor = 1;
+
+
+constexpr int FASTOR_Symmetric = -100;
+constexpr int FASTOR_NonSymmetric = -101;
+constexpr int FASTOR_AntiSymmetric = -102;
+constexpr int FASTOR_Identity = -103;
+constexpr int FASTOR_One = -104;
+constexpr int FASTOR_Zero = -105;
+
+constexpr int FASTOR_ThreeD = -150;
+constexpr int FASTOR_TwoD = -151;
+constexpr int FASTOR_PlaneStrain = -152;
+constexpr int FASTOR_PlaneStress = -153;
+constexpr int FASTOR_Voigt = -106;
+
+constexpr int DepthFirst = -200;
+constexpr int NoDepthFirst = -201;
+
+constexpr double PRECI_TOL  = 1e-14;
 
 
 #ifndef NDEBUG

@@ -10,6 +10,10 @@ LIBXSMMROOT = /Users/roman/Downloads/libxsmm
 LIBXSMMINC = -I$(FASTORROOT) -DFASTOR_USE_LIBXSMM -DFASTOR_BLAS_SWITCH_MATRIX_SIZE=1 -I$(LIBXSMMROOT)/include
 LIBXSMMLIB =  -L$(LIBXSMMROOT)/lib -lxsmm -lblas
 
+RUN_SINGLE =
+
+CXX_FLAGS += $(RUN_SINGLE)
+
 all:
 	$(CXX) benchmark_eigen.cpp -o benchmark_eigen.exe $(CXX_FLAGS) -I$(EIGENROOT)
 	$(CXX) benchmark_blaze.cpp -o benchmark_blaze.exe $(CXX_FLAGS) -I$(BLAZEROOT)

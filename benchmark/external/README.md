@@ -4,7 +4,7 @@ To compile the benchmarks you need to specifiy your library paths
 make all EIGENROOT=... BLAZEROOT=... LIBXSMMROOT... FASTORROOT=...
 ~~~
 
-Single and double precision benchmarks are run one at a time you need to define `make RUN_SINGL=-DRUN_SINGLE` for single precision benchmarks. The default is double precision
+Single and double precision benchmarks are run one at a time you need to define `make RUN_SINGLE=-DRUN_SINGLE` for single precision benchmarks. The default is double precision
 
 To run the benchmarks
 

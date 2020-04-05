@@ -125,23 +125,23 @@ struct choose_best_simd_type<__svec<T,ABI>,N> {
     // For exact fractions simd gets proper speed up for instance for matmul
     // using type = typename is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::type;
     static constexpr bool is_exact_multiple = is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::value;
-    // using type = typename std::conditional<is_exact_multiple, typename is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::type,
-    //                 typename std::conditional<is_greater<_vec_size,2UL*N>::value, typename get_quarter_simd_type<__svec<T,ABI>>::type,
-    //                     typename std::conditional<is_greater<_vec_size,N>::value, typename get_half_simd_type<__svec<T,ABI>>::type, actual_type
-    //                     >::type
-    //                 >::type
-    //              >::type;
-
-    // For other fractions masking might be a better idea than, hence this special logic for remainder using is_less.
-    // For no special logic use the above case
     using type = typename std::conditional<is_exact_multiple, typename is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::type,
-                    typename std::conditional<is_greater<_vec_size,2UL*N>::value && is_greater<_vec_size % N,1UL>::value,
-                        typename get_quarter_simd_type<__svec<T,ABI>>::type,
-                        typename std::conditional<is_greater<_vec_size,N>::value && is_greater<_vec_size % N,1UL>::value,
-                            typename get_half_simd_type<__svec<T,ABI>>::type, actual_type
+                    typename std::conditional<is_greater<_vec_size,2UL*N>::value, typename get_quarter_simd_type<__svec<T,ABI>>::type,
+                        typename std::conditional<is_greater<_vec_size,N>::value, typename get_half_simd_type<__svec<T,ABI>>::type, actual_type
                         >::type
                     >::type
                  >::type;
+
+    // // For other fractions masking might be a better idea than, hence this special logic for remainder using is_less.
+    // // For no special logic use the above case
+    // using type = typename std::conditional<is_exact_multiple, typename is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::type,
+    //                 typename std::conditional<is_greater<_vec_size,2UL*N>::value && is_greater<_vec_size % N,1UL>::value,
+    //                     typename get_quarter_simd_type<__svec<T,ABI>>::type,
+    //                     typename std::conditional<is_greater<_vec_size,N>::value && is_greater<_vec_size % N,1UL>::value,
+    //                         typename get_half_simd_type<__svec<T,ABI>>::type, actual_type
+    //                     >::type
+    //                 >::type
+    //              >::type;
 };
 
 } // end of namesapce internal

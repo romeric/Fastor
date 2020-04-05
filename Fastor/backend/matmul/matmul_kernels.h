@@ -635,109 +635,15 @@ void _matmul_mkn_non_square(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRI
 //-----------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------
 
-
-
-
-
-//-----------------------------------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------------------------------------
-// Compile time loop unroller
-template<size_t from, size_t to>
-struct matmul_inner_loop_unroller {
-    template<size_t M, size_t K, typename T, typename ABI>
-    static FASTOR_INLINE void fmadd_(const size_t i, const T * FASTOR_RESTRICT a,
-        const SIMDVector<T,ABI> &bmm0, SIMDVector<T,ABI> (&c_ij)[M]) {
-        const SIMDVector<T,ABI> amm0(a[from*K+i]);
-        c_ij[from] = fmadd(amm0,bmm0,c_ij[from]);
-        matmul_inner_loop_unroller<from+1,to>::template fmadd_<M,K,T,ABI>(i, a, bmm0, c_ij);
-    }
-
-    template<size_t M, typename T, typename ABI>
-    static FASTOR_INLINE void store_(const SIMDVector<T,ABI> (&c_ij)[M], T* FASTOR_RESTRICT out) {
-        c_ij[from].store(&out[from*SIMDVector<T,ABI>::Size]);
-        matmul_inner_loop_unroller<from+1,to>::template store_<M,T,ABI>(c_ij, out);
-    }
-};
-
-template<size_t from>
-struct matmul_inner_loop_unroller<from,from> {
-
-    template<size_t M, size_t K, typename T, typename ABI>
-    static FASTOR_INLINE void fmadd_(const size_t i, const T * FASTOR_RESTRICT a,
-        const SIMDVector<T,ABI> &bmm0, SIMDVector<T,ABI> (&c_ij)[M]) {
-        const SIMDVector<T,ABI> amm0(a[from*K+i]);
-        c_ij[from] = fmadd(amm0,bmm0,c_ij[from]);
-    }
-
-    template<size_t M, typename T, typename ABI>
-    static FASTOR_INLINE void store_(const SIMDVector<T,ABI> (&c_ij)[M], T* FASTOR_RESTRICT out) {
-        c_ij[from].store(&out[from*SIMDVector<T,ABI>::Size]);
-    }
-};
-
-
-// This implementation is based on 2k2/3k3/4k4 but generalised for all Ms that is
-// mk2/mk3/mk4/mk8 using compile time template unrolling. It uses an array of Vs
-// instead of registers to generalise on M. While the loops are completely unrolled
-// at compile time both clang and gcc fetch the first operand of (v)fmadd213ps for the
-// first iteration of the loop from the cache/memory instead of operating on registers directly
-// the remaining of the unrolled loop is on registers. However this has very little effect on
-// performance of small tensors. This method although generalises on M it is designed for M<V::size
-// in mind and works best for small Ms as unrolling beyond a certain size certainly hurts the performance
-//------------------------------------------------------------------------------------------------//
-template<typename T, size_t M, size_t K, size_t N,
-        typename std::enable_if<is_less_equal<M,16UL>::value &&
-        internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size==N,bool>::type = 0>
-FASTOR_INLINE
-void _matmul_mk_simd_width(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
-
-    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
-    V c_ij[M];
-
-    for (size_t i=0; i<K; ++i) {
-        const V bmm0(&b[i*V::Size]);
-        matmul_inner_loop_unroller<0,M-1>::template fmadd_<M,K,T,typename V::abi_type>(i, a, bmm0, c_ij);
-    }
-    matmul_inner_loop_unroller<0,M-1>::template store_<M,T,typename V::abi_type>(c_ij, out);
-}
-
-// This particular overload is needed for the time being
-template<typename T, size_t M, size_t K, size_t N,
-        typename std::enable_if<is_greater<M,16UL>::value ||
-        internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size!=N,bool>::type = 0>
-FASTOR_INLINE
-void _matmul_mk_simd_width(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
-    _matmul_base<T,M,K,N>(a,b,out);
-}
-
-
-#if 0
-// This is the non-unrolled version of the above
-template<typename T, size_t M, size_t K, size_t N,
-        typename std::enable_if<is_less_equal<M,16UL>::value &&
-        internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::Size==N,bool>::type = 0>
-FASTOR_INLINE
-void _matmul_mk_simd_width(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
-
-    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
-    V c_ij[V::Size];
-
-    for (size_t j=0; j<M; ++j) {
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*V::Size]);
-            const V amm0(a[j*K+i]);
-            c_ij[j] = fmadd(amm0,bmm0,c_ij[j]);
-        }
-        c_ij[j].store(&out[j*V::Size]);
-    }
-}
-#endif
-//-----------------------------------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------------------------------------
-
 } // end of namespace internal
 
 } // end of namespace Fastor
+
+//-----------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------
+#include "Fastor/backend/matmul/matmul_mk_smalln.h"
+//-----------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------
 
 
 #endif // MATMUL_KERNELS_H
