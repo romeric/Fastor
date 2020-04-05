@@ -95,6 +95,7 @@ inline double timeit(T (*func)(Params...), Args...args)
     double counter = 1.0;
     double mean_time = 0.0;
     double best_time = 1.0e20;
+    double worst_time = 0.0;
     uint64_t cycles = 0;
 
     for (auto iter=0; iter<1e09; ++iter)
@@ -132,6 +133,9 @@ inline double timeit(T (*func)(Params...), Args...args)
 
         if (elapsed_seconds.count() < best_time && elapsed_seconds.count() != 0.0) {
             best_time = elapsed_seconds.count();
+        };
+        if (elapsed_seconds.count() > worst_time) {
+            worst_time = elapsed_seconds.count();
         };
 
         counter++;
