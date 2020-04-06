@@ -693,7 +693,7 @@ FASTOR_INLINE
 void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
     using V = SIMDVector<T,DEFAULT_ABI>;
-    constexpr int ROUND = ROUND_DOWN(N,V::Size);
+    constexpr size_t ROUND = ROUND_DOWN(N,V::Size);
 
     // V _vec_a, _vec_b;
     // for (int i=0; i< M; ++i) {
@@ -714,10 +714,10 @@ void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FA
 
     // Unroll the outer loop to get two independent parallel chains
     // of accumulators. This gives you two FMAs for 3 loads (2 from a and one from b)
-    int i=0;
+    size_t i=0;
     for (; i<ROUND_DOWN(M,2); i+=2) {
         V _vec_out0, _vec_out1;
-        int j = 0;
+        size_t j = 0;
         for (; j< ROUND; j+=V::Size) {
             V _vec_a0(&a[i*N+j]);
             V _vec_a1(&a[(i+1)*N+j]);
@@ -738,7 +738,7 @@ void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FA
 
     for (; i<M; ++i) {
         V _vec_out0;
-        int j = 0;
+        size_t j = 0;
         for (; j< ROUND; j+=V::Size) {
             V _vec_a0(&a[i*N+j]);
             V _vec_b(&b[j]);
