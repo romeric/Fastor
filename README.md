@@ -9,20 +9,20 @@
 Documenation can be found under the [Wiki](https://github.com/romeric/Fastor/wiki) pages.
 
 ### High-level API
-Fastor provides a high level interface for tensor algebra. As a first example consider the following
+Fastor provides a high level interface for tensor algebra. To get a glimpse, consider the following
 ~~~c++
-Tensor<double> scalar; // A scalar
-Tensor<double,6> vector6; //  A vector
-Tensor<double,4,5> matrix; // A second order tensor
-Tensor<double,3,3,3> tensor_3; // A third order tensor with dimension 3x3x3
-tensor_3.arange(0); // fill tensor with sequentially ascending numbers
-print(tensor_3); // print out the tensor
-tensor_3(0,2,1); // index a tensor
-tensor_3(all,last,seq(0,2)); // slice a tensor
-tensor_3.rank(); // get rank of tensor, 3 in this case
-Tensor<float,2,2,2,2,1,2,2,4,3,2,3,3,6> tensor_13; // A 13th order tensor
+Tensor<double> scalar = 3.5;                // A scalar
+Tensor<float,3> vector3 = {1,2,3};          // A vector
+Tensor<int,3,2> matrix{{1,2},{3,4},{5,6}};  // A second order tensor
+Tensor<double,3,3,3> tensor_3;              // A third order tensor with dimension 3x3x3
+tensor_3.arange(0);                         // fill tensor with sequentially ascending numbers
+print(tensor_3);                            // print/display the tensor
+tensor_3(0,2,1);                            // index a tensor
+tensor_3(all,last,seq(0,2));                // slice a tensor tensor_3[:,-1,:2]
+tensor_3.rank();                            // get rank of tensor, 3 in this case
+Tensor<float,2,2,2,2,2,2,4,3,2,3,3,6> t_12; // A 12th order tensor
 ~~~
-will output the following
+a sample output of the above code would be
 ~~~bash
 [0,:,:]
 ⎡      0,       1,       2 ⎤
