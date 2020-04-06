@@ -278,6 +278,11 @@ void _matmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * 
     constexpr size_t M1 = (M / unrollOuterloop * unrollOuterloop);
     for (; i < M1; i += unrollOuterloop) {
         size_t j = 0;
+        for (; j < N0; j += unrollInnerBlock) {
+            interior_block_matmul_impl<T,V,M,K,N,unrollOuterloop,1,numSIMDCols>(a,b,c,i,j);
+        }
+
+        // Remaining N - N0 columns
         for (; j < N1; j += V::Size) {
             V c_ij[unrollOuterloop];
             for (size_t k = 0; k < K; ++k) {
@@ -303,6 +308,11 @@ void _matmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * 
     // Now treat the remaining M-M1 rows
     FASTOR_IF_CONSTEXPR (M-M1 > 0) {
         size_t j = 0;
+        for (; j < N0; j += unrollInnerBlock) {
+            interior_block_matmul_impl<T,V,M,K,N,M-M1,1,numSIMDCols>(a,b,c,i,j);
+        }
+
+        // Remaining N - N0 columns
         for (; j < N1; j += V::Size) {
             V c_ij[M-M1];
             for (size_t k = 0; k < K; ++k) {
@@ -313,6 +323,7 @@ void _matmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * 
             }
         }
 
+        // Remaining N - N1 columns
         for (; j < N; ++j) {
             T c_ij[M-M1] = {};
             for (size_t k = 0; k < K; ++k) {
@@ -408,6 +419,11 @@ void _matmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT 
     constexpr size_t M1 = (M / unrollOuterloop * unrollOuterloop);
     for (; i < M1; i += unrollOuterloop) {
         size_t j = 0;
+        for (; j < N0; j += unrollInnerBlock) {
+            interior_block_matmul_impl<T,V,M,K,N,unrollOuterloop,1,numSIMDCols>(a,b,c,i,j);
+        }
+
+        // Remaining N - N0 columns
         for (; j < N1; j += V::Size) {
             V c_ij[unrollOuterloop];
             for (size_t k = 0; k < K; ++k) {
@@ -435,6 +451,11 @@ void _matmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT 
     // Now treat the remaining M-M1 rows
     FASTOR_IF_CONSTEXPR (M-M1 > 0) {
         size_t j = 0;
+        for (; j < N0; j += unrollInnerBlock) {
+            interior_block_matmul_impl<T,V,M,K,N,M-M1,1,numSIMDCols>(a,b,c,i,j);
+        }
+
+        // Remaining N - N0 columns
         for (; j < N1; j += V::Size) {
             V c_ij[M-M1];
             for (size_t k = 0; k < K; ++k) {
@@ -445,6 +466,7 @@ void _matmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT 
             }
         }
 
+        // Remaining N - N1 columns
         for (; j < N; j+=N-N1) {
             V c_ij[M-M1] = {};
             for (size_t k = 0; k < K; ++k) {
