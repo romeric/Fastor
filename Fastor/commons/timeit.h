@@ -66,33 +66,87 @@
 
 #endif // FASTOR_NO_COLOUR_PRINT
 
-
 namespace Fastor {
-
-// Get cpu cycle count
-
-//  Windows
-#ifdef _WIN32
-inline uint64_t rdtsc(){
-    return __rdtsc();
-}
-//  Linux/GCC
-#else
-inline uint64_t rdtsc(){
-    unsigned int lo,hi;
-    __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
-    return ((uint64_t)hi << 32) | lo;
-}
-#endif
 
 
 #ifndef FASTOR_USE_RDTSC
 #define FASTOR_USE_RDTSC
 #endif
 
+#ifndef FASTOR_SIMPLE_RDTSC
+#define FASTOR_SIMPLE_RDTSC
+#endif
+
 #ifndef FASTOR_BENCH_RUNTIME
 #define FASTOR_BENCH_RUNTIME 1.0
 #endif
+
+
+// Get cpu cycle count
+#ifdef _WIN32
+inline uint64_t rdtsc() {
+    return __rdtsc();
+}
+//  Linux/GCC
+#else
+inline uint64_t rdtsc() {
+    unsigned int lo, hi;
+    // This does not clobber the register so rdtsc overwrites
+    // the register, see
+    // How to Benchmark Code Execution Times on Intel® IA-32
+    // and IA-64 Instruction Set Architectures pp-9
+    // https://intel.ly/3dXFfQN
+#ifdef FASTOR_SIMPLE_RDTSC
+    __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
+    return ((uint64_t)hi << 32) | lo;
+#else
+    // Use this instead
+    __asm__ __volatile__ ("RDTSC\n\t"
+                         "mov %%edx, %0\n\t"
+                         "mov %%eax, %1\n\t": "=r" (hi), "=r" (lo) ::
+                         // we need to clobber
+                         // "%eax", "%edx" // IA-32
+                         "%rax", "%rdx"    // IA-64
+                     );
+#endif
+    return ((uint64_t)hi << 32) | lo;
+}
+
+#ifndef FASTOR_SIMPLE_RDTSC
+// There is still one problem with the function above [rdtsc()]
+// and that is it does not take care of cpu's out-of-order
+// executation. In order to serialise we make a call to cpuid
+// just before rdtsc. While this does not effect timing of the
+// function itself, it introduces a lot of overhead when called
+// multiple times within a loop
+// https://intel.ly/3dXFfQN
+inline uint64_t rdtsc_begin() {
+    unsigned int lo, hi;
+    __asm__ __volatile__ ("CPUID\n\t"
+                         "RDTSC\n\t"
+                         "mov %%edx, %0\n\t"
+                         "mov %%eax, %1\n\t": "=r" (hi), "=r" (lo) ::
+                         "%rax", "%rbx", "%rcx", "%rdx" // clobber memory
+                         );
+    return ((uint64_t)hi << 32) | lo;
+}
+// and then a call to cpuid immediately after rdtsc
+inline uint64_t rdtsc_end() {
+    unsigned int lo, hi;
+    __asm__ __volatile__("RDTSCP\n\t"
+                         "mov %%edx, %0\n\t"
+                         "mov %%eax, %1\n\t"
+                         "CPUID\n\t": "=r" (hi), "=r" (lo)::
+                        "%rax", "%rbx", "%rcx", "%rdx" // clobber memory
+                        );
+    return ((uint64_t)hi << 32) | lo;
+}
+#else
+inline uint64_t rdtsc_begin() { return rdtsc();}
+inline uint64_t rdtsc_end() { return rdtsc();}
+#endif
+#endif
+
 
 
 namespace useless {
@@ -115,10 +169,10 @@ std::string format_time_string(double _time) {
 
 #define FASTOR_FORMAT_BENCH_TIME_DISPLAY_1()\
     std::cout << counter\
-    << FGRN(BOLD(" runs, mean time: "))\
-    << std::setprecision(6) << useless::format_time(mean_time) << useless::format_time_string(mean_time) << ". " \
-    << FGRN(BOLD("min time: "))\
-    << useless::format_time(best_time) << useless::format_time_string(best_time) << ". "\
+    << FGRN(BOLD(" runs, min time: "))\
+    << std::setprecision(6) << useless::format_time(best_time) << useless::format_time_string(best_time) << ". " \
+    << FGRN(BOLD("mean time: "))\
+    << useless::format_time(mean_time) << useless::format_time_string(mean_time) << ". "\
     << FGRN(BOLD("max time: "))\
     << useless::format_time(worst_time) << useless::format_time_string(worst_time) << ". "\
     << FGRN(BOLD("No of RDTSC CPU cycles "))\
@@ -126,10 +180,10 @@ std::string format_time_string(double _time) {
 
 #define FASTOR_FORMAT_BENCH_TIME_DISPLAY_2()\
     std::cout << counter\
-    << FGRN(BOLD(" runs, mean time: "))\
-    << std::setprecision(6) << useless::format_time(mean_time) << useless::format_time_string(mean_time) << ". " \
-    << FGRN(BOLD("min time: "))\
-    << useless::format_time(best_time) << useless::format_time_string(best_time) << ". "\
+    << FGRN(BOLD(" runs, min time: "))\
+    << std::setprecision(6) << useless::format_time(best_time) << useless::format_time_string(best_time) << ". " \
+    << FGRN(BOLD("mean time: "))\
+    << useless::format_time(mean_time) << useless::format_time_string(mean_time) << ". "\
     << FGRN(BOLD("max time: "))\
     << useless::format_time(worst_time) << useless::format_time_string(worst_time) << std::endl;\
 
@@ -139,7 +193,7 @@ std::string format_time_string(double _time) {
 
 template<typename T, typename ... Params, typename ... Args>
 inline
-std::tuple<double,double,double> // mean, min, max times
+std::tuple<double,double,double> // min, mean, max times
 timeit(T (*func)(Params...), Args...args)
 {
     uint64_t counter = 1;
@@ -154,6 +208,11 @@ timeit(T (*func)(Params...), Args...args)
     // strong relation to CPU cycles
     // https://stackoverflow.com/questions/36663379/seconds-calculation-using-rdtsc
     double tsc_to_time = 1.0/cpuID.EBX();
+
+// #ifndef _WIN32
+//     rdtsc_begin();
+//     rdtsc_end();
+// #endif
 #endif
             // std::cout << () * (cycles/(1.0*counter)) << "\n";
 
@@ -163,7 +222,11 @@ timeit(T (*func)(Params...), Args...args)
         std::chrono::time_point<std::chrono::system_clock> start, end;
         start = std::chrono::system_clock::now();
 #elif defined(FASTOR_USE_RDTSC)
+#ifdef _WIN32
         auto cycle = rdtsc();
+#else
+        auto cycle = rdtsc_begin();
+#endif
 #else
         std::chrono::time_point<std::chrono::steady_clock> start, end;
         start = std::chrono::steady_clock::now();
@@ -175,7 +238,11 @@ timeit(T (*func)(Params...), Args...args)
         if (iter < 1) continue;
 
 #if defined(FASTOR_USE_RDTSC)
+#ifdef _WIN32
         cycle = rdtsc() - cycle;
+#else
+        cycle = rdtsc_end() - cycle;
+#endif
         cycles += cycle;
 
         double elapsed_t = tsc_to_time*cycle;
