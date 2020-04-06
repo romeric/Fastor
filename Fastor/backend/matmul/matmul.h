@@ -37,7 +37,7 @@ FASTOR_INLINE
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
     // Matrix-vector specialisation
-    FASTOR_IF_CONSTEXPR (N==1) {
+    FASTOR_IF_CONSTEXPR (N==1UL) {
         internal::_matvecmul<T,M,K>(a,b,out);
         return;
     }
@@ -46,13 +46,8 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
 
     // Use specialised kernels
-    FASTOR_IF_CONSTEXPR( M==N && M==K && ((M==12UL || M==24UL || M==33) && std::is_same<T,float>::value)) {
-        internal::_matmul_mkn_non_square<T,M,K,N>(a,b,out);
-        return;
-    }
-
-    FASTOR_IF_CONSTEXPR((N==V::Size || N==2*V::Size) && V::Size!=1UL) {
-        internal::_matmul_mk_lessthan2simd<T,M,K,N>(a,b,out);
+    FASTOR_IF_CONSTEXPR((N==V::Size || N==2*V::Size || N==3*V::Size || N==4*V::Size) && V::Size!=1UL) {
+        internal::_matmul_mk_smalln<T,M,K,N>(a,b,out);
         return;
     }
 
@@ -60,7 +55,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     // Works for AVX512. Only maskload/maskstore should be overloaded or ifdefed
     // to use mask_load/mask_store of avx512
     FASTOR_IF_CONSTEXPR((N<2*V::Size && N!=1UL)) {
-        internal::_matmul_mk_lessthan2simd<T,M,K,N>(a,b,out);
+        internal::_matmul_mk_smalln<T,M,K,N>(a,b,out);
         return;
     }
 #endif
