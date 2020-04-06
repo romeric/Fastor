@@ -1,16 +1,21 @@
 #ifndef TIMEIT_H
 #define TIMEIT_H
 
-#include <iostream>
 #include <chrono>
 #include <cmath>
 #include <cstdint>
-#include <utility>
+#include <iomanip>
+#include <iostream>
+#include <string>
+#include <limits>
 #include <tuple>
+#include <utility>
 
 #ifdef _WIN32
 #include <intrin.h>
 #endif
+
+#include "Fastor/commons/cpuid.h"
 
 
 #ifndef FASTOR_NO_COLOUR_PRINT
@@ -61,9 +66,6 @@
 
 #endif // FASTOR_NO_COLOUR_PRINT
 
-#ifndef FASTOR_BENCH_CYCLES
-#define FASTOR_BENCH_CYCLES
-#endif
 
 namespace Fastor {
 
@@ -84,54 +86,167 @@ inline uint64_t rdtsc(){
 #endif
 
 
-// #define USE_SYSTEM_CLOCK
+#ifndef FASTOR_USE_RDTSC
+#define FASTOR_USE_RDTSC
+#endif
+
 #ifndef FASTOR_BENCH_RUNTIME
 #define FASTOR_BENCH_RUNTIME 1.0
 #endif
 
+
+namespace useless {
+inline
+double format_time(double _time) {
+    if (_time >= 1.0e-3 && _time < 1.) return _time / 1e-3;
+    else if (_time >= 1.0e-6 && _time < 1.0e-3) return _time / 1e-6;
+    else if (_time < 1.0e-6) return _time / 1e-9;
+    else return _time;
+}
+
+inline
+std::string format_time_string(double _time) {
+    if (_time >= 1.0e-3 && _time < 1.) return " ms";
+    else if (_time >= 1.0e-6 && _time < 1.0e-3) return " \xC2\xB5s";
+    else if (_time < 1.0e-6) return " ns";
+    else return " s";
+}
+}
+
+#define FASTOR_FORMAT_BENCH_TIME_DISPLAY_1()\
+    std::cout << counter\
+    << FGRN(BOLD(" runs, mean time: "))\
+    << std::setprecision(6) << useless::format_time(mean_time) << useless::format_time_string(mean_time) << ". " \
+    << FGRN(BOLD("min time: "))\
+    << useless::format_time(best_time) << useless::format_time_string(best_time) << ". "\
+    << FGRN(BOLD("max time: "))\
+    << useless::format_time(worst_time) << useless::format_time_string(worst_time) << ". "\
+    << FGRN(BOLD("No of RDTSC CPU cycles "))\
+    << uint64_t(cycles/(1.0*counter)) << std::endl;\
+
+#define FASTOR_FORMAT_BENCH_TIME_DISPLAY_2()\
+    std::cout << counter\
+    << FGRN(BOLD(" runs, mean time: "))\
+    << std::setprecision(6) << useless::format_time(mean_time) << useless::format_time_string(mean_time) << ". " \
+    << FGRN(BOLD("min time: "))\
+    << useless::format_time(best_time) << useless::format_time_string(best_time) << ". "\
+    << FGRN(BOLD("max time: "))\
+    << useless::format_time(worst_time) << useless::format_time_string(worst_time) << std::endl;\
+
+
+
+
+
 template<typename T, typename ... Params, typename ... Args>
-inline double timeit(T (*func)(Params...), Args...args)
+inline
+std::tuple<double,double,double> // mean, min, max times
+timeit(T (*func)(Params...), Args...args)
 {
-    double counter = 1.0;
+    uint64_t counter = 1;
     double mean_time = 0.0;
-    double best_time = 1.0e20;
+    double best_time = std::numeric_limits<double>::max();
     double worst_time = 0.0;
+#if defined(FASTOR_USE_RDTSC)
     uint64_t cycles = 0;
+    CPUID cpuID(0);
+    // A cycle is 1 second per max cpu frequency assuming constant_tsc
+    // Caution: in theory, there is no guarantee that rdtsc would have
+    // strong relation to CPU cycles
+    // https://stackoverflow.com/questions/36663379/seconds-calculation-using-rdtsc
+    double tsc_to_time = 1.0/cpuID.EBX();
+#endif
+            // std::cout << () * (cycles/(1.0*counter)) << "\n";
 
     for (auto iter=0; iter<1e09; ++iter)
     {
-#ifdef USE_SYSTEM_CLOCK
+#if defined(FASTOR_USE_SYSTEM_CLOCK)
         std::chrono::time_point<std::chrono::system_clock> start, end;
         start = std::chrono::system_clock::now();
-#else
-        std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
-        start = std::chrono::high_resolution_clock::now();
-#endif
-#ifdef FASTOR_BENCH_CYCLES
+#elif defined(FASTOR_USE_RDTSC)
         auto cycle = rdtsc();
+#else
+        std::chrono::time_point<std::chrono::steady_clock> start, end;
+        start = std::chrono::steady_clock::now();
 #endif
 
         // Run the function
         func(std::forward<Params>(args)...);
-        // ignore the few first runs
-        // if (iter < 3) continue;
+        // Ignore the few first runs for cache hot measurements
+        if (iter < 1) continue;
 
-#ifdef FASTOR_BENCH_CYCLES
+#if defined(FASTOR_USE_RDTSC)
         cycle = rdtsc() - cycle;
-#endif
-#ifdef USE_SYSTEM_CLOCK
-        end = std::chrono::system_clock::now();
+        cycles += cycle;
+
+        double elapsed_t = tsc_to_time*cycle;
+        if (elapsed_t < best_time && elapsed_t != 0.0) {
+            best_time = elapsed_t;
+        };
+        if (elapsed_t > worst_time) {
+            worst_time = elapsed_t;
+        };
+        mean_time += elapsed_t;
 #else
-        end = std::chrono::high_resolution_clock::now();
-#endif
+        end = std::chrono::steady_clock::now();
         std::chrono::duration<double> elapsed_seconds = end-start;
 
+        if (elapsed_seconds.count() < best_time && elapsed_seconds.count() != 0.0) {
+            best_time = elapsed_seconds.count();
+        };
+        if (elapsed_seconds.count() > worst_time) {
+            worst_time = elapsed_seconds.count();
+        };
         mean_time += elapsed_seconds.count();
-#ifdef FASTOR_BENCH_CYCLES
-        cycles += cycle;
 #endif
 
-        if (elapsed_seconds.count() < best_time && elapsed_seconds.count() != 0.0) {
+        counter++;
+
+        if (mean_time > FASTOR_BENCH_RUNTIME)
+        {
+            mean_time /= (double)counter;
+#if defined(FASTOR_USE_RDTSC)
+            FASTOR_FORMAT_BENCH_TIME_DISPLAY_1()
+#else
+            FASTOR_FORMAT_BENCH_TIME_DISPLAY_2()
+#endif
+            break;
+        }
+    }
+
+    return std::make_tuple(mean_time, best_time, worst_time);
+}
+
+
+
+// timeit with return values
+template<typename T, typename ... Params, typename ... Args>
+inline std::tuple<double,uint64_t> rtimeit(T (*func)(Params...), Args...args)
+{
+    uint64_t counter = 1;
+    double mean_time = 0.0;
+    double best_time = std::numeric_limits<double>::max();
+    double worst_time = 0;
+    uint64_t cycles = 0;
+
+    for (auto iter=0; iter<1e09; ++iter)
+    {
+        std::chrono::time_point<std::chrono::system_clock> start, end;
+        start = std::chrono::system_clock::now();
+        auto cycle = rdtsc();
+
+        // Run the function
+        func(std::forward<Params>(args)...);
+        // Ignore the few first runs for cache hot measurements
+        if (iter < 1) continue;
+
+        end = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end-start;
+        cycle = rdtsc() - cycle;
+        cycles += cycle;
+
+        mean_time += elapsed_seconds.count();
+
+        if (elapsed_seconds.count() < best_time && elapsed_seconds.count() != 0) {
             best_time = elapsed_seconds.count();
         };
         if (elapsed_seconds.count() > worst_time) {
@@ -142,104 +257,7 @@ inline double timeit(T (*func)(Params...), Args...args)
 
         if (mean_time > FASTOR_BENCH_RUNTIME)
         {
-#ifndef FASTOR_USE_BEST_TIME
             mean_time /= counter;
-#else
-            mean_time = best_time;
-#endif
-            if (mean_time >= 1.0e-3 && mean_time < 1.)
-                std::cout << static_cast<long int>(counter)
-#ifndef FASTOR_USE_BEST_TIME
-                          << FGRN(BOLD(" runs, average elapsed time is "))
-#else
-                          << FGRN(BOLD(" runs, best elapsed time is "))
-#endif
-                          << mean_time/1.0e-03 << " ms" << ". " << FGRN(BOLD("No of RDTSC CPU cycles "))
-                          << uint64_t(cycles/(1.0*counter)) << std::endl;
-            else if (mean_time >= 1.0e-6 && mean_time < 1.0e-3)
-                std::cout << static_cast<long int>(counter)
-#ifndef FASTOR_USE_BEST_TIME
-                          << FGRN(BOLD(" runs, average elapsed time is "))
-#else
-                          << FGRN(BOLD(" runs, best elapsed time is "))
-#endif
-                          << mean_time/1.0e-06 << " \xC2\xB5s" << ". " << FGRN(BOLD("No of RDTSC CPU cycles "))
-                          << uint64_t(cycles/(1.0*counter)) << std::endl; //\xE6
-            else if (mean_time < 1.0e-6)
-                std::cout << static_cast<long int>(counter)
-#ifndef FASTOR_USE_BEST_TIME
-                          << FGRN(BOLD(" runs, average elapsed time is "))
-#else
-                          << FGRN(BOLD(" runs, best elapsed time is "))
-#endif
-                          << mean_time/1.0e-09 << " ns" << ". " << FGRN(BOLD("No of RDTSC CPU cycles "))
-                          << uint64_t(cycles/(1.0*counter)) << std::endl;
-            else
-                std::cout << static_cast<long int>(counter)
-#ifndef FASTOR_USE_BEST_TIME
-                          << FGRN(BOLD(" runs, average elapsed time is "))
-#else
-                          << FGRN(BOLD(" runs, best elapsed time is "))
-#endif
-                          << mean_time << " s" << ". " << FGRN(BOLD("No of RDTSC CPU cycles "))
-                          << uint64_t(cycles/(1.0*counter)) << std::endl;
-
-            break;
-        }
-    }
-
-    return mean_time;
-}
-
-
-
-// timeit with return values
-template<typename T, typename ... Params, typename ... Args>
-inline std::tuple<double,uint64_t> rtimeit(T (*func)(Params...), Args...args)
-{
-    double counter = 1.0;
-    double mean_time = 0.0;
-    double best_time = 1.0e20;
-    uint64_t cycles = 0;
-#ifndef FASTOR_BENCH_CYCLES
-    uint64_t cycle=0;
-#endif
-
-    for (auto iter=0; iter<1e09; ++iter)
-    {
-        std::chrono::time_point<std::chrono::system_clock> start, end;
-        start = std::chrono::system_clock::now();
-#ifdef FASTOR_BENCH_CYCLES
-        auto cycle = rdtsc();
-#endif
-
-        // Run the function
-        func(std::forward<Params>(args)...);
-
-#ifdef FASTOR_BENCH_CYCLES
-        cycle = rdtsc() - cycle;
-#endif
-        end = std::chrono::system_clock::now();
-        std::chrono::duration<double> elapsed_seconds = end-start;
-
-        mean_time += elapsed_seconds.count();
-#ifdef FASTOR_BENCH_CYCLES
-        cycles += cycle;
-#endif
-
-        if (elapsed_seconds.count() < best_time) {
-            best_time = elapsed_seconds.count();
-        };
-
-        counter++;
-
-        if (mean_time > FASTOR_BENCH_RUNTIME)
-        {
-#ifndef FASTOR_USE_BEST_TIME
-            mean_time /= counter;
-#else
-            mean_time = best_time;
-#endif
             break;
         }
     }
@@ -253,11 +271,11 @@ inline std::tuple<double,uint64_t> rtimeit(T (*func)(Params...), Args...args)
 template<typename T=double>
 struct timer
 {
-    inline void tic() {t0 = std::chrono::high_resolution_clock::now();}
+    inline void tic() {t0 = std::chrono::steady_clock::now();}
 
     inline T toc(const std::string &msg="") {
         using namespace std::chrono;
-        elapsed = high_resolution_clock::now() - t0;
+        elapsed = steady_clock::now() - t0;
         T elapsed_seconds = duration<T,seconds::period>(elapsed).count();
         if (msg.empty()) std::cout << FGRN(BOLD("Elapsed time is: ")) <<
             elapsed_seconds << FGRN(BOLD(" seconds \n"));
@@ -266,8 +284,8 @@ struct timer
         return elapsed_seconds;
     }
 
-    std::chrono::high_resolution_clock::time_point t0;
-    std::chrono::high_resolution_clock::duration elapsed;
+    std::chrono::steady_clock::time_point t0;
+    std::chrono::steady_clock::duration elapsed;
 };
 
 
