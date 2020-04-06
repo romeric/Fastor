@@ -142,7 +142,9 @@ matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM
     constexpr size_t K = get_tensor_dimensions<typename tensor_type_finder<Derived0>::type>::dims[1];
     constexpr size_t N = get_tensor_dimensions<typename tensor_type_finder<Derived1>::type>::dims[1];
 
-    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
+    // We cannot choose the best simd because we cannot mix simd types of an expression
+    using V = SIMDVector<T,DEFAULT_ABI>;
+    // using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
     constexpr size_t SIZE_ = V::Size;
     int ROUND = ROUND_DOWN(N,(int)SIZE_);
 
