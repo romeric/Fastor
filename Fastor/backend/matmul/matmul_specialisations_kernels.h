@@ -276,7 +276,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<M!=K && M==N && M==8 && std::is_same<T,double>::value,bool>::type = 0>
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
-    internal::_matmul_base<T,M,K,N>(a,b,out);
+    internal::_matmul_mk_lessthan2simd<T,M,K,N>(a,b,out);
 }
 
 #ifdef FASTOR_AVX_IMPL
