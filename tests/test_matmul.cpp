@@ -254,37 +254,37 @@ void run() {
     // matrix-vector and vector-matrix
     {
         Tensor<T,1,2> a; a.iota(-5.1);
-        Tensor<T,2,2> b; b.iota(2.3);
+        Tensor<T,2,2> b; b.iota(2.0);
         SINGLE_TEST(a,b,(T)BigTol);
     }
 
     {
         Tensor<T,1,3> a; a.iota(-5.1);
-        Tensor<T,3,3> b; b.iota(2.3);
+        Tensor<T,3,3> b; b.iota(2.0);
         SINGLE_TEST(a,b);
     }
 
     {
         Tensor<T,1,4> a; a.iota(-5.1);
-        Tensor<T,4,4> b; b.iota(2.3);
+        Tensor<T,4,4> b; b.iota(2.0);
         SINGLE_TEST(a,b);
     }
 
     {
         Tensor<T,2,2> a; a.iota(-5.1);
-        Tensor<T,2,1> b; b.iota(2.4);
+        Tensor<T,2,1> b; b.iota(2.0);
         SINGLE_TEST(a,b);
     }
 
     {
         Tensor<T,3,3> a; a.iota(-5.1);
-        Tensor<T,3,1> b; b.iota(2.4);
+        Tensor<T,3,1> b; b.iota(2.0);
         SINGLE_TEST(a,b);
     }
 
     {
         Tensor<T,4,4> a; a.iota(-5);
-        Tensor<T,4,1> b; b.iota(2.4);
+        Tensor<T,4,1> b; b.iota(2.0);
         SINGLE_TEST(a,b);
     }
 
