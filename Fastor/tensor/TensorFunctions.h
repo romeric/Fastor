@@ -520,7 +520,7 @@ FASTOR_INLINE Tensor<T,Rest...> torowmajor(const TensorType<T,Rest...> &a) {
 
 
 
-
+#if FASTOR_NIL
 // Constant tensors
 static FASTOR_INLINE
 Tensor<float,3,3,3> levi_civita_ps() {
@@ -559,6 +559,7 @@ Tensor<T,Rest...> kronecker_delta() {
     Tensor<T,Rest...> out; out.eye();
     return out;
 }
+#endif
 
 }
 

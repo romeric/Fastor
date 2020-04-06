@@ -10,6 +10,14 @@ using namespace Fastor;
 template<typename T>
 void test_basics() {
 
+    {
+        // Check initialiser list constructors
+        Tensor<T,3> a0 = {1,2,3};
+        Tensor<T,3,1> a1 = {{1},{2},{3}};
+        Tensor<T,1,3> a2 = {{1,2,3}};
+        Tensor<T,1,2,3> a3 = {{{1,2,3},{1,2,3}}};
+    }
+
     T number = 12.67;
     Tensor<T> a0 = 12.67;
     FASTOR_EXIT_ASSERT(std::fabs(norm(a0)-number)<Tol);

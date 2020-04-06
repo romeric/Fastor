@@ -73,83 +73,13 @@ public:
         // }
     };
 
-    // List initialisers
-    FASTOR_INLINE Tensor(const std::initializer_list<T> &lst) {
-        static_assert(sizeof...(Rest)==1,"TENSOR RANK MISMATCH WITH LIST-INITIALISER");
-#if FASTOR_BOUNDS_CHECK
-        FASTOR_ASSERT(prod<Rest...>::value==lst.size(), "TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
-#endif
-        auto counter = 0;
-        for (auto &i: lst) {_data[counter] = i; counter++;}
-    }
-
-    FASTOR_INLINE Tensor(const std::initializer_list<std::initializer_list<T>> &lst2d) {
-        static_assert(sizeof...(Rest)==2,"TENSOR RANK MISMATCH WITH LIST-INITIALISER");
-#ifndef NDEBUG
-        constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
-        constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
-        auto size_ = 0;
-        FASTOR_ASSERT(M==lst2d.size(),"TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
-        for (auto &lst: lst2d) {
-            auto curr_size = lst.size();
-            FASTOR_ASSERT(N==lst.size(),"TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
-            size_ += curr_size;
-        }
-        FASTOR_ASSERT(prod<Rest...>::value==size_, "TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
-#endif
-        auto counter = 0;
-        for (auto &lst1d: lst2d) {for (auto &i: lst1d) {_data[counter] = i; counter++;}}
-    }
-
-    FASTOR_INLINE Tensor(const std::initializer_list<std::initializer_list<std::initializer_list<T>>> &lst3d) {
-        static_assert(sizeof...(Rest)==3,"TENSOR RANK MISMATCH WITH LIST-INITIALISER");
-#ifndef NDEBUG
-        constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
-        constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
-        constexpr FASTOR_INDEX P = get_value<3,Rest...>::value;
-        auto size_ = 0;
-        FASTOR_ASSERT(M==lst3d.size(),"TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
-        for (auto &lst2d: lst3d) {
-            FASTOR_ASSERT(N==lst2d.size(),"TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
-            for (auto &lst: lst2d) {
-                auto curr_size = lst.size();
-                FASTOR_ASSERT(P==lst.size(),"TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
-                size_ += curr_size;
-            }
-        }
-        FASTOR_ASSERT(prod<Rest...>::value==size_, "TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
-#endif
-        auto counter = 0;
-        for (auto &lst2d: lst3d) {for (auto &lst1d: lst2d) {for (auto &i: lst1d) {_data[counter] = i; counter++;}}}
-    }
-
-    FASTOR_INLINE Tensor(const std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<T>>>> &lst4d) {
-        static_assert(sizeof...(Rest)==4,"TENSOR RANK MISMATCH WITH LIST-INITIALISER");
-#ifndef NDEBUG
-        constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
-        constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
-        constexpr FASTOR_INDEX P = get_value<3,Rest...>::value;
-        constexpr FASTOR_INDEX Q = get_value<4,Rest...>::value;
-        auto size_ = 0;
-        FASTOR_ASSERT(M==lst4d.size(),"TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
-        for (auto &lst3d: lst4d) {
-            FASTOR_ASSERT(N==lst3d.size(),"TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
-            for (auto &lst2d: lst3d) {
-                FASTOR_ASSERT(P==lst2d.size(),"TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
-                for (auto &lst: lst2d) {
-                    auto curr_size = lst.size();
-                    FASTOR_ASSERT(Q==curr_size,"TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
-                    size_ += curr_size;
-                }
-            }
-        }
-        FASTOR_ASSERT(prod<Rest...>::value==size_, "TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
-#endif
-        auto counter = 0;
-        for (auto &lst3d: lst4d) {for (auto &lst2d: lst3d) {for (auto &lst1d: lst2d) {for (auto &i: lst1d) {_data[counter] = i; counter++;}}}}
-    }
+    // Initialiser list constructors
+    //----------------------------------------------------------------------------------------------------------//
+    #include "Fastor/tensor/InitializerListConstructors.h"
+    //----------------------------------------------------------------------------------------------------------//
 
     // Classic array wrappers
+    //----------------------------------------------------------------------------------------------------------//
     FASTOR_INLINE Tensor(const T *arr, int layout=RowMajor) {
         std::copy(arr,arr+Size,_data);
         if (layout == RowMajor)
@@ -157,7 +87,13 @@ public:
         else
             *this = tocolumnmajor(*this);
     }
-    FASTOR_INLINE Tensor(const std::array<T,sizeof...(Rest)> &arr) {std::copy(arr,arr+prod<Rest...>::value,_data);}
+    FASTOR_INLINE Tensor(const std::array<T,sizeof...(Rest)> &arr, int layout=RowMajor) {
+        std::copy(arr,arr+prod<Rest...>::value,_data);
+        if (layout == RowMajor)
+            return;
+        else
+            *this = tocolumnmajor(*this);
+    }
     //----------------------------------------------------------------------------------------------------------//
 
     // CRTP constructors
@@ -226,7 +162,7 @@ public:
 
     // Specialised constructors
     //----------------------------------------------------------------------------------------------------------//
-    #include "SpecialisedConstructors.h"
+    #include "Fastor/tensor/SpecialisedConstructors.h"
     //----------------------------------------------------------------------------------------------------------//
 
     // In-place operators
@@ -290,7 +226,7 @@ public:
 
     // AbstractTensor and scalar in-place operators
     //----------------------------------------------------------------------------------------------------------//
-    #include "TensorInplaceOperators.h"
+    #include "Fastor/tensor/TensorInplaceOperators.h"
     //----------------------------------------------------------------------------------------------------------//
 
     // Raw pointer providers
@@ -306,28 +242,28 @@ public:
 
     // Scalar & block indexing
     //----------------------------------------------------------------------------------------------------------//
-    #include "IndexRetriever.h"
-    #include "ScalarIndexing.h"
-    #include "BlockIndexing.h"
+    #include "Fastor/tensor/IndexRetriever.h"
+    #include "Fastor/tensor/ScalarIndexing.h"
+    #include "Fastor/tensor/BlockIndexing.h"
     //----------------------------------------------------------------------------------------------------------//
 
     // Expression templates evaluators
     //----------------------------------------------------------------------------------------------------------//
-    #include "TensorEvaluator.h"
+    #include "Fastor/tensor/TensorEvaluator.h"
     //----------------------------------------------------------------------------------------------------------//
 
     //----------------------------------------------------------------------------------------------------------//
-    #include "SmartExpressionsPlugin.h"
+    #include "Fastor/tensor/SmartExpressionsPlugin.h"
     //----------------------------------------------------------------------------------------------------------//
 
     // Tensor methods
     //----------------------------------------------------------------------------------------------------------//
-    #include "TensorMethods.h"
+    #include "Fastor/tensor/TensorMethods.h"
     //----------------------------------------------------------------------------------------------------------//
 
     // Converters
     //----------------------------------------------------------------------------------------------------------//
-    #include "PODConverters.h"
+    #include "Fastor/tensor/PODConverters.h"
     //----------------------------------------------------------------------------------------------------------//
 
     // Cast method
