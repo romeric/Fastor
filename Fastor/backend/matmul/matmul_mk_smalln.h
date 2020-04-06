@@ -414,9 +414,6 @@ void _matmul_mk_lessthan2simd(const T * FASTOR_RESTRICT a, const T * FASTOR_REST
     constexpr size_t M0 = M / unrollOuterloop * unrollOuterloop;
     // constexpr size_t remainder = M < unrollOuterloop ? 0 : M0-unrollOuterloop;
 
-    // Number of columns of c (N) that can be safely unrolled with V::Size
-    constexpr size_t N1 = N / V::Size * V::Size;
-
     size_t j=0;
     for (; j<M0; j+=unrollOuterloop) {
         const size_t from = j;
@@ -702,9 +699,6 @@ void _matmul_mk_lessthan2simd(const T * FASTOR_RESTRICT a, const T * FASTOR_REST
     constexpr size_t unrollOuterloop = 5UL;
     constexpr size_t M0 = M / unrollOuterloop * unrollOuterloop;
     // constexpr size_t remainder = M < unrollOuterloop ? 0 : M0-unrollOuterloop;
-
-    // Number of columns of c (N) that can be safely unrolled with V::Size
-    constexpr size_t N1 = N / V::Size * V::Size;
 
     size_t j=0;
     for (; j<M0; j+=unrollOuterloop) {
