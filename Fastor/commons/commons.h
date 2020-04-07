@@ -179,6 +179,15 @@ SOFTWARE.
 #if defined(__AVX512CD__)
     #define FASTOR_AVX512CD_IMPL 1
 #endif
+#if defined(__AVX512BW__)
+    #define FASTOR_AVX512BW_IMPL 1
+#endif
+#if defined(__AVX512DQ__)
+    #define FASTOR_AVX512DQ_IMPL 1
+#endif
+#if defined(__AVX512VL__)
+    #define FASTOR_AVX512VL_IMPL 1
+#endif
 #if defined(__AVX2__)
     #define FASTOR_AVX2_IMPL 1
 #endif
@@ -214,7 +223,29 @@ SOFTWARE.
 
 // Get around MSVC issue
 #if defined(FASTOR_WINDOWS_OS) || defined(FASTOR_MSVC)
-    #if defined(FASTOR_AVX_IMPL) || defined(FASTOR_AVX2_IMPL) || defined(FASTOR_AVX512F_IMPL)
+    #if defined(FASTOR_AVX512F_IMPL)
+        #if !defined(FASTOR_SSE2_IMPL)
+            #define FASTOR_SSE2_IMPL 1
+        #endif
+        #if !defined(FASTOR_SSE3_IMPL)
+            #define FASTOR_SSE3_IMPL 1
+        #endif
+        #if !defined(FASTOR_SSSE3_IMPL)
+            #define FASTOR_SSSE3_IMPL 1
+        #endif
+        #if !defined(FASTOR_SSE4_1_IMPL)
+            #define FASTOR_SSE4_1_IMPL 1
+        #endif
+        #if !defined(FASTOR_SSE4_2_IMPL)
+            #define FASTOR_SSE4_2_IMPL 1
+        #endif
+        #if !defined(FASTOR_AVX_IMPL)
+            #define FASTOR_AVX_IMPL 1
+        #endif
+        #if !defined(FASTOR_AVX2_IMPL)
+            #define FASTOR_AVX2_IMPL 1
+        #endif
+    #elif defined(FASTOR_AVX_IMPL) || defined(FASTOR_AVX2_IMPL)
         #if !defined(FASTOR_SSE2_IMPL)
             #define FASTOR_SSE2_IMPL 1
         #endif
@@ -234,7 +265,7 @@ SOFTWARE.
 #endif
 
 
-#if defined(FASTOR_AVX512F_IMPL) || defined(FASTOR_AVX512CD_IMPL)
+#if defined(FASTOR_AVX512F_IMPL) || defined(FASTOR_AVX512CD_IMPL) || defined(FASTOR_AVX512BW_IMPL) || defined(FASTOR_AVX512DQ_IMPL) || defined(FASTOR_AVX512VL_IMPL)
     #define FASTOR_AVX512_IMPL 1
 #endif
 #if defined(FASTOR_AVX2_IMPL) && !defined(FASTOR_AVX_IMPL)

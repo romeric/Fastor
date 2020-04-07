@@ -237,7 +237,10 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
 
 // Cover the N==2 and N==3 case
 template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<N==3 || (N==2 && choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size!=2),bool>::type = 0>
+         typename std::enable_if<
+            (N==3 ||
+            (N==2 && is_greater<choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,2>::value)) &&
+            1!=choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,bool>::type = 0>
 FASTOR_INLINE
 void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
@@ -651,7 +654,8 @@ struct matmul_inner_loop_unroller<from,from> {
 //------------------------------------------------------------------------------------------------//
 template<typename T, size_t M, size_t K, size_t N,
         typename std::enable_if<is_less_equal<M,16UL>::value &&
-        N==choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,bool>::type = 0>
+        N==choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size &&
+        1!=choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,bool>::type = 0>
 FASTOR_INLINE
 void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 

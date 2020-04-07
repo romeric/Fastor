@@ -692,7 +692,7 @@ struct SIMDVector<double, simd_abi::sse> {
     FASTOR_INLINE double maximum() {return _mm_hmax_pd(value);}
 
     FASTOR_INLINE double dot(const SIMDVector<double,simd_abi::sse> &other) {
-#ifdef __SSE4_1__
+#ifdef FASTOR_SSE4_1_IMPL
         return _mm_cvtsd_f64(_mm_dp_pd(value,other.value,0xff));
 #else
         return _mm_sum_pd(_mm_mul_pd(value,other.value));

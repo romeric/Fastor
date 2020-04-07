@@ -27,13 +27,13 @@ void run() {
 
         // other operators
         r1(seq(0,3,2),all,1,seq(1,4,3),4) += 1234;
-        FASTOR_EXIT_ASSERT(abs(norm(r1) - 9444.503) < HugeTol);
+        FASTOR_EXIT_ASSERT(abs(r1.sum() - 90884) < BigTol);
         r1(seq(0,3,2),all,1,seq(1,4,3),4) -= 1234;
         FASTOR_EXIT_ASSERT(abs(norm(r1) - 8491.192377) < HugeTol);
         r1(seq(0,3,2),0,1,seq(1,4,3),4) *= 12;
-        FASTOR_EXIT_ASSERT(abs(norm(r1) - 9467.742) < HugeTol);
+        FASTOR_EXIT_ASSERT(abs(sum(r1) - 85170) < BigTol);
         r1(seq(0,3,2),0,1,seq(1,4,3),4) /= 12;
-        FASTOR_EXIT_ASSERT(abs(norm(r1) - 8491.192377) < HugeTol);
+        FASTOR_EXIT_ASSERT(abs(sum(r1) - 81012) < BigTol);
 
 
         // Check construction from views

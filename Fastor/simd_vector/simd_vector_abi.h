@@ -20,7 +20,7 @@ template<size_t N> struct fixed_size {};
 using native = simd_abi::avx512;
 #elif defined(FASTOR_AVX_IMPL)
 using native = simd_abi::avx;
-#elif defined(FASTOR_SSE_IMPL)
+#elif defined(FASTOR_SSE4_2_IMPL)
 using native = simd_abi::sse;
 #else
 using native = simd_abi::scalar;
