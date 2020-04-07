@@ -508,12 +508,18 @@ maskload(const typename V::scalar_value_type * FASTOR_RESTRICT a, const int (&ma
     }
     return val_out;
 }
-#ifdef FASTOR_AVX_IMPL
+#ifdef FASTOR_AVX2_IMPL
 template<>
 FASTOR_INLINE SIMDVector<double,simd_abi::avx>
 maskload<SIMDVector<double,simd_abi::avx>>(const double * FASTOR_RESTRICT a, const int (&maska)[4]) {
     __m256i mask = _mm256_set_epi64x(maska[0],maska[1],maska[2],maska[3]);
     return _mm256_maskload_pd(a,(__m256i) mask);
+}
+template<>
+FASTOR_INLINE SIMDVector<Int64,simd_abi::avx>
+maskload<SIMDVector<Int64,simd_abi::avx>>(const Int64 * FASTOR_RESTRICT a, const int (&maska)[4]) {
+    __m256i mask = _mm256_set_epi64x(maska[0],maska[1],maska[2],maska[3]);
+    return _mm256_maskload_epi64(a,(__m256i) mask);
 }
 template<>
 FASTOR_INLINE SIMDVector<float,simd_abi::avx>
@@ -522,10 +528,22 @@ maskload<SIMDVector<float,simd_abi::avx>>(const float * FASTOR_RESTRICT a, const
     return _mm256_maskload_ps(a,(__m256i) mask);
 }
 template<>
+FASTOR_INLINE SIMDVector<int,simd_abi::avx>
+maskload<SIMDVector<int,simd_abi::avx>>(const int * FASTOR_RESTRICT a, const int (&maska)[8]) {
+    __m256i mask = _mm256_set_epi32(maska[0],maska[1],maska[2],maska[3],maska[4],maska[5],maska[6],maska[7]);
+    return _mm256_maskload_epi32(a,(__m256i) mask);
+}
+template<>
 FASTOR_INLINE SIMDVector<double,simd_abi::sse>
 maskload<SIMDVector<double,simd_abi::sse>>(const double * FASTOR_RESTRICT a, const int (&maska)[2]) {
     __m128i mask = _mm_set_epi64x(maska[0],maska[1]);
     return _mm_maskload_pd(a,(__m128i) mask);
+}
+template<>
+FASTOR_INLINE SIMDVector<Int64,simd_abi::sse>
+maskload<SIMDVector<Int64,simd_abi::sse>>(const Int64 * FASTOR_RESTRICT a, const int (&maska)[2]) {
+    __m128i mask = _mm_set_epi64x(maska[0],maska[1]);
+    return _mm_maskload_epi64(a,(__m128i) mask);
 }
 template<>
 FASTOR_INLINE SIMDVector<float,simd_abi::sse>
@@ -533,41 +551,13 @@ maskload<SIMDVector<float,simd_abi::sse>>(const float * FASTOR_RESTRICT a, const
     __m128i mask = _mm_set_epi32(maska[0],maska[1],maska[2],maska[3]);
     return _mm_maskload_ps(a,(__m128i) mask);
 }
-#endif // FASTOR_AVX_IMPL
-
-
-// Ideally this style should be followed to be compatible with actual intrinsics signatures
-#if 0
-template<typename V>
-FASTOR_INLINE V
-maskload(V &vec, const typename V::scalar_value_type * FASTOR_RESTRICT a, const int (&maska)[V::Size]);
-#ifdef FASTOR_AVX_IMPL
 template<>
-FASTOR_INLINE SIMDVector<double,simd_abi::avx>
-maskload(SIMDVector<double,simd_abi::avx> &vec, const double * FASTOR_RESTRICT a, const int (&maska)[4]) {
-    __m256i mask = _mm256_set_epi64x(maska[0],maska[1],maska[2],maska[3]);
-    vec.value(_mm256_maskload_pd(a,(__m256i) mask));
-}
-template<>
-FASTOR_INLINE SIMDVector<float,simd_abi::avx>
-maskload(SIMDVector<float,simd_abi::avx> &vec, const float * FASTOR_RESTRICT a, const int (&maska)[8]) {
-    __m256i mask = _mm256_set_epi32(maska[0],maska[1],maska[2],maska[3],maska[4],maska[5],maska[6],maska[7]);
-    vec.value(_mm256_maskload_ps(a,(__m256i) mask));
-}
-template<>
-FASTOR_INLINE SIMDVector<double,simd_abi::sse>
-maskload(SIMDVector<double,simd_abi::sse> &vec, const double * FASTOR_RESTRICT a, const int (&maska)[2]) {
-    __m128i mask = _mm_set_epi64x(maska[0],maska[1]);
-    vec.value(_mm_maskload_pd(a,(__m128i) mask));
-}
-template<>
-FASTOR_INLINE SIMDVector<float,simd_abi::sse>
-maskload(SIMDVector<float,simd_abi::sse> &vec, const float * FASTOR_RESTRICT a, const int (&maska)[4]) {
+FASTOR_INLINE SIMDVector<int,simd_abi::sse>
+maskload<SIMDVector<int,simd_abi::sse>>(const int * FASTOR_RESTRICT a, const int (&maska)[4]) {
     __m128i mask = _mm_set_epi32(maska[0],maska[1],maska[2],maska[3]);
-    vec.value(_mm_maskload_ps(a,(__m128i) mask));
+    return _mm_maskload_epi32(a,(__m128i) mask);
 }
-#endif // FASTOR_AVX_IMPL
-#endif
+#endif // FASTOR_AVX2_IMPL
 
 
 template<typename V>
@@ -579,12 +569,18 @@ void maskstore(typename V::scalar_value_type * FASTOR_RESTRICT a, const int (&ma
         }
     }
 }
-#ifdef FASTOR_AVX_IMPL
+#ifdef FASTOR_AVX2_IMPL
 template<>
 FASTOR_INLINE
 void maskstore(double * FASTOR_RESTRICT a, const int (&maska)[4], SIMDVector<double,simd_abi::avx> &v) {
     __m256i mask = _mm256_set_epi64x(maska[0],maska[1],maska[2],maska[3]);
     _mm256_maskstore_pd(a,(__m256i) mask, v.value);
+}
+template<>
+FASTOR_INLINE
+void maskstore(Int64 * FASTOR_RESTRICT a, const int (&maska)[4], SIMDVector<Int64,simd_abi::avx> &v) {
+    __m256i mask = _mm256_set_epi64x(maska[0],maska[1],maska[2],maska[3]);
+    _mm256_maskstore_epi64(a,(__m256i) mask, v.value);
 }
 template<>
 FASTOR_INLINE
@@ -594,9 +590,21 @@ void maskstore(float * FASTOR_RESTRICT a, const int (&maska)[8], SIMDVector<floa
 }
 template<>
 FASTOR_INLINE
+void maskstore(int * FASTOR_RESTRICT a, const int (&maska)[8], SIMDVector<int,simd_abi::avx> &v) {
+    __m256i mask = _mm256_set_epi32(maska[0],maska[1],maska[2],maska[3],maska[4],maska[5],maska[6],maska[7]);
+    _mm256_maskstore_epi32(a,(__m256i) mask, v.value);
+}
+template<>
+FASTOR_INLINE
 void maskstore(double * FASTOR_RESTRICT a, const int (&maska)[2], SIMDVector<double,simd_abi::sse> &v) {
     __m128i mask = _mm_set_epi64x(maska[0],maska[1]);
     _mm_maskstore_pd(a,(__m128i) mask, v.value);
+}
+template<>
+FASTOR_INLINE
+void maskstore(Int64 * FASTOR_RESTRICT a, const int (&maska)[2], SIMDVector<Int64,simd_abi::sse> &v) {
+    __m128i mask = _mm_set_epi64x(maska[0],maska[1]);
+    _mm_maskstore_epi64(a,(__m128i) mask, v.value);
 }
 template<>
 FASTOR_INLINE
@@ -604,7 +612,13 @@ void maskstore(float * FASTOR_RESTRICT a, const int (&maska)[4], SIMDVector<floa
     __m128i mask = _mm_set_epi32(maska[0],maska[1],maska[2],maska[3]);
     _mm_maskstore_ps(a,(__m128i) mask, v.value);
 }
-#endif // FASTOR_AVX_IMPL
+template<>
+FASTOR_INLINE
+void maskstore(int * FASTOR_RESTRICT a, const int (&maska)[4], SIMDVector<int,simd_abi::sse> &v) {
+    __m128i mask = _mm_set_epi32(maska[0],maska[1],maska[2],maska[3]);
+    _mm_maskstore_epi32(a,(__m128i) mask, v.value);
+}
+#endif // FASTOR_AVX2_IMPL
 //----------------------------------------------------------------------------------------------------------------
 
 
