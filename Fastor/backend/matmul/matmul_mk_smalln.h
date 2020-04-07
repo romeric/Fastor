@@ -900,7 +900,7 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
 
     FASTOR_IF_CONSTEXPR (M-M0==1) {
         const size_t from = j;
-        V omm0, omm1, omm2, omm3;
+        V omm0, omm1, omm2;
         for (size_t i=0; i<K; ++i) {
             const V bmm0(&b[i*N], isBAligned);
             const V bmm1((&b[i*N+V::Size]),isBAligned);
