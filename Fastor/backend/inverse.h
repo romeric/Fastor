@@ -168,6 +168,7 @@ FASTOR_INLINE void _inverse<double,3>(const double *FASTOR_RESTRICT src, double 
 
 }
 
+#if FASTOR_NIL
 #ifdef FASTOR_SSE4_2_IMPL
 
 FASTOR_INLINE __m128 _mm_dot_ps(__m128 v1, __m128 v2)
@@ -180,11 +181,7 @@ FASTOR_INLINE __m128 _mm_dot_ps(__m128 v1, __m128 v2)
    return add1;
 }
 
-template<typename T, size_t N>
-FASTOR_INLINE void _inverse(T const in[N], T out[N]);
-
-template<>
-FASTOR_INLINE void _inverse<__m128,4>(__m128 const in[4], __m128 out[4])
+FASTOR_INLINE void _inverse_4x4_sse(__m128 const in[4], __m128 out[4])
 {
     __m128 Fac0;
     {
@@ -406,7 +403,7 @@ FASTOR_INLINE void _inverse<__m128,4>(__m128 const in[4], __m128 out[4])
     //                      + m[0][1] * Inverse[1][0]
     //                      + m[0][2] * Inverse[2][0]
     //                      + m[0][3] * Inverse[3][0];
-#ifdef __SSE4_1__
+#ifdef FASTOR_SSE4_1_IMPL
     __m128 Det0 = _mm_dp_ps(in[0], Row2, 0xff);
 #else
     __m128 Det0 = _mm_dot_ps(in[0], Row2);
@@ -424,12 +421,13 @@ FASTOR_INLINE void _inverse<__m128,4>(__m128 const in[4], __m128 out[4])
 }
 
 #endif
+#endif
 
 
 template<typename T>
-bool _inverse_4x4(const T m[16], T invOut[16])
+FASTOR_INLINE void _inverse_4x4_scalar(const T *FASTOR_RESTRICT m, T *FASTOR_RESTRICT invOut)
 {
-    double inv[16], det;
+    T inv[16], det;
     int i;
 
     inv[0] = m[5]  * m[10] * m[15] -
@@ -546,15 +544,24 @@ bool _inverse_4x4(const T m[16], T invOut[16])
 
     det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
 
-    if (det == 0)
-        return false;
 
-    det = 1.0 / det;
+    det = T(1.0) / det;
 
     for (i = 0; i < 16; i++)
         invOut[i] = inv[i] * det;
+}
 
-    return true;
+
+template<>
+FASTOR_INLINE void _inverse<float,4>(const float *FASTOR_RESTRICT src, float *FASTOR_RESTRICT dst)
+{
+    _inverse_4x4_scalar<float>(src,dst);
+}
+
+template<>
+FASTOR_INLINE void _inverse<double,4>(const double *FASTOR_RESTRICT src, double *FASTOR_RESTRICT dst)
+{
+    _inverse_4x4_scalar<double>(src,dst);
 }
 
 } // end of namespace Fastor

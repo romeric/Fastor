@@ -174,7 +174,11 @@ double format_time(double _time) {
 inline
 std::string format_time_string(double _time) {
     if (_time >= 1.0e-3 && _time < 1.) return " ms";
+#ifdef _WIN32
+    else if (_time >= 1.0e-6 && _time < 1.0e-3) return " us";
+#else
     else if (_time >= 1.0e-6 && _time < 1.0e-3) return " \xC2\xB5s";
+#endif
     else if (_time < 1.0e-6) return " ns";
     else return " s";
 }
@@ -277,6 +281,19 @@ timeit(T (*func)(Params...), Args...args)
             };
             mean_times[sample] += elapsed_t;
             accum_time += elapsed_t;
+
+#elif defined(FASTOR_USE_SYSTEM_CLOCK)
+            end = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds = end-start;
+
+            if (elapsed_seconds.count() < best_times[sample] && elapsed_seconds.count() != 0.0) {
+                best_times[sample] = elapsed_seconds.count();
+            };
+            if (elapsed_seconds.count() > worst_times[sample]) {
+                worst_times[sample] = elapsed_seconds.count();
+            };
+            mean_times[sample] += elapsed_seconds.count();
+            accum_time += elapsed_seconds.count();
 #else
             end = std::chrono::steady_clock::now();
             std::chrono::duration<double> elapsed_seconds = end-start;

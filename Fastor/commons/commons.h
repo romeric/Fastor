@@ -62,6 +62,35 @@ SOFTWARE.
 //------------------------------------------------------------------------------------------------//
 
 
+// Operating system define macros
+//------------------------------------------------------------------------------------------------//
+#if defined(_WIN32)
+#define FASTOR_WINDOWS32_OS 1
+#endif
+#if defined(_WIN64)
+#define FASTOR_WINDOWS64_OS 1
+#endif
+#if defined(_WIN32) || defined(_WIN64)
+#define FASTOR_WINDOWS_OS 1
+#endif
+#if defined(__unix__) || defined(__unix)
+#define FASTOR_UNIX_OS 1
+#endif
+#if defined(__linux__)
+#define FASTOR_LINUX_OS 1
+#endif
+#if defined(__APPLE__) || defined(__MACH__)
+#define FASTOR_APPLE_OS 1
+#endif
+#if defined(__ANDROID__) || defined(ANDROID)
+#define FASTOR_ANDROID_OS 1
+#endif
+#if defined(__CYGWIN__)
+#define FASTOR_CYGWIN_OS 1
+#endif
+//------------------------------------------------------------------------------------------------//
+
+
 // Determine CXX version
 //------------------------------------------------------------------------------------------------//
 #if defined(__cplusplus)
@@ -180,6 +209,28 @@ SOFTWARE.
 #endif
 #if !defined(__FMA__) && defined(__AVX2__)
     #define __FMA__ 1
+#endif
+
+
+// Get around MSVC issue
+#if defined(FASTOR_WINDOWS_OS) || defined(FASTOR_MSVC)
+    #if defined(FASTOR_AVX_IMPL) || defined(FASTOR_AVX2_IMPL) || defined(FASTOR_AVX512F_IMPL)
+        #if !defined(FASTOR_SSE2_IMPL)
+            #define FASTOR_SSE2_IMPL 1
+        #endif
+        #if !defined(FASTOR_SSE3_IMPL)
+            #define FASTOR_SSE3_IMPL 1
+        #endif
+        #if !defined(FASTOR_SSSE3_IMPL)
+            #define FASTOR_SSSE3_IMPL 1
+        #endif
+        #if !defined(FASTOR_SSE4_1_IMPL)
+            #define FASTOR_SSE4_1_IMPL 1
+        #endif
+        #if !defined(FASTOR_SSE4_2_IMPL)
+            #define FASTOR_SSE4_2_IMPL 1
+        #endif
+    #endif
 #endif
 
 
