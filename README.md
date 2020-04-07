@@ -288,7 +288,7 @@ auto a_inv = inverse(A);        // inverse of A
 auto b_cof = cofactor(B);       // cofactor of B
 ~~~
 
-### Template meta-programming for powerful tensor contraction/permutation
+<!-- ### Template meta-programming for powerful tensor contraction/permutation
 Fastor utilises a bunch of meta-functions to perform most operations at compile time, consider the following examples
 ~~~c++
 Tensor<double,3,4,5> A;
@@ -303,16 +303,17 @@ Tensor<float,2,2> G,H;
 trace(H); // trace of H, in other words H_II
 reduction(G,H); // double contraction of G and H i.e. G_IJ*H_IJ
 ~~~
-As you can observe with combination of `permutation`, `contraction`, `reduction` and `einsum` (which itself is a glorified wrapper over the first three) any type of tensor contraction, and permutation is possible, and using meta-programming the right amount of stack memory to be allocated is deduced at compile time.
+As you can observe with combination of `permutation`, `contraction`, `reduction` and `einsum` (which itself is a glorified wrapper over the first three) any type of tensor contraction, and permutation is possible, and using meta-programming the right amount of stack memory to be allocated is deduced at compile time. -->
 
 ### A minimal framework
 Fastor is extremely light weight, it is a *header-only* library, requires no build or compilation process and has no external dependencies. It is written in pure C++11 from the foundation.
 
 ### Tested Compilers
-Fastor has been tested against the following compilers (on Ubuntu 14.04/16.04/18.04 and macOS). While compiling on macOS with Clang, `-std=c++14` is necessary
+Fastor has been tested against the following compilers (on Ubuntu 14.04/16.04/18.04, macOS 10.13+ and Windows 10). While compiling on macOS with Clang, `-std=c++14` is necessary
 - GCC 4.8, GCC 4.9, GCC 5.1, GCC 5.2, GCC 5.3, GCC 5.4, GCC 6.2, GCC 7.3, GCC 8, GCC 9.1
 - Clang 3.6, Clang 3.7, Clang 3.8, Clang 3.9, Clang 5, Clang 7, Clang 8
 - Intel 16.0.1, Intel 16.0.2, Intel 16.0.3, Intel 17.0.1, Intel 18.2, Intel 19.2
+- MSVC 2019
 
 ### Reference/Citation
 Fastor can be cited as
