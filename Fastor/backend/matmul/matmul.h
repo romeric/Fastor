@@ -54,7 +54,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 #if defined(FASTOR_AVX2_IMPL) && !defined(FASTOR_AVX512_IMPL)
     // Works for AVX512. Only maskload/maskstore should be overloaded or ifdefed
     // to use mask_load/mask_store of avx512
-    FASTOR_IF_CONSTEXPR((N<2*V::Size && N!=1UL)) {
+    FASTOR_IF_CONSTEXPR((N<4*V::Size && N!=1UL)) {
         internal::_matmul_mk_smalln<T,M,K,N>(a,b,out);
         return;
     }

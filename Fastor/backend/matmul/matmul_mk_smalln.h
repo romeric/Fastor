@@ -651,7 +651,7 @@ struct matmul_inner_loop_unroller<from,from> {
 //------------------------------------------------------------------------------------------------//
 template<typename T, size_t M, size_t K, size_t N,
         typename std::enable_if<is_less_equal<M,16UL>::value &&
-        choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size==N,bool>::type = 0>
+        N==choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,bool>::type = 0>
 FASTOR_INLINE
 void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
@@ -690,7 +690,7 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
 
 template<typename T, size_t M, size_t K, size_t N,
         typename std::enable_if<is_greater<M,16UL>::value &&
-        choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size==N,bool>::type = 0>
+        N==choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,bool>::type = 0>
 FASTOR_INLINE
 void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
@@ -841,11 +841,93 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
     }
 #endif
 }
+//-----------------------------------------------------------------------------------------------------------
 
 
 
 
-// Take care of 4*V::Size cases
+// Take care of [2*V::Size < N < 3*V::Size] cases
+//-----------------------------------------------------------------------------------------------------------
+
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<
+            (is_greater<N,2*choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size>::value &&
+            is_less<N,3*choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size>::value),bool>::type = 0>
+FASTOR_INLINE
+void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+
+    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
+    constexpr size_t unrollOuterloop = 2UL;
+    constexpr size_t M0 = M / unrollOuterloop * unrollOuterloop;
+    // constexpr size_t remainder = M < unrollOuterloop ? 0 : M0-unrollOuterloop;
+    constexpr bool isBAligned = false;
+    constexpr bool isCAligned = false;
+
+    // Number of columns of c (N) that can be safely unrolled with V::Size
+    constexpr size_t N1 = N / V::Size * V::Size;
+
+    int maska[V::Size];
+    std::fill(maska,&maska[V::Size], -1);
+    for (size_t jj=0; jj < V::Size - (N-N1); ++jj) maska[jj] = 0;
+
+
+    size_t j=0;
+    for (; j<M0; j+=unrollOuterloop) {
+        const size_t from = j;
+        V omm0, omm1, omm2, omm3, omm4, omm5;
+        for (size_t i=0; i<K; ++i) {
+            const V bmm0(&b[i*N], isBAligned);
+            const V bmm1((&b[i*N+V::Size]),isBAligned);
+            const V bmm2(maskload<V>(&b[i*N+2*V::Size],maska));
+
+            const V amm0       = a[from*K+i];
+            const V amm1       = a[(from+1)*K+i];
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            omm1  = fmadd(amm0,bmm1,omm1);
+            omm2  = fmadd(amm0,bmm2,omm2);
+            // row 1
+            omm3  = fmadd(amm1,bmm0,omm3);
+            omm4  = fmadd(amm1,bmm1,omm4);
+            omm5  = fmadd(amm1,bmm2,omm5);
+        }
+
+        omm0.store(&out[from*N],isCAligned);
+        omm1.store(&out[from*N+V::Size],isCAligned);
+        omm2.store(&out[from*N+2*V::Size],isCAligned);
+
+        omm3.store(&out[(from+1)*N],isCAligned);
+        omm4.store(&out[(from+1)*N+V::Size],isCAligned);
+        maskstore(&out[(from+1)*N+2*V::Size],maska,omm5);
+    }
+
+    FASTOR_IF_CONSTEXPR (M-M0==1) {
+        const size_t from = j;
+        V omm0, omm1, omm2;
+        for (size_t i=0; i<K; ++i) {
+            const V bmm0(&b[i*N], false);
+            const V bmm1((&b[i*N+V::Size]),false);
+            const V bmm2(maskload<V>(&b[i*N+2*V::Size],maska));
+
+            const V amm0       = a[from*K+i];
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            omm1  = fmadd(amm0,bmm1,omm1);
+            omm2  = fmadd(amm0,bmm2,omm2);
+        }
+
+        omm0.store(&out[from*N],false);
+        omm1.store(&out[from*N+V::Size],false);
+        maskstore(&out[(from+0)*N+2*V::Size],maska,omm2);
+    }
+}
+//-----------------------------------------------------------------------------------------------------------
+
+
+
+// Take care of 3*V::Size cases
 // Note that you get the exact same performance by tuning _matmul_base parameters as
 // [unrollOuterloop = 2, nSIMDRows=1 and nSIMDCols=3] however these parameters affect
 // the universal behaviour of that method specially for big matrices
@@ -868,7 +950,7 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
     size_t j=0;
     for (; j<M0; j+=unrollOuterloop) {
         const size_t from = j;
-        V omm0, omm1, omm2, omm3, omm4, omm5, omm6, omm7;
+        V omm0, omm1, omm2, omm3, omm4, omm5, omm6;
         for (size_t i=0; i<K; ++i) {
             const V bmm0(&b[i*N], isBAligned);
             const V bmm1((&b[i*N+V::Size]),isBAligned);
@@ -920,6 +1002,99 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
         omm2.store(&out[from*N+2*V::Size],isCAligned);
     }
 }
+//-----------------------------------------------------------------------------------------------------------
+
+
+
+
+// Take care of [3*V::Size < N < 4*V::Size] cases
+//-----------------------------------------------------------------------------------------------------------
+
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<
+            (is_greater<N,3*choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size>::value &&
+            is_less<N,4*choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size>::value),bool>::type = 0>
+FASTOR_INLINE
+void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+
+    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
+    constexpr size_t unrollOuterloop = 2UL;
+    constexpr size_t M0 = M / unrollOuterloop * unrollOuterloop;
+    // constexpr size_t remainder = M < unrollOuterloop ? 0 : M0-unrollOuterloop;
+    constexpr bool isBAligned = false;
+    constexpr bool isCAligned = false;
+
+    // Number of columns of c (N) that can be safely unrolled with V::Size
+    constexpr size_t N1 = N / V::Size * V::Size;
+
+    int maska[V::Size];
+    std::fill(maska,&maska[V::Size], -1);
+    for (size_t jj=0; jj < V::Size - (N-N1); ++jj) maska[jj] = 0;
+
+
+    size_t j=0;
+    for (; j<M0; j+=unrollOuterloop) {
+        const size_t from = j;
+        V omm0, omm1, omm2, omm3, omm4, omm5, omm6, omm7;
+        for (size_t i=0; i<K; ++i) {
+            const V bmm0(&b[i*N], isBAligned);
+            const V bmm1((&b[i*N+V::Size]),isBAligned);
+            const V bmm2((&b[i*N+2*V::Size]),isBAligned);
+            const V bmm3(maskload<V>(&b[i*N+3*V::Size],maska));
+
+            const V amm0       = a[from*K+i];
+            const V amm1       = a[(from+1)*K+i];
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            omm1  = fmadd(amm0,bmm1,omm1);
+            omm2  = fmadd(amm0,bmm2,omm2);
+            omm3  = fmadd(amm0,bmm3,omm3);
+            // row 1
+            omm4  = fmadd(amm1,bmm0,omm4);
+            omm5  = fmadd(amm1,bmm1,omm5);
+            omm6  = fmadd(amm1,bmm2,omm6);
+            omm7  = fmadd(amm1,bmm3,omm7);
+        }
+
+        omm0.store(&out[from*N],isCAligned);
+        omm1.store(&out[from*N+V::Size],isCAligned);
+        omm2.store(&out[from*N+2*V::Size],isCAligned);
+        omm3.store(&out[from*N+3*V::Size],isCAligned);
+
+        omm4.store(&out[(from+1)*N],isCAligned);
+        omm5.store(&out[(from+1)*N+V::Size],isCAligned);
+        omm6.store(&out[(from+1)*N+2*V::Size],isCAligned);
+        maskstore(&out[(from+1)*N+3*V::Size],maska,omm7);
+    }
+
+    FASTOR_IF_CONSTEXPR (M-M0==1) {
+        const size_t from = j;
+        V omm0, omm1, omm2, omm3, omm4, omm5, omm6, omm7;
+        for (size_t i=0; i<K; ++i) {
+            const V bmm0(&b[i*N], isBAligned);
+            const V bmm1((&b[i*N+V::Size]),isBAligned);
+            const V bmm2((&b[i*N+2*V::Size]),isBAligned);
+            const V bmm3(maskload<V>(&b[i*N+3*V::Size],maska));
+
+            const V amm0       = a[from*K+i];
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            omm1  = fmadd(amm0,bmm1,omm1);
+            omm2  = fmadd(amm0,bmm2,omm2);
+            omm3  = fmadd(amm0,bmm3,omm3);
+        }
+
+        omm0.store(&out[from*N],isCAligned);
+        omm1.store(&out[from*N+V::Size],isCAligned);
+        omm2.store(&out[from*N+2*V::Size],isCAligned);
+        maskstore(&out[from*N+3*V::Size],maska,omm3);
+    }
+}
+//-----------------------------------------------------------------------------------------------------------
+
+
 
 
 // Take care of 4*V::Size cases
@@ -1016,12 +1191,7 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
 
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<
-            (
-            is_greater<N,2*choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size>::value &&
-            N!=3*choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size &&
-            N!=4*choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size
-            )
-             || N==1,bool>::type = 0>
+            is_greater<N,4*choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size>::value || N==1,bool>::type = 0>
 FASTOR_INLINE
 void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
     _matmul_base_masked<T,M,K,N>(a,b,out);
