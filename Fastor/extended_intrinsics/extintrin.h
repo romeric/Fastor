@@ -2,6 +2,7 @@
 #define EXT_INTRIN_H
 
 #include "Fastor/commons/commons.h"
+#include <cmath>
 
 
 #ifdef FASTOR_SSE4_2_IMPL

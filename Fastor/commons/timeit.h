@@ -476,15 +476,6 @@ struct timer
 // Define a no operation function
 inline void no_op(){}
 
-//clobber
-template <typename T> void unused(T &&x) {
-#ifndef _WIN32
-    asm("" ::"m"(x));
-#endif
-}
-template <typename T, typename ... U> void unused(T&& x, U&& ...y) { unused(x); unused(y...); }
-
-
 } // end of namespace
 
 

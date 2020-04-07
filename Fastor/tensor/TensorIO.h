@@ -60,7 +60,7 @@ int get_row_width(const std::ostream &os, const T *a_data, size_t size) {
 
 
 template<template<typename,size_t...> class t_type, typename T, size_t ...Rest>
-int get_row_width(const std::ostream &os, const t_type<T,Rest...>& a) {\
+int get_row_width(const std::ostream &os, const t_type<T,Rest...>& a) {
     int width = 0;
     for(int j = 0; j < prod<Rest...>::value; ++j)
     {

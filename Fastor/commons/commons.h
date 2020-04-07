@@ -313,6 +313,9 @@ SOFTWARE.
 
 // FASTOR CONSTRUCTS
 //------------------------------------------------------------------------------------------------//
+#include <iostream>
+#include <string>
+
 namespace Fastor {
 
 using FASTOR_INDEX = size_t;
@@ -390,7 +393,6 @@ FASTOR_INLINE void FASTOR_WARN(bool cond, const std::string &x) {
 
 
 namespace Fastor {
-
 namespace useless
 {
     struct true_type {};
@@ -412,6 +414,16 @@ struct FASTOR_CAT(static_warning,__LINE__) { \
 
 // asm comment
 #define FASTOR_ASM(STR) asm(STR ::)
+
+namespace Fastor {
+//clobber
+template <typename T> void unused(T &&x) {
+#ifndef _WIN32
+    asm("" ::"m"(x));
+#endif
+}
+template <typename T, typename ... U> void unused(T&& x, U&& ...y) { unused(x); unused(y...); }
+} // end of namespace Fastor
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------//
 
