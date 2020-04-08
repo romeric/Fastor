@@ -1,4 +1,4 @@
-CXX_FLAGS = -O3 -march=native -ffast-math -ffp-contract=fast -DNDEBUG -DCONTRACT_OPT=2
+CXX_FLAGS = -O3 -march=native -ffast-math -ffp-contract=fast -DNDEBUG
 
 # On some architectures -march=native does not define -mfma
 HAS_FMA := $(shell $(CXX) -march=native -dM -E - < /dev/null | egrep "AVX2" | sort)
