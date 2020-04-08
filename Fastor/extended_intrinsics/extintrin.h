@@ -5,7 +5,7 @@
 #include <cmath>
 
 
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 #define ZEROPS (_mm_set1_ps(0.f))
 #define ZEROPD (_mm_set1_pd(0.0))
 // minus/negative version
@@ -97,11 +97,14 @@ FASTOR_INLINE double _mm_sum_pd(__m128d a) {
 }
 #endif
 #else
-#ifdef FASTOR_SSE4_2_IMPL
-
+#ifdef FASTOR_SSE2_IMPL
 FASTOR_INLINE float _mm_sum_ps(__m128 a) {
     // 8 OPS
+#ifdef FASTOR_SSE3_IMPL
     __m128 shuf = _mm_movehdup_ps(a);
+#else
+    __m128 shuf = _mm_shuffle_ps(a,a, _MM_SHUFFLE(3,3,1,1));
+#endif
     __m128 sums = _mm_add_ps(a, shuf);
     shuf        = _mm_movehl_ps(shuf, sums);
     sums        = _mm_add_ss(sums, shuf);
@@ -116,7 +119,11 @@ FASTOR_INLINE double _mm_sum_pd(__m128d a) {
 
 FASTOR_INLINE float _mm_prod_ps(__m128 a) {
     // 12 OPS
-    __m128 shuf  = _mm_movehdup_ps(a);
+#ifdef FASTOR_SSE3_IMPL
+    __m128 shuf = _mm_movehdup_ps(a);
+#else
+    __m128 shuf = _mm_shuffle_ps(a,a, _MM_SHUFFLE(3,3,1,1));
+#endif
     __m128 prods = _mm_mul_ps(a, shuf);
     shuf         = _mm_movehl_ps(shuf, prods);
     prods        = _mm_mul_ss(prods, shuf);
@@ -128,7 +135,6 @@ FASTOR_INLINE double _mm_prod_pd(__m128d a) {
     __m128d shuf  = _mm_castps_pd(shuftmp);
     return  _mm_cvtsd_f64(_mm_mul_sd(a, shuf));
 }
-
 #endif
 #endif
 
@@ -179,7 +185,7 @@ FASTOR_INLINE double _mm256_prod_pd(__m256d a) {
 //!
 //!---------------------------------------------------------------//
 //! Reversing a register
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 FASTOR_INLINE __m128 _mm_reverse_ps(__m128 a) {
     // 1OP
     return _mm_shuffle_ps(a,a,_MM_SHUFFLE(0,1,2,3));
@@ -229,7 +235,7 @@ FASTOR_INLINE __m256i _mm256_reverse_epi64(__m256i v) {
 //!
 //!---------------------------------------------------------------//
 //! Bit shifting
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 FASTOR_INLINE __m128 _mm_shift1_ps(__m128 a) {
     // 1OP
     return _mm_castsi128_ps(_mm_slli_si128(_mm_castps_si128(a), 4));
@@ -281,7 +287,7 @@ FASTOR_INLINE __m256 _mm256_shift7_ps(__m256 a) {
     return _mm256_insertf128_ps(VZEROPS,r1,0x1);
 }
 #endif
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 FASTOR_INLINE __m128d _mm_shift1_pd(__m128d a) {
     // 1OP
     return _mm_shuffle_pd(ZEROPD,a,0x1);
@@ -309,7 +315,7 @@ FASTOR_INLINE __m256d _mm256_shift3_pd(__m256d a) {
 //!---------------------------------------------------------------//
 //!
 //!---------------------------------------------------------------//
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 // Change sign of a register - all one cycle
 FASTOR_INLINE __m128 _mm_neg_ps(__m128 a) {
     return _mm_xor_ps(a, MZEROPS);
@@ -329,7 +335,7 @@ FASTOR_INLINE __m256d _mm256_neg_pd(__m256d a) {
 //!---------------------------------------------------------------//
 //!
 //!---------------------------------------------------------------//
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 // Absolute value of a register - all one cycle
 FASTOR_INLINE __m128 _mm_abs_ps(__m128 x) {
     static const __m128 sign_mask = _mm_set1_ps(-0.f); // -0.f = 1 << 31
@@ -353,7 +359,7 @@ FASTOR_INLINE __m256d _mm256_abs_pd(__m256d x) {
 //!---------------------------------------------------------------//
 //!
 //!---------------------------------------------------------------//
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 // maximum value in a register - horizontal max
 FASTOR_INLINE float _mm_hmax_ps(__m128 a) {
     // 8OPS
@@ -392,7 +398,7 @@ FASTOR_INLINE double _mm256_hmax_pd(__m256d a) {
 //!
 //!---------------------------------------------------------------//
 // minimum value in a register - horizontal min
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 FASTOR_INLINE float _mm_hmin_ps(__m128 a) {
     // 8OPS
     __m128 max0 = _mm_min_ps(a,_mm_reverse_ps(a));

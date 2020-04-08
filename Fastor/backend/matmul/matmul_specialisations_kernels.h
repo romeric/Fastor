@@ -719,8 +719,8 @@ void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FA
         V _vec_out0, _vec_out1;
         size_t j = 0;
         for (; j< ROUND; j+=V::Size) {
-            V _vec_a0(&a[i*N+j]);
-            V _vec_a1(&a[(i+1)*N+j]);
+            V _vec_a0(&a[i*N+j],false);
+            V _vec_a1(&a[(i+1)*N+j],false);
             V _vec_b(&b[j]);
 
             _vec_out0 = fmadd(_vec_a0,_vec_b,_vec_out0);
@@ -783,6 +783,7 @@ FASTOR_INLINE void _matmul<float,3,3,1>(const float * FASTOR_RESTRICT a, const f
     __m128 bmm  = _mm_loadul3_ps(b);
 
     // This is probably more efficient but compiler depdendent
+    // This needs to be mask-loaded for supported architectures
     // __m128 amm0 = _mm_setr_ps(a[0],a[1],a[2],0.f);
     // __m128 amm1 = _mm_setr_ps(a[3],a[4],a[5],0.f);
     // __m128 amm2 = _mm_setr_ps(a[6],a[7],a[8],0.f);
@@ -797,7 +798,7 @@ FASTOR_INLINE void _matmul<float,3,3,1>(const float * FASTOR_RESTRICT a, const f
 template<>
 FASTOR_INLINE void _matmul<double,2,2,1>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
     // IVY 15 OPS - HW 19 OPS
-    __m256d a_reg = _mm256_load_pd(a);
+    __m256d a_reg = _mm256_loadu_pd(a);
     __m128d b_vec = _mm_load_pd(b);
 
     __m256d b0 = _mm256_castpd128_pd256(b_vec);
@@ -811,22 +812,22 @@ FASTOR_INLINE void _matmul<double,2,2,1>(const double * FASTOR_RESTRICT a, const
 template<>
 FASTOR_INLINE void _matmul<double,3,3,1>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
     // IVY 58 OPS - HW 84 OPS
-    __m128d a0 = _mm_load_pd(a);
+    __m128d a0 = _mm_loadu_pd(a);
     __m128d a1 = _mm_load_sd(a+2);
     __m256d row0 = _mm256_castpd128_pd256(a0);
     row0 = _mm256_shift1_pd(_mm256_insertf128_pd(row0,a1,0x1));
 
     __m128d a2 = _mm_reverse_pd(_mm_load_sd(a+3));
-    __m128d a3 = _mm_load_pd(a+4);
+    __m128d a3 = _mm_loadu_pd(a+4);
     __m256d row1 = _mm256_castpd128_pd256(a2);
     row1 = _mm256_insertf128_pd(row1,a3,0x1);
 
-    __m128d a4 = _mm_load_pd(a+6);
+    __m128d a4 = _mm_loadu_pd(a+6);
     __m128d a5 = _mm_load_sd(a+8);
     __m256d row2 = _mm256_castpd128_pd256(a4);
     row2 = _mm256_shift1_pd(_mm256_insertf128_pd(row2,a5,0x1));
 
-    __m256d vec_b = _mm256_shift1_pd(_mm256_load_pd(b));
+    __m256d vec_b = _mm256_shift1_pd(_mm256_loadu_pd(b));
 
     __m128d c0 = _add_pd(_mm256_mul_pd(row0,vec_b));
     __m128d c1 = _add_pd(_mm256_mul_pd(row1,vec_b));
@@ -845,6 +846,7 @@ FASTOR_INLINE void _matmul<double,3,3,1>(const double * FASTOR_RESTRICT a, const
     // __m256d bmm  = _mm256_loadul3_pd(b);
 
     // // This is probably more efficient but compiler depdendent
+    // // This needs to be mask-loaded for supported architectures
     // // __m256d amm0 = _mm_setr_ps(a[0],a[1],a[2],0.f);
     // // __m256d amm1 = _mm_setr_ps(a[3],a[4],a[5],0.f);
     // // __m256d amm2 = _mm_setr_ps(a[6],a[7],a[8],0.f);

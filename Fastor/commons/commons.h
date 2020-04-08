@@ -121,12 +121,6 @@ SOFTWARE.
 #define FASTOR_RESTRICT __restrict
 #endif
 
-#if defined(__GNUC__) || defined(__GNUG__)
-    #define FASTOR_ALIGN __attribute__((aligned(0x20)))
-#elif defined(_MSC_VER)
-    #define FASTOR_ALIGN __declspec(align(32))
-#endif
-
 // Traditional inline which works will and helps the compiler
 // eliminate a lot of code
 #define FASTOR_HINT_INLINE inline
@@ -283,8 +277,17 @@ SOFTWARE.
 #ifdef FASTOR_SSE2_IMPL
 #include <emmintrin.h>
 #endif
+#ifdef FASTOR_SSE3_IMPL
+#include <pmmintrin.h>
+#endif
+#ifdef FASTOR_SSSE3_IMPL
+#include <tmmintrin.h>
+#endif
 #ifdef FASTOR_SSE4_1_IMPL
 #include <smmintrin.h>
+#endif
+#ifdef FASTOR_SSE4_2_IMPL
+#include <nmmintrin.h>
 #endif
 #ifdef FASTOR_AVX_IMPL
 #include <immintrin.h>
@@ -300,6 +303,22 @@ SOFTWARE.
 #define FASTOR_SCALAR_BITSIZE FASTOR_DOUBLE_SIZE
 #endif
 
+
+// Alignment
+//------------------------------------------------------------------------------------------------//
+#ifdef FASTOR_AVX512_IMPL
+#define FASTOR_MEMORY_ALIGNMENT_VALUE 0x40
+#elif defined(FASTOR_AVX_IMPL)
+#define FASTOR_MEMORY_ALIGNMENT_VALUE 0x20
+#else
+#define FASTOR_MEMORY_ALIGNMENT_VALUE 0x10
+#endif
+
+#if defined(__GNUC__) || defined(__GNUG__)
+    #define FASTOR_ALIGN __attribute__((aligned(FASTOR_MEMORY_ALIGNMENT_VALUE)))
+#elif defined(_MSC_VER)
+    #define FASTOR_ALIGN __declspec(align(FASTOR_MEMORY_ALIGNMENT_VALUE))
+#endif
 
 // Conservative alignment for SIMD
 #if defined(FASTOR_CONSERVATIVE_ALIGN) || defined(FASTOR_DONT_VECTORISE)

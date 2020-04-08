@@ -584,7 +584,7 @@ FASTOR_INLINE SIMDVector<float,simd_abi::avx> abs(const SIMDVector<float,simd_ab
 // SSE VERSION
 //--------------------------------------------------------------------------------------------------
 
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 
 template <>
 struct SIMDVector<float,simd_abi::sse> {
