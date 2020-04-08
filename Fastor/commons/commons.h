@@ -210,9 +210,9 @@ SOFTWARE.
 #if defined(__FMA__)
     #define FASTOR_FMA_IMPL 1
 #endif
-#if !defined(__FMA__) && defined(__AVX2__)
-    #define __FMA__ 1
-#endif
+// #if !defined(__FMA__) && defined(__AVX2__)
+//     #define __FMA__ 1
+// #endif
 
 
 // Get around MSVC issue
