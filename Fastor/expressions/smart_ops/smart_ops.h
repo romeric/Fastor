@@ -13,7 +13,6 @@ struct BinaryMatMulOp {
 
     BinaryMatMulOp(const TLhs& lhs, const TRhs& rhs) : lhs(lhs), rhs(rhs) {}
 
-    // The eval function evaluates the expression at position i
     template<typename U>
     FASTOR_INLINE U eval(U i, U j) const {
         U result = 0;
@@ -49,7 +48,6 @@ struct UnaryTransposeOp {
 
     UnaryTransposeOp(const Expr& expr) : expr(expr) {}
 
-    // The eval function evaluates the expression at position (i,j)
     template<typename U>
     FASTOR_INLINE U eval(U i, U j) const {
         return expr(static_cast<U>(j),static_cast<U>(i));
@@ -75,7 +73,6 @@ struct UnaryTraceOp {
 
     UnaryTraceOp(const Expr& expr) : expr(expr) {}
 
-    // The eval function evaluates the expression at position i
     template<typename U>
     FASTOR_INLINE U eval(U i) const {
         U result = 0; unused(i);

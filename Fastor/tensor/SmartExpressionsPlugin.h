@@ -1,7 +1,7 @@
+#ifndef SMART_EXPRESSION_OP_H
+#define SMART_EXPRESSION_OP_H
 
-// Plugin for all smart expressions
-
-// Smart binders
+// Plugin for all smart expressions - smart binders
 //----------------------------------------------------------------------------------------------------------//
 template<size_t I, size_t J, size_t K>
 FASTOR_INLINE Tensor(const BinaryMatMulOp<Tensor<T,I,J>,Tensor<T,J,K>>& src_) {
@@ -20,23 +20,6 @@ FASTOR_INLINE Tensor(BinaryMatMulOp<Tensor<T,I,J>,Tensor<T,J,K>> &&src_) {
             _data[i*N+j] = src_.eval(static_cast<T>(i),static_cast<T>(j));
         }
     }
-}
-
-template<size_t I, size_t J, size_t K>
-FASTOR_INLINE Tensor(const BinaryMatMulOp<Tensor<T,I,J>,BinaryMatMulOp<Tensor<T,J,K>,Tensor<T,K>>>& src_) {
-    T FASTOR_ALIGN tmp[Size];
-    _matmul<T,J,K,K>(src_.rhs.lhs.data(),src_.rhs.rhs.data(),tmp);
-    _matmul<T,J,K,K>(src_.lhs.lhs.data(),tmp,_data);
-}
-
-template<class Derived0, class Derived1, class Derived2>
-FASTOR_INLINE Tensor(const BinaryMatMulOp<BinaryMatMulOp<AbstractTensor<Derived0,Derived0::Dimension>,
-                     AbstractTensor<Derived1,Derived1::Dimension>>,
-                     AbstractTensor<Derived2,Derived2::Dimension>>& src_) {
-    // The generic version of reducing matrix-matrix to matrix-vector multiplications, for instance A*B*(a+b)
-    T FASTOR_ALIGN tmp[Size];
-    unused(src_);
-    FASTOR_ASSERT(false,"NOT IMPLEMENTED YET");
 }
 
 template<size_t I,size_t J>
@@ -192,58 +175,6 @@ FASTOR_INLINE Tensor(const UnaryTransposeOp<UnaryCofOp<Tensor<T,I,I>>> &src_) {
     static_assert(I==get_value<1,Rest...>::value && I==get_value<2,Rest...>::value, "DIMENSION MISMATCH");
     _adjoint<T,I,I>(src_.expr.expr.data(),_data);
 }
-
 //----------------------------------------------------------------------------------------------------------//
-template<size_t ndim, size_t nodeperelem>
-FASTOR_INLINE Tensor(const BinaryMatMulOp<BinaryMatMulOp<UnaryInvOp<BinaryMatMulOp<Tensor<T, ndim, nodeperelem>,
-                               Tensor<T, nodeperelem, ndim> > >,
-                               Tensor<T, ndim, nodeperelem> >, Tensor<T, nodeperelem, ndim> > &src) {
-    //! Domain-aware expression for chaining multiple operators [used for calculating the
-    //! deformation gradient F, for instance]
 
-    static_assert(Size==ndim*ndim,"RESULTING TENSOR MUST BE SQUARE");
-    this->zeros();
-
-#ifndef IDEAL_IMPL
-
-    const T FASTOR_ALIGN *x = src.rhs.data();
-#ifdef FASTOR_INTEL
-    T FASTOR_ALIGN *X = src.lhs.lhs.expr.rhs.data();
-#else
-    T FASTOR_ALIGN *X = src.rhs.data();
-#endif
-    const T FASTOR_ALIGN *Jm = src.lhs.rhs.data();
-
-    T FASTOR_ALIGN PG[ndim*ndim] = {static_cast<T>(0)};
-    _matmul<T,ndim,nodeperelem,ndim>(Jm,X,PG);
-    T FASTOR_ALIGN invPG[ndim*ndim];
-    _inverse<T,ndim>(PG,invPG);
-    T FASTOR_ALIGN MG[ndim*nodeperelem] = {static_cast<T>(0)};
-    _matmul<T,ndim,ndim,nodeperelem>(invPG,Jm,MG);
-#ifdef FASTOR_GCC
-    _matmul<T,ndim,nodeperelem,ndim>(MG,x,_data);
-#endif
-#ifdef FASTOR_INTEL
-    unused(_data);
-#endif
-#ifdef FASTOR_CLANG
-    T FASTOR_ALIGN xx[ndim*ndim];
-    _matmul<T,ndim,nodeperelem,ndim>(MG,x,xx);
-    std::copy(xx,xx+ndim*ndim,_data);
-#endif
-
-#else
-    const T *x = src.rhs.data();
-    const T *Jm = src.lhs.rhs.data();
-    const T *X = src.lhs.lhs.expr.rhs.data();
-
-    T FASTOR_ALIGN PG[ndim*ndim] = {static_cast<T>(0.)};
-    _matmul<T,ndim,nodeperelem,ndim>(Jm,X,PG);
-    T FASTOR_ALIGN invPG[ndim*ndim];
-    _inverse<T,ndim>(PG,invPG);
-    T FASTOR_ALIGN MG[ndim*nodeperelem] = {static_cast<T>(0.)};
-    _matmul<T,ndim,ndim,nodeperelem>(invPG,Jm,MG);
-    _matmul<T,ndim,nodeperelem,ndim>(MG,x,_data);
-#endif
-}
-//----------------------------------------------------------------------------------------------------------//
+#endif // SMART_EXPRESSION_OP_H
