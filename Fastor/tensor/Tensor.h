@@ -22,6 +22,7 @@ private:
 #endif
 public:
     using scalar_type = T;
+    using result_type = Tensor<T,Rest...>;
     using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
     static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
     static constexpr FASTOR_INDEX Size = prod<Rest...>::value;

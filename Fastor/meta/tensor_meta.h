@@ -122,16 +122,19 @@ struct fseq_range_detector<Seq<first,last,step>> {
 //-----------
 
 
-// Expression binding type for binary operators
+// Expression binder - by value or ref
 //-----------
 template<class T>
 struct ExprBinderType {
 #ifndef FASTOR_COPY_EXPR
-    using type = typename std::conditional<std::is_arithmetic<T>::value, T, const T&>::type;
+    using type = typename std::conditional<std::is_arithmetic<T>::value, const T, const T&>::type;
 #else
     using type = T;
 #endif
 };
+
+template<class T>
+using expression_t = typename ExprBinderType<T>::type;
 //-----------
 
 

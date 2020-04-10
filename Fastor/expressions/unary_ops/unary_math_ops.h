@@ -12,43 +12,44 @@ namespace Fastor {
 template<typename Expr, size_t DIM0>\
 struct Unary ##STRUCT_NAME ## Op: public AbstractTensor<Unary ##STRUCT_NAME ## Op<Expr, DIM0>,DIM0> {\
 private:\
-    typename ExprBinderType<Expr>::type expr;\
+    expression_t<Expr> _expr;\
 public:\
     using scalar_type = typename scalar_type_finder<Expr>::type;\
     static constexpr FASTOR_INDEX Dimension = DIM0;\
     static constexpr FASTOR_INDEX rank() {return DIM0;}\
-    FASTOR_INLINE FASTOR_INDEX size() const {return expr.size();}\
-    FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return expr.dimension(i);}\
-    Unary ##STRUCT_NAME ## Op(typename ExprBinderType<Expr>::type _expr) : expr(_expr) {}\
+    FASTOR_INLINE FASTOR_INDEX size() const {return _expr.size();}\
+    FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return _expr.dimension(i);}\
+    Unary ##STRUCT_NAME ## Op(expression_t<Expr> inexpr) : _expr(inexpr) {}\
+    FASTOR_INLINE FASTOR_INDEX expr() const {return _expr;}\
     template<typename U=scalar_type>\
     FASTOR_INLINE SIMDVector<EVAL_TYPE,DEFAULT_ABI> eval(FASTOR_INDEX i) const {\
-        return SIMD_OP(expr.template eval<EVAL_TYPE>(i));\
+        return SIMD_OP(_expr.template eval<EVAL_TYPE>(i));\
     }\
     template<typename U=scalar_type>\
     FASTOR_INLINE EVAL_TYPE eval_s(FASTOR_INDEX i) const {\
-        return SCALAR_OP(expr.template eval_s<EVAL_TYPE>(i));\
+        return SCALAR_OP(_expr.template eval_s<EVAL_TYPE>(i));\
     }\
     template<typename U=scalar_type>\
     FASTOR_INLINE SIMDVector<EVAL_TYPE,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {\
-        return SIMD_OP(expr.template eval<EVAL_TYPE>(i,j));\
+        return SIMD_OP(_expr.template eval<EVAL_TYPE>(i,j));\
     }\
     template<typename U=scalar_type>\
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {\
-        return SCALAR_OP(expr.template eval_s<EVAL_TYPE>(i,j));\
+        return SCALAR_OP(_expr.template eval_s<EVAL_TYPE>(i,j));\
     }\
     template<typename U>\
     FASTOR_INLINE SIMDVector<EVAL_TYPE,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {\
-        return SIMD_OP(expr.template teval<EVAL_TYPE>(as));\
+        return SIMD_OP(_expr.template teval<EVAL_TYPE>(as));\
     }\
     template<typename U>\
     FASTOR_INLINE EVAL_TYPE teval_s(const std::array<int,DIM0> &as) const {\
-        return SCALAR_OP(expr.template teval_s<EVAL_TYPE>(as));\
+        return SCALAR_OP(_expr.template teval_s<EVAL_TYPE>(as));\
     }\
 };\
 template<typename Expr, size_t DIM0,\
          typename std::enable_if<!std::is_arithmetic<Expr>::value,bool>::type = 0 >\
-FASTOR_INLINE Unary ##STRUCT_NAME ## Op<Expr, DIM0> OP_NAME(const AbstractTensor<Expr,DIM0> &expr) {\
-  return Unary ##STRUCT_NAME ## Op<Expr, DIM0>(expr.self());\
+FASTOR_INLINE Unary ##STRUCT_NAME ## Op<Expr, DIM0> OP_NAME(const AbstractTensor<Expr,DIM0> &_expr) {\
+  return Unary ##STRUCT_NAME ## Op<Expr, DIM0>(_expr.self());\
 }\
 
 
