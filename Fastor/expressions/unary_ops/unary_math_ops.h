@@ -3,7 +3,7 @@
 
 
 #include "Fastor/tensor/Tensor.h"
-#include "Fastor/meta/tensor_post_meta.h"
+#include "Fastor/expressions/expression_traits.h"
 
 namespace Fastor {
 
@@ -20,7 +20,7 @@ public:\
     FASTOR_INLINE FASTOR_INDEX size() const {return _expr.size();}\
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return _expr.dimension(i);}\
     Unary ##STRUCT_NAME ## Op(expression_t<Expr> inexpr) : _expr(inexpr) {}\
-    FASTOR_INLINE FASTOR_INDEX expr() const {return _expr;}\
+    FASTOR_INLINE expression_t<Expr> expr() const {return _expr;}\
     template<typename U=scalar_type>\
     FASTOR_INLINE SIMDVector<EVAL_TYPE,DEFAULT_ABI> eval(FASTOR_INDEX i) const {\
         return SIMD_OP(_expr.template eval<EVAL_TYPE>(i));\
