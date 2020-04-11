@@ -2,7 +2,7 @@
 #define BINARY_ADD_OP_H
 
 #include "Fastor/tensor/AbstractTensor.h"
-#include "Fastor/meta/tensor_post_meta.h"
+#include "Fastor/expressions/expression_traits.h"
 
 
 
@@ -56,8 +56,8 @@ public:
 #endif
         return _rhs.dimension(i);
     }
-    constexpr FASTOR_INLINE typename ExprBinderType<TLhs>::type lhs() const {return _lhs;}
-    constexpr FASTOR_INLINE typename ExprBinderType<TRhs>::type rhs() const {return _rhs;}
+    constexpr FASTOR_INLINE expression_t<TLhs> lhs() const {return _lhs;}
+    constexpr FASTOR_INLINE expression_t<TRhs> rhs() const {return _rhs;}
 
     // Generic version of eval
     template<typename U>

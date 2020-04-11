@@ -90,21 +90,25 @@ template<class T>
 struct is_tensor {
     static constexpr bool value = false;
 };
-
 template<class T, size_t ...Rest>
 struct is_tensor<Tensor<T,Rest...>> {
     static constexpr bool value = true;
 };
+template<typename T>
+constexpr bool is_tensor_v = is_tensor<T>::value;
+//--------------------------------------------------------------------------------------------------------------------//
 
+//--------------------------------------------------------------------------------------------------------------------//
 template<class T>
 struct is_abstracttensor {
     static constexpr bool value = false;
 };
-
 template<class T, size_t DIMS>
 struct is_abstracttensor<AbstractTensor<T,DIMS>> {
     static constexpr bool value = true;
 };
+template<typename T>
+constexpr bool is_abstracttensor_v = is_abstracttensor<T>::value;
 //--------------------------------------------------------------------------------------------------------------------//
 
 

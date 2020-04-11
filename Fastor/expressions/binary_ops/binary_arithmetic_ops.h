@@ -2,7 +2,7 @@
 #define BINARY_ARITHMETIC_OP_H
 
 #include "Fastor/tensor/AbstractTensor.h"
-#include "Fastor/meta/tensor_post_meta.h"
+#include "Fastor/expressions/expression_traits.h"
 
 
 

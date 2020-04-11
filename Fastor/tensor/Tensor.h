@@ -61,6 +61,7 @@ public:
     FASTOR_INLINE Tensor(const Tensor<T,Rest...> &other) {
         // This constructor cannot be default
         // Note that all other data members are static constexpr
+        if (_data == other.data()) return;
 
         std::copy(other.data(),other.data()+Size,_data);
         // using V = SIMDVector<T,DEFAULT_ABI>;
@@ -115,8 +116,8 @@ public:
         FASTOR_IF_CONSTEXPR(!internal::is_binary_cmp_op<Derived>::value) {
             using scalar_type_ = typename scalar_type_finder<Derived>::type;
             constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
-            FASTOR_INDEX i;
-            for (i = 0; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
+            FASTOR_INDEX i = 0;
+            for (; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
                 src.template eval<T>(i).store(&_data[i], FASTOR_ALIGNED);
             }
             for (; i < src.size(); ++i) {
@@ -144,8 +145,8 @@ public:
         FASTOR_IF_CONSTEXPR(!internal::is_binary_cmp_op<Derived>::value) {
             using scalar_type_ = typename scalar_type_finder<Derived>::type;
             constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
-            FASTOR_INDEX i;
-            for (i = 0; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
+            FASTOR_INDEX i = 0;
+            for (; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
                 src.template eval<T>(i).store(&_data[i], FASTOR_ALIGNED);
             }
             for (; i < src.size(); ++i) {

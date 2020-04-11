@@ -1,5 +1,5 @@
 INCLUDES = -I../
-CXX_FLAGS = -std=c++11 -O3 -march=native
+CXX_FLAGS = -std=c++14 -O3 -march=native
 
 # On some architectures -march=native does not define -mfma
 HAS_FMA := $(shell $(CXX) -march=native -dM -E - < /dev/null | egrep "AVX2" | sort)
@@ -27,18 +27,18 @@ test_basics:
 
 test_matmul:
 	$(CXX) test_matmul.cpp -o test_matmul_1.exe $(INCLUDES) -std=c++14
-	$(CXX) test_matmul.cpp -o test_matmul_2.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14
+	$(CXX) test_matmul.cpp -o test_matmul_2.exe $(CXX_FLAGS) $(INCLUDES)
 
 test_linalg:
-	$(CXX) test_linalg.cpp -o test_linalg.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14
+	$(CXX) test_linalg.cpp -o test_linalg.exe $(CXX_FLAGS) $(INCLUDES)
 
 test_einsum:
-	$(CXX) test_contraction.cpp -o test_contraction_0.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14
-	$(CXX) test_contraction.cpp -o test_contraction_1.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14 -DCONTRACT_OPT=1
-	$(CXX) test_contraction.cpp -o test_contraction_2.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14 -DCONTRACT_OPT=-1
-	$(CXX) test_einsum.cpp -o test_einsum_0.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14
-	$(CXX) test_einsum.cpp -o test_einsum_1.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14 -DCONTRACT_OPT=1
-	$(CXX) test_einsum.cpp -o test_einsum_2.exe $(CXX_FLAGS) $(INCLUDES) -std=c++14 -DCONTRACT_OPT=-1
+	$(CXX) test_contraction.cpp -o test_contraction_0.exe $(CXX_FLAGS) $(INCLUDES)
+	$(CXX) test_contraction.cpp -o test_contraction_1.exe $(CXX_FLAGS) $(INCLUDES) -DCONTRACT_OPT=1
+	$(CXX) test_contraction.cpp -o test_contraction_2.exe $(CXX_FLAGS) $(INCLUDES) -DCONTRACT_OPT=-1
+	$(CXX) test_einsum.cpp -o test_einsum_0.exe $(CXX_FLAGS) $(INCLUDES)
+	$(CXX) test_einsum.cpp -o test_einsum_1.exe $(CXX_FLAGS) $(INCLUDES) -DCONTRACT_OPT=1
+	$(CXX) test_einsum.cpp -o test_einsum_2.exe $(CXX_FLAGS) $(INCLUDES) -DCONTRACT_OPT=-1
 
 
 test_views:
