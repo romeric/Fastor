@@ -128,7 +128,7 @@ struct choose_best_simd_type<__svec<T,ABI>,N> {
     // For exact fractions simd gets proper speed up for instance for matmul
     // using type = typename is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::type;
     static constexpr bool is_exact_multiple = is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::value;
-    using type = typename std::conditional<is_exact_multiple, typename is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::type,
+    using size_based_type = typename std::conditional<is_exact_multiple, typename is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::type,
                     typename std::conditional<is_greater<_vec_size,2UL*N>::value, typename get_quarter_simd_type<__svec<T,ABI>>::type,
                         typename std::conditional<is_greater<_vec_size,N>::value, typename get_half_simd_type<__svec<T,ABI>>::type, actual_type
                         >::type
@@ -137,7 +137,7 @@ struct choose_best_simd_type<__svec<T,ABI>,N> {
 
     // // For other fractions masking might be a better idea than, hence this special logic for remainder using is_less.
     // // For no special logic use the above case
-    // using type = typename std::conditional<is_exact_multiple, typename is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::type,
+    // using size_based_type = typename std::conditional<is_exact_multiple, typename is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::type,
     //                 typename std::conditional<is_greater<_vec_size,2UL*N>::value && is_greater<_vec_size % N,1UL>::value,
     //                     typename get_quarter_simd_type<__svec<T,ABI>>::type,
     //                     typename std::conditional<is_greater<_vec_size,N>::value && is_greater<_vec_size % N,1UL>::value,
@@ -145,9 +145,20 @@ struct choose_best_simd_type<__svec<T,ABI>,N> {
     //                     >::type
     //                 >::type
     //              >::type;
+
+    using type = typename std::conditional< std::is_same<T,float>::value  ||
+                                            std::is_same<T,double>::value ||
+                                            std::is_same<T,int>::value    ||
+                                            std::is_same<T,Int64>::value,
+                                            size_based_type,
+                                            __svec<T,simd_abi::scalar>
+                >::type;
 };
 
 } // end of namesapce internal
+
+template<class __svec, size_t N>
+using choose_best_simd_t = typename internal::choose_best_simd_type<__svec,N>::type;
 
 } // end of namesapce Fastor
 

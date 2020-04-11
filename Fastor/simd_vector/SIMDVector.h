@@ -1,11 +1,12 @@
 #ifndef SIMDVECTOR_H
 #define SIMDVECTOR_H
 
-#include "simd_vector_base.h"
-#include "simd_vector_float.h"
-#include "simd_vector_double.h"
-#include "simd_vector_int.h"
-#include "simd_vector_int64.h"
+#include "Fastor/simd_vector/simd_vector_base.h"
+#include "Fastor/simd_vector/simd_vector_float.h"
+#include "Fastor/simd_vector/simd_vector_double.h"
+#include "Fastor/simd_vector/simd_vector_int.h"
+#include "Fastor/simd_vector/simd_vector_int64.h"
+#include "Fastor/simd_vector/simd_vector_t_scalar.h"
 
 
 // Generic overloads

@@ -43,7 +43,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     }
 
     // using nativeV = SIMDVector<T,DEFAULT_ABI>;
-    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
+    using V = choose_best_simd_t<SIMDVector<T,DEFAULT_ABI>,N>;
 
     // Use specialised kernels
     FASTOR_IF_CONSTEXPR((N==V::Size || N==2*V::Size || N==3*V::Size || N==4*V::Size || N==5*V::Size) && V::Size!=1UL) {
