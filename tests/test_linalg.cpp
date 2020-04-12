@@ -21,11 +21,11 @@ void test_linalg() {
         FASTOR_EXIT_ASSERT(std::abs(norm(cofactor(t1)) - 13.1909059) < BigTol);
         FASTOR_EXIT_ASSERT(std::abs(norm(transpose(adjoint(t1))) - 13.1909059) < BigTol);
 
-        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T>>(ldeterminant(t1)))+2.)< Tol);
-        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T>>(ltrace(t1))) - 13)< Tol);
-        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,2,2>>(lmatmul(t1,t1))) - 173.4646938)< BigTol);
-        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,2,2>>(lcofactor(t1))) - 13.1909059)< BigTol);
-        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,2,2>>(ltranspose(ladjoint(t1)))) - 13.1909059)< BigTol);
+        // FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T>>(ldeterminant(t1)))+2.)< Tol);
+        // FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T>>(ltrace(t1))) - 13)< Tol);
+        // FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,2,2>>(lmatmul(t1,t1))) - 173.4646938)< BigTol);
+        // FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,2,2>>(lcofactor(t1))) - 13.1909059)< BigTol);
+        // FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,2,2>>(ltranspose(ladjoint(t1)))) - 13.1909059)< BigTol);
 
         Tensor<T,2> t2; t2.iota(102);
         FASTOR_EXIT_ASSERT(std::abs(norm(outer(t2,t2)) - 21013.0) < Tol);
@@ -92,11 +92,11 @@ void test_linalg() {
         FASTOR_EXIT_ASSERT(std::abs(norm(cofactor(t1)) - 18) < BigTol);
         FASTOR_EXIT_ASSERT(std::abs(norm(transpose(adjoint(t1))) - 18) < BigTol);
 
-        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T>>(ldeterminant(t1))))< Tol);
-        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T>>(ltrace(t1))) - 12)< Tol);
-        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,3,3>>(lmatmul(t1,t1))) - 187.637949)< BigTol);
-        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,3,3>>(lcofactor(t1))) - 18)< BigTol);
-        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,3,3>>(ltranspose(ladjoint(t1)))) - 18)< BigTol);
+        // FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T>>(ldeterminant(t1))))< Tol);
+        // FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T>>(ltrace(t1))) - 12)< Tol);
+        // FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,3,3>>(lmatmul(t1,t1))) - 187.637949)< BigTol);
+        // FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,3,3>>(lcofactor(t1))) - 18)< BigTol);
+        // FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<Tensor<T,3,3>>(ltranspose(ladjoint(t1)))) - 18)< BigTol);
 
         Tensor<T,3> t2; t2.iota(102);
         FASTOR_EXIT_ASSERT(std::abs(norm(outer(t2,t2)) - 31829.0) < Tol);

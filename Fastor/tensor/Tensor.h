@@ -7,7 +7,7 @@
 #include "Fastor/tensor/AbstractTensor.h"
 #include "Fastor/tensor/Ranges.h"
 #include "Fastor/tensor/ForwardDeclare.h"
-#include "Fastor/expressions/smart_ops/smart_ops.h"
+// #include "Fastor/expressions/smart_ops/smart_ops.h"
 #include "Fastor/meta/tensor_pre_meta.h"
 
 namespace Fastor {
@@ -255,7 +255,7 @@ public:
     //----------------------------------------------------------------------------------------------------------//
 
     //----------------------------------------------------------------------------------------------------------//
-    #include "Fastor/tensor/SmartExpressionsPlugin.h"
+    // #include "Fastor/tensor/SmartExpressionsPlugin.h"
     //----------------------------------------------------------------------------------------------------------//
 
     // Tensor methods
