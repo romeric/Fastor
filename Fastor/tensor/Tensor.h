@@ -7,7 +7,7 @@
 #include "Fastor/tensor/AbstractTensor.h"
 #include "Fastor/tensor/Ranges.h"
 #include "Fastor/tensor/ForwardDeclare.h"
-// #include "Fastor/expressions/smart_ops/smart_ops.h"
+#include "Fastor/expressions/linalg_ops/linalg_ops.h"
 #include "Fastor/meta/tensor_pre_meta.h"
 
 namespace Fastor {
