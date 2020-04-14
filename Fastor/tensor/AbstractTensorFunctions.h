@@ -8,8 +8,8 @@ namespace Fastor {
 
 
 template<class Derived, size_t DIMS>
-FASTOR_INLINE typename tensor_type_finder<Derived>::type evaluate(const AbstractTensor<Derived,DIMS> &_src) {
-    typename tensor_type_finder<Derived>::type out = _src;
+FASTOR_INLINE typename Derived::result_type evaluate(const AbstractTensor<Derived,DIMS> &src) {
+    typename Derived::result_type out(src);
     return out;
 }
 
@@ -51,28 +51,6 @@ FASTOR_INLINE typename Derived::scalar_type product(const AbstractTensor<Derived
     return _vec.product() * _scal;
 }
 
-
-
-
-template<class Derived, size_t DIMS>
-FASTOR_INLINE typename Derived::scalar_type norm(const AbstractTensor<Derived,DIMS> &_src) {
-    using T = typename Derived::scalar_type;
-    using V = SIMDVector<T,DEFAULT_ABI>;
-    const Derived &src = _src.self();
-    FASTOR_INDEX i;
-    T _scal=0; V _vec(_scal);
-    for (i = 0; i < ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
-        // Evaluate the expression once
-        auto eval_vec = src.template eval<T>(i);
-        _vec = fmadd(eval_vec,eval_vec,_vec);
-    }
-    for (; i < src.size(); ++i) {
-        // Evaluate the expression once
-        auto eval_scal = src.template eval_s<T>(i);
-        _scal += eval_scal*eval_scal;
-    }
-    return sqrts(_vec.sum() + _scal);
-}
 
 
 template<class Derived0, typename Derived1, size_t DIMS,

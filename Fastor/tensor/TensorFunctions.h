@@ -45,20 +45,11 @@ FASTOR_INLINE Tensor<T,I,I> inverse(const Tensor<T,I,I> &a) {
     return out;
 }
 
-template<typename T, size_t ... Rest,
-         typename std::enable_if<std::is_floating_point<T>::value,bool>::type=0>
+template<typename T, size_t ... Rest>
 FASTOR_INLINE T norm(const Tensor<T,Rest...> &a) {
     if (sizeof...(Rest) == 0)
         return *a.data();
     return _norm<T,prod<Rest...>::value>(a.data());
-}
-
-template<typename T, size_t ... Rest,
-         typename std::enable_if<!std::is_floating_point<T>::value,bool>::type=0>
-FASTOR_INLINE double norm(const Tensor<T,Rest...> &a) {
-    if (sizeof...(Rest) == 0)
-        return *a.data();
-    return _norm_nonfloating<T,prod<Rest...>::value>(a.data());
 }
 
 // matmul - matvec overloads
