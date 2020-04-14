@@ -18,6 +18,7 @@ private:
     seq _seq;
 public:
     using scalar_type = T;
+    using result_type = Tensor<T,N>;
     static constexpr FASTOR_INDEX Dimension = 1;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX rank() {return 1;}
@@ -91,6 +92,7 @@ private:
     constexpr FASTOR_INLINE Tensor<T,N> get_tensor() const {return expr;}
 public:
     using scalar_type = T;
+    using result_type = Tensor<T,N>;
     static constexpr FASTOR_INDEX Dimension = 1;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX rank() {return 1;}

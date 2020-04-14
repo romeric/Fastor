@@ -2,8 +2,8 @@
 #define PERMUTATION_H
 
 #include "Fastor/tensor/Tensor.h"
+#include "Fastor/tensor/TensorTraits.h"
 #include "Fastor/tensor_algebra/indicial.h"
-#include "Fastor/meta/tensor_post_meta.h"
 #include "Fastor/meta/einsum_meta.h"
 
 namespace Fastor {

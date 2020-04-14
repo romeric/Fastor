@@ -23,6 +23,7 @@ public:
     static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX rank() {return DIM0;}
     using scalar_type = typename scalar_type_finder<BinaryDivOp<TLhs, TRhs, DIM0>>::type;
+    using result_type = binary_arithmetic_result_t< BinaryDivOp<TLhs, TRhs, DIM0> >;
 
     FASTOR_INLINE BinaryDivOp(expression_t<TLhs> inlhs, expression_t<TRhs> inrhs) : _lhs((inlhs)), _rhs((inrhs)) {}
 

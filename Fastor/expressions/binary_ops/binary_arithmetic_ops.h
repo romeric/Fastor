@@ -5,8 +5,8 @@
 #include "Fastor/expressions/expression_traits.h"
 
 
-
 namespace Fastor {
+
 
 #define FASTOR_MAKE_BINARY_ARITHMETIC_OPS(OP, NAME, EVAL_TYPE) \
 template<typename TLhs, typename TRhs, size_t DIM0>\
@@ -17,6 +17,7 @@ public:\
     static constexpr FASTOR_INDEX Dimension = DIM0;\
     static constexpr FASTOR_INDEX rank() {return DIM0;}\
     using scalar_type = typename scalar_type_finder<Binary ##NAME ## Op<TLhs, TRhs, DIM0>>::type;\
+    using result_type = binary_arithmetic_result_t< Binary ##NAME ## Op<TLhs, TRhs, DIM0> >;\
     FASTOR_INLINE Binary ##NAME ## Op(expression_t<TLhs> inlhs, expression_t<TRhs> inrhs) : _lhs(inlhs), _rhs(inrhs) {}\
     FASTOR_INLINE FASTOR_INDEX size() const {return helper_size<TLhs,TRhs>();}\
     template<class LExpr, class RExpr,\

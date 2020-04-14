@@ -21,6 +21,7 @@ private:
     bool _is_strided_vectorisable;
 public:
     using scalar_type = T;
+    using result_type = TensorType<T,Rest...>;
     static constexpr FASTOR_INDEX Dimension = DIMS;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr std::array<size_t,DIMS> products_ = nprods_views<Index<Rest...>,
@@ -217,6 +218,7 @@ private:
 
 public:
     using scalar_type = T;
+    using result_type = TensorType<T,Rest...>;
     static constexpr FASTOR_INDEX Dimension = DIMS;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr std::array<size_t,DIMS> products_ = nprods_views<Index<Rest...>,

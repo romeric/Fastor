@@ -2,7 +2,7 @@
 #define TENSOR_FUNCTIONS_H
 
 #include "Fastor/tensor/Tensor.h"
-#include "Fastor/meta/tensor_post_meta.h"
+#include "Fastor/tensor/TensorTraits.h"
 
 namespace Fastor {
 

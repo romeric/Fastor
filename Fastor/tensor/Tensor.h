@@ -110,55 +110,7 @@ public:
     template<typename Derived, size_t DIMS>
 #endif
     FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
-        const Derived &src = src_.self();
-        FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
-
-        FASTOR_IF_CONSTEXPR(!internal::is_binary_cmp_op<Derived>::value) {
-            using scalar_type_ = typename scalar_type_finder<Derived>::type;
-            constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
-            FASTOR_INDEX i = 0;
-            for (; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
-                src.template eval<T>(i).store(&_data[i], FASTOR_ALIGNED);
-            }
-            for (; i < src.size(); ++i) {
-                _data[i] = src.template eval_s<T>(i);
-            }
-        }
-        else {
-            for (FASTOR_INDEX i = 0; i < src.size(); ++i) {
-                _data[i] = src.template eval_s<T>(i);
-            }
-        }
-    }
-
-#ifndef FASTOR_DISABLE_SPECIALISED_CTR
-    template<typename Derived, size_t DIMS,
-        typename std::enable_if<(!internal::has_tensor_view<Derived>::value &&
-        !internal::has_tensor_fixed_view_2d<Derived>::value) || DIMS!=sizeof...(Rest),bool>::type=0>
-#else
-    template<typename Derived, size_t DIMS>
-#endif
-    FASTOR_INLINE Tensor<T,Rest...>& operator=(const AbstractTensor<Derived,DIMS>& src_) {
-        const Derived &src = src_.self();
-        FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
-
-        FASTOR_IF_CONSTEXPR(!internal::is_binary_cmp_op<Derived>::value) {
-            using scalar_type_ = typename scalar_type_finder<Derived>::type;
-            constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
-            FASTOR_INDEX i = 0;
-            for (; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
-                src.template eval<T>(i).store(&_data[i], FASTOR_ALIGNED);
-            }
-            for (; i < src.size(); ++i) {
-                _data[i] = src.template eval_s<T>(i);
-            }
-        }
-        else {
-            for (FASTOR_INDEX i = 0; i < src.size(); ++i) {
-                _data[i] = src.template eval_s<T>(i);
-            }
-        }
-        return *this;
+        assign(*this, src_.self());
     }
     //----------------------------------------------------------------------------------------------------------//
 
@@ -397,7 +349,10 @@ protected:
 };
 
 
-}
+} // end of namespace Fastor
+
+
+#include "Fastor/tensor/TensorAssignment.h"
 
 
 #endif // TENSOR_H

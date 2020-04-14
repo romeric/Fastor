@@ -17,6 +17,7 @@ template<typename T, size_t ... Rest>
 class TensorMap: public AbstractTensor<TensorMap<T, Rest...>,sizeof...(Rest)> {
 public:
     using scalar_type = T;
+    using result_type = TensorMap<T,Rest...>;
     using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
     static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
     static constexpr FASTOR_INDEX Size = prod<Rest...>::value;
@@ -145,6 +146,29 @@ FASTOR_MAKE_OS_STREAM_TENSOR0(TensorMap)
 FASTOR_MAKE_OS_STREAM_TENSOR1(TensorMap)
 FASTOR_MAKE_OS_STREAM_TENSOR2(TensorMap)
 FASTOR_MAKE_OS_STREAM_TENSORn(TensorMap)
+
+
+template<typename Derived, size_t DIM, typename T, size_t ...Rest>
+FASTOR_INLINE void assign(const AbstractTensor<Derived,DIM> &dst, const TensorMap<T,Rest...> &src) {
+    if (dst.self().data()==src.data()) return;
+    trivial_assign(dst.self(),src);
+}
+template<typename Derived, size_t DIM, typename T, size_t ...Rest>
+FASTOR_INLINE void assign_add(const AbstractTensor<Derived,DIM> &dst, const TensorMap<T,Rest...> &src) {
+    trivial_assign_add(dst.self(),src);
+}
+template<typename Derived, size_t DIM, typename T, size_t ...Rest>
+FASTOR_INLINE void assign_sub(const AbstractTensor<Derived,DIM> &dst, const TensorMap<T,Rest...> &src) {
+    trivial_assign_sub(dst.self(),src);
+}
+template<typename Derived, size_t DIM, typename T, size_t ...Rest>
+FASTOR_INLINE void assign_mul(const AbstractTensor<Derived,DIM> &dst, const TensorMap<T,Rest...> &src) {
+    trivial_assign_mul(dst.self(),src);
+}
+template<typename Derived, size_t DIM, typename T, size_t ...Rest>
+FASTOR_INLINE void assign_div(const AbstractTensor<Derived,DIM> &dst, const TensorMap<T,Rest...> &src) {
+    trivial_assign_div(dst.self(),src);
+}
 
 
 }

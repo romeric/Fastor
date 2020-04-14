@@ -49,17 +49,13 @@ static constexpr bool has_binary_matmul_op_v = has_binary_matmul_op<Derived>::va
 // Is a linear algebra expression
 //----------------------------------------------------------------------------------------------------------//
 template<typename Derived>
-struct is_linalg_op {
-    static constexpr bool value = false;
-};
-template<typename T, size_t M, size_t K, size_t N>
-struct is_linalg_op<BinaryMatMulOp<Tensor<T,M,K>,Tensor<T,K,N>,2>> {
-    static constexpr bool value = true;
+struct has_linalg_op {
+    static constexpr bool value = has_binary_matmul_op<Derived>::value;
 };
 
 // helper
 template<typename Derived>
-static constexpr bool is_linalg_op_v = is_linalg_op<Derived>::value;
+static constexpr bool has_linalg_op_v = has_linalg_op<Derived>::value;
 //----------------------------------------------------------------------------------------------------------//
 
 
@@ -67,7 +63,7 @@ static constexpr bool is_linalg_op_v = is_linalg_op<Derived>::value;
 //----------------------------------------------------------------------------------------------------------//
 template<typename Derived>
 struct requires_evaluation {
-    static constexpr bool value = is_linalg_op<Derived>::value;
+    static constexpr bool value = has_linalg_op<Derived>::value;
 };
 
 // helper

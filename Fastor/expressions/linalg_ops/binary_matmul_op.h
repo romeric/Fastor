@@ -2,8 +2,8 @@
 #define BINARY_MATMUL_OP_H
 
 #include "Fastor/tensor/AbstractTensor.h"
+#include "Fastor/tensor/TensorTraits.h"
 #include "Fastor/expressions/expression_traits.h"
-#include "Fastor/meta/tensor_post_meta.h"
 
 
 namespace Fastor {

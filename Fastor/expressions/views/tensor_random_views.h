@@ -18,6 +18,7 @@ private:
     const Tensor<Int,IterSize> &it_expr;
 public:
     using scalar_type = T;
+    using result_type = Tensor<T,IterSize>;
     static constexpr FASTOR_INDEX Dimension = 1;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX rank() {return 1;}
@@ -90,6 +91,7 @@ private:
     Tensor<Int,IterSizes...> it_expr;
 public:
     using scalar_type = T;
+    using result_type = Tensor<T,IterSizes...>;
     static constexpr FASTOR_INDEX Dimension = DIMS;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX rank() {return DIMS;}
@@ -168,6 +170,7 @@ private:
     constexpr FASTOR_INLINE Tensor<T,N> get_tensor() const {return expr;};
 public:
     using scalar_type = T;
+    using result_type = Tensor<T,IterSize>;
     static constexpr FASTOR_INDEX Dimension = 1;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX rank() {return 1;}
@@ -802,6 +805,7 @@ private:
     constexpr FASTOR_INLINE Tensor<T,Rest...> get_tensor() const {return expr;}
 public:
     using scalar_type = T;
+    using result_type = Tensor<T,IterSizes...>;
     static constexpr FASTOR_INDEX Dimension = DIMS;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX rank() {return DIMS;}

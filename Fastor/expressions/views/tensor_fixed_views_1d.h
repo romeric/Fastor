@@ -19,6 +19,7 @@ private:
     const Tensor<T,N> &expr;
 public:
     using scalar_type = T;
+    using result_type = Tensor<T,range_detector<F0,L0,S0>::value>;
     static constexpr FASTOR_INDEX Dimension = 1;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {
@@ -82,6 +83,7 @@ private:
     constexpr FASTOR_INLINE Tensor<T,N> get_tensor() const {return expr;}
 public:
     using scalar_type = T;
+    using result_type = Tensor<T,range_detector<F0,L0,S0>::value>;
     static constexpr FASTOR_INDEX Dimension = 1;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {

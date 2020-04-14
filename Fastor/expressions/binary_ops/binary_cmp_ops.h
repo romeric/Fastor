@@ -2,7 +2,7 @@
 #define BINARY_CMP_OPS
 
 #include "Fastor/tensor/AbstractTensor.h"
-#include "Fastor/meta/tensor_post_meta.h"
+#include "Fastor/tensor/TensorTraits.h"
 
 
 
@@ -215,6 +215,41 @@ FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(<= ,LE, scalar_type)
 FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(>= ,GE, scalar_type)
 FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(&& ,AND,scalar_type)
 FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(|| ,OR, scalar_type)
+
+
+
+
+
+#define FASTOR_MAKE_BINARY_CMP_ASSIGNMENT(NAME, ASSIGN_TYPE)\
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM>\
+FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const BinaryCmpOp ##NAME <TLhs, TRhs, OtherDIM> &src) {\
+    FASTOR_IF_CONSTEXPR (!(requires_evaluation_v<TLhs> || requires_evaluation_v<TRhs>)) {\
+        trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
+    }\
+    else {\
+        using lhs_type = remove_all_t<expression_t<TLhs>>;\
+        using rhs_type = remove_all_t<expression_t<TRhs>>;\
+        const lhs_type a(src.lhs());\
+        const rhs_type b(src.rhs());\
+        trivial_assign ##ASSIGN_TYPE (dst.self(), BinaryCmpOp ##NAME <TLhs, TRhs, OtherDIM>(a,b));\
+    }\
+}\
+
+#define FASTOR_MAKE_BINARY_CMP_ASSIGNMENTS(ASSIGN_TYPE)\
+FASTOR_MAKE_BINARY_CMP_ASSIGNMENT(EQ,  ASSIGN_TYPE)\
+FASTOR_MAKE_BINARY_CMP_ASSIGNMENT(NEQ, ASSIGN_TYPE)\
+FASTOR_MAKE_BINARY_CMP_ASSIGNMENT(LT,  ASSIGN_TYPE)\
+FASTOR_MAKE_BINARY_CMP_ASSIGNMENT(GT,  ASSIGN_TYPE)\
+FASTOR_MAKE_BINARY_CMP_ASSIGNMENT(LE,  ASSIGN_TYPE)\
+FASTOR_MAKE_BINARY_CMP_ASSIGNMENT(GE,  ASSIGN_TYPE)\
+FASTOR_MAKE_BINARY_CMP_ASSIGNMENT(AND, ASSIGN_TYPE)\
+FASTOR_MAKE_BINARY_CMP_ASSIGNMENT(OR,  ASSIGN_TYPE)\
+
+FASTOR_MAKE_BINARY_CMP_ASSIGNMENTS(     )
+FASTOR_MAKE_BINARY_CMP_ASSIGNMENTS( _add)
+FASTOR_MAKE_BINARY_CMP_ASSIGNMENTS( _sub)
+FASTOR_MAKE_BINARY_CMP_ASSIGNMENTS( _mul)
+FASTOR_MAKE_BINARY_CMP_ASSIGNMENTS( _div)
 
 
 } // end of namespace Fastor
