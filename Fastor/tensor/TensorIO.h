@@ -48,7 +48,7 @@ template<typename T>
 int get_row_width(const std::ostream &os, const T *a_data, size_t size) {
     // compute the largest width
     int width = 0;
-    for(int j = 0; j < size; ++j)
+    for(size_t j = 0; j < size; ++j)
     {
         std::stringstream sstr;
         sstr.copyfmt(os);
@@ -62,7 +62,7 @@ int get_row_width(const std::ostream &os, const T *a_data, size_t size) {
 template<template<typename,size_t...> class t_type, typename T, size_t ...Rest>
 int get_row_width(const std::ostream &os, const t_type<T,Rest...>& a) {
     int width = 0;
-    for(int j = 0; j < prod<Rest...>::value; ++j)
+    for(size_t j = 0; j < prod<Rest...>::value; ++j)
     {
         std::stringstream sstr;
         sstr.copyfmt(os);
@@ -90,7 +90,7 @@ FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const t_type<T,M> 
     IOFormat fmt = FASTOR_DEFINE_IO_FORMAT;\
     os.precision(fmt._precision);\
     int width = internal::get_row_width(os, a);\
-    for(int i = 0; i < M; ++i)\
+    for(size_t i = 0; i < M; ++i)\
     {\
         os << fmt._rowprefix;\
         if(width) os.width(width);\
@@ -107,7 +107,7 @@ FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const t_type<T,M,N
     IOFormat fmt = FASTOR_DEFINE_IO_FORMAT; \
     os.precision(fmt._precision); \
     int width = internal::get_row_width(os, a); \
-    for(int i = 0; i < M; ++i) \
+    for(size_t i = 0; i < M; ++i) \
     {\
         os << fmt._rowprefix;\
         if(width) os.width(width);\
