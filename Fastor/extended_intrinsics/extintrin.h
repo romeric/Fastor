@@ -589,12 +589,12 @@ FASTOR_INLINE __m128i _mm_mul_epi32x(const __m128i &a, const __m128i &b)
 #endif
 
 #ifdef FASTOR_SSE4_2_IMPL
-#ifndef FASTOR_AVX512CD_IMPL
+//#ifndef FASTOR_AVX512CD_IMPL
 FASTOR_INLINE __m128i _mm_mul_epi64(__m128i _a, __m128i _b) {
     __m128i out = _mm_mul_epi32x(_a,_b);
     return out;
 }
-#endif
+//#endif
 #endif
 
 #ifdef FASTOR_AVX_IMPL
@@ -702,30 +702,6 @@ FASTOR_INLINE __m256i _mm256_mul_epi64x(__m256i _a, __m256i _b) {
     return out;
 }
 #endif
-
-
-
-
-// #ifdef FASTOR_SSE2_IMPL
-// #ifndef FASTOR_FMA_IMPL
-// FASTOR_INLINE __m128 _mm_fmadd_ps(__m128 a, __m128 b, __m128 c) {
-//     return _mm_add_ps(_mm_mul_ps(a,b),c);
-// }
-// FASTOR_INLINE __m128d _mm_fmadd_pd(__m128d a, __m128d b, __m128d c) {
-//     return _mm_add_pd(_mm_mul_pd(a,b),c);
-// }
-// #endif
-// #endif
-// #ifdef FASTOR_AVX_IMPL
-// #ifndef FASTOR_FMA_IMPL
-// FASTOR_INLINE __m256 _mm256_fmadd_ps(__m256 a, __m256 b, __m256 c) {
-//     return _mm256_add_ps(_mm256_mul_ps(a,b),c);
-// }
-// FASTOR_INLINE __m256d _mm256_fmadd_pd(__m256d a, __m256d b, __m256d c) {
-//     return _mm256_add_pd(_mm256_mul_pd(a,b),c);
-// }
-// #endif
-// #endif
 
 
 
