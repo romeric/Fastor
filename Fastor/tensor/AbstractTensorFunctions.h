@@ -126,9 +126,7 @@ matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM
     constexpr size_t SIZE_ = V::Size;
     int ROUND = ROUND_DOWN(N,(int)SIZE_);
 
-    Tensor<typename scalar_type_finder<Derived0>::type,
-    get_tensor_dimensions<typename tensor_type_finder<Derived0>::type>::dims[0],
-    get_tensor_dimensions<typename tensor_type_finder<Derived1>::type>::dims[1]> out;
+    Tensor<T,M,N> out;
     T *out_data = out.data();
 
     for (size_t j=0; j<M; ++j) {

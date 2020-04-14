@@ -2,6 +2,7 @@
 #define UNARY_NORM_OP_H
 
 #include "Fastor/simd_vector/SIMDVector.h"
+#include "Fastor/backend/norm.h"
 #include "Fastor/tensor/AbstractTensor.h"
 #include "Fastor/tensor/TensorTraits.h"
 #include "Fastor/expressions/expression_traits.h"
