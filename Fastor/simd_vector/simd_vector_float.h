@@ -152,7 +152,7 @@ struct SIMDVector<float,simd_abi::avx512> {
     // }
     FASTOR_INLINE float sum() {
 #ifdef FASTOR_INTEL
-        return _mm512_reduce_add_pd(value);
+        return _mm512_reduce_add_ps(value);
 #else
         __m256 low  = _mm512_castps512_ps256(value);
         __m256 high = _mm256_castpd_ps(_mm512_extractf64x4_pd(_mm512_castps_pd(value),1));
