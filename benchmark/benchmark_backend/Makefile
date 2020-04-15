@@ -1,4 +1,4 @@
-CXX_FLAGS = -std=c++11 -O3 -march=native -DNDEBUG
+CXX_FLAGS = -std=c++14 -O3 -march=native -DNDEBUG
 INCLUDES = -I../../
 
 
@@ -50,12 +50,12 @@ bench_matmul:
 
 run:
 	./benchmark_doublecontract.exe
-	./benchmark_norm.exe 
-	./benchmark_outer.exe 
-	./benchmark_cyclic.exe 
-	./benchmark_crossproduct.exe 
-	./benchmark_transpose.exe 
-	./benchmark_trace.exe 
+	./benchmark_norm.exe
+	./benchmark_outer.exe
+	./benchmark_cyclic.exe
+	./benchmark_crossproduct.exe
+	./benchmark_transpose.exe
+	./benchmark_trace.exe
 	./benchmark_matmul.exe
 
 clean:
