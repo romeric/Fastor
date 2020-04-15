@@ -404,15 +404,28 @@ public:
 #endif
         T *FASTOR_RESTRICT _data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
-            FASTOR_INDEX j;
-            for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
-                auto _vec = other_src.template eval<T>(i,j);
-                // _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first],false);
-                data_setter(_data,_vec,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
+        if (_seq1._step == 1) {
+            for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
+                FASTOR_INDEX j;
+                for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
+                    auto _vec = other_src.template eval<T>(i,j);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                }
+                for (; j <_seq1.size(); ++j) {
+                    expr(_seq0._step*i+_seq0._first,j+_seq1._first) = other_src.template eval_s<T>(i,j);
+                }
             }
-            for (; j <_seq1.size(); ++j) {
-                expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) = other_src.template eval_s<T>(i,j);
+        }
+        else {
+            for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
+                FASTOR_INDEX j;
+                for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
+                    auto _vec = other_src.template eval<T>(i,j);
+                    data_setter(_data,_vec,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
+                }
+                for (; j <_seq1.size(); ++j) {
+                    expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) = other_src.template eval_s<T>(i,j);
+                }
             }
         }
 #else
@@ -449,14 +462,28 @@ public:
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
-            FASTOR_INDEX j;
-            for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
-                auto _vec =  this->template eval<T>(i,j) + other_src.template eval<T>(i,j);
-                data_setter(_data,_vec,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
+        if (_seq1._step == 1) {
+            for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
+                FASTOR_INDEX j;
+                for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
+                    auto _vec =  this->template eval<T>(i,j) + other_src.template eval<T>(i,j);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                }
+                for (; j <_seq1.size(); ++j) {
+                    expr(_seq0._step*i+_seq0._first,j+_seq1._first) += other_src.template eval_s<T>(i,j);
+                }
             }
-            for (; j <_seq1.size(); ++j) {
-                expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) += other_src.template eval_s<T>(i,j);
+        }
+        else {
+            for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
+                FASTOR_INDEX j;
+                for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
+                    auto _vec =  this->template eval<T>(i,j) + other_src.template eval<T>(i,j);
+                    data_setter(_data,_vec,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
+                }
+                for (; j <_seq1.size(); ++j) {
+                    expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) += other_src.template eval_s<T>(i,j);
+                }
             }
         }
 #else
@@ -493,14 +520,28 @@ public:
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
-            FASTOR_INDEX j;
-            for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
-                auto _vec =  this->template eval<T>(i,j) - other_src.template eval<T>(i,j);
-                data_setter(_data,_vec,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
+        if (_seq1._step == 1) {
+            for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
+                FASTOR_INDEX j;
+                for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
+                    auto _vec =  this->template eval<T>(i,j) - other_src.template eval<T>(i,j);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                }
+                for (; j <_seq1.size(); ++j) {
+                    expr(_seq0._step*i+_seq0._first,j+_seq1._first) -= other_src.template eval_s<T>(i,j);
+                }
             }
-            for (; j <_seq1.size(); ++j) {
-                expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) -= other_src.template eval_s<T>(i,j);
+        }
+        else {
+            for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
+                FASTOR_INDEX j;
+                for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
+                    auto _vec =  this->template eval<T>(i,j) - other_src.template eval<T>(i,j);
+                    data_setter(_data,_vec,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
+                }
+                for (; j <_seq1.size(); ++j) {
+                    expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) -= other_src.template eval_s<T>(i,j);
+                }
             }
         }
 #else
@@ -537,14 +578,28 @@ public:
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
-            FASTOR_INDEX j;
-            for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
-                auto _vec =  this->template eval<T>(i,j) * other_src.template eval<T>(i,j);
-                data_setter(_data,_vec,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
+        if (_seq1._step == 1) {
+            for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
+                FASTOR_INDEX j;
+                for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
+                    auto _vec =  this->template eval<T>(i,j) * other_src.template eval<T>(i,j);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                }
+                for (; j <_seq1.size(); ++j) {
+                    expr(_seq0._step*i+_seq0._first,j+_seq1._first) *= other_src.template eval_s<T>(i,j);
+                }
             }
-            for (; j <_seq1.size(); ++j) {
-                expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) *= other_src.template eval_s<T>(i,j);
+        }
+        else {
+            for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
+                FASTOR_INDEX j;
+                for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
+                    auto _vec =  this->template eval<T>(i,j) * other_src.template eval<T>(i,j);
+                    data_setter(_data,_vec,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
+                }
+                for (; j <_seq1.size(); ++j) {
+                    expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) *= other_src.template eval_s<T>(i,j);
+                }
             }
         }
 #else
@@ -581,14 +636,28 @@ public:
 #endif
         T *_data = expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
-            FASTOR_INDEX j;
-            for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
-                auto _vec =  this->template eval<T>(i,j) / other_src.template eval<T>(i,j);
-                data_setter(_data,_vec,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
+        if (_seq1._step == 1) {
+            for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
+                FASTOR_INDEX j;
+                for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
+                    auto _vec =  this->template eval<T>(i,j) / other_src.template eval<T>(i,j);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                }
+                for (; j <_seq1.size(); ++j) {
+                    expr(_seq0._step*i+_seq0._first,j+_seq1._first) /= other_src.template eval_s<T>(i,j);
+                }
             }
-            for (; j <_seq1.size(); ++j) {
-                expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) /= other_src.template eval_s<T>(i,j);
+        }
+        else {
+            for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
+                FASTOR_INDEX j;
+                for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
+                    auto _vec =  this->template eval<T>(i,j) / other_src.template eval<T>(i,j);
+                    data_setter(_data,_vec,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
+                }
+                for (; j <_seq1.size(); ++j) {
+                    expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) /= other_src.template eval_s<T>(i,j);
+                }
             }
         }
 #else
