@@ -28,6 +28,7 @@ test_basics:
 test_matmul:
 	$(CXX) test_matmul.cpp -o test_matmul_1.exe $(INCLUDES) -std=c++14
 	$(CXX) test_matmul.cpp -o test_matmul_2.exe $(CXX_FLAGS) $(INCLUDES)
+	$(CXX) test_matmul_small.cpp -o test_matmul_small.exe $(CXX_FLAGS) $(INCLUDES)
 
 test_linalg:
 	$(CXX) test_linalg.cpp -o test_linalg.exe $(CXX_FLAGS) $(INCLUDES)
@@ -93,6 +94,7 @@ run_basics:
 run_matmul:
 	./test_matmul_1.exe
 	./test_matmul_2.exe
+	./test_matmul_small.exe
 
 run_linalg:
 	./test_linalg.exe
