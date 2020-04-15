@@ -16,8 +16,8 @@ FASTOR_INLINE T _doublecontract(const T* FASTOR_RESTRICT a, const T* FASTOR_REST
 
     V vec_a, vec_b, vec_out;
     for (; i< ROUND_DOWN(size,stride); i+=stride) {
-        vec_a.load(a+i);
-        vec_b.load(b+i);
+        vec_a.load(a+i,false);
+        vec_b.load(b+i,false);
 #ifndef __FMA__
         vec_out += vec_a*vec_b;
 #else
