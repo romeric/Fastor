@@ -682,7 +682,7 @@ struct matmul_inner_loop_unroller<from,from> {
 
     template<size_t M, typename T, typename ABI>
     static FASTOR_INLINE void store_(const SIMDVector<T,ABI> (&c_ij)[M], T* FASTOR_RESTRICT out) {
-        c_ij[from].store(&out[from*SIMDVector<T,ABI>::Size]);
+        c_ij[from].store(&out[from*SIMDVector<T,ABI>::Size],false);
     }
 };
 
@@ -707,7 +707,7 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
     V c_ij[M];
 
     for (size_t i=0; i<K; ++i) {
-        const V bmm0(&b[i*V::Size]);
+        const V bmm0(&b[i*V::Size],false);
         matmul_inner_loop_unroller<0,M-1>::template fmadd_<M,K,T,typename V::abi_type>(i, a, bmm0, c_ij);
     }
     matmul_inner_loop_unroller<0,M-1>::template store_<M,T,typename V::abi_type>(c_ij, out);
@@ -747,12 +747,14 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
     constexpr size_t unrollOuterloop = 5UL;
     constexpr size_t M0 = M / unrollOuterloop * unrollOuterloop;
     // constexpr size_t remainder = M < unrollOuterloop ? 0 : M0-unrollOuterloop;
+    constexpr bool isBAligned = false;
+    constexpr bool isCAligned = false;
 
     size_t j=0;
     for (; j<M0; j+=unrollOuterloop) {
         V omm0, omm1, omm2, omm3, omm4;
         for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*N]);
+            const V bmm0(&b[i*N],isBAligned);
 
             const T amm0       = a[j*K+i];
             const T amm1       = a[(j+1)*K+i];
@@ -777,11 +779,11 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
             omm4  = fmadd(a_vec4,bmm0,omm4);
         }
 
-        omm0.store(&out[(j+0)*N],false);
-        omm1.store(&out[(j+1)*N],false);
-        omm2.store(&out[(j+2)*N],false);
-        omm3.store(&out[(j+3)*N],false);
-        omm4.store(&out[(j+4)*N],false);
+        omm0.store(&out[(j+0)*N],isCAligned);
+        omm1.store(&out[(j+1)*N],isCAligned);
+        omm2.store(&out[(j+2)*N],isCAligned);
+        omm3.store(&out[(j+3)*N],isCAligned);
+        omm4.store(&out[(j+4)*N],isCAligned);
     }
 
     // Remainder M-M0 rows
@@ -789,7 +791,7 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
     FASTOR_IF_CONSTEXPR (M-M0==4) {
         V omm0, omm1, omm2, omm3;
         for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*N]);
+            const V bmm0(&b[i*N],isBAligned);
 
             const T amm0       = a[j*K+i];
             const T amm1       = a[(j+1)*K+i];
@@ -810,16 +812,16 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
             omm3  = fmadd(a_vec3,bmm0,omm3);
         }
 
-        omm0.store(&out[(j+0)*N],false);
-        omm1.store(&out[(j+1)*N],false);
-        omm2.store(&out[(j+2)*N],false);
-        omm3.store(&out[(j+3)*N],false);
+        omm0.store(&out[(j+0)*N],isCAligned);
+        omm1.store(&out[(j+1)*N],isCAligned);
+        omm2.store(&out[(j+2)*N],isCAligned);
+        omm3.store(&out[(j+3)*N],isCAligned);
     }
 
     else FASTOR_IF_CONSTEXPR (M-M0==3) {
         V omm0, omm1, omm2;
         for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*N]);
+            const V bmm0(&b[i*N],isBAligned);
 
             const T amm0       = a[j*K+i];
             const T amm1       = a[(j+1)*K+i];
@@ -836,15 +838,15 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
             omm2  = fmadd(a_vec2,bmm0,omm2);
         }
 
-        omm0.store(&out[(j+0)*N],false);
-        omm1.store(&out[(j+1)*N],false);
-        omm2.store(&out[(j+2)*N],false);
+        omm0.store(&out[(j+0)*N],isCAligned);
+        omm1.store(&out[(j+1)*N],isCAligned);
+        omm2.store(&out[(j+2)*N],isCAligned);
     }
 
     else FASTOR_IF_CONSTEXPR (M-M0==2) {
         V omm0, omm1;
         for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*N]);
+            const V bmm0(&b[i*N],isBAligned);
 
             const T amm0       = a[j*K+i];
             const T amm1       = a[(j+1)*K+i];
@@ -857,14 +859,14 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
             omm1  = fmadd(a_vec1,bmm0,omm1);
         }
 
-        omm0.store(&out[(j+0)*N],false);
-        omm1.store(&out[(j+1)*N],false);
+        omm0.store(&out[(j+0)*N],isCAligned);
+        omm1.store(&out[(j+1)*N],isCAligned);
     }
 
     else FASTOR_IF_CONSTEXPR (M-M0==1) {
         V omm0;
         for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*N]);
+            const V bmm0(&b[i*N],isBAligned);
 
             const T amm0       = a[j*K+i];
 
@@ -873,7 +875,7 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
             omm0  = fmadd(a_vec0,bmm0,omm0);
         }
 
-        omm0.store(&out[(j+0)*N],false);
+        omm0.store(&out[(j+0)*N],isCAligned);
     }
 #if 0
     else {
