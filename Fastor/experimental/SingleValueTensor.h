@@ -4,8 +4,8 @@
 
 #include "Fastor/tensor/Tensor.h"
 #include "Fastor/tensor/TensorIO.h"
+#include "Fastor/tensor/TensorTraits.h"
 #include "Fastor/meta/tensor_meta.h"
-#include "Fastor/meta/tensor_post_meta.h"
 #include <limits>
 
 namespace Fastor {

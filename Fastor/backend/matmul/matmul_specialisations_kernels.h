@@ -14,6 +14,12 @@ template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<M==N && M==4 && std::is_same<T,double>::value,bool>::type = 0>
 FASTOR_INLINE
 void _matmul4k4_double(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out);
+
+template<typename T, size_t M, size_t K, size_t N,
+    typename std::enable_if<M==N && M==8 && std::is_same<T,double>::value,bool>::type = 0 >
+FASTOR_INLINE
+void _matmul8k8_double(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out);
+
 } // internal
 //-----------------------------------------------------------------------------------------------------------
 
@@ -276,23 +282,25 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<M!=K && M==N && M==8 && std::is_same<T,double>::value,bool>::type = 0>
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+#ifdef FASTOR_AVX512_IMPL
+    FASTOR_IF_CONSTEXPR(K<=64)
+        internal::_matmul8k8_double<T,M,K,N>(a,b,out);
+    else
+        internal::_matmul_mk_smalln<T,M,K,N>(a,b,out);
+#else
     internal::_matmul_mk_smalln<T,M,K,N>(a,b,out);
+#endif
 }
 
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<M!=K && M==N && M==8 && std::is_same<T,float>::value,bool>::type = 0>
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 #ifdef FASTOR_AVX_IMPL
-template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<M!=K && M==N && M==8 && std::is_same<T,float>::value,bool>::type = 0>
-void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
     internal::_matmul8k8_float<T,M,K,N>(a,b,out);
-    return;
-}
 #else
-template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<M!=K && M==N && M==8 && std::is_same<T,float>::value,bool>::type = 0>
-void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
     internal::_matmul_base<T,M,K,N>(a,b,out);
-}
 #endif
+}
 
 
 
@@ -537,7 +545,7 @@ void _matmul8k8_float(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, 
     _mm256_store_ps(&out[56],out_row7);
 }
 
-}
+} // internal
 
 template<>
 FASTOR_INLINE void _matmul<float,8,8,8>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
@@ -545,6 +553,73 @@ FASTOR_INLINE void _matmul<float,8,8,8>(const float * FASTOR_RESTRICT a, const f
     return;
 }
 
+#endif
+
+
+#ifdef FASTOR_AVX512_IMPL
+
+namespace internal {
+
+template<typename T, size_t M, size_t K, size_t N,
+    typename std::enable_if<M==N && M==8 && std::is_same<T,double>::value,bool>::type>
+FASTOR_INLINE
+void _matmul8k8_double(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+
+    __m512d out_row0 = _mm512_setzero_pd();
+    __m512d out_row1 = _mm512_setzero_pd();
+    __m512d out_row2 = _mm512_setzero_pd();
+    __m512d out_row3 = _mm512_setzero_pd();
+    __m512d out_row4 = _mm512_setzero_pd();
+    __m512d out_row5 = _mm512_setzero_pd();
+    __m512d out_row6 = _mm512_setzero_pd();
+    __m512d out_row7 = _mm512_setzero_pd();
+
+    for (size_t i=0; i<K; ++i) {
+        __m512d brow = _mm512_loadu_pd(&b[i*8]);
+
+        // row 0
+        __m512d a_vec0 = _mm512_set1_pd(a[i]);
+        out_row0 = _mm512_fmadd_pd(a_vec0,brow,out_row0);
+        // row 1
+        __m512d a_vec1 = _mm512_set1_pd(a[K+i]);
+        out_row1 = _mm512_fmadd_pd(a_vec1,brow,out_row1);
+        // row 2
+        __m512d a_vec2 = _mm512_set1_pd(a[2*K+i]);
+        out_row2 = _mm512_fmadd_pd(a_vec2,brow,out_row2);
+        // row 3
+        __m512d a_vec3 = _mm512_set1_pd(a[3*K+i]);
+        out_row3 = _mm512_fmadd_pd(a_vec3,brow,out_row3);
+        // row 4
+        __m512d a_vec4 = _mm512_set1_pd(a[4*K+i]);
+        out_row4 = _mm512_fmadd_pd(a_vec4,brow,out_row4);
+        // row 5
+        __m512d a_vec5 = _mm512_set1_pd(a[5*K+i]);
+        out_row5 = _mm512_fmadd_pd(a_vec5,brow,out_row5);
+        // row 6
+        __m512d a_vec6 = _mm512_set1_pd(a[6*K+i]);
+        out_row6 = _mm512_fmadd_pd(a_vec6,brow,out_row6);
+        // row 7
+        __m512d a_vec7 = _mm512_set1_pd(a[7*K+i]);
+        out_row7 = _mm512_fmadd_pd(a_vec7,brow,out_row7);
+    }
+    _mm512_storeu_pd(out,out_row0);
+    _mm512_storeu_pd(&out[8],out_row1);
+    _mm512_storeu_pd(&out[16],out_row2);
+    _mm512_storeu_pd(&out[24],out_row3);
+    _mm512_storeu_pd(&out[32],out_row4);
+    _mm512_storeu_pd(&out[40],out_row5);
+    _mm512_storeu_pd(&out[48],out_row6);
+    _mm512_storeu_pd(&out[56],out_row7);
+}
+
+} // internal
+
+
+template<>
+FASTOR_INLINE void _matmul<double,8,8,8>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
+    internal::_matmul8k8_double<double,8,8,8>(a,b,out);
+    return;
+}
 
 #endif
 
