@@ -47,6 +47,10 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
     int maska[V::Size];
     std::fill(maska,&maska[V::Size], -1);
     for (size_t jj=0; jj < V::Size - (N-N1); ++jj) maska[jj] = 0;
+#ifdef FASTOR_HAS_AVX512_MASKS
+    const auto mask = array_to_mask(maska);
+    V bmm1;
+#endif
 
     size_t j=0;
     for (; j<M0; j+=unrollOuterloop) {
@@ -54,7 +58,11 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
         V omm0, omm1, omm2, omm3, omm4, omm5, omm6, omm7, omm8, omm9;
         for (size_t i=0; i<K; ++i) {
             const V bmm0(&b[i*N], false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm1.mask_load(&b[i*N+V::Size],mask,false);
+#else
             const V bmm1(maskload<V>(&b[i*N+V::Size],maska));
+#endif
 
             const T amm0       = a[from*K+i];
             const T amm1       = a[(from+1)*K+i];
@@ -93,7 +101,11 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
         omm6.store(&out[(from+3)*N],false);
         omm7.store(&out[(from+3)*N+V::Size],false);
         omm8.store(&out[(from+4)*N],false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+        omm9.mask_store(&out[(from+4)*N+V::Size],mask,false);
+#else
         maskstore(&out[(from+4)*N+V::Size],maska,omm9);
+#endif
     }
 
     // Remainder M-M0 rows
@@ -103,7 +115,11 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
         V omm0, omm1, omm2, omm3, omm4, omm5, omm6, omm7;
         for (size_t i=0; i<K; ++i) {
             const V bmm0(&b[i*N], false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm1.mask_load(&b[i*N+V::Size],mask,false);
+#else
             const V bmm1(maskload<V>(&b[i*N+V::Size],maska));
+#endif
 
             const T amm0       = a[from*K+i];
             const T amm1       = a[(from+1)*K+i];
@@ -135,7 +151,11 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
         omm4.store(&out[(from+2)*N],false);
         omm5.store(&out[(from+2)*N+V::Size],false);
         omm6.store(&out[(from+3)*N],false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+        omm7.mask_store(&out[(from+3)*N+V::Size],mask,false);
+#else
         maskstore(&out[(from+3)*N+V::Size],maska,omm7);
+#endif
     }
 
     else FASTOR_IF_CONSTEXPR (M-M0==3) {
@@ -143,7 +163,11 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
         constexpr size_t from = M0;
         for (size_t i=0; i<K; ++i) {
             const V bmm0(&b[i*N], false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm1.mask_load(&b[i*N+V::Size],mask,false);
+#else
             const V bmm1(maskload<V>(&b[i*N+V::Size],maska));
+#endif
 
             const T amm0       = a[from*K+i];
             const T amm1       = a[(from+1)*K+i];
@@ -168,7 +192,11 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
         omm2.store(&out[(from+1)*N],false);
         omm3.store(&out[(from+1)*N+V::Size],false);
         omm4.store(&out[(from+2)*N],false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+        omm5.mask_store(&out[(from+2)*N+V::Size],mask,false);
+#else
         maskstore(&out[(from+2)*N+V::Size],maska,omm5);
+#endif
     }
 
     else FASTOR_IF_CONSTEXPR (M-M0==2) {
@@ -176,7 +204,11 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
         constexpr size_t from = M0;
         for (size_t i=0; i<K; ++i) {
             const V bmm0(&b[i*N], false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm1.mask_load(&b[i*N+V::Size],mask,false);
+#else
             const V bmm1(maskload<V>(&b[i*N+V::Size],maska));
+#endif
 
             const T amm0       = a[from*K+i];
             const T amm1       = a[(from+1)*K+i];
@@ -194,7 +226,11 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
         omm0.store(&out[from*N],false);
         omm1.store(&out[from*N+V::Size],false);
         omm2.store(&out[(from+1)*N],false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+        omm3.mask_store(&out[(from+1)*N+V::Size],mask,false);
+#else
         maskstore(&out[(from+1)*N+V::Size],maska,omm3);
+#endif
     }
 
     else FASTOR_IF_CONSTEXPR (M-M0==1) {
@@ -202,7 +238,11 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
         constexpr size_t from = M0;
         for (size_t i=0; i<K; ++i) {
             const V bmm0(&b[i*N], false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm1.mask_load(&b[i*N+V::Size],mask,false);
+#else
             const V bmm1(maskload<V>(&b[i*N+V::Size],maska));
+#endif
 
             const T amm0       = a[from*K+i];
 
@@ -213,7 +253,11 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
         }
 
         omm0.store(&out[from*N],false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+        omm1.mask_store(&out[from*N+V::Size],mask,false);
+#else
         maskstore(&out[from*N+V::Size],maska,omm1);
+#endif
     }
 #if 0
     else {
