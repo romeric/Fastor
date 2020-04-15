@@ -55,7 +55,7 @@ void run() {
     int64_t saved_cycles = int64_t((double)cycles_scalar/(double)(NITER) - (double)cycles_fastor/(double)(NITER));
     auto &&w = std::fixed;
     println(FBLU(BOLD("Matrices size (M, K, N)")), M, K, N);
-    println(FGRN(BOLD("Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor,
+    println(FGRN(BOLD(" Speed-up over scalar code [elapsed time]")), time_scalar/time_fastor,
         FGRN(BOLD("[saved CPU cycles]")), saved_cycles);
     print();
 
