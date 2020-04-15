@@ -40,9 +40,10 @@ void interior_block_matmul_impl(
                 const V amm0 = a[(i+ii*unrollOuterloop+n)*K+k];
 
                 c_ij[n]                    = fmadd(amm0,bmm0,c_ij[n]);
-
-                c_ij[n].store(&c[(i+ii*unrollOuterloop+n)*N+j],false);
             }
+        }
+        for (size_t n = 0; n < unrollOuterloop; ++n) {
+            c_ij[n].store(&c[(i+ii*unrollOuterloop+n)*N+j],false);
         }
     }
 }
@@ -69,10 +70,11 @@ void interior_block_matmul_impl(
 
                 c_ij[n]                    = fmadd(amm0,bmm0,c_ij[n]);
                 c_ij[n+unrollOuterloop]    = fmadd(amm0,bmm1,c_ij[n+unrollOuterloop]);
-
-                c_ij[n].store(&c[(i+ii*unrollOuterloop+n)*N+j],false);
-                c_ij[n+unrollOuterloop].store(&c[(i+ii*unrollOuterloop+n)*N+j+V::Size],false);
             }
+        }
+        for (size_t n = 0; n < unrollOuterloop; ++n) {
+            c_ij[n].store(&c[(i+ii*unrollOuterloop+n)*N+j],false);
+            c_ij[n+unrollOuterloop].store(&c[(i+ii*unrollOuterloop+n)*N+j+V::Size],false);
         }
     }
 }
@@ -102,11 +104,12 @@ void interior_block_matmul_impl(
                 c_ij[n]                    = fmadd(amm0,bmm0,c_ij[n]);
                 c_ij[n+unrollOuterloop]    = fmadd(amm0,bmm1,c_ij[n+unrollOuterloop]);
                 c_ij[n+2*unrollOuterloop]  = fmadd(amm0,bmm2,c_ij[n+2*unrollOuterloop]);
-
-                c_ij[n].store(&c[(i+ii*unrollOuterloop+n)*N+j],false);
-                c_ij[n+unrollOuterloop].store(&c[(i+ii*unrollOuterloop+n)*N+j+V::Size],false);
-                c_ij[n+2*unrollOuterloop].store(&c[(i+ii*unrollOuterloop+n)*N+j+2*V::Size],false);
             }
+        }
+        for (size_t n = 0; n < unrollOuterloop; ++n) {
+            c_ij[n].store(&c[(i+ii*unrollOuterloop+n)*N+j],false);
+            c_ij[n+unrollOuterloop].store(&c[(i+ii*unrollOuterloop+n)*N+j+V::Size],false);
+            c_ij[n+2*unrollOuterloop].store(&c[(i+ii*unrollOuterloop+n)*N+j+2*V::Size],false);
         }
     }
 }
@@ -138,12 +141,13 @@ void interior_block_matmul_impl(
                 c_ij[n+unrollOuterloop]    = fmadd(amm0,bmm1,c_ij[n+unrollOuterloop]);
                 c_ij[n+2*unrollOuterloop]  = fmadd(amm0,bmm2,c_ij[n+2*unrollOuterloop]);
                 c_ij[n+3*unrollOuterloop]  = fmadd(amm0,bmm3,c_ij[n+3*unrollOuterloop]);
-
-                c_ij[n].store(&c[(i+ii*unrollOuterloop+n)*N+j],false);
-                c_ij[n+unrollOuterloop].store(&c[(i+ii*unrollOuterloop+n)*N+j+V::Size],false);
-                c_ij[n+2*unrollOuterloop].store(&c[(i+ii*unrollOuterloop+n)*N+j+2*V::Size],false);
-                c_ij[n+3*unrollOuterloop].store(&c[(i+ii*unrollOuterloop+n)*N+j+3*V::Size],false);
             }
+        }
+        for (size_t n = 0; n < unrollOuterloop; ++n) {
+            c_ij[n].store(&c[(i+ii*unrollOuterloop+n)*N+j],false);
+            c_ij[n+unrollOuterloop].store(&c[(i+ii*unrollOuterloop+n)*N+j+V::Size],false);
+            c_ij[n+2*unrollOuterloop].store(&c[(i+ii*unrollOuterloop+n)*N+j+2*V::Size],false);
+            c_ij[n+3*unrollOuterloop].store(&c[(i+ii*unrollOuterloop+n)*N+j+3*V::Size],false);
         }
     }
 }
@@ -167,9 +171,10 @@ void interior_block_matmul_scalar_impl(
                 const T amm0 = a[(i+ii*unrollOuterloop+n)*K+k];
 
                 c_ij[n]                                  += amm0*bmm0;
-
-                c[(i+ii*unrollOuterloop+n)*N+j]           = c_ij[n];
             }
+        }
+        for (size_t n = 0; n < unrollOuterloop; ++n) {
+            c[(i+ii*unrollOuterloop+n)*N+j]           = c_ij[n];
         }
     }
 }
@@ -180,7 +185,7 @@ template<typename T, typename V, size_t M, size_t K, size_t N, size_t unrollOute
 FASTOR_INLINE
 void interior_block_matmul_mask_impl(
     const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c,
-    const size_t i, const size_t j, int (&maska)[V::Size]) {
+    const size_t i, const size_t j, const int (&maska)[V::Size]) {
 
     for (size_t ii = 0; ii < numSIMDRows; ++ii) {
 
@@ -195,9 +200,41 @@ void interior_block_matmul_mask_impl(
                 const V amm0 = a[(i+ii*unrollOuterloop+n)*K+k];
 
                 c_ij[n]                    = fmadd(amm0,bmm0,c_ij[n]);
-
-                maskstore(&c[(i+ii*unrollOuterloop+n)*N+j],maska,c_ij[n]);
             }
+        }
+        for (size_t n = 0; n < unrollOuterloop; ++n) {
+            maskstore(&c[(i+ii*unrollOuterloop+n)*N+j],maska,c_ij[n]);
+        }
+    }
+}
+
+
+template<typename T, typename MaskT, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
+    typename std::enable_if<numSIMDCols==1,bool>::type = false>
+FASTOR_INLINE
+void interior_block_matmul_mask_impl(
+    const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c,
+    const size_t i, const size_t j, const MaskT mask) {
+
+    V bmm0;
+    for (size_t ii = 0; ii < numSIMDRows; ++ii) {
+
+        V c_ij[unrollOuterloop*numSIMDCols];
+        // Loop over columns of a (rows of b)
+        for (size_t k = 0; k < K; ++k) {
+
+            bmm0.mask_load(&b[k*N+j],mask,false);
+
+            for (size_t n = 0; n < unrollOuterloop; ++n) {
+
+                const V amm0 = a[(i+ii*unrollOuterloop+n)*K+k];
+
+                c_ij[n]                    = fmadd(amm0,bmm0,c_ij[n]);
+            }
+        }
+
+        for (size_t n = 0; n < unrollOuterloop; ++n) {
+            c_ij[n].mask_store(&c[(i+ii*unrollOuterloop+n)*N+j],mask,false);
         }
     }
 }
@@ -287,9 +324,11 @@ void _matmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * 
             V c_ij[unrollOuterloop];
             for (size_t k = 0; k < K; ++k) {
                 for (size_t n = 0; n < unrollOuterloop; ++n) {
-                    c_ij[n] += a[(i + n)*K+k] * V(&b[k*N+j],false);
-                    c_ij[n].store(&c[(i + n)*N+j],false);
+                    c_ij[n] = fmadd(V(a[(i + n)*K+k]), V(&b[k*N+j],false), c_ij[n]);
                 }
+            }
+            for (size_t n = 0; n < unrollOuterloop; ++n) {
+                c_ij[n].store(&c[(i + n)*N+j],false);
             }
         }
 
@@ -299,8 +338,10 @@ void _matmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * 
             for (size_t k = 0; k < K; ++k) {
                 for (size_t n = 0; n < unrollOuterloop; ++n) {
                     c_ij[n] += a[(i + n)*K+k] * b[k*N+j];
-                    c[(i + n)*N+j] = c_ij[n];
                 }
+            }
+            for (size_t n = 0; n < unrollOuterloop; ++n) {
+                c[(i + n)*N+j] = c_ij[n];
             }
         }
     }
@@ -324,9 +365,12 @@ void _matmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * 
             V c_ij[MM1];
             for (size_t k = 0; k < K; ++k) {
                 for (size_t n = M1; n < M; ++n) {
-                    c_ij[n-M1] += a[n*K+k] * V(&b[k*N+j],false);
+                    c_ij[n-M1] = fmadd(V(a[n*K+k]), V(&b[k*N+j],false), c_ij[n-M1]);
                     c_ij[n-M1].store(&c[n*N+j],false);
                 }
+            }
+            for (size_t n = M1; n < M; ++n) {
+                c_ij[n-M1].store(&c[n*N+j],false);
             }
         }
 
@@ -338,6 +382,9 @@ void _matmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * 
                     c_ij[n-M1] += a[n*K+k] * b[k*N+j];
                     c[n*N+j] = c_ij[n-M1];
                 }
+            }
+            for (size_t n = M1; n < M; ++n) {
+                c[n*N+j] = c_ij[n-M1];
             }
         }
     }
@@ -400,6 +447,9 @@ void _matmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT 
     int maska[V::Size];
     std::fill(maska,&maska[V::Size], -1);
     for (size_t jj=0; jj < V::Size - (N-N1); ++jj) maska[jj] = 0;
+#ifdef FASTOR_HAS_AVX512_MASKS
+    const auto mask = array_to_mask(maska);
+#endif
 
     size_t i = 0;
     for (; i < M0; i += unrollOuterBlock) {
@@ -415,7 +465,11 @@ void _matmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT 
 
         // Remaining N - N1 columns
         for (; j < N; j+= N-N1) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+            interior_block_matmul_mask_impl<T,decltype(mask),V,M,K,N,unrollOuterloop,numSIMDRows,1>(a,b,c,i,j,mask);
+#else
             interior_block_matmul_mask_impl<T,V,M,K,N,unrollOuterloop,numSIMDRows,1>(a,b,c,i,j,maska);
+#endif
         }
     }
 
@@ -435,9 +489,11 @@ void _matmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT 
             V c_ij[unrollOuterloop];
             for (size_t k = 0; k < K; ++k) {
                 for (size_t n = 0; n < unrollOuterloop; ++n) {
-                    c_ij[n] += a[(i + n)*K+k] * V(&b[k*N+j],false);
-                    c_ij[n].store(&c[(i + n)*N+j],false);
+                    c_ij[n] = fmadd(V(a[(i + n)*K+k]), V(&b[k*N+j],false), c_ij[n]);
                 }
+            }
+            for (size_t n = 0; n < unrollOuterloop; ++n) {
+                c_ij[n].store(&c[(i + n)*N+j],false);
             }
         }
 
@@ -446,11 +502,21 @@ void _matmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT 
             V c_ij[unrollOuterloop] = {};
             for (size_t k = 0; k < K; ++k) {
                 for (size_t n = 0; n < unrollOuterloop; ++n) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+                    V bmm0; bmm0.mask_load(&b[k*N+j],mask);
+#else
                     const V bmm0(maskload<V>(&b[k*N+j],maska));
+#endif
                     const V amm0 = a[(i + n)*K+k];
                     c_ij[n] = fmadd(amm0,bmm0,c_ij[n]);
-                    maskstore(&c[(i+n)*N+j],maska,c_ij[n]);
                 }
+            }
+            for (size_t n = 0; n < unrollOuterloop; ++n) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+                c_ij[n].mask_store(&c[(i+n)*N+j],mask,false);
+#else
+                maskstore(&c[(i+n)*N+j],maska,c_ij[n]);
+#endif
             }
         }
     }
@@ -474,9 +540,12 @@ void _matmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT 
             V c_ij[MM1];
             for (size_t k = 0; k < K; ++k) {
                 for (size_t n = M1; n < M; ++n) {
-                    c_ij[n-M1] += a[n*K+k] * V(&b[k*N+j],false);
+                    c_ij[n-M1] = fmadd(V(a[n*K+k]), V(&b[k*N+j],false), c_ij[n-M1]);
                     c_ij[n-M1].store(&c[n*N+j],false);
                 }
+            }
+            for (size_t n = M1; n < M; ++n) {
+                c_ij[n-M1].store(&c[n*N+j],false);
             }
         }
 
@@ -485,11 +554,21 @@ void _matmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT 
             V c_ij[MM1] = {};
             for (size_t k = 0; k < K; ++k) {
                 for (size_t n = M1; n < M; ++n) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+                    V bmm0; bmm0.mask_load(&b[k*N+j],mask);
+#else
                     const V bmm0(maskload<V>(&b[k*N+j],maska));
+#endif
                     const V amm0 = a[n*K+k];
                     c_ij[n-M1] = fmadd(amm0,bmm0,c_ij[n-M1]);
-                    maskstore(&c[n*N+j],maska,c_ij[n-M1]);
                 }
+            }
+            for (size_t n = M1; n < M; ++n) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+                c_ij[n-M1].mask_store(&c[n*N+j],mask,false);
+#else
+                maskstore(&c[n*N+j],maska,c_ij[n-M1]);
+#endif
             }
         }
     }

@@ -42,8 +42,8 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
         return;
     }
 
-    // using nativeV = SIMDVector<T,DEFAULT_ABI>;
-    using V = choose_best_simd_t<SIMDVector<T,DEFAULT_ABI>,N>;
+    using nativeV = SIMDVector<T,DEFAULT_ABI>;
+    using V = choose_best_simd_t<nativeV,N>;
 
     // Use specialised kernels
     FASTOR_IF_CONSTEXPR((N==V::Size || N==2*V::Size || N==3*V::Size || N==4*V::Size || N==5*V::Size) && V::Size!=1UL) {
@@ -51,22 +51,14 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
         return;
     }
 
-#if defined(FASTOR_AVX2_IMPL) && !defined(FASTOR_AVX512_IMPL)
-    // Works for AVX512. Only maskload/maskstore should be overloaded or ifdefed
-    // to use mask_load/mask_store of avx512
-    FASTOR_IF_CONSTEXPR((N<4*V::Size && N!=1UL)) {
+#if defined(FASTOR_AVX2_IMPL) || defined(FASTOR_HAS_AVX512_MASKS)
+    FASTOR_IF_CONSTEXPR((N<5*V::Size && N!=1UL)) {
         internal::_matmul_mk_smalln<T,M,K,N>(a,b,out);
         return;
     }
 #endif
 
-    // This is the correct logic for the time being as in
-    // when AVX is available we want maskloads and when
-    // avx512 is available we don't since maskload/maskstores
-    // are not available for avx512 only mask_load/stores are
-    // available yet
-#if defined(FASTOR_AVX2_IMPL) && !defined(FASTOR_AVX512_IMPL)
-    // If the remainder is 1, just treat the remainders in scalar mode
+#if defined(FASTOR_AVX2_IMPL) || defined(FASTOR_HAS_AVX512_MASKS)
     FASTOR_IF_CONSTEXPR( M*N*K > 27UL && N % V::Size <= 1UL) {
         internal::_matmul_base<T,M,K,N>(a,b,out);
         return;
