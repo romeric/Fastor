@@ -73,6 +73,45 @@ struct SIMDVector<Int64,simd_abi::avx> {
     FASTOR_INLINE Int64 operator[](FASTOR_INDEX i) const {return reinterpret_cast<const Int64*>(&value)[i];}
     FASTOR_INLINE Int64 operator()(FASTOR_INDEX i) const {return reinterpret_cast<const Int64*>(&value)[i];}
 
+    FASTOR_INLINE void mask_load(const scalar_value_type *a, uint8_t mask, bool Aligned=false) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+        if (!Aligned)
+            value = _mm256_mask_loadu_epi64(value, mask, a);
+        else
+            value = _mm256_mask_load_epi64(value, mask, a);
+#else
+        // perhaps very inefficient but they never get used
+        int maska[Size];
+        mask_to_array(mask,maska);
+        value = _mm256_setzero_si256();
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            if (maska[i] == -1) {
+                ((scalar_value_type*)&value)[Size - i - 1] = a[Size - i - 1];
+            }
+        }
+#endif
+    }
+    FASTOR_INLINE void mask_store(scalar_value_type *a, uint8_t mask, bool Aligned=false) const {
+#ifdef FASTOR_HAS_AVX512_MASKS
+        if (!Aligned)
+            _mm256_mask_storeu_epi64(a, mask, value);
+        else
+            _mm256_mask_store_epi64(a, mask, value);
+#else
+        // perhaps very inefficient but they never get used
+        int maska[Size];
+        mask_to_array(mask,maska);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            if (maska[i] == -1) {
+                a[Size - i - 1] = ((const scalar_value_type*)&value)[Size - i - 1];
+            }
+            else {
+                a[Size - i - 1] = 0;
+            }
+        }
+#endif
+    }
+
     FASTOR_INLINE void set(Int64 num) {
         value = _mm256_set1_epi64x(num);
     }
@@ -351,6 +390,45 @@ struct SIMDVector<Int64,simd_abi::sse> {
         _mm_store_si128((__m128i*)data,value);
     }
 
+    FASTOR_INLINE void mask_load(const scalar_value_type *a, uint8_t mask, bool Aligned=false) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+        if (!Aligned)
+            value = _mm_mask_loadu_epi64(value, mask, a);
+        else
+            value = _mm_mask_load_epi64(value, mask, a);
+#else
+        // perhaps very inefficient but they never get used
+        int maska[Size];
+        mask_to_array(mask,maska);
+        value = _mm_setzero_si128();
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            if (maska[i] == -1) {
+                ((scalar_value_type*)&value)[Size - i - 1] = a[Size - i - 1];
+            }
+        }
+#endif
+    }
+    FASTOR_INLINE void mask_store(scalar_value_type *a, uint8_t mask, bool Aligned=false) const {
+#ifdef FASTOR_HAS_AVX512_MASKS
+        if (!Aligned)
+            _mm_mask_storeu_epi64(a, mask, value);
+        else
+            _mm_mask_store_epi64(a, mask, value);
+#else
+        // perhaps very inefficient but they never get used
+        int maska[Size];
+        mask_to_array(mask,maska);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            if (maska[i] == -1) {
+                a[Size - i - 1] = ((const scalar_value_type*)&value)[Size - i - 1];
+            }
+            else {
+                a[Size - i - 1] = 0;
+            }
+        }
+#endif
+    }
+
     FASTOR_INLINE Int64 operator[](FASTOR_INDEX i) const {return reinterpret_cast<const Int64*>(&value)[i];}
     FASTOR_INLINE Int64 operator()(FASTOR_INDEX i) const {return reinterpret_cast<const Int64*>(&value)[i];}
 
@@ -615,6 +693,13 @@ struct SIMDVector<Int64, simd_abi::scalar> {
     }
     FASTOR_INLINE void aligned_store(Int64 *data) const {
         data[0] = value;
+    }
+
+    FASTOR_INLINE void mask_load(const scalar_value_type *a, uint8_t mask, bool ) {
+        if (mask != 0x0) value = *a;
+    }
+    FASTOR_INLINE void mask_store(scalar_value_type *a, uint8_t mask, bool) const {
+        if (mask != 0x0) a[0] = value;
     }
 
     FASTOR_INLINE Int64 operator[](FASTOR_INDEX) const {return value;}

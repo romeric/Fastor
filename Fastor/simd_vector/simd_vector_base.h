@@ -74,6 +74,31 @@ struct SIMDVector {
         std::copy(value,value+Size,data);
     }
 
+    FASTOR_INLINE void mask_load(const scalar_value_type *a, uint8_t mask, bool ) {
+        // perhaps very inefficient but they never get used
+        int maska[Size];
+        mask_to_array(mask,maska);
+        std::fill(value, value+Size, 0.);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            if (maska[i] == -1) {
+                ((scalar_value_type*)&value)[Size - i - 1] = a[Size - i - 1];
+            }
+        }
+    }
+    FASTOR_INLINE void mask_store(scalar_value_type *a, uint8_t mask, bool ) const {
+        // perhaps very inefficient but they never get used
+        int maska[Size];
+        mask_to_array(mask,maska);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            if (maska[i] == -1) {
+                a[Size - i - 1] = ((const scalar_value_type*)&value)[Size - i - 1];
+            }
+            else {
+                a[Size - i - 1] = 0;
+            }
+        }
+    }
+
     FASTOR_INLINE T operator[](FASTOR_INDEX i) const {return value[i];}
     FASTOR_INLINE T operator()(FASTOR_INDEX i) const {return value[i];}
 

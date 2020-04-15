@@ -50,6 +50,13 @@ struct SIMDVector<T, simd_abi::scalar> {
         data[0] = value;
     }
 
+    FASTOR_INLINE void mask_load(const scalar_value_type *a, uint8_t mask, bool ) {
+        if (mask != 0x0) value = *a;
+    }
+    FASTOR_INLINE void mask_store(scalar_value_type *a, uint8_t mask, bool) const {
+        if (mask != 0x0) a[0] = value;
+    }
+
     FASTOR_INLINE T operator[](FASTOR_INDEX) const {return value;}
     FASTOR_INLINE T operator()(FASTOR_INDEX) const {return value;}
 

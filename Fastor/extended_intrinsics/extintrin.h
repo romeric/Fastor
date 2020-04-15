@@ -2,6 +2,7 @@
 #define EXT_INTRIN_H
 
 #include "Fastor/commons/commons.h"
+#include "Fastor/meta/meta.h"
 #include <cmath>
 
 
@@ -813,6 +814,98 @@ FASTOR_INLINE double sqrts<>(double a) {return _mm_cvtsd_f64(_mm_sqrt_pd(_mm_set
 #endif
 
 #endif
+
+
+
+// helper functions for going from array to mask and vice-versa
+// used when AVX512 masking is available
+template <size_t N, enable_if_t_<N==2 || N==4 || N==8,bool> = false>
+uint8_t array_to_mask(const int (&b)[N])
+{
+    uint8_t c = 0;
+    for (int i=0; i < N; ++i) {
+        if (b[i] == -1) {
+            c |= 1 << (N - i - 1);
+        }
+    }
+    return c;
+}
+template <size_t N, enable_if_t_<N==16,bool> = false>
+uint16_t array_to_mask(const int (&b)[N])
+{
+    uint16_t c = 0;
+    for (int i=0; i < N; ++i) {
+        if (b[i] == -1) {
+            c |= 1 << (N - i - 1);
+        }
+    }
+    return c;
+}
+template <size_t N, enable_if_t_<N==32,bool> = false>
+uint32_t array_to_mask(const int (&b)[N])
+{
+    uint32_t c = 0;
+    for (int i=0; i < N; ++i) {
+        if (b[i] == -1) {
+            c |= 1 << (N - i - 1);
+        }
+    }
+    return c;
+}
+template <size_t N, enable_if_t_<N==64,bool> = false>
+uint64_t array_to_mask(const int (&b)[N])
+{
+    uint64_t c = 0;
+    for (int i=0; i < N; ++i) {
+        if (b[i] == -1) {
+            c |= 1 << (N - i - 1);
+        }
+    }
+    return c;
+}
+
+
+template <size_t N, enable_if_t_<N==2 || N==4 || N==8,bool> = false>
+void mask_to_array(uint8_t c, int (&b)[N])
+{
+    for (int i=0; i < N; ++i)
+        b[i] = (c & (1 << (N - i -1))) != 0;
+
+    // set bits need to be -1 not 1
+    for (int i=0; i < N; ++i)
+        b[i] *= -1;
+}
+template <size_t N, enable_if_t_<N==16,bool> = false>
+void mask_to_array(uint16_t c, int (&b)[N])
+{
+    for (int i=0; i < N; ++i)
+        b[i] = (c & (1 << (N - i -1))) != 0;
+
+    // set bits need to be -1 not 1
+    for (int i=0; i < N; ++i)
+        b[i] *= -1;
+}
+template <size_t N, enable_if_t_<N==32,bool> = false>
+void mask_to_array(uint32_t c, int (&b)[N])
+{
+    for (int i=0; i < N; ++i)
+        b[i] = (c & (1 << (N - i -1))) != 0;
+
+    // set bits need to be -1 not 1
+    for (int i=0; i < N; ++i)
+        b[i] *= -1;
+}
+template <size_t N, enable_if_t_<N==64,bool> = false>
+void mask_to_array(uint64_t c, int (&b)[N])
+{
+    for (int i=0; i < N; ++i)
+        b[i] = (c & (1 << (N - i -1))) != 0;
+
+    // set bits need to be -1 not 1
+    for (int i=0; i < N; ++i)
+        b[i] *= -1;
+}
+
 
 
 
