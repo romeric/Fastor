@@ -11,53 +11,54 @@ namespace Fastor {
 // Create assign for BinarymulOp and BinaryDivOp
 #define FASTOR_MAKE_BINARY_ARITHMETIC_ASSIGNMENT_1(NAME, ASSIGN_TYPE, OP_ASSIGN_TYPE)\
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,\
-    enable_if_t_<!is_arithmetic_v_<TLhs> && !is_arithmetic_v_<TRhs>, bool> = false >\
+    enable_if_t_<!is_arithmetic_v_<TLhs> && !is_arithmetic_v_<TRhs> && !(requires_evaluation_v<TLhs> || requires_evaluation_v<TRhs>), bool> = false >\
 FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const Binary ##NAME ## Op<TLhs, TRhs, OtherDIM> &src) {\
-    FASTOR_IF_CONSTEXPR (!(requires_evaluation_v<TLhs> || requires_evaluation_v<TRhs>)) {\
-        trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
-    }\
-    else {\
-        assign ##ASSIGN_TYPE (dst.self(), src.lhs().self());\
-        assign ##OP_ASSIGN_TYPE (dst.self(), src.rhs().self());\
-    }\
+    trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
 }\
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,\
-    enable_if_t_<is_arithmetic_v_<TLhs> && !is_arithmetic_v_<TRhs>, bool> = false>\
+    enable_if_t_<!is_arithmetic_v_<TLhs> && !is_arithmetic_v_<TRhs> && (requires_evaluation_v<TLhs> || requires_evaluation_v<TRhs>), bool> = false >\
 FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const Binary ##NAME ## Op<TLhs, TRhs, OtherDIM> &src) {\
-    FASTOR_IF_CONSTEXPR (!requires_evaluation_v<TRhs>) {\
-        trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
-    }\
-    else {\
-        assign ##ASSIGN_TYPE (dst.self(), src.lhs());\
-        assign  ##OP_ASSIGN_TYPE (dst.self(), src.rhs().self());\
-    }\
+    assign ##ASSIGN_TYPE (dst.self(), src.lhs().self());\
+    assign ##OP_ASSIGN_TYPE (dst.self(), src.rhs().self());\
 }\
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,\
-    enable_if_t_<!is_arithmetic_v_<TLhs> && is_arithmetic_v_<TRhs>, bool> = false>\
+    enable_if_t_<is_arithmetic_v_<TLhs> && !is_arithmetic_v_<TRhs> && !requires_evaluation_v<TRhs>, bool> = false>\
 FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const Binary ##NAME ## Op<TLhs, TRhs, OtherDIM> &src) {\
-    FASTOR_IF_CONSTEXPR (!requires_evaluation_v<TLhs>) {\
-        trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
-    }\
-    else {\
-        assign ##ASSIGN_TYPE (dst.self(), src.lhs().self());\
-        assign  ##OP_ASSIGN_TYPE (dst.self(), src.rhs());\
-    }\
+    trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
+}\
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,\
+    enable_if_t_<is_arithmetic_v_<TLhs> && !is_arithmetic_v_<TRhs> && requires_evaluation_v<TRhs>, bool> = false>\
+FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const Binary ##NAME ## Op<TLhs, TRhs, OtherDIM> &src) {\
+    assign ##ASSIGN_TYPE (dst.self(), src.lhs());\
+    assign  ##OP_ASSIGN_TYPE (dst.self(), src.rhs().self());\
+}\
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,\
+    enable_if_t_<!is_arithmetic_v_<TLhs> && is_arithmetic_v_<TRhs> && !requires_evaluation_v<TLhs>, bool> = false>\
+FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const Binary ##NAME ## Op<TLhs, TRhs, OtherDIM> &src) {\
+    trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
+}\
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,\
+    enable_if_t_<!is_arithmetic_v_<TLhs> && is_arithmetic_v_<TRhs> && requires_evaluation_v<TLhs>, bool> = false>\
+FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const Binary ##NAME ## Op<TLhs, TRhs, OtherDIM> &src) {\
+    assign ##ASSIGN_TYPE (dst.self(), src.lhs().self());\
+    assign  ##OP_ASSIGN_TYPE (dst.self(), src.rhs());\
 }\
 
 
 // Create assign_add, assign_sub for BinaryMulOp and BinaryDivOp
 // Create assign_mul, assign_div for all binary ops
 #define FASTOR_MAKE_BINARY_ARITHMETIC_ASSIGNMENT_2(NAME, ASSIGN_TYPE)\
-template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM>\
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,\
+    enable_if_t_<!(requires_evaluation_v<TLhs> || requires_evaluation_v<TRhs>),bool> = false>\
 FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const Binary ##NAME ## Op<TLhs, TRhs, OtherDIM> &src) {\
-    FASTOR_IF_CONSTEXPR (!(requires_evaluation_v<TLhs> || requires_evaluation_v<TRhs>)) {\
-        trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
-    }\
-    else {\
-        using result_type = typename Binary ##NAME ## Op<TLhs, TRhs, OtherDIM>::result_type;\
-        const result_type a(src.self());\
-        trivial_assign ##ASSIGN_TYPE (dst.self(), a);\
-    }\
+    trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
+}\
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,\
+    enable_if_t_<(requires_evaluation_v<TLhs> || requires_evaluation_v<TRhs>),bool> = false>\
+FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const Binary ##NAME ## Op<TLhs, TRhs, OtherDIM> &src) {\
+    using result_type = typename Binary ##NAME ## Op<TLhs, TRhs, OtherDIM>::result_type;\
+    const result_type a(src.self());\
+    trivial_assign ##ASSIGN_TYPE (dst.self(), a);\
 }\
 
 // assign

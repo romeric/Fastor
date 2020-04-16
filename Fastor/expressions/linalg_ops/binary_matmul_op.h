@@ -118,7 +118,7 @@ FASTOR_INLINE void matmul_dispatcher(const Tensor<T,J> &a, const Tensor<T,J,K> &
 }
 
 template<typename T, size_t I, size_t J, size_t K>
-FASTOR_INLINE void gemm_dispatcher(const T alpha, const Tensor<T,I,J> &a, const Tensor<T,J,K> &b, const T beta, Tensor<T,I,K> &out) {
+FASTOR_INLINE void matmul_dispatcher(const T alpha, const Tensor<T,I,J> &a, const Tensor<T,J,K> &b, const T beta, Tensor<T,I,K> &out) {
     _gemm<T,I,J,K>(alpha,a.data(),b.data(),beta,out.data());
 }
 template<typename T, size_t I, size_t J>
@@ -206,7 +206,8 @@ template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t Othe
                             is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
 FASTOR_INLINE void assign_add(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
     using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
-    internal::matmul_dispatcher((T)1,src.lhs().self(),src.rhs().self(),(T)1,dst.self());
+    // internal::matmul_dispatcher((T)1,src.lhs().self(),src.rhs().self(),(T)1,dst.self());
+    internal::matmul_dispatcher(1.,src.lhs().self(),src.rhs().self(),1.,dst.self());
 }
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
     typename std::enable_if<!is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
