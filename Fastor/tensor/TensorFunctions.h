@@ -70,10 +70,6 @@ FASTOR_INLINE Tensor<T,I,K> matmul(const Tensor<T,I,J> &a, const Tensor<T,J,K> &
 
 template<typename T, size_t I, size_t J>
 FASTOR_INLINE Tensor<T,I> matmul(const Tensor<T,I,J> &a, const Tensor<T,J> &b) {
-// Hack clang to get around alignment
-#if defined(__llvm__) || defined(__clang__)
-    unused(a);
-#endif
     Tensor<T,I> out;
     _matmul<T,I,J,1>(a.data(),b.data(),out.data());
     return out;

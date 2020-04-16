@@ -15,15 +15,22 @@ struct BinaryMatMulOp: public AbstractTensor<BinaryMatMulOp<TLhs, TRhs, DIM0>,DI
     using rhs_expr_type = expression_t<TRhs>;
     using lhs_type = typename TLhs::result_type;
     using rhs_type = typename TRhs::result_type;
-    static constexpr FASTOR_INDEX M = put_dims_in_Index<lhs_type>::type::_IndexHolder[0];
-    static constexpr FASTOR_INDEX K = put_dims_in_Index<lhs_type>::type::_IndexHolder[1];
-    static constexpr FASTOR_INDEX N = put_dims_in_Index<rhs_type>::type::_IndexHolder[1];
+    static constexpr FASTOR_INDEX lhs_rank = lhs_type::Dimension_t::value;
+    static constexpr FASTOR_INDEX rhs_rank = rhs_type::Dimension_t::value;
+    static constexpr FASTOR_INDEX M = lhs_rank == 2 ? get_tensor_dimensions<lhs_type>::dims[0] : 1;
+    static constexpr FASTOR_INDEX K = lhs_rank == 2 ? get_tensor_dimensions<lhs_type>::dims[1] : 1;
+    static constexpr FASTOR_INDEX N = rhs_rank == 2 ? get_tensor_dimensions<rhs_type>::dims[1] : 1;
     static constexpr FASTOR_INDEX flop_count = M*N*K;
-
     static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX rank() {return DIM0;}
     using scalar_type = typename scalar_type_finder<BinaryMatMulOp<TLhs, TRhs, DIM0>>::type;
-    using result_type = Tensor<scalar_type,M,N>;
+    using result_type = conditional_t_<lhs_rank == 1,   // vector-matrix
+                                        Tensor<scalar_type,N> ,
+                                        conditional_t_<rhs_rank == 1, // matrix-vector
+                                            Tensor<scalar_type,M>,
+                                            Tensor<scalar_type,M,N>   // matrix-matrix
+                                        >
+                                    >;
 
     FASTOR_INLINE BinaryMatMulOp(lhs_expr_type inlhs, rhs_expr_type inrhs) : _lhs(inlhs), _rhs(inrhs) {}
 
@@ -38,19 +45,8 @@ private:
     rhs_expr_type _rhs;
 };
 
-
-template<typename TLhs, typename TRhs, size_t DIM0,
-         typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
-                                 !std::is_arithmetic<TRhs>::value,bool>::type = 0 >
-FASTOR_INLINE BinaryMatMulOp<TLhs, TRhs, DIM0>
-operator %(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM0> &rhs) {
-  return BinaryMatMulOp<TLhs, TRhs, DIM0>(lhs.self(), rhs.self());
-}
-
 template<typename TLhs, typename TRhs, size_t DIM0, size_t DIM1,
-         typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
-                                 !std::is_arithmetic<TRhs>::value &&
-                                 DIM0!=DIM1,bool>::type = 0 >
+         enable_if_t_<!is_arithmetic_v_<TLhs> &&!is_arithmetic_v_<TRhs>,bool> = 0 >
 FASTOR_INLINE BinaryMatMulOp<TLhs, TRhs, meta_min<DIM0,DIM1>::value>
 operator %(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1> &rhs) {
   return BinaryMatMulOp<TLhs, TRhs, meta_min<DIM0,DIM1>::value>(lhs.self(), rhs.self());
@@ -58,6 +54,9 @@ operator %(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1>
 
 
 
+
+// helper dispatcher functions
+namespace internal {
 // till streaming gemm is implemented
 template<typename T, size_t M, size_t K, size_t N>
 FASTOR_INLINE
@@ -76,8 +75,88 @@ void _gemm(const T alpha, const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT
         for (size_t i = 0; i<M*N; ++i)
             c[i] = alpha * tmp[i] + beta*c[i];
     }
-
 }
+template<typename T, size_t M, size_t K, size_t N>
+FASTOR_INLINE
+void _gemm_mul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
+    T FASTOR_ALIGN tmp[M*N];
+    _matmul<T,M,K,N>(a,b,tmp);
+    for (size_t i = 0; i<M*N; ++i)
+        c[i] *= tmp[i];
+}
+template<typename T, size_t M, size_t K, size_t N>
+FASTOR_INLINE
+void _gemm_div(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
+    T FASTOR_ALIGN tmp[M*N];
+    _matmul<T,M,K,N>(a,b,tmp);
+    for (size_t i = 0; i<M*N; ++i)
+        c[i] /= tmp[i];
+}
+
+
+
+// matmul - matvec overloads
+template<typename T, size_t I, size_t J, size_t K>
+FASTOR_INLINE void matmul_dispatcher(const Tensor<T,I,J> &a, const Tensor<T,J,K> &b, Tensor<T,I,K> &out) {
+    FASTOR_IF_CONSTEXPR(J==1) {
+        _dyadic<T,I,K>(a.data(),b.data(),out.data());
+    }
+    else FASTOR_IF_CONSTEXPR(I==1 && J!=1 && K==1) {
+        out = _doublecontract<T,J,1>(a.data(),b.data());
+    }
+    else {
+        _matmul<T,I,J,K>(a.data(),b.data(),out.data());
+    }
+}
+template<typename T, size_t I, size_t J>
+FASTOR_INLINE void matmul_dispatcher(const Tensor<T,I,J> &a, const Tensor<T,J> &b, Tensor<T,I> &out) {
+    _matmul<T,I,J,1>(a.data(),b.data(),out.data());
+}
+template<typename T, size_t J, size_t K>
+FASTOR_INLINE void matmul_dispatcher(const Tensor<T,J> &a, const Tensor<T,J,K> &b, Tensor<T,K> &out) {
+    _matmul<T,1,J,K>(a.data(),b.data(),out.data());
+}
+
+template<typename T, size_t I, size_t J, size_t K>
+FASTOR_INLINE void gemm_dispatcher(const T alpha, const Tensor<T,I,J> &a, const Tensor<T,J,K> &b, const T beta, Tensor<T,I,K> &out) {
+    _gemm<T,I,J,K>(alpha,a.data(),b.data(),beta,out.data());
+}
+template<typename T, size_t I, size_t J>
+FASTOR_INLINE void matmul_dispatcher(const T alpha, const Tensor<T,I,J> &a, const Tensor<T,J> &b, const T beta, Tensor<T,I> &out) {
+    _gemm<T,I,J,1>(alpha,a.data(),b.data(),beta,out.data());
+}
+template<typename T, size_t J, size_t K>
+FASTOR_INLINE void matmul_dispatcher(const T alpha, const Tensor<T,J> &a, const Tensor<T,J,K> &b, const T beta, Tensor<T,K> &out) {
+    _gemm<T,1,J,K>(alpha,a.data(),b.data(),beta,out.data());
+}
+
+template<typename T, size_t I, size_t J, size_t K>
+FASTOR_INLINE void matmul_dispatcher_mul(const Tensor<T,I,J> &a, const Tensor<T,J,K> &b, Tensor<T,I,K> &out) {
+    _gemm_mul<T,I,J,K>(a.data(),b.data(),out.data());
+}
+template<typename T, size_t I, size_t J>
+FASTOR_INLINE void matmul_dispatcher_mul(const Tensor<T,I,J> &a, const Tensor<T,J> &b, Tensor<T,I> &out) {
+    _gemm_mul<T,I,J,1>(a.data(),b.data(),out.data());
+}
+template<typename T, size_t J, size_t K>
+FASTOR_INLINE void matmul_dispatcher_mul(const Tensor<T,J> &a, const Tensor<T,J,K> &b, Tensor<T,K> &out) {
+    _gemm_mul<T,1,J,K>(a.data(),b.data(),out.data());
+}
+
+template<typename T, size_t I, size_t J, size_t K>
+FASTOR_INLINE void matmul_dispatcher_div(const Tensor<T,I,J> &a, const Tensor<T,J,K> &b, Tensor<T,I,K> &out) {
+    _gemm_div<T,I,J,K>(a.data(),b.data(),out.data());
+}
+template<typename T, size_t I, size_t J>
+FASTOR_INLINE void matmul_dispatcher_div(const Tensor<T,I,J> &a, const Tensor<T,J> &b, Tensor<T,I> &out) {
+    _gemm_div<T,I,J,1>(a.data(),b.data(),out.data());
+}
+template<typename T, size_t J, size_t K>
+FASTOR_INLINE void matmul_dispatcher_div(const Tensor<T,J> &a, const Tensor<T,J,K> &b, Tensor<T,K> &out) {
+    _gemm_div<T,1,J,K>(a.data(),b.data(),out.data());
+}
+
+} // internal
 
 
 
@@ -87,13 +166,8 @@ template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t Othe
                             is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
 FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
     // dst = matmul(src.lhs().self(),src.rhs().self()); // this makes a copy for dst, compiler emits a memcpy
-    using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
-    constexpr FASTOR_INDEX M = BinaryMatMulOp<TLhs, TRhs, OtherDIM>::M;
-    constexpr FASTOR_INDEX K = BinaryMatMulOp<TLhs, TRhs, OtherDIM>::K;
-    constexpr FASTOR_INDEX N = BinaryMatMulOp<TLhs, TRhs, OtherDIM>::N;
-    _matmul<T,M,K,N>(src.lhs().self().data(),src.rhs().self().data(),dst.self().data());
+    internal::matmul_dispatcher(src.lhs().self(),src.rhs().self(),dst.self());
 }
-
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
     typename std::enable_if<!is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
                             is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
@@ -101,13 +175,8 @@ FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp
     using lhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_type;
     lhs_t a(src.lhs().self());
     // dst = matmul(a,src.rhs().self()); // this makes a copy for dst, compiler emits a memcpy
-    using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
-    constexpr FASTOR_INDEX M = BinaryMatMulOp<lhs_t, TRhs, OtherDIM>::M;
-    constexpr FASTOR_INDEX K = BinaryMatMulOp<lhs_t, TRhs, OtherDIM>::K;
-    constexpr FASTOR_INDEX N = BinaryMatMulOp<lhs_t, TRhs, OtherDIM>::N;
-    _matmul<T,M,K,N>(a.data(),src.rhs().self().data(),dst.self().data());
+    internal::matmul_dispatcher(a,src.rhs().self(),dst.self());
 }
-
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
     typename std::enable_if<is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
                             !is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
@@ -115,13 +184,8 @@ FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp
     using rhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_type;
     rhs_t b(src.rhs().self());
     // dst = matmul(src.lhs().self(),b); // this makes a copy for dst, compiler emits a memcpy
-    using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
-    constexpr FASTOR_INDEX M = BinaryMatMulOp<TLhs, rhs_t, OtherDIM>::M;
-    constexpr FASTOR_INDEX K = BinaryMatMulOp<TLhs, rhs_t, OtherDIM>::K;
-    constexpr FASTOR_INDEX N = BinaryMatMulOp<TLhs, rhs_t, OtherDIM>::N;
-    _matmul<T,M,K,N>(src.lhs().self().data(),b.data(),dst.self().data());
+    internal::matmul_dispatcher(src.lhs().self(),b,dst.self());
 }
-
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
     typename std::enable_if<!is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
                             !is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
@@ -131,11 +195,7 @@ FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp
     lhs_t a(src.lhs().self());
     rhs_t b(src.rhs().self());
     // dst = matmul(a,b); // this makes a copy for dst, compiler emits a memcpy
-    using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
-    constexpr FASTOR_INDEX M = BinaryMatMulOp<lhs_t, rhs_t, OtherDIM>::M;
-    constexpr FASTOR_INDEX K = BinaryMatMulOp<lhs_t, rhs_t, OtherDIM>::K;
-    constexpr FASTOR_INDEX N = BinaryMatMulOp<lhs_t, rhs_t, OtherDIM>::N;
-    _matmul<T,M,K,N>(a.data(),b.data(),dst.self().data());
+    internal::matmul_dispatcher(a,b,dst.self());
 }
 
 
@@ -145,56 +205,37 @@ template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t Othe
     typename std::enable_if<is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
                             is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
 FASTOR_INLINE void assign_add(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
-    // dst = matmul(src.lhs().self(),src.rhs().self()); // this makes a copy for dst, compiler emits a memcpy
     using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
-    constexpr FASTOR_INDEX M = BinaryMatMulOp<TLhs, TRhs, OtherDIM>::M;
-    constexpr FASTOR_INDEX K = BinaryMatMulOp<TLhs, TRhs, OtherDIM>::K;
-    constexpr FASTOR_INDEX N = BinaryMatMulOp<TLhs, TRhs, OtherDIM>::N;
-    _gemm<T,M,K,N>(0,src.lhs().self().data(),src.rhs().self().data(),1,dst.self().data());
+    internal::matmul_dispatcher((T)1,src.lhs().self(),src.rhs().self(),(T)1,dst.self());
 }
-
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
     typename std::enable_if<!is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
                             is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
 FASTOR_INLINE void assign_add(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
+    using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
     using lhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_type;
     lhs_t a(src.lhs().self());
-    // dst = matmul(a,src.rhs().self()); // this makes a copy for dst, compiler emits a memcpy
-    using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
-    constexpr FASTOR_INDEX M = BinaryMatMulOp<lhs_t, TRhs, OtherDIM>::M;
-    constexpr FASTOR_INDEX K = BinaryMatMulOp<lhs_t, TRhs, OtherDIM>::K;
-    constexpr FASTOR_INDEX N = BinaryMatMulOp<lhs_t, TRhs, OtherDIM>::N;
-    _gemm<T,M,K,N>(0,a.data(),src.rhs().self().data(),1,dst.self().data());
+    internal::matmul_dispatcher((T)1,a,src.rhs().self(),(T)1,dst.self());
 }
-
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
     typename std::enable_if<is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
                             !is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
 FASTOR_INLINE void assign_add(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
+    using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
     using rhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_type;
     rhs_t b(src.rhs().self());
-    // dst = matmul(src.lhs().self(),b); // this makes a copy for dst, compiler emits a memcpy
-    using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
-    constexpr FASTOR_INDEX M = BinaryMatMulOp<TLhs, rhs_t, OtherDIM>::M;
-    constexpr FASTOR_INDEX K = BinaryMatMulOp<TLhs, rhs_t, OtherDIM>::K;
-    constexpr FASTOR_INDEX N = BinaryMatMulOp<TLhs, rhs_t, OtherDIM>::N;
-    _gemm<T,M,K,N>(0,src.lhs().self().data(),b.data(),1,dst.self().data());
+    internal::matmul_dispatcher((T)1,src.lhs().self(),b,(T)1,dst.self());
 }
-
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
     typename std::enable_if<!is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
                             !is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
 FASTOR_INLINE void assign_add(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
+    using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
     using lhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_type;
     using rhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_type;
     lhs_t a(src.lhs().self());
     rhs_t b(src.rhs().self());
-    // dst = matmul(a,b); // this makes a copy for dst, compiler emits a memcpy
-    using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
-    constexpr FASTOR_INDEX M = BinaryMatMulOp<lhs_t, rhs_t, OtherDIM>::M;
-    constexpr FASTOR_INDEX K = BinaryMatMulOp<lhs_t, rhs_t, OtherDIM>::K;
-    constexpr FASTOR_INDEX N = BinaryMatMulOp<lhs_t, rhs_t, OtherDIM>::N;
-    _gemm<T,M,K,N>(0,a.data(),b.data(),1,dst.self().data());
+    internal::matmul_dispatcher((T)1,a,b,(T)1,dst.self());
 }
 
 
@@ -203,57 +244,109 @@ template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t Othe
     typename std::enable_if<is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
                             is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
 FASTOR_INLINE void assign_sub(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
-    // dst = matmul(src.lhs().self(),src.rhs().self()); // this makes a copy for dst, compiler emits a memcpy
     using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
-    constexpr FASTOR_INDEX M = BinaryMatMulOp<TLhs, TRhs, OtherDIM>::M;
-    constexpr FASTOR_INDEX K = BinaryMatMulOp<TLhs, TRhs, OtherDIM>::K;
-    constexpr FASTOR_INDEX N = BinaryMatMulOp<TLhs, TRhs, OtherDIM>::N;
-    _gemm<T,M,K,N>(-1,src.lhs().self().data(),src.rhs().self().data(),1,dst.self().data());
+    internal::matmul_dispatcher((T)-1,src.lhs().self(),src.rhs().self(),(T)1,dst.self());
 }
-
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
     typename std::enable_if<!is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
                             is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
 FASTOR_INLINE void assign_sub(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
+    using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
     using lhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_type;
     lhs_t a(src.lhs().self());
-    // dst = matmul(a,src.rhs().self()); // this makes a copy for dst, compiler emits a memcpy
-    using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
-    constexpr FASTOR_INDEX M = BinaryMatMulOp<lhs_t, TRhs, OtherDIM>::M;
-    constexpr FASTOR_INDEX K = BinaryMatMulOp<lhs_t, TRhs, OtherDIM>::K;
-    constexpr FASTOR_INDEX N = BinaryMatMulOp<lhs_t, TRhs, OtherDIM>::N;
-    _gemm<T,M,K,N>(-1,a.data(),src.rhs().self().data(),1,dst.self().data());
+    internal::matmul_dispatcher((T)-1,a,src.rhs().self(),(T)1,dst.self());
 }
-
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
     typename std::enable_if<is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
                             !is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
 FASTOR_INLINE void assign_sub(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
+    using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
     using rhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_type;
     rhs_t b(src.rhs().self());
-    // dst = matmul(src.lhs().self(),b); // this makes a copy for dst, compiler emits a memcpy
-    using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
-    constexpr FASTOR_INDEX M = BinaryMatMulOp<TLhs, rhs_t, OtherDIM>::M;
-    constexpr FASTOR_INDEX K = BinaryMatMulOp<TLhs, rhs_t, OtherDIM>::K;
-    constexpr FASTOR_INDEX N = BinaryMatMulOp<TLhs, rhs_t, OtherDIM>::N;
-    _gemm<T,M,K,N>(-1,src.lhs().self().data(),b.data(),1,dst.self().data());
+    internal::matmul_dispatcher((T)-1,src.lhs().self(),b,(T)1,dst.self());
 }
-
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
     typename std::enable_if<!is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
                             !is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
 FASTOR_INLINE void assign_sub(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
+    using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
     using lhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_type;
     using rhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_type;
     lhs_t a(src.lhs().self());
     rhs_t b(src.rhs().self());
-    // dst = matmul(a,b); // this makes a copy for dst, compiler emits a memcpy
-    using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
-    constexpr FASTOR_INDEX M = BinaryMatMulOp<lhs_t, rhs_t, OtherDIM>::M;
-    constexpr FASTOR_INDEX K = BinaryMatMulOp<lhs_t, rhs_t, OtherDIM>::K;
-    constexpr FASTOR_INDEX N = BinaryMatMulOp<lhs_t, rhs_t, OtherDIM>::N;
-    _gemm<T,M,K,N>(-1,a.data(),b.data(),1,dst.self().data());
+    internal::matmul_dispatcher((T)-1,a,b,(T)1,dst.self());
 }
+
+
+// assignments mul
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
+    typename std::enable_if<is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
+                            is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
+FASTOR_INLINE void assign_mul(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
+    internal::matmul_dispatcher_mul(src.lhs().self(),src.rhs().self(),dst.self());
+}
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
+    typename std::enable_if<!is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
+                            is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
+FASTOR_INLINE void assign_mul(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
+    using lhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_type;
+    lhs_t a(src.lhs().self());
+    internal::matmul_dispatcher_mul(a,src.rhs().self(),dst.self());
+}
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
+    typename std::enable_if<is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
+                            !is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
+FASTOR_INLINE void assign_mul(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
+    using rhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_type;
+    rhs_t b(src.rhs().self());
+    internal::matmul_dispatcher_mul(src.lhs().self(),b,dst.self());
+}
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
+    typename std::enable_if<!is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
+                            !is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
+FASTOR_INLINE void assign_mul(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
+    using lhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_type;
+    using rhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_type;
+    lhs_t a(src.lhs().self());
+    rhs_t b(src.rhs().self());
+    internal::matmul_dispatcher_mul(a,b,dst.self());
+}
+
+
+// assignments div
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
+    typename std::enable_if<is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
+                            is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
+FASTOR_INLINE void assign_div(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
+    internal::matmul_dispatcher_div(src.lhs().self(),src.rhs().self(),dst.self());
+}
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
+    typename std::enable_if<!is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
+                            is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
+FASTOR_INLINE void assign_div(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
+    using lhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_type;
+    lhs_t a(src.lhs().self());
+    internal::matmul_dispatcher_div(a,src.rhs().self(),dst.self());
+}
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
+    typename std::enable_if<is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
+                            !is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
+FASTOR_INLINE void assign_div(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
+    using rhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_type;
+    rhs_t b(src.rhs().self());
+    internal::matmul_dispatcher_div(src.lhs().self(),b,dst.self());
+}
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
+    typename std::enable_if<!is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
+                            !is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
+FASTOR_INLINE void assign_div(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
+    using lhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_type;
+    using rhs_t = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_type;
+    lhs_t a(src.lhs().self());
+    rhs_t b(src.rhs().self());
+    internal::matmul_dispatcher_div(a,b,dst.self());
+}
+
 
 
 
@@ -266,18 +359,14 @@ FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp
     using T = typename BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::scalar_type;
     FASTOR_IF_CONSTEXPR(BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::flop_count > BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::flop_count)
     {
-        constexpr FASTOR_INDEX M = BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::M;
-        constexpr FASTOR_INDEX N = BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::N;
-        using result_t = Tensor<T,M,N>;
+        using result_t = typename BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::result_type;
         result_t tmp;
         assign(tmp, BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>(src.lhs().rhs().self(),src.rhs().self()));
         assign(dst, BinaryMatMulOp<TLhs, result_t, OtherDIM>(src.lhs().lhs().self(),tmp));
     }
     else
     {
-        constexpr FASTOR_INDEX M = BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::M;
-        constexpr FASTOR_INDEX N = BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::N;
-        using result_t = Tensor<T,M,N>;
+        using result_t = typename BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::result_type;
         result_t tmp;
         assign(tmp, BinaryMatMulOp<TLhs, TRhs0, OtherDIM>(src.lhs().lhs().self(),src.lhs().rhs().self()));
         assign(dst, BinaryMatMulOp<result_t, TRhs1, OtherDIM>(tmp,src.rhs().self()));
@@ -289,18 +378,14 @@ FASTOR_INLINE void assign_add(AbstractTensor<Derived,DIM> &dst, const BinaryMatM
     using T = typename BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::scalar_type;
     FASTOR_IF_CONSTEXPR(BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::flop_count > BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::flop_count)
     {
-        constexpr FASTOR_INDEX M = BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::M;
-        constexpr FASTOR_INDEX N = BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::N;
-        using result_t = Tensor<T,M,N>;
+        using result_t = typename BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::result_type;
         result_t tmp;
         assign(tmp, BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>(src.lhs().rhs().self(),src.rhs().self()));
         assign_add(dst, BinaryMatMulOp<TLhs, result_t, OtherDIM>(src.lhs().lhs().self(),tmp));
     }
     else
     {
-        constexpr FASTOR_INDEX M = BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::M;
-        constexpr FASTOR_INDEX N = BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::N;
-        using result_t = Tensor<T,M,N>;
+        using result_t = typename BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::result_type;
         result_t tmp;
         assign(tmp, BinaryMatMulOp<TLhs, TRhs0, OtherDIM>(src.lhs().lhs().self(),src.lhs().rhs().self()));
         assign_add(dst, BinaryMatMulOp<result_t, TRhs1, OtherDIM>(tmp,src.rhs().self()));
@@ -312,21 +397,55 @@ FASTOR_INLINE void assign_sub(AbstractTensor<Derived,DIM> &dst, const BinaryMatM
     using T = typename BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::scalar_type;
     FASTOR_IF_CONSTEXPR(BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::flop_count > BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::flop_count)
     {
-        constexpr FASTOR_INDEX M = BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::M;
-        constexpr FASTOR_INDEX N = BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::N;
-        using result_t = Tensor<T,M,N>;
+        using result_t = typename BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::result_type;
         result_t tmp;
         assign(tmp, BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>(src.lhs().rhs().self(),src.rhs().self()));
         assign_sub(dst, BinaryMatMulOp<TLhs, result_t, OtherDIM>(src.lhs().lhs().self(),tmp));
     }
     else
     {
-        constexpr FASTOR_INDEX M = BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::M;
-        constexpr FASTOR_INDEX N = BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::N;
-        using result_t = Tensor<T,M,N>;
+        using result_t = typename BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::result_type;
         result_t tmp;
         assign(tmp, BinaryMatMulOp<TLhs, TRhs0, OtherDIM>(src.lhs().lhs().self(),src.lhs().rhs().self()));
         assign_sub(dst, BinaryMatMulOp<result_t, TRhs1, OtherDIM>(tmp,src.rhs().self()));
+    }
+}
+
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs0, typename TRhs1, size_t OtherDIM>
+FASTOR_INLINE void assign_mul(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<BinaryMatMulOp<TLhs, TRhs0, OtherDIM>, TRhs1, OtherDIM> &src) {
+    using T = typename BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::scalar_type;
+    FASTOR_IF_CONSTEXPR(BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::flop_count > BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::flop_count)
+    {
+        using result_t = typename BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::result_type;
+        result_t tmp;
+        assign(tmp, BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>(src.lhs().rhs().self(),src.rhs().self()));
+        assign_mul(dst, BinaryMatMulOp<TLhs, result_t, OtherDIM>(src.lhs().lhs().self(),tmp));
+    }
+    else
+    {
+        using result_t = typename BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::result_type;
+        result_t tmp;
+        assign(tmp, BinaryMatMulOp<TLhs, TRhs0, OtherDIM>(src.lhs().lhs().self(),src.lhs().rhs().self()));
+        assign_mul(dst, BinaryMatMulOp<result_t, TRhs1, OtherDIM>(tmp,src.rhs().self()));
+    }
+}
+
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs0, typename TRhs1, size_t OtherDIM>
+FASTOR_INLINE void assign_div(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<BinaryMatMulOp<TLhs, TRhs0, OtherDIM>, TRhs1, OtherDIM> &src) {
+    using T = typename BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::scalar_type;
+    FASTOR_IF_CONSTEXPR(BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::flop_count > BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::flop_count)
+    {
+        using result_t = typename BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::result_type;
+        result_t tmp;
+        assign(tmp, BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>(src.lhs().rhs().self(),src.rhs().self()));
+        assign_div(dst, BinaryMatMulOp<TLhs, result_t, OtherDIM>(src.lhs().lhs().self(),tmp));
+    }
+    else
+    {
+        using result_t = typename BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::result_type;
+        result_t tmp;
+        assign(tmp, BinaryMatMulOp<TLhs, TRhs0, OtherDIM>(src.lhs().lhs().self(),src.lhs().rhs().self()));
+        assign_div(dst, BinaryMatMulOp<result_t, TRhs1, OtherDIM>(tmp,src.rhs().self()));
     }
 }
 
