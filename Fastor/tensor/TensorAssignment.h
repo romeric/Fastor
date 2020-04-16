@@ -167,7 +167,7 @@ FASTOR_INLINE void trivial_assign_add(const AbstractTensor<Derived,DIM> &dst, U 
     for (; i< ROUND_DOWN(dst.self().size(),Stride_); i+=Stride_) {
         V _vec_out(&_data[i], FASTOR_ALIGNED);
         _vec_out += _vec;
-        _vec.store(&_data[i], FASTOR_ALIGNED);
+        _vec_out.store(&_data[i], FASTOR_ALIGNED);
     }
     for (; i<dst.self().size(); ++i) {
         _data[i] += cnum;
@@ -187,7 +187,7 @@ FASTOR_INLINE void trivial_assign_sub(const AbstractTensor<Derived,DIM> &dst, U 
     for (; i< ROUND_DOWN(dst.self().size(),Stride_); i+=Stride_) {
         V _vec_out(&_data[i], FASTOR_ALIGNED);
         _vec_out -= _vec;
-        _vec.store(&_data[i], FASTOR_ALIGNED);
+        _vec_out.store(&_data[i], FASTOR_ALIGNED);
     }
     for (; i<dst.self().size(); ++i) {
         _data[i] -= cnum;
@@ -207,7 +207,7 @@ FASTOR_INLINE void trivial_assign_mul(const AbstractTensor<Derived,DIM> &dst, U 
     for (; i< ROUND_DOWN(dst.self().size(),Stride_); i+=Stride_) {
         V _vec_out(&_data[i], FASTOR_ALIGNED);
         _vec_out *= _vec;
-        _vec.store(&_data[i], FASTOR_ALIGNED);
+        _vec_out.store(&_data[i], FASTOR_ALIGNED);
     }
     for (; i<dst.self().size(); ++i) {
         _data[i] *= cnum;
@@ -227,7 +227,7 @@ FASTOR_INLINE void trivial_assign_div(const AbstractTensor<Derived,DIM> &dst, U 
     for (; i< ROUND_DOWN(dst.self().size(),Stride_); i+=Stride_) {
         V _vec_out(&_data[i], FASTOR_ALIGNED);
         _vec_out *= _vec;
-        _vec.store(&_data[i], FASTOR_ALIGNED);
+        _vec_out.store(&_data[i], FASTOR_ALIGNED);
     }
     for (; i<dst.self().size(); ++i) {
         _data[i] *= cnum;
