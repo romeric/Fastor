@@ -6,6 +6,8 @@
 #include "Fastor/expressions/linalg_ops/linalg_traits.h"
 #include "Fastor/expressions/expression_traits.h"
 
+#include "Fastor/expressions/linalg_ops/binary_matmul_op.h"
+
 namespace Fastor {
 
 // All unary math ops
@@ -74,43 +76,75 @@ FASTOR_MAKE_UNARY_MATH_OPS(tanh, tanh, std::tanh, Tanh, scalar_type)
 
 
 
-
 #define FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(OP, NAME, ASSIGN_TYPE)\
 template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM,\
     typename std::enable_if<requires_evaluation_v<OtherDerived>,bool>::type = false>\
-FASTOR_INLINE void assign ##ASSIGN_TYPE (const AbstractTensor<Derived,DIM> &dst, const Unary ##NAME ## Op<OtherDerived,OtherDIM> &src) {\
+FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const Unary ##NAME ## Op<OtherDerived,OtherDIM> &src) {\
     assign ##ASSIGN_TYPE (dst.self(), src.expr().self());\
-    trivial_assign ##ASSIGN_TYPE (dst.self(), OP(dst.self()));\
+    trivial_assign(dst.self(), OP(dst.self()));\
 }\
 template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM,\
     typename std::enable_if<!requires_evaluation_v<OtherDerived>,bool>::type = false>\
-FASTOR_INLINE void assign ##ASSIGN_TYPE (const AbstractTensor<Derived,DIM> &dst, const Unary ##NAME ## Op<OtherDerived,OtherDIM> &src) {\
-    trivial_assign ##ASSIGN_TYPE (dst.self(), OP(src.expr().self()));\
+FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const Unary ##NAME ## Op<OtherDerived,OtherDIM> &src) {\
+    trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
+}\
+
+// only assignment
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT( ,    Add,  )
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(-,    Sub,  )
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(abs,  Abs,  )
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(sqrt, Sqrt, )
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(exp,  Exp,  )
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(log,  Log,  )
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(sin,  Sin,  )
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(cos,  Cos,  )
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(tan,  Tan,  )
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(asin, Asin, )
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(acos, Acos, )
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(atan, Atan, )
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(sinh, Sinh, )
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(cosh, Cosh, )
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(tanh, Tanh, )
+
+
+
+// arithmetic assignments
+#define FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(OP, NAME, ASSIGN_TYPE)\
+template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM,\
+    typename std::enable_if<requires_evaluation_v<OtherDerived>,bool>::type = false>\
+FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const Unary ##NAME ## Op<OtherDerived,OtherDIM> &src) {\
+    using result_type = typename Unary ##NAME ## Op<OtherDerived,OtherDIM>::result_type;\
+    const result_type tmp(src.expr().self());\
+    trivial_assign ##ASSIGN_TYPE (dst.self(), OP(tmp));\
+}\
+template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM,\
+    typename std::enable_if<!requires_evaluation_v<OtherDerived>,bool>::type = false>\
+FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const Unary ##NAME ## Op<OtherDerived,OtherDIM> &src) {\
+    trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
 }\
 
 #define FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENTS(OP, NAME, ASSIGN_TYPE)\
-FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT( ,    Add,  ASSIGN_TYPE)\
-FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(-,    Sub,  ASSIGN_TYPE)\
-FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(abs,  Abs,  ASSIGN_TYPE)\
-FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(sqrt, Sqrt, ASSIGN_TYPE)\
-FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(exp,  Exp,  ASSIGN_TYPE)\
-FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(log,  Log,  ASSIGN_TYPE)\
-FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(sin,  Sin,  ASSIGN_TYPE)\
-FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(cos,  Cos,  ASSIGN_TYPE)\
-FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(tan,  Tan,  ASSIGN_TYPE)\
-FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(asin, Asin, ASSIGN_TYPE)\
-FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(acos, Acos, ASSIGN_TYPE)\
-FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(atan, Atan, ASSIGN_TYPE)\
-FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(sinh, Sinh, ASSIGN_TYPE)\
-FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(cosh, Cosh, ASSIGN_TYPE)\
-FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(tanh, Tanh, ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT( ,    Add,  ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(-,    Sub,  ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(abs,  Abs,  ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(sqrt, Sqrt, ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(exp,  Exp,  ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(log,  Log,  ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(sin,  Sin,  ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(cos,  Cos,  ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(tan,  Tan,  ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(asin, Asin, ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(acos, Acos, ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(atan, Atan, ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(sinh, Sinh, ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(cosh, Cosh, ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(tanh, Tanh, ASSIGN_TYPE)\
 
-FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENTS(OP, NAME, )
+// FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENTS(OP, NAME, )
 FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENTS(OP, NAME, _add)
 FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENTS(OP, NAME, _sub)
 FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENTS(OP, NAME, _mul)
 FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENTS(OP, NAME, _div)
-
 
 }
 
