@@ -18,6 +18,9 @@ struct BinaryMulOp;
 template<typename TLhs, typename TRhs, size_t DIM0>
 struct BinaryDivOp;
 
+template<typename TLhs, typename TRhs, size_t DIM0>
+struct BinaryMatMulOp;
+
 
 template<typename Expr, size_t DIMS>
 struct UnaryAddOp;
