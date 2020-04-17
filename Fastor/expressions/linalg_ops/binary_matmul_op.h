@@ -3,6 +3,7 @@
 
 #include "Fastor/simd_vector/SIMDVector.h"
 #include "Fastor/tensor/AbstractTensor.h"
+#include "Fastor/tensor/Aliasing.h"
 #include "Fastor/tensor/TensorTraits.h"
 #include "Fastor/expressions/expression_traits.h"
 

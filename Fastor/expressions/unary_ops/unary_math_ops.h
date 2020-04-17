@@ -6,8 +6,6 @@
 #include "Fastor/expressions/linalg_ops/linalg_traits.h"
 #include "Fastor/expressions/expression_traits.h"
 
-#include "Fastor/expressions/linalg_ops/binary_matmul_op.h"
-
 namespace Fastor {
 
 // All unary math ops

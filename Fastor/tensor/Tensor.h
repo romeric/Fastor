@@ -109,74 +109,34 @@ public:
 #else
     template<typename Derived, size_t DIMS>
 #endif
-    FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
-        assign(*this, src_.self());
+    FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src) {
+        FASTOR_ASSERT(src.self().size()==size(), "TENSOR SIZE MISMATCH");
+        assign(*this, src.self());
     }
     //----------------------------------------------------------------------------------------------------------//
+
+    // In-place operators
+    //----------------------------------------------------------------------------------------------------------//
+    FASTOR_INLINE void operator +=(const Tensor<T,Rest...> &a) {
+        trivial_assign_add(*this, a);
+    }
+
+    FASTOR_INLINE void operator -=(const Tensor<T,Rest...> &a) {
+        trivial_assign_sub(*this, a);
+    }
+
+    FASTOR_INLINE void operator *=(const Tensor<T,Rest...> &a) {
+        trivial_assign_mul(*this, a);
+    }
+
+    FASTOR_INLINE void operator /=(const Tensor<T,Rest...> &a) {
+        trivial_assign_div(*this, a);
+    }
 
     // Specialised constructors
     //----------------------------------------------------------------------------------------------------------//
     #include "Fastor/tensor/SpecialisedConstructors.h"
     //----------------------------------------------------------------------------------------------------------//
-
-    // In-place operators
-    //----------------------------------------------------------------------------------------------------------//
-
-    FASTOR_INLINE void operator +=(const Tensor<T,Rest...> &a) {
-        using V = SIMDVector<T,DEFAULT_ABI>;
-        T* a_data = a.data();
-        V _vec;
-        FASTOR_INDEX i=0;
-        for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
-            _vec = V(&_data[i]) + V(&a_data[i]);
-            _vec.store(&_data[i]);
-        }
-        for (; i<Size; ++i) {
-            _data[i] += a_data[i];
-        }
-    }
-
-    FASTOR_INLINE void operator -=(const Tensor<T,Rest...> &a) {
-        using V = SIMDVector<T,DEFAULT_ABI>;
-        T* a_data = a.data();
-        V _vec;
-        FASTOR_INDEX i=0;
-        for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
-            _vec = V(&_data[i]) - V(&a_data[i]);
-            _vec.store(&_data[i]);
-        }
-        for (; i<Size; ++i) {
-            _data[i] -= a_data[i];
-        }
-    }
-
-    FASTOR_INLINE void operator *=(const Tensor<T,Rest...> &a) {
-        using V = SIMDVector<T,DEFAULT_ABI>;
-        T* a_data = a.data();
-        V _vec;
-        FASTOR_INDEX i=0;
-        for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
-            _vec = V(&_data[i]) * V(&a_data[i]);
-            _vec.store(&_data[i]);
-        }
-        for (; i<Size; ++i) {
-            _data[i] *= a_data[i];
-        }
-    }
-
-    FASTOR_INLINE void operator /=(const Tensor<T,Rest...> &a) {
-        using V = SIMDVector<T,DEFAULT_ABI>;
-        T* a_data = a.data();
-        V _vec;
-        FASTOR_INDEX i=0;
-        for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
-            _vec = V(&_data[i]) / V(&a_data[i]);
-            _vec.store(&_data[i]);
-        }
-        for (; i<Size; ++i) {
-            _data[i] /= a_data[i];
-        }
-    }
 
     // AbstractTensor and scalar in-place operators
     //----------------------------------------------------------------------------------------------------------//
