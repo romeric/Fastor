@@ -2,15 +2,22 @@
 #define NORM_H
 
 #include "Fastor/commons/commons.h"
+#include "Fastor/meta/meta.h"
 #include "Fastor/extended_intrinsics/extintrin.h"
 #include "Fastor/simd_vector/SIMDVector.h"
 
 namespace Fastor {
 
-template<typename T, size_t N>
+template<typename T, size_t N,
+#ifdef FASTOR_AVX512_IMPL
+    enable_if_t_<is_less_v_<8*internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size, N >, bool> = false>
+#else
+    enable_if_t_<is_less_v_<4*internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size, N >, bool> = false>
+#endif
 FASTOR_INLINE T _norm(const T* FASTOR_RESTRICT a) {
-    using V = SIMDVector<T,DEFAULT_ABI>;
-    T _scal=0;
+
+    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
+    T _scal = 0;
 #ifdef FASTOR_AVX512_IMPL
     V omm0, omm1, omm2, omm3, omm4, omm5, omm6, omm7;
 #else
@@ -70,6 +77,29 @@ FASTOR_INLINE T _norm(const T* FASTOR_RESTRICT a) {
 #else
     return sqrts( (omm0 + omm1 + omm2 + omm3).sum() + _scal);
 #endif
+}
+
+template<typename T, size_t N,
+#ifdef FASTOR_AVX512_IMPL
+    enable_if_t_<is_greater_equal_v_<8*internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size, N >, bool> = false>
+#else
+    enable_if_t_<is_greater_equal_v_<4*internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size, N >, bool> = false>
+#endif
+FASTOR_INLINE T _norm(const T* FASTOR_RESTRICT a) {
+
+    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
+    T _scal = 0;
+    V omm0;
+    FASTOR_INDEX i = 0;
+    for (; i < ROUND_DOWN(N,V::Size); i+=V::Size) {
+        const V smm0(&a[i]           , false);
+        omm0 = fmadd(smm0,smm0,omm0);
+    }
+    for (; i < N; ++i) {
+        const auto smm0(a[i]);
+        _scal += smm0*smm0;
+    }
+    return sqrts( omm0.sum() + _scal);
 }
 
 #ifdef FASTOR_SSE4_2_IMPL

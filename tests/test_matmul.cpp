@@ -324,6 +324,12 @@ void run() {
         SINGLE_TEST(a,b);
     }
 
+    {
+        Tensor<T,1,63> a; a.iota(-50);
+        Tensor<T,63,1> b; b.iota(50);
+        SINGLE_TEST(a,b);
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 }
 
