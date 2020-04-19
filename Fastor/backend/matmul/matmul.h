@@ -6,6 +6,9 @@
 #ifdef FASTOR_USE_LIBXSMM
 #include "Fastor/backend/matmul/libxsmm_backend.h"
 #endif
+#ifdef FASTOR_USE_MKL
+#include "Fastor/backend/matmul/mkl_backend.h"
+#endif
 
 namespace Fastor {
 
@@ -23,7 +26,7 @@ void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FA
 
 //-----------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------
-#ifndef FASTOR_USE_LIBXSMM
+#if !defined(FASTOR_USE_LIBXSMM) && !defined(FASTOR_USE_MKL)
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<!(M!=K && M==N && (M==2UL || M==3UL || M==4UL || M==8UL)),bool>::type = 0>
 #else
@@ -101,7 +104,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 }
 
 
-#ifdef FASTOR_USE_LIBXSMM
+#if defined(FASTOR_USE_LIBXSMM) && !defined(FASTOR_USE_MKL)
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<
             !(M!=K && M==N && (M==2 || M==3 || M==4))
@@ -110,6 +113,18 @@ template<typename T, size_t M, size_t K, size_t N,
 FASTOR_INLINE
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
     blas::matmul_libxsmm<T,M,K,N>(a,b,c);
+}
+#endif
+
+#if !defined(FASTOR_USE_LIBXSMM) && defined(FASTOR_USE_MKL)
+template<typename T, size_t M, size_t K, size_t N,
+         typename std::enable_if<
+            !(M!=K && M==N && (M==2 || M==3 || M==4))
+            && is_greater<M*N*K/internal::meta_cube<FASTOR_BLAS_SWITCH_MATRIX_SIZE>::value,1>::value,
+            bool>::type = 0>
+FASTOR_INLINE
+void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
+    blas::matmul_mkl<T,M,K,N>(a,b,c);
 }
 #endif
 //-----------------------------------------------------------------------------------------------------------

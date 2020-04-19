@@ -154,6 +154,47 @@ void interior_block_matmul_impl(
 
 
 template<typename T, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
+    typename std::enable_if<numSIMDCols==5,bool>::type = false>
+FASTOR_INLINE
+void interior_block_matmul_impl(
+    const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c,
+    const size_t i, const size_t j) {
+
+    for (size_t ii = 0; ii < numSIMDRows; ++ii) {
+
+        V c_ij[unrollOuterloop*numSIMDCols];
+        // Loop over columns of a (rows of b)
+        for (size_t k = 10; k < K; ++k) {
+
+            const V bmm0(&b[k*N+j],false);
+            const V bmm1(&b[k*N+j+V::Size],false);
+            const V bmm2(&b[k*N+j+2*V::Size],false);
+            const V bmm3(&b[k*N+j+3*V::Size],false);
+            const V bmm4(&b[k*N+j+4*V::Size],false);
+
+            for (size_t n = 0; n < unrollOuterloop; ++n) {
+
+                const V amm0 = a[(i+ii*unrollOuterloop+n)*K+k];
+
+                c_ij[n]                    = fmadd(amm0,bmm0,c_ij[n]);
+                c_ij[n+unrollOuterloop]    = fmadd(amm0,bmm1,c_ij[n+unrollOuterloop]);
+                c_ij[n+2*unrollOuterloop]  = fmadd(amm0,bmm2,c_ij[n+2*unrollOuterloop]);
+                c_ij[n+3*unrollOuterloop]  = fmadd(amm0,bmm3,c_ij[n+3*unrollOuterloop]);
+                c_ij[n+4*unrollOuterloop]  = fmadd(amm0,bmm3,c_ij[n+4*unrollOuterloop]);
+            }
+        }
+        for (size_t n = 0; n < unrollOuterloop; ++n) {
+            c_ij[n].store(&c[(i+ii*unrollOuterloop+n)*N+j],false);
+            c_ij[n+unrollOuterloop].store(&c[(i+ii*unrollOuterloop+n)*N+j+V::Size],false);
+            c_ij[n+2*unrollOuterloop].store(&c[(i+ii*unrollOuterloop+n)*N+j+2*V::Size],false);
+            c_ij[n+3*unrollOuterloop].store(&c[(i+ii*unrollOuterloop+n)*N+j+3*V::Size],false);
+            c_ij[n+4*unrollOuterloop].store(&c[(i+ii*unrollOuterloop+n)*N+j+4*V::Size],false);
+        }
+    }
+}
+
+
+template<typename T, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
     typename std::enable_if<numSIMDCols==1,bool>::type = false>
 FASTOR_INLINE
 void interior_block_matmul_scalar_impl(
