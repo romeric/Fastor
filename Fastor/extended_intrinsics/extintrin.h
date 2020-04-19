@@ -590,12 +590,10 @@ FASTOR_INLINE __m128i _mm_mul_epi32x(const __m128i &a, const __m128i &b)
 #endif
 
 #ifdef FASTOR_SSE4_2_IMPL
-//#ifndef FASTOR_AVX512CD_IMPL
 FASTOR_INLINE __m128i _mm_mul_epi64(__m128i _a, __m128i _b) {
     __m128i out = _mm_mul_epi32x(_a,_b);
     return out;
 }
-//#endif
 #endif
 
 #ifdef FASTOR_AVX_IMPL
@@ -808,9 +806,9 @@ template<typename T, typename std::enable_if<std::is_arithmetic<T>::value,bool>:
 FASTOR_INLINE T sqrts(T a) {return std::sqrt(a);}
 #ifdef FASTOR_SSE4_2_IMPL
 template<>
-FASTOR_INLINE float sqrts<>(float a) {return _mm_cvtss_f32(_mm_sqrt_ps(_mm_set1_ps(a)));}
+FASTOR_INLINE float sqrts(float a) {return _mm_cvtss_f32(_mm_sqrt_ps(_mm_set1_ps(a)));}
 template<>
-FASTOR_INLINE double sqrts<>(double a) {return _mm_cvtsd_f64(_mm_sqrt_pd(_mm_set1_pd(a)));}
+FASTOR_INLINE double sqrts(double a) {return _mm_cvtsd_f64(_mm_sqrt_pd(_mm_set1_pd(a)));}
 #endif
 
 #endif
