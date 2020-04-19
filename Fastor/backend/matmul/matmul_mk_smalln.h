@@ -10,14 +10,802 @@ namespace Fastor {
 namespace internal {
 
 
+
 // This implementation covers all matrix-matrix multiplications with any M and K and
-// and N<2*SIMDVector::Size. Given that it uses choose_best_simd_type it can switche
-// between SSE, AVX and AVX512 to cover all ranges of N.
-//
-// For SSE: it covers [5 <= N < 8] for single and does not cover double
-// For AVX: it covers [5 <= N < 15 && N!=8] for single and [5 <= N < 8] for double
-// For AVX512: it covers [5 <= N < 31 && N!=8 && N!=16] for single and [5 <= N < 15 && N!=8] for double
-//
+// and N<=5*SIMDVector::Size. Given that it uses choose_best_simd_type it can switch
+// between SSE, AVX and AVX512 to cover all ranges of N
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+template<typename T, typename V, typename MaskType, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==9, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const MaskType mask,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#else
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==9, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int (&maska)[V::Size],
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#endif
+
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+        V bmm0;
+        bmm0.mask_load(&b[0],mask,false);
+#else
+        const V bmm0(maskload<V>(&b[0],maska));
+#endif
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+        const V amm3(a[(j+3)*K]);
+        const V amm4(a[(j+4)*K]);
+        const V amm5(a[(j+5)*K]);
+        const V amm6(a[(j+6)*K]);
+        const V amm7(a[(j+7)*K]);
+        const V amm8(a[(j+8)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+        // row 2
+        V omm2(amm2*bmm0);
+        // row 3
+        V omm3(amm3*bmm0);
+        // row 4
+        V omm4(amm4*bmm0);
+        // row 5
+        V omm5(amm5*bmm0);
+        // row 6
+        V omm6(amm6*bmm0);
+        // row 7
+        V omm7(amm7*bmm0);
+        // row 8
+        V omm8(amm8*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm0.mask_load(&b[i*N],mask,false);
+#else
+            const V bmm0(maskload<V>(&b[i*N],maska));
+#endif
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+            const V amm2(a[(j+2)*K+i]);
+            const V amm3(a[(j+3)*K+i]);
+            const V amm4(a[(j+4)*K+i]);
+            const V amm5(a[(j+5)*K+i]);
+            const V amm6(a[(j+6)*K+i]);
+            const V amm7(a[(j+7)*K+i]);
+
+            const V amm8(a[(j+8)*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+            // row 2
+            omm2  = fmadd(amm2,bmm0,omm2);
+            // row 3
+            omm3  = fmadd(amm3,bmm0,omm3);
+            // row 4
+            omm4  = fmadd(amm4,bmm0,omm4);
+            // row 5
+            omm5  = fmadd(amm5,bmm0,omm5);
+            // row 6
+            omm6  = fmadd(amm6,bmm0,omm6);
+            // row 7
+            omm7  = fmadd(amm7,bmm0,omm7);
+            // row 8
+            omm8  = fmadd(amm8,bmm0,omm8);
+        }
+
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+        omm2.store(&out[(j+2)*N],false);
+        omm3.store(&out[(j+3)*N],false);
+        omm4.store(&out[(j+4)*N],false);
+        omm5.store(&out[(j+5)*N],false);
+        omm6.store(&out[(j+6)*N],false);
+        omm7.store(&out[(j+7)*N],false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+        omm8.mask_store(&out[(j+8)*N],mask,false);
+#else
+        maskstore(&out[(j+8)*N],maska,omm8);
+#endif
+        return;
+}
+
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+template<typename T, typename V, typename MaskType, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==8, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const MaskType mask,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#else
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==8, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int (&maska)[V::Size],
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#endif
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+        V bmm0;
+        bmm0.mask_load(&b[0],mask,false);
+#else
+        const V bmm0(maskload<V>(&b[0],maska));
+#endif
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+        const V amm3(a[(j+3)*K]);
+        const V amm4(a[(j+4)*K]);
+        const V amm5(a[(j+5)*K]);
+        const V amm6(a[(j+6)*K]);
+        const V amm7(a[(j+7)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+        // row 2
+        V omm2(amm2*bmm0);
+        // row 3
+        V omm3(amm3*bmm0);
+        // row 4
+        V omm4(amm4*bmm0);
+        // row 5
+        V omm5(amm5*bmm0);
+        // row 6
+        V omm6(amm6*bmm0);
+        // row 7
+        V omm7(amm7*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm0.mask_load(&b[i*N],mask,false);
+#else
+            const V bmm0(maskload<V>(&b[i*N],maska));
+#endif
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+            const V amm2(a[(j+2)*K+i]);
+            const V amm3(a[(j+3)*K+i]);
+            const V amm4(a[(j+4)*K+i]);
+            const V amm5(a[(j+5)*K+i]);
+            const V amm6(a[(j+6)*K+i]);
+            const V amm7(a[(j+7)*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+            // row 2
+            omm2  = fmadd(amm2,bmm0,omm2);
+            // row 3
+            omm3  = fmadd(amm3,bmm0,omm3);
+            // row 4
+            omm4  = fmadd(amm4,bmm0,omm4);
+            // row 5
+            omm5  = fmadd(amm5,bmm0,omm5);
+            // row 6
+            omm6  = fmadd(amm6,bmm0,omm6);
+            // row 7
+            omm7  = fmadd(amm7,bmm0,omm7);
+        }
+
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+        omm2.store(&out[(j+2)*N],false);
+        omm3.store(&out[(j+3)*N],false);
+        omm4.store(&out[(j+4)*N],false);
+        omm5.store(&out[(j+5)*N],false);
+        omm6.store(&out[(j+6)*N],false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+        omm7.mask_store(&out[(j+7)*N],mask,false);
+#else
+        maskstore(&out[(j+7)*N],maska,omm7);
+#endif
+        return;
+}
+
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+template<typename T, typename V, typename MaskType, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==7, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const MaskType mask,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#else
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==7, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int (&maska)[V::Size],
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#endif
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+        V bmm0;
+        bmm0.mask_load(&b[0],mask,false);
+#else
+        const V bmm0(maskload<V>(&b[0],maska));
+#endif
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+        const V amm3(a[(j+3)*K]);
+        const V amm4(a[(j+4)*K]);
+        const V amm5(a[(j+5)*K]);
+        const V amm6(a[(j+6)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+        // row 2
+        V omm2(amm2*bmm0);
+        // row 3
+        V omm3(amm3*bmm0);
+        // row 4
+        V omm4(amm4*bmm0);
+        // row 5
+        V omm5(amm5*bmm0);
+        // row 6
+        V omm6(amm6*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm0.mask_load(&b[i*N],mask,false);
+#else
+            const V bmm0(maskload<V>(&b[i*N],maska));
+#endif
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+            const V amm2(a[(j+2)*K+i]);
+            const V amm3(a[(j+3)*K+i]);
+            const V amm4(a[(j+4)*K+i]);
+            const V amm5(a[(j+5)*K+i]);
+            const V amm6(a[(j+6)*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+            // row 2
+            omm2  = fmadd(amm2,bmm0,omm2);
+            // row 3
+            omm3  = fmadd(amm3,bmm0,omm3);
+            // row 4
+            omm4  = fmadd(amm4,bmm0,omm4);
+            // row 5
+            omm5  = fmadd(amm5,bmm0,omm5);
+            // row 6
+            omm6  = fmadd(amm6,bmm0,omm6);
+        }
+
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+        omm2.store(&out[(j+2)*N],false);
+        omm3.store(&out[(j+3)*N],false);
+        omm4.store(&out[(j+4)*N],false);
+        omm5.store(&out[(j+5)*N],false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+        omm6.mask_store(&out[(j+6)*N],mask,false);
+#else
+        maskstore(&out[(j+6)*N],maska,omm6);
+#endif
+        return;
+}
+
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+template<typename T, typename V, typename MaskType, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==6, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const MaskType mask,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#else
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==6, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int (&maska)[V::Size],
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#endif
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+        V bmm0;
+        bmm0.mask_load(&b[0],mask,false);
+#else
+        const V bmm0(maskload<V>(&b[0],maska));
+#endif
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+        const V amm3(a[(j+3)*K]);
+        const V amm4(a[(j+4)*K]);
+        const V amm5(a[(j+5)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+        // row 2
+        V omm2(amm2*bmm0);
+        // row 3
+        V omm3(amm3*bmm0);
+        // row 4
+        V omm4(amm4*bmm0);
+        // row 5
+        V omm5(amm5*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm0.mask_load(&b[i*N],mask,false);
+#else
+            const V bmm0(maskload<V>(&b[i*N],maska));
+#endif
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+            const V amm2(a[(j+2)*K+i]);
+            const V amm3(a[(j+3)*K+i]);
+            const V amm4(a[(j+4)*K+i]);
+            const V amm5(a[(j+5)*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+            // row 2
+            omm2  = fmadd(amm2,bmm0,omm2);
+            // row 3
+            omm3  = fmadd(amm3,bmm0,omm3);
+            // row 4
+            omm4  = fmadd(amm4,bmm0,omm4);
+            // row 5
+            omm5  = fmadd(amm5,bmm0,omm5);
+        }
+
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+        omm2.store(&out[(j+2)*N],false);
+        omm3.store(&out[(j+3)*N],false);
+        omm4.store(&out[(j+4)*N],false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+        omm5.mask_store(&out[(j+5)*N],mask,false);
+#else
+        maskstore(&out[(j+5)*N],maska,omm5);
+#endif
+        return;
+
+}
+
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+template<typename T, typename V, typename MaskType, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==5, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const MaskType mask,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#else
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==5, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int (&maska)[V::Size],
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#endif
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+        V bmm0;
+        bmm0.mask_load(&b[0],mask,false);
+#else
+        const V bmm0(maskload<V>(&b[0],maska));
+#endif
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+        const V amm3(a[(j+3)*K]);
+        const V amm4(a[(j+4)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+        // row 2
+        V omm2(amm2*bmm0);
+        // row 3
+        V omm3(amm3*bmm0);
+        // row 4
+        V omm4(amm4*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm0.mask_load(&b[i*N],mask,false);
+#else
+            const V bmm0(maskload<V>(&b[i*N],maska));
+#endif
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+            const V amm2(a[(j+2)*K+i]);
+            const V amm3(a[(j+3)*K+i]);
+            const V amm4(a[(j+4)*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+            // row 2
+            omm2  = fmadd(amm2,bmm0,omm2);
+            // row 3
+            omm3  = fmadd(amm3,bmm0,omm3);
+            // row 4
+            omm4  = fmadd(amm4,bmm0,omm4);
+        }
+
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+        omm2.store(&out[(j+2)*N],false);
+        omm3.store(&out[(j+3)*N],false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+        omm4.mask_store(&out[(j+4)*N],mask,false);
+#else
+        maskstore(&out[(j+4)*N],maska,omm4);
+#endif
+        return;
+
+}
+
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+template<typename T, typename V, typename MaskType, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==4, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const MaskType mask,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#else
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==4, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int (&maska)[V::Size],
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#endif
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+        V bmm0;
+        bmm0.mask_load(&b[0],mask,false);
+#else
+        const V bmm0(maskload<V>(&b[0],maska));
+#endif
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+        const V amm3(a[(j+3)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+        // row 2
+        V omm2(amm2*bmm0);
+        // row 3
+        V omm3(amm3*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm0.mask_load(&b[i*N],mask,false);
+#else
+            const V bmm0(maskload<V>(&b[i*N],maska));
+#endif
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+            const V amm2(a[(j+2)*K+i]);
+            const V amm3(a[(j+3)*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+            // row 2
+            omm2  = fmadd(amm2,bmm0,omm2);
+            // row 3
+            omm3  = fmadd(amm3,bmm0,omm3);
+        }
+
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+        omm2.store(&out[(j+2)*N],false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+        omm3.mask_store(&out[(j+3)*N],mask,false);
+#else
+        maskstore(&out[(j+3)*N],maska,omm3);
+#endif
+        return;
+
+}
+
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+template<typename T, typename V, typename MaskType, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==3, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const MaskType mask,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#else
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==3, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int (&maska)[V::Size],
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#endif
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+        V bmm0;
+        bmm0.mask_load(&b[0],mask,false);
+#else
+        const V bmm0(maskload<V>(&b[0],maska));
+#endif
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+        // row 2
+        V omm2(amm2*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm0.mask_load(&b[i*N],mask,false);
+#else
+            const V bmm0(maskload<V>(&b[i*N],maska));
+#endif
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+            const V amm2(a[(j+2)*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+            // row 2
+            omm2  = fmadd(amm2,bmm0,omm2);
+        }
+
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+        omm2.mask_store(&out[(j+2)*N],mask,false);
+#else
+        maskstore(&out[(j+2)*N],maska,omm2);
+#endif
+        return;
+
+}
+
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+template<typename T, typename V, typename MaskType, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==2, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const MaskType mask,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#else
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==2, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int (&maska)[V::Size],
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#endif
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+        V bmm0;
+        bmm0.mask_load(&b[0],mask,false);
+#else
+        const V bmm0(maskload<V>(&b[0],maska));
+#endif
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm0.mask_load(&b[i*N],mask,false);
+#else
+            const V bmm0(maskload<V>(&b[i*N],maska));
+#endif
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+        }
+
+        omm0.store(&out[(j  )*N],false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+        omm1.mask_store(&out[(j+1)*N],mask,false);
+#else
+        maskstore(&out[(j+1)*N],maska,omm1);
+#endif
+        return;
+
+}
+
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+template<typename T, typename V, typename MaskType, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==1, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const MaskType mask,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#else
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==1, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int (&maska)[V::Size],
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#endif
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+        V bmm0;
+        bmm0.mask_load(&b[0],mask,false);
+#else
+        const V bmm0(maskload<V>(&b[0],maska));
+#endif
+
+        const V amm0(a[(j  )*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm0.mask_load(&b[i*N],mask,false);
+#else
+            const V bmm0(maskload<V>(&b[i*N],maska));
+#endif
+            const V amm0(a[(j  )*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+        }
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+        omm0.mask_store(&out[(j )*N],mask,false);
+#else
+        maskstore(&out[(j )*N],maska,omm0);
+#endif
+        return;
+
+}
+
+
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+template<typename T, typename V, typename MaskType, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==0, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const MaskType mask,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#else
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==0, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int (&maska)[V::Size],
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+#endif
+    return;
+}
+
+
+template<typename T, size_t M, size_t K, size_t N,
+         enable_if_t_<is_less<N, choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size>::value,bool> = 0>
+FASTOR_INLINE
+void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+
+    using V = typename choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
+    // using V = SIMDVector<T,DEFAULT_ABI>;
+    // Unroll a by 10
+    constexpr size_t unrollOuterloop = 10UL;
+    constexpr size_t M0 = M / unrollOuterloop * unrollOuterloop;
+
+    // Number of columns of c (N) that can be safely unrolled with V::Size
+    constexpr size_t N1 = N / V::Size * V::Size;
+
+    int maska[V::Size];
+    std::fill(maska,&maska[V::Size], -1);
+    for (size_t jj=0; jj < V::Size - (N-N1); ++jj) maska[jj] = 0;
+#ifdef FASTOR_HAS_AVX512_MASKS
+    const auto mask = array_to_mask(maska);
+    V bmm0;
+#endif
+
+    size_t j=0;
+    for (; j<M0; j+=10UL) {
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+        bmm0.mask_load(&b[0],mask,false);
+#else
+        const V bmm0(maskload<V>(&b[0],maska));
+#endif
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+        const V amm3(a[(j+3)*K]);
+        const V amm4(a[(j+4)*K]);
+        const V amm5(a[(j+5)*K]);
+        const V amm6(a[(j+6)*K]);
+        const V amm7(a[(j+7)*K]);
+        const V amm8(a[(j+8)*K]);
+        const V amm9(a[(j+9)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+        // row 2
+        V omm2(amm2*bmm0);
+        // row 3
+        V omm3(amm3*bmm0);
+        // row 4
+        V omm4(amm4*bmm0);
+        // row 5
+        V omm5(amm5*bmm0);
+        // row 6
+        V omm6(amm6*bmm0);
+        // row 7
+        V omm7(amm7*bmm0);
+        // row 8
+        V omm8(amm8*bmm0);
+        // row 9
+        V omm9(amm9*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm0.mask_load(&b[i*N],mask,false);
+#else
+            const V bmm0(maskload<V>(&b[i*N],maska));
+#endif
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+            const V amm2(a[(j+2)*K+i]);
+            const V amm3(a[(j+3)*K+i]);
+            const V amm4(a[(j+4)*K+i]);
+            const V amm5(a[(j+5)*K+i]);
+            const V amm6(a[(j+6)*K+i]);
+            const V amm7(a[(j+7)*K+i]);
+            const V amm8(a[(j+8)*K+i]);
+            const V amm9(a[(j+9)*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+            // row 2
+            omm2  = fmadd(amm2,bmm0,omm2);
+            // row 3
+            omm3  = fmadd(amm3,bmm0,omm3);
+            // row 4
+            omm4  = fmadd(amm4,bmm0,omm4);
+            // row 5
+            omm5  = fmadd(amm5,bmm0,omm5);
+            // row 6
+            omm6  = fmadd(amm6,bmm0,omm6);
+            // row 7
+            omm7  = fmadd(amm7,bmm0,omm7);
+            // row 8
+            omm8  = fmadd(amm8,bmm0,omm8);
+            // row 9
+            omm9  = fmadd(amm9,bmm0,omm9);
+        }
+
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+        omm2.store(&out[(j+2)*N],false);
+        omm3.store(&out[(j+3)*N],false);
+        omm4.store(&out[(j+4)*N],false);
+        omm5.store(&out[(j+5)*N],false);
+        omm6.store(&out[(j+6)*N],false);
+        omm7.store(&out[(j+7)*N],false);
+        omm8.store(&out[(j+8)*N],false);
+#ifdef FASTOR_HAS_AVX512_MASKS
+        omm9.mask_store(&out[(j+9)*N],mask,false);
+#else
+        maskstore(&out[(j+9)*N],maska,omm9);
+#endif
+    }
+
+#ifdef FASTOR_HAS_AVX512_MASKS
+    matmul_mk_uptosimd_remainder_kernel<T,V,decltype(mask),K,N,M-M0>(j,mask,a,b,out);
+#else
+    matmul_mk_uptosimd_remainder_kernel<T,V,K,N,M-M0>(j,maska,a,b,out);
+#endif
+}
+
+
+
+
+
+
 // The function implements standard loop unrolling over M. It uses conditional
 // loads and store using masks and requires at least AVX. The efficiency of the method comes from
 // the fact that it attempts to achieve exact two FMA per load. Both GCC and Clang emit excellent
@@ -28,8 +816,7 @@ namespace internal {
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<
             (is_less<N,2*choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size>::value &&
-            N!=choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size &&
-            is_greater_equal<N,5>::value),bool>::type = 0>
+            is_greater<N,choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size>::value),bool>::type = 0>
 FASTOR_INLINE
 void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
@@ -276,178 +1063,6 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
     }
 #endif
 }
-
-
-
-// Cover the N==2 and N==3 case
-template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<
-            (N==3 ||
-            (N==2 && is_greater<choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,2>::value)) &&
-            1!=choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,bool>::type = 0>
-FASTOR_INLINE
-void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
-
-    using V = typename std::conditional<sizeof(T)==8, SIMDVector<T,simd_abi::avx>,
-                typename std::conditional<sizeof(T)==4, SIMDVector<T,simd_abi::sse>,
-                    SIMDVector<T,simd_abi::fixed_size<4>>
-                >::type
-              >::type;
-
-    constexpr size_t unrollOuterloop = 5UL;
-    constexpr size_t M0 = M / unrollOuterloop * unrollOuterloop;
-    // constexpr size_t remainder = M < unrollOuterloop ? 0 : M0-unrollOuterloop;
-
-    // Number of columns of c (N) that can be safely unrolled with V::Size
-    constexpr size_t N1 = N / V::Size * V::Size;
-
-    int maska[V::Size];
-    std::fill(maska,&maska[V::Size], -1);
-    for (size_t jj=0; jj < V::Size - (N-N1); ++jj) maska[jj] = 0;
-
-    size_t j=0;
-    for (; j<M0; j+=unrollOuterloop) {
-        V omm0, omm1, omm2, omm3, omm4;
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(maskload<V>(&b[i*N],maska));
-
-            const T amm0       = a[j*K+i];
-            const T amm1       = a[(j+1)*K+i];
-            const T amm2       = a[(j+2)*K+i];
-            const T amm3       = a[(j+3)*K+i];
-            const T amm4       = a[(j+4)*K+i];
-
-            // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
-            // row 1
-            V a_vec1(amm1);
-            omm1  = fmadd(a_vec1,bmm0,omm1);
-            // row 2
-            V a_vec2(amm2);
-            omm2  = fmadd(a_vec2,bmm0,omm2);
-            // row 3
-            V a_vec3(amm3);
-            omm3  = fmadd(a_vec3,bmm0,omm3);
-            // row 4
-            V a_vec4(amm4);
-            omm4  = fmadd(a_vec4,bmm0,omm4);
-        }
-
-        omm0.store(&out[(j+0)*N],false);
-        omm1.store(&out[(j+1)*N],false);
-        omm2.store(&out[(j+2)*N],false);
-        omm3.store(&out[(j+3)*N],false);
-        maskstore(&out[(j+4)*N],maska,omm4);
-    }
-
-    // Remainder M-M0 rows
-    // Explicitly unroll remaining loops, there is going to be atmost 4
-    FASTOR_IF_CONSTEXPR (M-M0==4) {
-        V omm0, omm1, omm2, omm3;
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(maskload<V>(&b[i*N],maska));
-
-            const T amm0       = a[j*K+i];
-            const T amm1       = a[(j+1)*K+i];
-            const T amm2       = a[(j+2)*K+i];
-            const T amm3       = a[(j+3)*K+i];
-
-            // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
-            // row 1
-            V a_vec1(amm1);
-            omm1  = fmadd(a_vec1,bmm0,omm1);
-            // row 2
-            V a_vec2(amm2);
-            omm2  = fmadd(a_vec2,bmm0,omm2);
-            // row 3
-            V a_vec3(amm3);
-            omm3  = fmadd(a_vec3,bmm0,omm3);
-        }
-
-        omm0.store(&out[(j+0)*N],false);
-        omm1.store(&out[(j+1)*N],false);
-        omm2.store(&out[(j+2)*N],false);
-        maskstore(&out[(j+3)*N],maska,omm3);
-    }
-
-    else FASTOR_IF_CONSTEXPR (M-M0==3) {
-        V omm0, omm1, omm2;
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(maskload<V>(&b[i*N],maska));
-
-            const T amm0       = a[j*K+i];
-            const T amm1       = a[(j+1)*K+i];
-            const T amm2       = a[(j+2)*K+i];
-
-            // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
-            // row 1
-            V a_vec1(amm1);
-            omm1  = fmadd(a_vec1,bmm0,omm1);
-            // row 2
-            V a_vec2(amm2);
-            omm2  = fmadd(a_vec2,bmm0,omm2);
-        }
-
-        omm0.store(&out[(j+0)*N],false);
-        omm1.store(&out[(j+1)*N],false);
-        maskstore(&out[(j+2)*N],maska,omm2);
-    }
-
-    else FASTOR_IF_CONSTEXPR (M-M0==2) {
-        V omm0, omm1;
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(maskload<V>(&b[i*N],maska));
-
-            const T amm0       = a[j*K+i];
-            const T amm1       = a[(j+1)*K+i];
-
-            // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
-            // row 1
-            V a_vec1(amm1);
-            omm1  = fmadd(a_vec1,bmm0,omm1);
-        }
-
-        omm0.store(&out[(j+0)*N],false);
-        maskstore(&out[(j+1)*N],maska,omm1);
-    }
-
-    else FASTOR_IF_CONSTEXPR (M-M0==1) {
-        V omm0;
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(maskload<V>(&b[i*N],maska));
-
-            const T amm0       = a[j*K+i];
-
-            // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
-        }
-
-        maskstore(&out[(j+0)*N],maska,omm0);
-    }
-#if 0
-    // This is never hit but kept for debugging
-    else {
-        V c_ij[M-M0];
-        for (size_t j=M0; j<M; ++j) {
-            for (size_t i=0; i<K; ++i) {
-                const V bmm0(maskload<V>(&b[i*N],maska));
-                const V amm0(a[j*K+i]);
-                c_ij[j] = fmadd(amm0,bmm0,c_ij[j]);
-            }
-            maskstore(&out[j*N],maska,c_ij[j]);
-        }
-    }
-#endif
-}
-
 
 
 // Take care of 2*V::Size cases
@@ -1617,8 +2232,7 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
 
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<
-            (is_greater<N,5*choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size>::value) ||
-            N==1,bool>::type = 0>
+            is_greater<N,5*choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size>::value,bool>::type = 0>
 FASTOR_INLINE
 void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
     _matmul_base_masked<T,M,K,N>(a,b,out);

@@ -126,14 +126,24 @@ struct choose_best_simd_type<__svec<T,ABI>,N> {
     using actual_type = __svec<T,ABI>;
     static constexpr size_t _vec_size = get_simd_vector_size<__svec<T,ABI>>::value;
     // For exact fractions simd gets proper speed up for instance for matmul
-    // using type = typename is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::type;
+    using exact_multiple_t = typename is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::type;
     static constexpr bool is_exact_multiple = is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::value;
-    using size_based_type = typename std::conditional<is_exact_multiple, typename is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::type,
-                    typename std::conditional<is_greater<_vec_size,2UL*N>::value, typename get_quarter_simd_type<__svec<T,ABI>>::type,
-                        typename std::conditional<is_greater<_vec_size,N>::value, typename get_half_simd_type<__svec<T,ABI>>::type, actual_type
+
+#if defined(FASTOR_AVX2_IMPL) || defined(FASTOR_HAS_AVX512_MASKS)
+    using size_based_type = typename std::conditional<is_exact_multiple, exact_multiple_t, actual_type>::type;
+#else
+    using size_based_type = typename std::conditional<is_exact_multiple, exact_multiple_t,
+                        typename std::conditional<is_less<N,_vec_size>::value, typename get_half_simd_type<__svec<T,ABI>>::type, actual_type
                         >::type
-                    >::type
-                 >::type;
+                     >::type;
+#endif
+
+    // using size_based_type = typename std::conditional<is_exact_multiple, typename is_exact_multiple_of_smaller_simd<__svec<T,ABI>,N>::type,
+    //                 typename std::conditional<is_greater<_vec_size,2UL*N>::value, typename get_quarter_simd_type<__svec<T,ABI>>::type,
+    //                     typename std::conditional<is_greater<_vec_size,N>::value, typename get_half_simd_type<__svec<T,ABI>>::type, actual_type
+    //                     >::type
+    //                 >::type
+    //              >::type;
 
     // // For other fractions masking might be a better idea than, hence this special logic for remainder using is_less.
     // // For no special logic use the above case
