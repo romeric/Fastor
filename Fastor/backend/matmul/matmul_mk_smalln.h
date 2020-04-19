@@ -1229,7 +1229,7 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
 // performance really bad
 //-----------------------------------------------------------------------------------------------------------
 template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<N==4*choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,bool>::type = 0>
+         typename std::enable_if<N==4*internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,bool>::type = 0>
 FASTOR_INLINE
 void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
@@ -1243,65 +1243,92 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
 
     size_t j=0;
     for (; j<M0; j+=unrollOuterloop) {
-        const size_t from = j;
-        V omm0, omm1, omm2, omm3, omm4, omm5, omm6, omm7;
-        for (size_t i=0; i<K; ++i) {
+
+        const V amm0(a[j*K]);
+        const V amm1(a[(j+1)*K]);
+
+        const V bmm0(&b[0], isBAligned);
+        const V bmm1((&b[V::Size]),isBAligned);
+        const V bmm2((&b[2*V::Size]),isBAligned);
+        const V bmm3((&b[3*V::Size]),isBAligned);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        V omm1(amm0*bmm1);
+        V omm2(amm0*bmm2);
+        V omm3(amm0*bmm3);
+        // row 1
+        V omm5(amm1*bmm0);
+        V omm6(amm1*bmm1);
+        V omm7(amm1*bmm2);
+        V omm8(amm1*bmm3);
+
+
+        for (size_t i=1; i<K; ++i) {
             const V bmm0(&b[i*N], isBAligned);
             const V bmm1((&b[i*N+V::Size]),isBAligned);
             const V bmm2((&b[i*N+2*V::Size]),isBAligned);
             const V bmm3((&b[i*N+3*V::Size]),isBAligned);
 
-            const T amm0       = a[from*K+i];
-            const T amm1       = a[(from+1)*K+i];
+            const V amm0       = a[j*K+i];
+            const V amm1       = a[(j+1)*K+i];
 
             // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
-            omm1  = fmadd(a_vec0,bmm1,omm1);
-            omm2  = fmadd(a_vec0,bmm2,omm2);
-            omm3  = fmadd(a_vec0,bmm3,omm3);
+            omm0  = fmadd(amm0,bmm0,omm0);
+            omm1  = fmadd(amm0,bmm1,omm1);
+            omm2  = fmadd(amm0,bmm2,omm2);
+            omm3  = fmadd(amm0,bmm3,omm3);
             // row 1
-            V a_vec1(amm1);
-            omm4  = fmadd(a_vec1,bmm0,omm4);
-            omm5  = fmadd(a_vec1,bmm1,omm5);
-            omm6  = fmadd(a_vec1,bmm2,omm6);
-            omm7  = fmadd(a_vec1,bmm3,omm7);
+            omm5  = fmadd(amm1,bmm0,omm5);
+            omm6  = fmadd(amm1,bmm1,omm6);
+            omm7  = fmadd(amm1,bmm2,omm7);
+            omm8  = fmadd(amm1,bmm3,omm8);
         }
 
-        omm0.store(&out[from*N],isCAligned);
-        omm1.store(&out[from*N+V::Size],isCAligned);
-        omm2.store(&out[from*N+2*V::Size],isCAligned);
-        omm3.store(&out[from*N+3*V::Size],isCAligned);
+        omm0.store(&out[j*N],isCAligned);
+        omm1.store(&out[j*N+V::Size],isCAligned);
+        omm2.store(&out[j*N+2*V::Size],isCAligned);
+        omm3.store(&out[j*N+3*V::Size],isCAligned);
 
-        omm4.store(&out[(from+1)*N],isCAligned);
-        omm5.store(&out[(from+1)*N+V::Size],isCAligned);
-        omm6.store(&out[(from+1)*N+2*V::Size],isCAligned);
-        omm7.store(&out[(from+1)*N+3*V::Size],isCAligned);
+        omm5.store(&out[(j+1)*N],isCAligned);
+        omm6.store(&out[(j+1)*N+V::Size],isCAligned);
+        omm7.store(&out[(j+1)*N+2*V::Size],isCAligned);
+        omm8.store(&out[(j+1)*N+3*V::Size],isCAligned);
     }
 
     FASTOR_IF_CONSTEXPR (M-M0==1) {
-        const size_t from = j;
-        V omm0, omm1, omm2, omm3;
-        for (size_t i=0; i<K; ++i) {
+        const V amm0(a[j*K]);
+
+        const V bmm0(&b[0], isBAligned);
+        const V bmm1((&b[V::Size]),isBAligned);
+        const V bmm2((&b[2*V::Size]),isBAligned);
+        const V bmm3((&b[3*V::Size]),isBAligned);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        V omm1(amm0*bmm1);
+        V omm2(amm0*bmm2);
+        V omm3(amm0*bmm3);
+
+        for (size_t i=1; i<K; ++i) {
             const V bmm0(&b[i*N], isBAligned);
             const V bmm1((&b[i*N+V::Size]),isBAligned);
             const V bmm2((&b[i*N+2*V::Size]),isBAligned);
             const V bmm3((&b[i*N+3*V::Size]),isBAligned);
 
-            const T amm0       = a[from*K+i];
+            const V amm0       = a[j*K+i];
 
             // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
-            omm1  = fmadd(a_vec0,bmm1,omm1);
-            omm2  = fmadd(a_vec0,bmm2,omm2);
-            omm3  = fmadd(a_vec0,bmm3,omm3);
+            omm0  = fmadd(amm0,bmm0,omm0);
+            omm1  = fmadd(amm0,bmm1,omm1);
+            omm2  = fmadd(amm0,bmm2,omm2);
+            omm3  = fmadd(amm0,bmm3,omm3);
         }
 
-        omm0.store(&out[from*N],isCAligned);
-        omm1.store(&out[from*N+V::Size],isCAligned);
-        omm2.store(&out[from*N+2*V::Size],isCAligned);
-        omm3.store(&out[from*N+3*V::Size],isCAligned);
+        omm0.store(&out[j*N],isCAligned);
+        omm1.store(&out[j*N+V::Size],isCAligned);
+        omm2.store(&out[j*N+2*V::Size],isCAligned);
+        omm3.store(&out[j*N+3*V::Size],isCAligned);
     }
 }
 
