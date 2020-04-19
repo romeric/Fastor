@@ -22,7 +22,7 @@ void matmul_mkl(
     const float * FASTOR_RESTRICT b_data,
     float * FASTOR_RESTRICT out_data) {
 
-    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+    cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
                 M, N, K, 1.0, a_data, K, b_data, N, 0.0, out_data, N);
 
 }
