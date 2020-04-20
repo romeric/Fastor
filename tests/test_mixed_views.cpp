@@ -194,6 +194,28 @@ void run_mixed_views() {
         FASTOR_EXIT_ASSERT(abs(b.sum() - 48) < Tol);
     }
 
+    // Filter views
+    {
+        Tensor<T,7> a = {1,2,3,4,5,6,7};
+        Tensor<bool,7> mask = {false,false,true,true,true,false,true};
+        a(mask) = 100;
+        FASTOR_EXIT_ASSERT(abs(a.sum() - 409) < Tol);
+        Tensor<T,7> b = a(mask) + 1;
+        FASTOR_EXIT_ASSERT(abs(b.sum() - 407) < Tol);
+
+        Tensor<T,2,2> aa; aa.fill(2);
+        Tensor<bool,2,2> baa = {{false,true},{true,false}};
+        aa(baa) += 1 + aa;
+        FASTOR_EXIT_ASSERT(abs(aa.sum() - 14) < Tol);
+        aa(baa) -= 1 + aa;
+        aa(baa) = 0;
+        FASTOR_EXIT_ASSERT(abs(aa.sum() - 4) < Tol);
+        aa(baa) *= 1 + aa;
+        FASTOR_EXIT_ASSERT(abs(aa.sum() - 4) < Tol);
+        aa(baa) /= 1 + aa;
+        FASTOR_EXIT_ASSERT(abs(aa.sum() - 4) < Tol);
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 }
 

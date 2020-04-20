@@ -330,6 +330,15 @@ operator()(fseq<F,L,S>, const Tensor<Int,N> &_it0) {
     return TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,
         to_positive<fseq<F,L,S>,get_value<1,Rest...>::value>::type::Size,N>,2> (*this,tmp_it);
 }
+
+
+
+//----------------------------------------------------------------------------------------------------------//
+// Filter views
+FASTOR_INLINE TensorFilterViewExpr<Tensor<T,Rest...>,Tensor<bool,Rest...>,sizeof...(Rest)> operator()(const Tensor<bool,Rest...> &_fl) {
+    return TensorFilterViewExpr<Tensor<T,Rest...>,Tensor<bool,Rest...>,sizeof...(Rest)>(*this,_fl);
+}
+
 //----------------------------------------------------------------------------------------------------------//
 
 FASTOR_INLINE TensorConstViewExpr<Tensor<T,Rest...>,1> operator()(seq _s) const {

@@ -78,6 +78,9 @@ template<typename Expr, typename IterExpr, size_t DIMS>
 struct TensorRandomViewExpr;
 
 template<typename Expr, typename IterExpr, size_t DIMS>
+struct TensorFilterViewExpr;
+
+template<typename Expr, typename IterExpr, size_t DIMS>
 struct TensorConstRandomViewExpr;
 
 template<typename Expr, typename Seq0, size_t DIMS>

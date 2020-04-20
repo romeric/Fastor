@@ -11,10 +11,11 @@
 #include "Fastor/expressions/unary_ops/unary_math_ops.h"
 #include "Fastor/expressions/linalg_ops/linalg_ops.h"
 
-#include "Fastor/expressions/views/tensor_views.h"
 #include "Fastor/expressions/views/tensor_fixed_views_1d.h"
 #include "Fastor/expressions/views/tensor_fixed_views_2d.h"
 #include "Fastor/expressions/views/tensor_random_views.h"
+#include "Fastor/expressions/views/tensor_filter_views.h"
+#include "Fastor/expressions/views/tensor_views.h"
 
 #endif // EXPRESSIONS_H
 

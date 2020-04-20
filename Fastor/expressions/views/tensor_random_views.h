@@ -794,9 +794,7 @@ private:
     Tensor<T,Rest...> &expr;
     // The index tensor needs to be copied for the purpose of indexing a
     // multidimensional tensor with multiple 1D or any other lower other
-    // tensors. This issue could be solved by providing another type parameter/flag
-    // such as CopyIndex to the class which would use std::conditional to choose
-    // between "const Tensor<Int,IterSizes...> &" and "Tensor<Int,IterSizes...>"
+    // tensors.
 
     // const Tensor<Int,IterSizes...> &it_expr;
     Tensor<Int,IterSizes...> it_expr;
@@ -1232,7 +1230,6 @@ public:
             _data[it_expr.data()[i]] = num;
         }
 #else
-        T inum = T(1.)/num;
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             _data[it_expr.data()[i]] = num;
         }
@@ -1254,7 +1251,6 @@ public:
             _data[it_expr.data()[i]] += num;
         }
 #else
-        T inum = T(1.)/num;
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             _data[it_expr.data()[i]] += num;
         }
@@ -1276,7 +1272,6 @@ public:
             _data[it_expr.data()[i]] -= num;
         }
 #else
-        T inum = T(1.)/num;
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             _data[it_expr.data()[i]] -= num;
         }
@@ -1298,7 +1293,6 @@ public:
             _data[it_expr.data()[i]] *= num;
         }
 #else
-        T inum = T(1.)/num;
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             _data[it_expr.data()[i]] *= num;
         }
