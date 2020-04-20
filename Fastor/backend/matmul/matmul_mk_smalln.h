@@ -807,246 +807,618 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
 
 
 
+
+
+
+
+
+
+
+
+
+
 // Take care of N==V::Size
 //-----------------------------------------------------------------------------------------------------------
-// Compile time loop unroller
-template<size_t from, size_t to>
-struct matmul_inner_loop_unroller {
-    template<size_t M, size_t K, typename T, typename ABI>
-    static FASTOR_INLINE void fmadd_(const size_t i, const T * FASTOR_RESTRICT a,
-        const SIMDVector<T,ABI> &bmm0, SIMDVector<T,ABI> (&c_ij)[M]) {
-        const SIMDVector<T,ABI> amm0(a[from*K+i]);
-        c_ij[from] = fmadd(amm0,bmm0,c_ij[from]);
-        matmul_inner_loop_unroller<from+1,to>::template fmadd_<M,K,T,ABI>(i, a, bmm0, c_ij);
-    }
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==9, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
 
-    template<size_t M, typename T, typename ABI>
-    static FASTOR_INLINE void store_(const SIMDVector<T,ABI> (&c_ij)[M], T* FASTOR_RESTRICT out) {
-        c_ij[from].store(&out[from*SIMDVector<T,ABI>::Size]);
-        matmul_inner_loop_unroller<from+1,to>::template store_<M,T,ABI>(c_ij, out);
-    }
-};
+        const V bmm0(&b[0],false);
 
-template<size_t from>
-struct matmul_inner_loop_unroller<from,from> {
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+        const V amm3(a[(j+3)*K]);
+        const V amm4(a[(j+4)*K]);
+        const V amm5(a[(j+5)*K]);
+        const V amm6(a[(j+6)*K]);
+        const V amm7(a[(j+7)*K]);
+        const V amm8(a[(j+8)*K]);
 
-    template<size_t M, size_t K, typename T, typename ABI>
-    static FASTOR_INLINE void fmadd_(const size_t i, const T * FASTOR_RESTRICT a,
-        const SIMDVector<T,ABI> &bmm0, SIMDVector<T,ABI> (&c_ij)[M]) {
-        const SIMDVector<T,ABI> amm0(a[from*K+i]);
-        c_ij[from] = fmadd(amm0,bmm0,c_ij[from]);
-    }
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+        // row 2
+        V omm2(amm2*bmm0);
+        // row 3
+        V omm3(amm3*bmm0);
+        // row 4
+        V omm4(amm4*bmm0);
+        // row 5
+        V omm5(amm5*bmm0);
+        // row 6
+        V omm6(amm6*bmm0);
+        // row 7
+        V omm7(amm7*bmm0);
+        // row 8
+        V omm8(amm8*bmm0);
 
-    template<size_t M, typename T, typename ABI>
-    static FASTOR_INLINE void store_(const SIMDVector<T,ABI> (&c_ij)[M], T* FASTOR_RESTRICT out) {
-        c_ij[from].store(&out[from*SIMDVector<T,ABI>::Size],false);
-    }
-};
+        for (size_t i=1; i<K; ++i) {
 
+            const V bmm0(&b[i*N],false);
 
-// This implementation is based on 2k2/3k3/4k4 but generalised for all Ms that is
-// mk2/mk3/mk4/mk8 using compile time template unrolling. It uses an array of Vs
-// instead of registers to generalise on M. While the loops are completely unrolled
-// at compile time both clang and gcc fetch the first operand of (v)fmadd213ps for the
-// first iteration of the loop from the cache/memory instead of operating on registers directly
-// the remaining of the unrolled loop is on registers. However this has very little effect on
-// performance of small tensors. This method although generalises on M it is designed for M<V::size
-// in mind and works best for small Ms as unrolling beyond a certain size certainly hurts the performance
-//------------------------------------------------------------------------------------------------//
-template<typename T, size_t M, size_t K, size_t N,
-        typename std::enable_if<is_less_equal<M,16UL>::value &&
-        N==choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size &&
-        1!=choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,bool>::type = 0>
-FASTOR_INLINE
-void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+            const V amm2(a[(j+2)*K+i]);
+            const V amm3(a[(j+3)*K+i]);
+            const V amm4(a[(j+4)*K+i]);
+            const V amm5(a[(j+5)*K+i]);
+            const V amm6(a[(j+6)*K+i]);
+            const V amm7(a[(j+7)*K+i]);
 
-    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
-    V c_ij[M];
+            const V amm8(a[(j+8)*K+i]);
 
-    for (size_t i=0; i<K; ++i) {
-        const V bmm0(&b[i*V::Size],false);
-        matmul_inner_loop_unroller<0,M-1>::template fmadd_<M,K,T,typename V::abi_type>(i, a, bmm0, c_ij);
-    }
-    matmul_inner_loop_unroller<0,M-1>::template store_<M,T,typename V::abi_type>(c_ij, out);
-}
-
-#if 0
-// This is the non-unrolled version of the above
-template<typename T, size_t M, size_t K, size_t N,
-        typename std::enable_if<is_less_equal<M,16UL>::value &&
-        internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::Size==N,bool>::type = 0>
-FASTOR_INLINE
-void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
-
-    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
-    V c_ij[V::Size];
-
-    for (size_t j=0; j<M; ++j) {
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*V::Size]);
-            const V amm0(a[j*K+i]);
-            c_ij[j] = fmadd(amm0,bmm0,c_ij[j]);
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+            // row 2
+            omm2  = fmadd(amm2,bmm0,omm2);
+            // row 3
+            omm3  = fmadd(amm3,bmm0,omm3);
+            // row 4
+            omm4  = fmadd(amm4,bmm0,omm4);
+            // row 5
+            omm5  = fmadd(amm5,bmm0,omm5);
+            // row 6
+            omm6  = fmadd(amm6,bmm0,omm6);
+            // row 7
+            omm7  = fmadd(amm7,bmm0,omm7);
+            // row 8
+            omm8  = fmadd(amm8,bmm0,omm8);
         }
-        c_ij[j].store(&out[j*V::Size]);
-    }
+
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+        omm2.store(&out[(j+2)*N],false);
+        omm3.store(&out[(j+3)*N],false);
+        omm4.store(&out[(j+4)*N],false);
+        omm5.store(&out[(j+5)*N],false);
+        omm6.store(&out[(j+6)*N],false);
+        omm7.store(&out[(j+7)*N],false);
+        omm8.store(&out[(j+8)*N],false);
+        return;
 }
-#endif
+
+
+
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==8, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+
+        const V bmm0(&b[0],false);
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+        const V amm3(a[(j+3)*K]);
+        const V amm4(a[(j+4)*K]);
+        const V amm5(a[(j+5)*K]);
+        const V amm6(a[(j+6)*K]);
+        const V amm7(a[(j+7)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+        // row 2
+        V omm2(amm2*bmm0);
+        // row 3
+        V omm3(amm3*bmm0);
+        // row 4
+        V omm4(amm4*bmm0);
+        // row 5
+        V omm5(amm5*bmm0);
+        // row 6
+        V omm6(amm6*bmm0);
+        // row 7
+        V omm7(amm7*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+
+            const V bmm0(&b[i*N],false);
+
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+            const V amm2(a[(j+2)*K+i]);
+            const V amm3(a[(j+3)*K+i]);
+            const V amm4(a[(j+4)*K+i]);
+            const V amm5(a[(j+5)*K+i]);
+            const V amm6(a[(j+6)*K+i]);
+            const V amm7(a[(j+7)*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+            // row 2
+            omm2  = fmadd(amm2,bmm0,omm2);
+            // row 3
+            omm3  = fmadd(amm3,bmm0,omm3);
+            // row 4
+            omm4  = fmadd(amm4,bmm0,omm4);
+            // row 5
+            omm5  = fmadd(amm5,bmm0,omm5);
+            // row 6
+            omm6  = fmadd(amm6,bmm0,omm6);
+            // row 7
+            omm7  = fmadd(amm7,bmm0,omm7);
+        }
+
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+        omm2.store(&out[(j+2)*N],false);
+        omm3.store(&out[(j+3)*N],false);
+        omm4.store(&out[(j+4)*N],false);
+        omm5.store(&out[(j+5)*N],false);
+        omm6.store(&out[(j+6)*N],false);
+        omm7.store(&out[(j+7)*N],false);
+}
+
+
+
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==7, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+
+        const V bmm0(&b[0],false);
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+        const V amm3(a[(j+3)*K]);
+        const V amm4(a[(j+4)*K]);
+        const V amm5(a[(j+5)*K]);
+        const V amm6(a[(j+6)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+        // row 2
+        V omm2(amm2*bmm0);
+        // row 3
+        V omm3(amm3*bmm0);
+        // row 4
+        V omm4(amm4*bmm0);
+        // row 5
+        V omm5(amm5*bmm0);
+        // row 6
+        V omm6(amm6*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+
+            const V bmm0(&b[i*N],false);
+
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+            const V amm2(a[(j+2)*K+i]);
+            const V amm3(a[(j+3)*K+i]);
+            const V amm4(a[(j+4)*K+i]);
+            const V amm5(a[(j+5)*K+i]);
+            const V amm6(a[(j+6)*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+            // row 2
+            omm2  = fmadd(amm2,bmm0,omm2);
+            // row 3
+            omm3  = fmadd(amm3,bmm0,omm3);
+            // row 4
+            omm4  = fmadd(amm4,bmm0,omm4);
+            // row 5
+            omm5  = fmadd(amm5,bmm0,omm5);
+            // row 6
+            omm6  = fmadd(amm6,bmm0,omm6);
+        }
+
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+        omm2.store(&out[(j+2)*N],false);
+        omm3.store(&out[(j+3)*N],false);
+        omm4.store(&out[(j+4)*N],false);
+        omm5.store(&out[(j+5)*N],false);
+        omm6.store(&out[(j+6)*N],false);
+        return;
+}
+
+
+
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==6, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+
+        const V bmm0(&b[0],false);
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+        const V amm3(a[(j+3)*K]);
+        const V amm4(a[(j+4)*K]);
+        const V amm5(a[(j+5)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+        // row 2
+        V omm2(amm2*bmm0);
+        // row 3
+        V omm3(amm3*bmm0);
+        // row 4
+        V omm4(amm4*bmm0);
+        // row 5
+        V omm5(amm5*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+
+            const V bmm0(&b[i*N],false);
+
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+            const V amm2(a[(j+2)*K+i]);
+            const V amm3(a[(j+3)*K+i]);
+            const V amm4(a[(j+4)*K+i]);
+            const V amm5(a[(j+5)*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+            // row 2
+            omm2  = fmadd(amm2,bmm0,omm2);
+            // row 3
+            omm3  = fmadd(amm3,bmm0,omm3);
+            // row 4
+            omm4  = fmadd(amm4,bmm0,omm4);
+            // row 5
+            omm5  = fmadd(amm5,bmm0,omm5);
+        }
+
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+        omm2.store(&out[(j+2)*N],false);
+        omm3.store(&out[(j+3)*N],false);
+        omm4.store(&out[(j+4)*N],false);
+        omm5.store(&out[(j+5)*N],false);
+        return;
+}
+
+
+
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==5, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+
+        const V bmm0(&b[0],false);
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+        const V amm3(a[(j+3)*K]);
+        const V amm4(a[(j+4)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+        // row 2
+        V omm2(amm2*bmm0);
+        // row 3
+        V omm3(amm3*bmm0);
+        // row 4
+        V omm4(amm4*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+
+            const V bmm0(&b[i*N],false);
+
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+            const V amm2(a[(j+2)*K+i]);
+            const V amm3(a[(j+3)*K+i]);
+            const V amm4(a[(j+4)*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+            // row 2
+            omm2  = fmadd(amm2,bmm0,omm2);
+            // row 3
+            omm3  = fmadd(amm3,bmm0,omm3);
+            // row 4
+            omm4  = fmadd(amm4,bmm0,omm4);
+        }
+
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+        omm2.store(&out[(j+2)*N],false);
+        omm3.store(&out[(j+3)*N],false);
+        omm4.store(&out[(j+4)*N],false);
+        return;
+}
+
+
+
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==4, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+
+        const V bmm0(&b[0],false);
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+        const V amm3(a[(j+3)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+        // row 2
+        V omm2(amm2*bmm0);
+        // row 3
+        V omm3(amm3*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+
+            const V bmm0(&b[i*N],false);
+
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+            const V amm2(a[(j+2)*K+i]);
+            const V amm3(a[(j+3)*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+            // row 2
+            omm2  = fmadd(amm2,bmm0,omm2);
+            // row 3
+            omm3  = fmadd(amm3,bmm0,omm3);
+        }
+
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+        omm2.store(&out[(j+2)*N],false);
+        omm3.store(&out[(j+3)*N],false);
+        return;
+}
+
+
+
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==3, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+
+        const V bmm0(&b[0],false);
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+        // row 2
+        V omm2(amm2*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+
+            const V bmm0(&b[i*N],false);
+
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+            const V amm2(a[(j+2)*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+            // row 2
+            omm2  = fmadd(amm2,bmm0,omm2);
+        }
+
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+        omm2.store(&out[(j+2)*N],false);
+        return;
+}
+
+
+
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==2, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+
+        const V bmm0(&b[0],false);
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+
+            const V bmm0(&b[i*N],false);
+
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            // row 1
+            omm1  = fmadd(amm1,bmm0,omm1);
+        }
+
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+        return;
+}
+
+
+
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==1, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+
+        const V bmm0(&b[0],false);
+
+        const V amm0(a[(j  )*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+
+            const V bmm0(&b[i*N],false);
+
+            const V amm0(a[(j  )*K+i]);
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+        }
+
+        omm0.store(&out[(j )*N],false);
+        return;
+}
+
+
+
+template<typename T, typename V, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==0, bool> = false>
+FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j,
+    const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b, T* FASTOR_RESTRICT out) {
+    return;
+}
 
 
 template<typename T, size_t M, size_t K, size_t N,
-        typename std::enable_if<is_greater<M,16UL>::value &&
-        N==choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,bool>::type = 0>
+         enable_if_t_<N==choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,bool> = 0>
 FASTOR_INLINE
 void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
-    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
+    using V = typename choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
 
-    constexpr size_t unrollOuterloop = 5UL;
+    // Unroll a by 10
+    constexpr size_t unrollOuterloop = 10UL;
     constexpr size_t M0 = M / unrollOuterloop * unrollOuterloop;
-    // constexpr size_t remainder = M < unrollOuterloop ? 0 : M0-unrollOuterloop;
-    constexpr bool isBAligned = false;
-    constexpr bool isCAligned = false;
 
     size_t j=0;
-    for (; j<M0; j+=unrollOuterloop) {
-        V omm0, omm1, omm2, omm3, omm4;
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*N],isBAligned);
+    for (; j<M0; j+=10UL) {
 
-            const T amm0       = a[j*K+i];
-            const T amm1       = a[(j+1)*K+i];
-            const T amm2       = a[(j+2)*K+i];
-            const T amm3       = a[(j+3)*K+i];
-            const T amm4       = a[(j+4)*K+i];
+        const V bmm0(&b[0],false);
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+        const V amm3(a[(j+3)*K]);
+        const V amm4(a[(j+4)*K]);
+        const V amm5(a[(j+5)*K]);
+        const V amm6(a[(j+6)*K]);
+        const V amm7(a[(j+7)*K]);
+        const V amm8(a[(j+8)*K]);
+        const V amm9(a[(j+9)*K]);
+
+        // row 0
+        V omm0(amm0*bmm0);
+        // row 1
+        V omm1(amm1*bmm0);
+        // row 2
+        V omm2(amm2*bmm0);
+        // row 3
+        V omm3(amm3*bmm0);
+        // row 4
+        V omm4(amm4*bmm0);
+        // row 5
+        V omm5(amm5*bmm0);
+        // row 6
+        V omm6(amm6*bmm0);
+        // row 7
+        V omm7(amm7*bmm0);
+        // row 8
+        V omm8(amm8*bmm0);
+        // row 9
+        V omm9(amm9*bmm0);
+
+        for (size_t i=1; i<K; ++i) {
+
+            const V bmm0(&b[i*N],false);
+
+            const V amm0(a[(j  )*K+i]);
+            const V amm1(a[(j+1)*K+i]);
+            const V amm2(a[(j+2)*K+i]);
+            const V amm3(a[(j+3)*K+i]);
+            const V amm4(a[(j+4)*K+i]);
+            const V amm5(a[(j+5)*K+i]);
+            const V amm6(a[(j+6)*K+i]);
+            const V amm7(a[(j+7)*K+i]);
+            const V amm8(a[(j+8)*K+i]);
+            const V amm9(a[(j+9)*K+i]);
 
             // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
+            omm0  = fmadd(amm0,bmm0,omm0);
             // row 1
-            V a_vec1(amm1);
-            omm1  = fmadd(a_vec1,bmm0,omm1);
+            omm1  = fmadd(amm1,bmm0,omm1);
             // row 2
-            V a_vec2(amm2);
-            omm2  = fmadd(a_vec2,bmm0,omm2);
+            omm2  = fmadd(amm2,bmm0,omm2);
             // row 3
-            V a_vec3(amm3);
-            omm3  = fmadd(a_vec3,bmm0,omm3);
+            omm3  = fmadd(amm3,bmm0,omm3);
             // row 4
-            V a_vec4(amm4);
-            omm4  = fmadd(a_vec4,bmm0,omm4);
+            omm4  = fmadd(amm4,bmm0,omm4);
+            // row 5
+            omm5  = fmadd(amm5,bmm0,omm5);
+            // row 6
+            omm6  = fmadd(amm6,bmm0,omm6);
+            // row 7
+            omm7  = fmadd(amm7,bmm0,omm7);
+            // row 8
+            omm8  = fmadd(amm8,bmm0,omm8);
+            // row 9
+            omm9  = fmadd(amm9,bmm0,omm9);
         }
 
-        omm0.store(&out[(j+0)*N],isCAligned);
-        omm1.store(&out[(j+1)*N],isCAligned);
-        omm2.store(&out[(j+2)*N],isCAligned);
-        omm3.store(&out[(j+3)*N],isCAligned);
-        omm4.store(&out[(j+4)*N],isCAligned);
+        omm0.store(&out[(j  )*N],false);
+        omm1.store(&out[(j+1)*N],false);
+        omm2.store(&out[(j+2)*N],false);
+        omm3.store(&out[(j+3)*N],false);
+        omm4.store(&out[(j+4)*N],false);
+        omm5.store(&out[(j+5)*N],false);
+        omm6.store(&out[(j+6)*N],false);
+        omm7.store(&out[(j+7)*N],false);
+        omm8.store(&out[(j+8)*N],false);
+        omm9.store(&out[(j+9)*N],false);
     }
 
-    // Remainder M-M0 rows
-    // Explicitly unroll remaining loops, there is going to be atmost 4
-    FASTOR_IF_CONSTEXPR (M-M0==4) {
-        V omm0, omm1, omm2, omm3;
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*N],isBAligned);
-
-            const T amm0       = a[j*K+i];
-            const T amm1       = a[(j+1)*K+i];
-            const T amm2       = a[(j+2)*K+i];
-            const T amm3       = a[(j+3)*K+i];
-
-            // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
-            // row 1
-            V a_vec1(amm1);
-            omm1  = fmadd(a_vec1,bmm0,omm1);
-            // row 2
-            V a_vec2(amm2);
-            omm2  = fmadd(a_vec2,bmm0,omm2);
-            // row 3
-            V a_vec3(amm3);
-            omm3  = fmadd(a_vec3,bmm0,omm3);
-        }
-
-        omm0.store(&out[(j+0)*N],isCAligned);
-        omm1.store(&out[(j+1)*N],isCAligned);
-        omm2.store(&out[(j+2)*N],isCAligned);
-        omm3.store(&out[(j+3)*N],isCAligned);
-    }
-
-    else FASTOR_IF_CONSTEXPR (M-M0==3) {
-        V omm0, omm1, omm2;
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*N],isBAligned);
-
-            const T amm0       = a[j*K+i];
-            const T amm1       = a[(j+1)*K+i];
-            const T amm2       = a[(j+2)*K+i];
-
-            // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
-            // row 1
-            V a_vec1(amm1);
-            omm1  = fmadd(a_vec1,bmm0,omm1);
-            // row 2
-            V a_vec2(amm2);
-            omm2  = fmadd(a_vec2,bmm0,omm2);
-        }
-
-        omm0.store(&out[(j+0)*N],isCAligned);
-        omm1.store(&out[(j+1)*N],isCAligned);
-        omm2.store(&out[(j+2)*N],isCAligned);
-    }
-
-    else FASTOR_IF_CONSTEXPR (M-M0==2) {
-        V omm0, omm1;
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*N],isBAligned);
-
-            const T amm0       = a[j*K+i];
-            const T amm1       = a[(j+1)*K+i];
-
-            // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
-            // row 1
-            V a_vec1(amm1);
-            omm1  = fmadd(a_vec1,bmm0,omm1);
-        }
-
-        omm0.store(&out[(j+0)*N],isCAligned);
-        omm1.store(&out[(j+1)*N],isCAligned);
-    }
-
-    else FASTOR_IF_CONSTEXPR (M-M0==1) {
-        V omm0;
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*N],isBAligned);
-
-            const T amm0       = a[j*K+i];
-
-            // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
-        }
-
-        omm0.store(&out[(j+0)*N],isCAligned);
-    }
-#if 0
-    else {
-        V c_ij[M-M0];
-        for (size_t j=M0; j<M; ++j) {
-            for (size_t i=0; i<K; ++i) {
-                const V bmm0(&b[i*N]);
-                const V amm0(a[j*K+i]);
-                c_ij[j] = fmadd(amm0,bmm0,c_ij[j]);
-            }
-            maskstore(&out[j*N],maska,c_ij[j]);
-        }
-    }
-#endif
+    matmul_mk_uptosimd_remainder_kernel<T,V,K,N,M-M0>(j,a,b,out);
 }
 //-----------------------------------------------------------------------------------------------------------
 
