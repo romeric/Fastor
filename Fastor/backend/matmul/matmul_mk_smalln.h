@@ -2529,7 +2529,7 @@ FASTOR_INLINE
 void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
     using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
-    constexpr size_t unrollOuterloop = 2UL;
+    constexpr size_t unrollOuterloop = 3UL;
     constexpr size_t M0 = M / unrollOuterloop * unrollOuterloop;
     constexpr bool isBAligned = false;
     constexpr bool isCAligned = false;
@@ -2547,9 +2547,37 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
 
     size_t j=0;
     for (; j<M0; j+=unrollOuterloop) {
-        const size_t from = j;
-        V omm0, omm1, omm2, omm3, omm4, omm5, omm6, omm7;
-        for (size_t i=0; i<K; ++i) {
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+        const V amm2(a[(j+2)*K]);
+
+        const V bmm0(&b[0], isBAligned);
+        const V bmm1(&b[V::Size],isBAligned);
+        const V bmm2(&b[2*V::Size],isBAligned);
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm3.mask_load(&b[3*V::Size],mask,false);
+#else
+            const V bmm3(maskload<V>(&b[3*V::Size],maska));
+#endif
+
+        // row 0
+        V omm0(amm0*bmm0);
+        V omm1(amm0*bmm1);
+        V omm2(amm0*bmm2);
+        V omm3(amm0*bmm3);
+        // row 1
+        V omm4(amm1*bmm0);
+        V omm5(amm1*bmm1);
+        V omm6(amm1*bmm2);
+        V omm7(amm1*bmm3);
+        // row 2
+        V omm8 (amm2*bmm0);
+        V omm9 (amm2*bmm1);
+        V omm10(amm2*bmm2);
+        V omm11(amm2*bmm3);
+
+        for (size_t i=1; i<K; ++i) {
             const V bmm0(&b[i*N], isBAligned);
             const V bmm1((&b[i*N+V::Size]),isBAligned);
             const V bmm2((&b[i*N+2*V::Size]),isBAligned);
@@ -2559,8 +2587,84 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
             const V bmm3(maskload<V>(&b[i*N+3*V::Size],maska));
 #endif
 
-            const V amm0       = a[from*K+i];
-            const V amm1       = a[(from+1)*K+i];
+            const V amm0       = a[(j  )*K+i];
+            const V amm1       = a[(j+1)*K+i];
+            const V amm2       = a[(j+2)*K+i];
+
+            // row 0
+            omm0  = fmadd(amm0,bmm0,omm0);
+            omm1  = fmadd(amm0,bmm1,omm1);
+            omm2  = fmadd(amm0,bmm2,omm2);
+            omm3  = fmadd(amm0,bmm3,omm3);
+            // row 1
+            omm4  = fmadd(amm1,bmm0,omm4);
+            omm5  = fmadd(amm1,bmm1,omm5);
+            omm6  = fmadd(amm1,bmm2,omm6);
+            omm7  = fmadd(amm1,bmm3,omm7);
+            // row 2
+            omm8  = fmadd(amm2,bmm0,omm8);
+            omm9  = fmadd(amm2,bmm1,omm9);
+            omm10 = fmadd(amm2,bmm2,omm10);
+            omm11 = fmadd(amm2,bmm3,omm11);
+        }
+
+        omm0.store(&out[j*N],isCAligned);
+        omm1.store(&out[j*N+V::Size],isCAligned);
+        omm2.store(&out[j*N+2*V::Size],isCAligned);
+        omm3.store(&out[j*N+3*V::Size],isCAligned);
+
+        omm4.store(&out[(j+1)*N],isCAligned);
+        omm5.store(&out[(j+1)*N+V::Size],isCAligned);
+        omm6.store(&out[(j+1)*N+2*V::Size],isCAligned);
+        omm7.store(&out[(j+1)*N+3*V::Size],isCAligned);
+
+        omm8.store (&out[(j+2)*N],isCAligned);
+        omm9.store(&out[(j+2)*N+V::Size],isCAligned);
+        omm10.store(&out[(j+2)*N+2*V::Size],isCAligned);
+#ifdef FASTOR_HAS_AVX512_MASKS
+        omm11.mask_store(&out[(j+2)*N+3*V::Size],mask,false);
+#else
+        maskstore(&out[(j+2)*N+3*V::Size],maska,omm11);
+#endif
+    }
+
+    FASTOR_IF_CONSTEXPR (M-M0==2) {
+
+        const V amm0(a[(j  )*K]);
+        const V amm1(a[(j+1)*K]);
+
+        const V bmm0(&b[0], isBAligned);
+        const V bmm1(&b[V::Size],isBAligned);
+        const V bmm2(&b[2*V::Size],isBAligned);
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm3.mask_load(&b[3*V::Size],mask,false);
+#else
+            const V bmm3(maskload<V>(&b[3*V::Size],maska));
+#endif
+
+        // row 0
+        V omm0(amm0*bmm0);
+        V omm1(amm0*bmm1);
+        V omm2(amm0*bmm2);
+        V omm3(amm0*bmm3);
+        // row 1
+        V omm4(amm1*bmm0);
+        V omm5(amm1*bmm1);
+        V omm6(amm1*bmm2);
+        V omm7(amm1*bmm3);
+
+        for (size_t i=1; i<K; ++i) {
+            const V bmm0(&b[i*N], isBAligned);
+            const V bmm1((&b[i*N+V::Size]),isBAligned);
+            const V bmm2((&b[i*N+2*V::Size]),isBAligned);
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm3.mask_load(&b[i*N+3*V::Size],mask,false);
+#else
+            const V bmm3(maskload<V>(&b[i*N+3*V::Size],maska));
+#endif
+
+            const V amm0       = a[(j  )*K+i];
+            const V amm1       = a[(j+1)*K+i];
 
             // row 0
             omm0  = fmadd(amm0,bmm0,omm0);
@@ -2574,25 +2678,41 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
             omm7  = fmadd(amm1,bmm3,omm7);
         }
 
-        omm0.store(&out[from*N],isCAligned);
-        omm1.store(&out[from*N+V::Size],isCAligned);
-        omm2.store(&out[from*N+2*V::Size],isCAligned);
-        omm3.store(&out[from*N+3*V::Size],isCAligned);
+        omm0.store(&out[j*N],isCAligned);
+        omm1.store(&out[j*N+V::Size],isCAligned);
+        omm2.store(&out[j*N+2*V::Size],isCAligned);
+        omm3.store(&out[j*N+3*V::Size],isCAligned);
 
-        omm4.store(&out[(from+1)*N],isCAligned);
-        omm5.store(&out[(from+1)*N+V::Size],isCAligned);
-        omm6.store(&out[(from+1)*N+2*V::Size],isCAligned);
+        omm4.store(&out[(j+1)*N],isCAligned);
+        omm5.store(&out[(j+1)*N+V::Size],isCAligned);
+        omm6.store(&out[(j+1)*N+2*V::Size],isCAligned);
 #ifdef FASTOR_HAS_AVX512_MASKS
-        omm7.mask_store(&out[(from+1)*N+3*V::Size],mask,false);
+        omm7.mask_store(&out[(j+1)*N+3*V::Size],mask,false);
 #else
-        maskstore(&out[(from+1)*N+3*V::Size],maska,omm7);
+        maskstore(&out[(j+1)*N+3*V::Size],maska,omm7);
 #endif
     }
 
-    FASTOR_IF_CONSTEXPR (M-M0==1) {
-        const size_t from = j;
-        V omm0, omm1, omm2, omm3, omm4, omm5, omm6, omm7;
-        for (size_t i=0; i<K; ++i) {
+    else FASTOR_IF_CONSTEXPR (M-M0==1) {
+
+        const V amm0(a[(j  )*K]);
+
+        const V bmm0(&b[0], isBAligned);
+        const V bmm1(&b[V::Size],isBAligned);
+        const V bmm2(&b[2*V::Size],isBAligned);
+#ifdef FASTOR_HAS_AVX512_MASKS
+            bmm3.mask_load(&b[3*V::Size],mask,false);
+#else
+            const V bmm3(maskload<V>(&b[3*V::Size],maska));
+#endif
+
+        // row 0
+        V omm0(amm0*bmm0);
+        V omm1(amm0*bmm1);
+        V omm2(amm0*bmm2);
+        V omm3(amm0*bmm3);
+
+        for (size_t i=1; i<K; ++i) {
             const V bmm0(&b[i*N], isBAligned);
             const V bmm1((&b[i*N+V::Size]),isBAligned);
             const V bmm2((&b[i*N+2*V::Size]),isBAligned);
@@ -2602,7 +2722,7 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
             const V bmm3(maskload<V>(&b[i*N+3*V::Size],maska));
 #endif
 
-            const V amm0       = a[from*K+i];
+            const V amm0       = a[(j  )*K+i];
 
             // row 0
             omm0  = fmadd(amm0,bmm0,omm0);
@@ -2611,13 +2731,13 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
             omm3  = fmadd(amm0,bmm3,omm3);
         }
 
-        omm0.store(&out[from*N],isCAligned);
-        omm1.store(&out[from*N+V::Size],isCAligned);
-        omm2.store(&out[from*N+2*V::Size],isCAligned);
+        omm0.store(&out[j*N],isCAligned);
+        omm1.store(&out[j*N+V::Size],isCAligned);
+        omm2.store(&out[j*N+2*V::Size],isCAligned);
 #ifdef FASTOR_HAS_AVX512_MASKS
-        omm3.mask_store(&out[from*N+3*V::Size],mask,false);
+        omm3.mask_store(&out[(j)*N+3*V::Size],mask,false);
 #else
-        maskstore(&out[from*N+3*V::Size],maska,omm3);
+        maskstore(&out[(j)*N+3*V::Size],maska,omm3);
 #endif
     }
 }
