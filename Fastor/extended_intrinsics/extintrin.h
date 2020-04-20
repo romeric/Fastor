@@ -574,24 +574,32 @@ FASTOR_INLINE void _MM_TRANSPOSE8_PS(__m256 &row0, __m256 &row1, __m256 &row2,
 
 
 //!------------------------------------------------------------------
-// Integral arithmetics available only with AVX2
+// Integral arithmetics that are not available pre AVX2
 #ifdef FASTOR_SSE2_IMPL
-FASTOR_INLINE __m128i _mm_mul_epi32x(const __m128i &a, const __m128i &b)
+FASTOR_INLINE __m128i _mm_mul_epi32x(__m128i a, __m128i b)
 {
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE4_1_IMPL
     return _mm_mullo_epi32(a, b);
-#else
-    // USE SSE 2
-    __m128i tmp1 = _mm_mul_epu32(a,b);
-    __m128i tmp2 = _mm_mul_epu32( _mm_srli_si128(a,4), _mm_srli_si128(b,4));
-    return _mm_unpacklo_epi32(_mm_shuffle_epi32(tmp1, _MM_SHUFFLE (0,0,2,0)), _mm_shuffle_epi32(tmp2, _MM_SHUFFLE (0,0,2,0)));
+#else // SSE2
+    __m128i a13 = _mm_shuffle_epi32(a, 0xF5);              // (-,a3,-,a1)
+    __m128i b13 = _mm_shuffle_epi32(b, 0xF5);              // (-,b3,-,b1)
+    __m128i prod02 = _mm_mul_epu32(a, b);                  // (-,a2*b2,-,a0*b0)
+    __m128i prod13 = _mm_mul_epu32(a13, b13);              // (-,a3*b3,-,a1*b1)
+    __m128i prod01 = _mm_unpacklo_epi32(prod02, prod13);   // (-,-,a1*b1,a0*b0)
+    __m128i prod23 = _mm_unpackhi_epi32(prod02, prod13);   // (-,-,a3*b3,a2*b2)
+    return           _mm_unpacklo_epi64(prod01, prod23);   // (ab3,ab2,ab1,ab0)
 #endif
+
+
 }
 #endif
 
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 FASTOR_INLINE __m128i _mm_mul_epi64(__m128i _a, __m128i _b) {
-    __m128i out = _mm_mul_epi32x(_a,_b);
+    __m128i out;
+   for (FASTOR_INDEX i=0; i<2; i++) {
+       ((int64_t*)&out)[i] = (((int64_t*)&_a)[i])*(((int64_t*)&_b)[i]);
+   }
     return out;
 }
 #endif

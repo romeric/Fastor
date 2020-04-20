@@ -31,13 +31,6 @@ struct SIMDVector {
     FASTOR_INLINE SIMDVector(const SIMDVector<T,ABI> &a) {
         std::copy(a.value,a.value+a.Size,value);
     }
-    // Not requried as they are almost never used by the compiler,
-    // as classes with static data are essentially non-copyable
-//    FASTOR_INLINE SIMDVector(SIMDVector<T,ABI> &&a) {
-//        // Cannot swap constexpr member but should be okay since ABIs are the same
-//        //std::swap(Size,a.Size);
-//        std::swap(value,a.value);
-//    }
     FASTOR_INLINE SIMDVector(const T *data, bool Aligned=true) {
         std::copy(data,data+Size,value);
     }
@@ -53,10 +46,6 @@ struct SIMDVector {
         std::copy(a.value,a.value+a.Size,value);
         return *this;
     }
-//    FASTOR_INLINE SIMDVector<T,ABI> operator=(SIMDVector<T,ABI> &&a) {
-//        std::swap(value,a.value);
-//        return *this;
-//    }
 
     FASTOR_INLINE void load(const T *data, bool Aligned=true) {
         std::copy(data,data+Size,value);
@@ -111,7 +100,7 @@ struct SIMDVector {
         T arr[Size] = {first,args...};
         std::reverse_copy(arr, arr+Size, value);
         // Relax this restriction
-        // static_assert(sizeof...(args)==1,"CANNOT SET VECTOR WITH VALUES DUE TO ABI CONSIDERATION");
+        static_assert(sizeof...(args)==Size,"CANNOT SET VECTOR WITH SPECIFIED NUMBER OF VALUES DUE TO ABI CONSIDERATION");
     }
     FASTOR_INLINE void set_sequential(T num0) {
         for (FASTOR_INDEX i=0; i<Size;++i)

@@ -341,7 +341,7 @@ FASTOR_INLINE SIMDVector<int,simd_abi::avx> abs(const SIMDVector<int,simd_abi::a
 // SSE VERSION
 //-----------------------------------------------------------------------------------------------
 
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 
 template<>
 struct SIMDVector<int,simd_abi::sse> {
@@ -477,13 +477,13 @@ struct SIMDVector<int,simd_abi::sse> {
     }
 
     FASTOR_INLINE void operator*=(int num) {
-        value = _mm_mul_epi32(value,_mm_set1_epi32(num));
+        value = _mm_mul_epi32x(value,_mm_set1_epi32(num));
     }
     FASTOR_INLINE void operator*=(__m128i regi) {
-        value = _mm_mul_epi32(value,regi);
+        value = _mm_mul_epi32x(value,regi);
     }
     FASTOR_INLINE void operator*=(const SIMDVector<int,simd_abi::sse> &a) {
-        value = _mm_mul_epi32(value,a.value);
+        value = _mm_mul_epi32x(value,a.value);
     }
 
     FASTOR_INLINE void operator/=(int num) {
@@ -648,7 +648,13 @@ FASTOR_INLINE SIMDVector<int,simd_abi::sse> operator/(int a, const SIMDVector<in
 
 FASTOR_INLINE SIMDVector<int,simd_abi::sse> abs(const SIMDVector<int,simd_abi::sse> &a) {
     SIMDVector<int,simd_abi::sse> out;
+#ifdef FASTOR_SSSE3_IMPL
     out.value = _mm_abs_epi32(a.value);
+#else // SSE2
+    __m128i sign = _mm_srai_epi32(a.value, 31);
+    __m128i inv = _mm_xor_si128(a.value, sign);
+    out.value = _mm_sub_epi32(inv, sign);
+#endif
     return out;
 }
 

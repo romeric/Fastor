@@ -326,7 +326,7 @@ FASTOR_INLINE SIMDVector<Int64,simd_abi::avx> operator/(Int64 a, const SIMDVecto
 // SSE VERSION
 //-----------------------------------------------------------------------------------------------
 
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 
 template<>
 struct SIMDVector<Int64,simd_abi::sse> {
@@ -640,6 +640,22 @@ FASTOR_INLINE SIMDVector<Int64,simd_abi::sse> operator/(Int64 a, const SIMDVecto
     }
     out.value = _mm_loadu_si128((__m128i*)val);
     return out;
+}
+
+FASTOR_INLINE SIMDVector<Int64,simd_abi::sse> abs(const SIMDVector<Int64,simd_abi::sse> &a) {
+    SIMDVector<int,simd_abi::sse> out;
+#ifdef FASTOR_AVX512VL_IMPL
+    return _mm_abs_epi64(a.value);
+#elif defined (FASTOR_SSE4_2_IMPL)
+    __m128i sign = _mm_cmpgt_epi64(_mm_setzero_si128(), a.value); // 0 > a
+    __m128i inv = _mm_xor_si128(a.value, sign);                   // invert bits if negative
+    return _mm_sub_epi64(inv, sign);                              // add 1
+#else // SSE2
+    __m128i signh = _mm_srai_epi32(a.value, 31);                  // sign in high dword
+    __m128i sign = _mm_shuffle_epi32(signh, 0xF5);                // copy sign to low dword
+    __m128i inv = _mm_xor_si128(a.value, sign);                   // invert bits if negative
+    return _mm_sub_epi64(inv, sign);                              // add 1
+#endif
 }
 
 
