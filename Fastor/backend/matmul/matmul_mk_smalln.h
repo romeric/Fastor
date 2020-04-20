@@ -15,6 +15,8 @@ namespace internal {
 // and N<=5*SIMDVector::Size. Given that it uses choose_best_simd_type it can switch
 // between SSE, AVX and AVX512 to cover all ranges of N
 
+
+//-----------------------------------------------------------------------------------------------------------
 #ifdef FASTOR_HAS_AVX512_MASKS
 template<typename T, typename V, typename MaskType, size_t K, size_t N, size_t remainder, enable_if_t_<remainder==9, bool> = false>
 FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const MaskType mask,
@@ -800,19 +802,265 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
     matmul_mk_uptosimd_remainder_kernel<T,V,K,N,M-M0>(j,maska,a,b,out);
 #endif
 }
+//-----------------------------------------------------------------------------------------------------------
 
 
 
 
+// Take care of N==V::Size
+//-----------------------------------------------------------------------------------------------------------
+// Compile time loop unroller
+template<size_t from, size_t to>
+struct matmul_inner_loop_unroller {
+    template<size_t M, size_t K, typename T, typename ABI>
+    static FASTOR_INLINE void fmadd_(const size_t i, const T * FASTOR_RESTRICT a,
+        const SIMDVector<T,ABI> &bmm0, SIMDVector<T,ABI> (&c_ij)[M]) {
+        const SIMDVector<T,ABI> amm0(a[from*K+i]);
+        c_ij[from] = fmadd(amm0,bmm0,c_ij[from]);
+        matmul_inner_loop_unroller<from+1,to>::template fmadd_<M,K,T,ABI>(i, a, bmm0, c_ij);
+    }
+
+    template<size_t M, typename T, typename ABI>
+    static FASTOR_INLINE void store_(const SIMDVector<T,ABI> (&c_ij)[M], T* FASTOR_RESTRICT out) {
+        c_ij[from].store(&out[from*SIMDVector<T,ABI>::Size]);
+        matmul_inner_loop_unroller<from+1,to>::template store_<M,T,ABI>(c_ij, out);
+    }
+};
+
+template<size_t from>
+struct matmul_inner_loop_unroller<from,from> {
+
+    template<size_t M, size_t K, typename T, typename ABI>
+    static FASTOR_INLINE void fmadd_(const size_t i, const T * FASTOR_RESTRICT a,
+        const SIMDVector<T,ABI> &bmm0, SIMDVector<T,ABI> (&c_ij)[M]) {
+        const SIMDVector<T,ABI> amm0(a[from*K+i]);
+        c_ij[from] = fmadd(amm0,bmm0,c_ij[from]);
+    }
+
+    template<size_t M, typename T, typename ABI>
+    static FASTOR_INLINE void store_(const SIMDVector<T,ABI> (&c_ij)[M], T* FASTOR_RESTRICT out) {
+        c_ij[from].store(&out[from*SIMDVector<T,ABI>::Size],false);
+    }
+};
 
 
+// This implementation is based on 2k2/3k3/4k4 but generalised for all Ms that is
+// mk2/mk3/mk4/mk8 using compile time template unrolling. It uses an array of Vs
+// instead of registers to generalise on M. While the loops are completely unrolled
+// at compile time both clang and gcc fetch the first operand of (v)fmadd213ps for the
+// first iteration of the loop from the cache/memory instead of operating on registers directly
+// the remaining of the unrolled loop is on registers. However this has very little effect on
+// performance of small tensors. This method although generalises on M it is designed for M<V::size
+// in mind and works best for small Ms as unrolling beyond a certain size certainly hurts the performance
+//------------------------------------------------------------------------------------------------//
+template<typename T, size_t M, size_t K, size_t N,
+        typename std::enable_if<is_less_equal<M,16UL>::value &&
+        N==choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size &&
+        1!=choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,bool>::type = 0>
+FASTOR_INLINE
+void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+
+    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
+    V c_ij[M];
+
+    for (size_t i=0; i<K; ++i) {
+        const V bmm0(&b[i*V::Size],false);
+        matmul_inner_loop_unroller<0,M-1>::template fmadd_<M,K,T,typename V::abi_type>(i, a, bmm0, c_ij);
+    }
+    matmul_inner_loop_unroller<0,M-1>::template store_<M,T,typename V::abi_type>(c_ij, out);
+}
+
+#if 0
+// This is the non-unrolled version of the above
+template<typename T, size_t M, size_t K, size_t N,
+        typename std::enable_if<is_less_equal<M,16UL>::value &&
+        internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::Size==N,bool>::type = 0>
+FASTOR_INLINE
+void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+
+    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
+    V c_ij[V::Size];
+
+    for (size_t j=0; j<M; ++j) {
+        for (size_t i=0; i<K; ++i) {
+            const V bmm0(&b[i*V::Size]);
+            const V amm0(a[j*K+i]);
+            c_ij[j] = fmadd(amm0,bmm0,c_ij[j]);
+        }
+        c_ij[j].store(&out[j*V::Size]);
+    }
+}
+#endif
+
+
+template<typename T, size_t M, size_t K, size_t N,
+        typename std::enable_if<is_greater<M,16UL>::value &&
+        N==choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,bool>::type = 0>
+FASTOR_INLINE
+void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
+
+    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
+
+    constexpr size_t unrollOuterloop = 5UL;
+    constexpr size_t M0 = M / unrollOuterloop * unrollOuterloop;
+    // constexpr size_t remainder = M < unrollOuterloop ? 0 : M0-unrollOuterloop;
+    constexpr bool isBAligned = false;
+    constexpr bool isCAligned = false;
+
+    size_t j=0;
+    for (; j<M0; j+=unrollOuterloop) {
+        V omm0, omm1, omm2, omm3, omm4;
+        for (size_t i=0; i<K; ++i) {
+            const V bmm0(&b[i*N],isBAligned);
+
+            const T amm0       = a[j*K+i];
+            const T amm1       = a[(j+1)*K+i];
+            const T amm2       = a[(j+2)*K+i];
+            const T amm3       = a[(j+3)*K+i];
+            const T amm4       = a[(j+4)*K+i];
+
+            // row 0
+            V a_vec0(amm0);
+            omm0  = fmadd(a_vec0,bmm0,omm0);
+            // row 1
+            V a_vec1(amm1);
+            omm1  = fmadd(a_vec1,bmm0,omm1);
+            // row 2
+            V a_vec2(amm2);
+            omm2  = fmadd(a_vec2,bmm0,omm2);
+            // row 3
+            V a_vec3(amm3);
+            omm3  = fmadd(a_vec3,bmm0,omm3);
+            // row 4
+            V a_vec4(amm4);
+            omm4  = fmadd(a_vec4,bmm0,omm4);
+        }
+
+        omm0.store(&out[(j+0)*N],isCAligned);
+        omm1.store(&out[(j+1)*N],isCAligned);
+        omm2.store(&out[(j+2)*N],isCAligned);
+        omm3.store(&out[(j+3)*N],isCAligned);
+        omm4.store(&out[(j+4)*N],isCAligned);
+    }
+
+    // Remainder M-M0 rows
+    // Explicitly unroll remaining loops, there is going to be atmost 4
+    FASTOR_IF_CONSTEXPR (M-M0==4) {
+        V omm0, omm1, omm2, omm3;
+        for (size_t i=0; i<K; ++i) {
+            const V bmm0(&b[i*N],isBAligned);
+
+            const T amm0       = a[j*K+i];
+            const T amm1       = a[(j+1)*K+i];
+            const T amm2       = a[(j+2)*K+i];
+            const T amm3       = a[(j+3)*K+i];
+
+            // row 0
+            V a_vec0(amm0);
+            omm0  = fmadd(a_vec0,bmm0,omm0);
+            // row 1
+            V a_vec1(amm1);
+            omm1  = fmadd(a_vec1,bmm0,omm1);
+            // row 2
+            V a_vec2(amm2);
+            omm2  = fmadd(a_vec2,bmm0,omm2);
+            // row 3
+            V a_vec3(amm3);
+            omm3  = fmadd(a_vec3,bmm0,omm3);
+        }
+
+        omm0.store(&out[(j+0)*N],isCAligned);
+        omm1.store(&out[(j+1)*N],isCAligned);
+        omm2.store(&out[(j+2)*N],isCAligned);
+        omm3.store(&out[(j+3)*N],isCAligned);
+    }
+
+    else FASTOR_IF_CONSTEXPR (M-M0==3) {
+        V omm0, omm1, omm2;
+        for (size_t i=0; i<K; ++i) {
+            const V bmm0(&b[i*N],isBAligned);
+
+            const T amm0       = a[j*K+i];
+            const T amm1       = a[(j+1)*K+i];
+            const T amm2       = a[(j+2)*K+i];
+
+            // row 0
+            V a_vec0(amm0);
+            omm0  = fmadd(a_vec0,bmm0,omm0);
+            // row 1
+            V a_vec1(amm1);
+            omm1  = fmadd(a_vec1,bmm0,omm1);
+            // row 2
+            V a_vec2(amm2);
+            omm2  = fmadd(a_vec2,bmm0,omm2);
+        }
+
+        omm0.store(&out[(j+0)*N],isCAligned);
+        omm1.store(&out[(j+1)*N],isCAligned);
+        omm2.store(&out[(j+2)*N],isCAligned);
+    }
+
+    else FASTOR_IF_CONSTEXPR (M-M0==2) {
+        V omm0, omm1;
+        for (size_t i=0; i<K; ++i) {
+            const V bmm0(&b[i*N],isBAligned);
+
+            const T amm0       = a[j*K+i];
+            const T amm1       = a[(j+1)*K+i];
+
+            // row 0
+            V a_vec0(amm0);
+            omm0  = fmadd(a_vec0,bmm0,omm0);
+            // row 1
+            V a_vec1(amm1);
+            omm1  = fmadd(a_vec1,bmm0,omm1);
+        }
+
+        omm0.store(&out[(j+0)*N],isCAligned);
+        omm1.store(&out[(j+1)*N],isCAligned);
+    }
+
+    else FASTOR_IF_CONSTEXPR (M-M0==1) {
+        V omm0;
+        for (size_t i=0; i<K; ++i) {
+            const V bmm0(&b[i*N],isBAligned);
+
+            const T amm0       = a[j*K+i];
+
+            // row 0
+            V a_vec0(amm0);
+            omm0  = fmadd(a_vec0,bmm0,omm0);
+        }
+
+        omm0.store(&out[(j+0)*N],isCAligned);
+    }
+#if 0
+    else {
+        V c_ij[M-M0];
+        for (size_t j=M0; j<M; ++j) {
+            for (size_t i=0; i<K; ++i) {
+                const V bmm0(&b[i*N]);
+                const V amm0(a[j*K+i]);
+                c_ij[j] = fmadd(amm0,bmm0,c_ij[j]);
+            }
+            maskstore(&out[j*N],maska,c_ij[j]);
+        }
+    }
+#endif
+}
+//-----------------------------------------------------------------------------------------------------------
+
+
+
+
+// Take care of [V::Size < N < 2*V::Size]
 // The function implements standard loop unrolling over M. It uses conditional
 // loads and store using masks and requires at least AVX. The efficiency of the method comes from
 // the fact that it attempts to achieve exact two FMA per load. Both GCC and Clang emit excellent
 // code for this at O3
 // A recursive implementation of this using compile time unrolling is available at:
 // https://gist.github.com/romeric/a176e28127a8348c3c37c5a369051451
-//
+//-----------------------------------------------------------------------------------------------------------
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<
             (is_less<N,2*choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size>::value &&
@@ -1127,9 +1375,12 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
 #endif
     }
 }
+//-----------------------------------------------------------------------------------------------------------
+
 
 
 // Take care of 2*V::Size cases
+//-----------------------------------------------------------------------------------------------------------
 template<typename T, size_t M, size_t K, size_t N,
          typename std::enable_if<N==2*internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,bool>::type = 0>
 FASTOR_INLINE
@@ -1321,251 +1572,6 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
             }
             c_ij[j][0].store(&out[j*N],false);
             c_ij[j][1].store(&out[j*N+V::Size],false);
-        }
-    }
-#endif
-}
-
-
-
-
-//-----------------------------------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------------------------------------
-// Compile time loop unroller
-template<size_t from, size_t to>
-struct matmul_inner_loop_unroller {
-    template<size_t M, size_t K, typename T, typename ABI>
-    static FASTOR_INLINE void fmadd_(const size_t i, const T * FASTOR_RESTRICT a,
-        const SIMDVector<T,ABI> &bmm0, SIMDVector<T,ABI> (&c_ij)[M]) {
-        const SIMDVector<T,ABI> amm0(a[from*K+i]);
-        c_ij[from] = fmadd(amm0,bmm0,c_ij[from]);
-        matmul_inner_loop_unroller<from+1,to>::template fmadd_<M,K,T,ABI>(i, a, bmm0, c_ij);
-    }
-
-    template<size_t M, typename T, typename ABI>
-    static FASTOR_INLINE void store_(const SIMDVector<T,ABI> (&c_ij)[M], T* FASTOR_RESTRICT out) {
-        c_ij[from].store(&out[from*SIMDVector<T,ABI>::Size]);
-        matmul_inner_loop_unroller<from+1,to>::template store_<M,T,ABI>(c_ij, out);
-    }
-};
-
-template<size_t from>
-struct matmul_inner_loop_unroller<from,from> {
-
-    template<size_t M, size_t K, typename T, typename ABI>
-    static FASTOR_INLINE void fmadd_(const size_t i, const T * FASTOR_RESTRICT a,
-        const SIMDVector<T,ABI> &bmm0, SIMDVector<T,ABI> (&c_ij)[M]) {
-        const SIMDVector<T,ABI> amm0(a[from*K+i]);
-        c_ij[from] = fmadd(amm0,bmm0,c_ij[from]);
-    }
-
-    template<size_t M, typename T, typename ABI>
-    static FASTOR_INLINE void store_(const SIMDVector<T,ABI> (&c_ij)[M], T* FASTOR_RESTRICT out) {
-        c_ij[from].store(&out[from*SIMDVector<T,ABI>::Size],false);
-    }
-};
-
-
-// This implementation is based on 2k2/3k3/4k4 but generalised for all Ms that is
-// mk2/mk3/mk4/mk8 using compile time template unrolling. It uses an array of Vs
-// instead of registers to generalise on M. While the loops are completely unrolled
-// at compile time both clang and gcc fetch the first operand of (v)fmadd213ps for the
-// first iteration of the loop from the cache/memory instead of operating on registers directly
-// the remaining of the unrolled loop is on registers. However this has very little effect on
-// performance of small tensors. This method although generalises on M it is designed for M<V::size
-// in mind and works best for small Ms as unrolling beyond a certain size certainly hurts the performance
-//------------------------------------------------------------------------------------------------//
-template<typename T, size_t M, size_t K, size_t N,
-        typename std::enable_if<is_less_equal<M,16UL>::value &&
-        N==choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size &&
-        1!=choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,bool>::type = 0>
-FASTOR_INLINE
-void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
-
-    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
-    V c_ij[M];
-
-    for (size_t i=0; i<K; ++i) {
-        const V bmm0(&b[i*V::Size],false);
-        matmul_inner_loop_unroller<0,M-1>::template fmadd_<M,K,T,typename V::abi_type>(i, a, bmm0, c_ij);
-    }
-    matmul_inner_loop_unroller<0,M-1>::template store_<M,T,typename V::abi_type>(c_ij, out);
-}
-
-#if 0
-// This is the non-unrolled version of the above
-template<typename T, size_t M, size_t K, size_t N,
-        typename std::enable_if<is_less_equal<M,16UL>::value &&
-        internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::Size==N,bool>::type = 0>
-FASTOR_INLINE
-void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
-
-    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
-    V c_ij[V::Size];
-
-    for (size_t j=0; j<M; ++j) {
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*V::Size]);
-            const V amm0(a[j*K+i]);
-            c_ij[j] = fmadd(amm0,bmm0,c_ij[j]);
-        }
-        c_ij[j].store(&out[j*V::Size]);
-    }
-}
-#endif
-
-
-template<typename T, size_t M, size_t K, size_t N,
-        typename std::enable_if<is_greater<M,16UL>::value &&
-        N==choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type::Size,bool>::type = 0>
-FASTOR_INLINE
-void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
-
-    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
-
-    constexpr size_t unrollOuterloop = 5UL;
-    constexpr size_t M0 = M / unrollOuterloop * unrollOuterloop;
-    // constexpr size_t remainder = M < unrollOuterloop ? 0 : M0-unrollOuterloop;
-    constexpr bool isBAligned = false;
-    constexpr bool isCAligned = false;
-
-    size_t j=0;
-    for (; j<M0; j+=unrollOuterloop) {
-        V omm0, omm1, omm2, omm3, omm4;
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*N],isBAligned);
-
-            const T amm0       = a[j*K+i];
-            const T amm1       = a[(j+1)*K+i];
-            const T amm2       = a[(j+2)*K+i];
-            const T amm3       = a[(j+3)*K+i];
-            const T amm4       = a[(j+4)*K+i];
-
-            // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
-            // row 1
-            V a_vec1(amm1);
-            omm1  = fmadd(a_vec1,bmm0,omm1);
-            // row 2
-            V a_vec2(amm2);
-            omm2  = fmadd(a_vec2,bmm0,omm2);
-            // row 3
-            V a_vec3(amm3);
-            omm3  = fmadd(a_vec3,bmm0,omm3);
-            // row 4
-            V a_vec4(amm4);
-            omm4  = fmadd(a_vec4,bmm0,omm4);
-        }
-
-        omm0.store(&out[(j+0)*N],isCAligned);
-        omm1.store(&out[(j+1)*N],isCAligned);
-        omm2.store(&out[(j+2)*N],isCAligned);
-        omm3.store(&out[(j+3)*N],isCAligned);
-        omm4.store(&out[(j+4)*N],isCAligned);
-    }
-
-    // Remainder M-M0 rows
-    // Explicitly unroll remaining loops, there is going to be atmost 4
-    FASTOR_IF_CONSTEXPR (M-M0==4) {
-        V omm0, omm1, omm2, omm3;
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*N],isBAligned);
-
-            const T amm0       = a[j*K+i];
-            const T amm1       = a[(j+1)*K+i];
-            const T amm2       = a[(j+2)*K+i];
-            const T amm3       = a[(j+3)*K+i];
-
-            // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
-            // row 1
-            V a_vec1(amm1);
-            omm1  = fmadd(a_vec1,bmm0,omm1);
-            // row 2
-            V a_vec2(amm2);
-            omm2  = fmadd(a_vec2,bmm0,omm2);
-            // row 3
-            V a_vec3(amm3);
-            omm3  = fmadd(a_vec3,bmm0,omm3);
-        }
-
-        omm0.store(&out[(j+0)*N],isCAligned);
-        omm1.store(&out[(j+1)*N],isCAligned);
-        omm2.store(&out[(j+2)*N],isCAligned);
-        omm3.store(&out[(j+3)*N],isCAligned);
-    }
-
-    else FASTOR_IF_CONSTEXPR (M-M0==3) {
-        V omm0, omm1, omm2;
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*N],isBAligned);
-
-            const T amm0       = a[j*K+i];
-            const T amm1       = a[(j+1)*K+i];
-            const T amm2       = a[(j+2)*K+i];
-
-            // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
-            // row 1
-            V a_vec1(amm1);
-            omm1  = fmadd(a_vec1,bmm0,omm1);
-            // row 2
-            V a_vec2(amm2);
-            omm2  = fmadd(a_vec2,bmm0,omm2);
-        }
-
-        omm0.store(&out[(j+0)*N],isCAligned);
-        omm1.store(&out[(j+1)*N],isCAligned);
-        omm2.store(&out[(j+2)*N],isCAligned);
-    }
-
-    else FASTOR_IF_CONSTEXPR (M-M0==2) {
-        V omm0, omm1;
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*N],isBAligned);
-
-            const T amm0       = a[j*K+i];
-            const T amm1       = a[(j+1)*K+i];
-
-            // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
-            // row 1
-            V a_vec1(amm1);
-            omm1  = fmadd(a_vec1,bmm0,omm1);
-        }
-
-        omm0.store(&out[(j+0)*N],isCAligned);
-        omm1.store(&out[(j+1)*N],isCAligned);
-    }
-
-    else FASTOR_IF_CONSTEXPR (M-M0==1) {
-        V omm0;
-        for (size_t i=0; i<K; ++i) {
-            const V bmm0(&b[i*N],isBAligned);
-
-            const T amm0       = a[j*K+i];
-
-            // row 0
-            V a_vec0(amm0);
-            omm0  = fmadd(a_vec0,bmm0,omm0);
-        }
-
-        omm0.store(&out[(j+0)*N],isCAligned);
-    }
-#if 0
-    else {
-        V c_ij[M-M0];
-        for (size_t j=M0; j<M; ++j) {
-            for (size_t i=0; i<K; ++i) {
-                const V bmm0(&b[i*N]);
-                const V amm0(a[j*K+i]);
-                c_ij[j] = fmadd(amm0,bmm0,c_ij[j]);
-            }
-            maskstore(&out[j*N],maska,c_ij[j]);
         }
     }
 #endif
