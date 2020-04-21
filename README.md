@@ -16,13 +16,12 @@ Tensor<float,3> vector3 = {1,2,3};          // A vector
 Tensor<int,3,2> matrix{{1,2},{3,4},{5,6}};  // A second order tensor
 Tensor<double,3,3,3> tensor_3;              // A third order tensor with dimension 3x3x3
 tensor_3.arange(0);                         // fill tensor with sequentially ascending numbers
-print(tensor_3);                            // print/display the tensor
 tensor_3(0,2,1);                            // index a tensor
 tensor_3(all,last,seq(0,2));                // slice a tensor tensor_3[:,-1,:2]
 tensor_3.rank();                            // get rank of tensor, 3 in this case
 Tensor<float,2,2,2,2,2,2,4,3,2,3,3,6> t_12; // A 12th order tensor
 ~~~
-a sample output of the above code would be
+<!-- a sample output of the above code would be
 ~~~bash
 [0,:,:]
 ⎡      0,       1,       2 ⎤
@@ -36,7 +35,7 @@ a sample output of the above code would be
 ⎡     18,      19,      20 ⎤
 ⎢     21,      22,      23 ⎥
 ⎣     24,      25,      26 ⎦
-~~~
+~~~ -->
 Einstein summation as well as summing over multiple (i.e. more than two) indices are supported. As a complete example, for instance, consider
 ~~~c++
 #include <Fastor/Fastor.h>
@@ -80,8 +79,8 @@ A(2,all,3) = 5.0;                                                    // A[2,:,3]
 
 // Static views -> fseq<first,last,step>
 C = A(fseq<0,2>(),fseq<0,2>(),fseq<0,last,2>());                     // C = A[0:2,0:2,0::2]
-D = B(fall,fall,fseq<0,1>()) + A(fall,fall,fseq<9,10>());            // D = B[:,:,0] + A[:,:,-1]
-A(2,fall,3) = 5.0;                                                   // A[2,:,3] = 5.0
+D = B(all, all, fseq<0,1>()) + A(all, all, fseq<9,10>());            // D = B[:,:,0] + A[:,:,-1]
+A(2,all,3) = 5.0;                                                    // A[2,:,3] = 5.0
 
 // Overlapping is also allowed without having undefined behaviour
 A(seq(2,last),all,all).noalias() += A(seq(0,last-2),all,all);        // A[2::,:,:] += A[::-2,:,:]
@@ -103,10 +102,15 @@ E(it,0) = 2;
 E(it,seq(0,last,3)) /= -1000.;
 E(all,it) += E(all,it) * 15.;
 E(t_it) -= 42 + E;
+
+// Masked and filtered views are also supported
+Tensor<double,2,2> F;
+Tensor<bool,2,2> mask = {{true,false},{false,true}};
+F(mask) += 10;
 ~~~
-Aside from `iseq` (which pretty much immediately returns another tensor), all other possible combination of slicing and broadcasting types are possible. For instance, one complex slicing and broadcasting example is given below
+All possible combination of slicing and broadcasting is possible. For instance, one complex slicing and broadcasting example is given below
 ~~~c++
-A(all,all) -= log(B(all,all,0)) + abs(B(all,fall,1)) + sin(C(all,0,all,0)) - 102. - cos(B(all,all,0));
+A(all,all) -= log(B(all,all,0)) + abs(B(all,all,1)) + sin(C(all,0,all,0)) - 102. - cos(B(all,all,0));
 ~~~
 
 <!-- It should be mentioned that since tensor views work on a view of (reference to) a tensor and do not copy any data in the background, the use of the keyword `auto` can be dangerous at times
@@ -119,7 +123,7 @@ To solve this issue, use immediate construction from a view
 Tensor<double,2,2,5,3> B = A(all,all,seq(0,5),seq(0,3)); // B is now permanent
 auto C = B + 2; // This will behave as expected
 ~~~ -->
-From a performance point of view, Fastor tries very hard to vectorise (read SIMD vectorisation) tensor views, but this heavily depends on the compilers ability to inline multiple recursive functions [as is the case for all expression templates]. If a view appears on the right hand side of an assignment, but not on the left, Fastor automatically vectorises the expression. However if a view appears on the left hand side of an assignment, Fastor does not by default vectorise the expression. To enable vectorisation across all tensor views use the compiler flag `-DFASTOR_USE_VECTORISE_EXPR_ASSIGN`. Also for performance reasons it is beneficial to avoid overlapping assignments, otherwise a copy will be made. If your code does not use any overlapping assignments, then this feature can be turned off completely by issusing `-DFASTOR_NO_ALIAS`. At this stage it is also beneficial to consider that while compiling complex and big expressions the inlining limit of the compiler should be increased and tested i.e. `-finline-limit=<big number>` for GCC, `-mllvm -inline-threshold=<big number>` for Clang and `-inline-forceinline` for ICC.
+<!-- From a performance point of view, Fastor tries very hard to vectorise (read SIMD vectorisation) tensor views, but this heavily depends on the compilers ability to inline multiple recursive functions [as is the case for all expression templates]. If a view appears on the right hand side of an assignment, but not on the left, Fastor automatically vectorises the expression. However if a view appears on the left hand side of an assignment, Fastor does not by default vectorise the expression. To enable vectorisation across all tensor views use the compiler flag `-DFASTOR_USE_VECTORISE_EXPR_ASSIGN`. Also for performance reasons it is beneficial to avoid overlapping assignments, otherwise a copy will be made. If your code does not use any overlapping assignments, then this feature can be turned off completely by issusing `-DFASTOR_NO_ALIAS`. At this stage it is also beneficial to consider that while compiling complex and big expressions the inlining limit of the compiler should be increased and tested i.e. `-finline-limit=<big number>` for GCC, `-mllvm -inline-threshold=<big number>` for Clang and `-inline-forceinline` for ICC.
 
 To see how efficient tensor views can be vectorised, as an example consider the following 4th order finite difference example for Laplace equation
 ~~~c++
@@ -170,18 +174,7 @@ L128:
   jne L129
 ~~~
 Aside from unaligned load and store instructions (which are in fact equally fast as aligned load and store) which are also unavoidable in this specific case the rest of the generated code is as efficient as it gets for an `AVX2` architecture beating the perforamnce of Fortran. With the help of an optimising compiler, Fastor's functionalities come closest to the ideal metal performance for numerical tensor algebra code.
-
-### Specialised tensors
-A set of specialised tensors are available that provide optimised tensor algebraic computations, for instance `SingleValueTensor`. Some of the computations performed on these tensors have almost zero cost no matter how big the tensor is. These tensors work in the exact same way as the `Tensor` class and can be assigned to one another. Consider for example the einsum between two `SingleValueTensor`s. A `SingleValueTensor` is a tensor of any dimension and size whose elements are all the same (a matrix of ones for instance).
-
-~~~c++
-SingleValueTensor<double,20,20,30> a(3.51);
-SingleValueTensor<double,20,30> b(2.76);
-auto c = einsum<Index<0,1,2>,Index<0,2>>(a,b);
-~~~
-
-This will incur almost no runtime cost. As where if the tensors were of type `Tensor` then a heavy computation would ensue.
-
+ -->
 
 ### Basic expression templates
 Expression templates are archetypal of array/tensor libraries in C++ as they provide a means for lazy evaluation of arbitrary chained operations. Consider the following expression
@@ -214,7 +207,7 @@ matmul(matmul(A,B),b);   // transformed to matmul(A,matmul(B,b)), O(n) reduction
 ~~~
 These expressions are not treated as special cases but rather the **Einstein indicial notation** of the whole expression is constructed under the hood and by simply simplifying/collapsing the indices one obtains the most efficient form that an expression can be evaluated. The expression is then sent to an optimised kernel for evaluation. Note that there are situations that the user may write a complex chain of operations in the most verbose/obvious way perhaps for readibility purposes, but Fastor delays the evaluation of the expression and checks if an equivalent but efficient expression can be computed.
 
-For tensor networks comprising of many higher rank tensors, a full generalisation of the above mathematical transformation can be performed through a constructive graph search optimisation. This typically involves finding the most optimal pattern of tensor contraction by studying the indices of contraction wherein tensor pairs are multiplied, summed over and factorised out in all possible combinations in order to come up with a cost model. Once again, knowing the dimensions of the tensor and the contraction pattern, Fastor performs this operation minimisation step at *compile time* and further checks the SIMD vectorisability of the tensor contraction loop nest (i.e. full/partial/strided vectorisation). In a nutshell, it not only minimises the the number of floating point operations but also generates the most optimal vectorisable loop nest for attaining theoretical peal for those remaining FLOPs. The following figures show the run time benefit of operation minimisation (FLOP optimal) over a single expression evaluation (Memory-optimal) approach (for instance NumPy's `einsum` uses the single expression evaluation technique where the whole expression in einsum is computed before being broken up in to smaller and potentially also cache friendly computations) in contracting a three-tensor-network fitting in `L1`, `L2` and `L3` caches, respectively
+For tensor networks comprising of many higher rank tensors, a full generalisation of the above mathematical transformation can be performed through a constructive graph search optimisation. This typically involves finding the most optimal pattern of tensor contraction by studying the indices of contraction wherein tensor pairs are multiplied, summed over and factorised out in all possible combinations in order to come up with a cost model. Once again, knowing the dimensions of the tensor and the contraction pattern, Fastor performs this operation minimisation step at *compile time* and further checks the SIMD vectorisability of the tensor contraction loop nest (i.e. full/partial/strided vectorisation). In a nutshell, it not only minimises the the number of floating point operations but also generates the most optimal vectorisable loop nest for attaining theoretical peak for those remaining FLOPs. The following figures show the run time benefit of operation minimisation (FLOP optimal) over a single expression evaluation (Memory-optimal - as temporaries are not created) approach (for instance NumPy's `einsum` uses the single expression evaluation technique where the whole expression in einsum is computed without being broken up in to smaller and potentially also cache friendly computations) in contracting a three-tensor-network fitting in `L1`, `L2` and `L3` caches, respectively
 <p align="left">
   <img src="docs/imgs/05l1.png" width="280">
   <img src="docs/imgs/05l2.png" width="280">
@@ -234,15 +227,15 @@ enum {I,J,K,L};
 Tensor<double,6,6> D = einsum<Index<I,K>,Index<J,L>,Fastor::voigt>(A,B);
 ~~~
 
-This is generalised to any n-dimensional tensor. As you notice, all indices are resolved and the Voigt transformation is performed at compile time, keeping only the cost of computation at runtime. Equivalent implementation of this in C/Fortran requires either low-level for loop style programming that has an O(n^4) computational complexity and non-contiguous memory access, or if a function like einsum is desired the indices will need to be passed at run-time requiring potential extra register allocation. Here is the benchmark between Ctran (C/Fortran) for loop code and the equivalent Fastor implementation for the above example, run over a million times (both compiled using `-O3 -mavx`, on `Intel(R) Xeon(R) CPU E5-2650 v2 @2.60GHz` running `Ubuntu 14.04`):
+This is generalised to any n-dimensional tensor. As you notice, all indices are resolved and the Voigt transformation is performed at compile time, keeping only the cost of computation at runtime. Equivalent implementation of this in C/Fortran requires either low-level for loop style programming that has an O(n^4) computational complexity and non-contiguous memory access. Here is the benchmark between Ctran (C/Fortran) for loop code and the equivalent Fastor implementation for the above example, run over a million times (both compiled using `-O3 -mavx`, on `Intel(R) Xeon(R) CPU E5-2650 v2 @2.60GHz` running `Ubuntu 14.04`):
 
 
 <p align="center">
   <img src="docs/imgs/cyclic_bench.png" width="600" align="middle">
 </p>
 
+The performance of Fastor comes from the fact, that when a Voigt transformation is requested, Fastor does not compute the elements which are not needed.
 
-Notice that by compiling with the same flags, it is meant that the compiler is permitted to auto-vectorise the C/tran code as well. The real performance of Fastor comes from the fact, that when a Voigt transformation is requested, Fastor does not compute the elements which are not needed.
 ### The tensor cross product and its associated algebra
 Building upon its domain specific features, Fastor implements the tensor cross product family of algebra by [Bonet et. al.](http://dx.doi.org/10.1016/j.ijsolstr.2015.12.030) in the context of numerical analysis of nonlinear classical mechanics which can significantly reduce the amount algebra involved in tensor derivatives of functionals which are forbiddingly complex to derive using a standard approach. The tensor cross product of two second order tensors is defined as `C_iI = e_ijk*e_IJK*A_jJ*b_kK` where `e` is the third order permutation tensor. As can be seen this product is O(n^6) in computational complexity. Using Fastor the equivalent code is only 81 SSE intrinsics
 ~~~c++
@@ -262,6 +255,18 @@ Here is performance benchmark between Ctran (C/Fortran) code and the equivalent 
 
 
 Notice the almost two orders of magnitude performance gain using Fastor. Again the real performance gain comes from the fact that Fastor eliminates zeros from the computation.
+
+
+### Specialised tensors
+A set of specialised tensors are available that provide optimised tensor algebraic computations, for instance `SingleValueTensor`. Some of the computations performed on these tensors have almost zero cost no matter how big the tensor is. These tensors work in the exact same way as the `Tensor` class and can be assigned to one another. Consider for example the einsum between two `SingleValueTensor`s. A `SingleValueTensor` is a tensor of any dimension and size whose elements are all the same (a matrix of ones for instance).
+
+~~~c++
+SingleValueTensor<double,20,20,30> a(3.51);
+SingleValueTensor<double,20,30> b(2.76);
+auto c = einsum<Index<0,1,2>,Index<0,2>>(a,b);
+~~~
+
+This will incur almost no runtime cost. As where if the tensors were of type `Tensor` then a heavy computation would ensue.
 
 
 ### Boolean tensor algebra
