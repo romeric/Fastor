@@ -767,48 +767,392 @@ template<typename T, size_t M, size_t N>
 FASTOR_INLINE
 void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
-    using V = SIMDVector<T,DEFAULT_ABI>;
-    constexpr size_t N0 = ROUND_DOWN(N,V::Size);
+    using V = typename choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
+    constexpr size_t unrollOuterloop = 8UL;
+    constexpr size_t M0 = M / unrollOuterloop * unrollOuterloop;
 
+    // Number of columns of c (N) that can be safely unrolled with V::Size
+    constexpr size_t N1 = N / V::Size * V::Size;
 
-    // Unroll the outer loop to get two independent parallel chains
-    // of accumulators. This gives you two FMAs for 3 loads (2 from a and one from b)
+    constexpr bool isAAligned = false;
+    constexpr bool isBAligned = false;
+
     size_t i=0;
-    for (; i<ROUND_DOWN(M,2); i+=2) {
-        V omm0, omm1;
-        size_t j = 0;
-        for (; j< N0; j+=V::Size) {
-            V amm0(&a[i*N+j],false);
-            V amm1(&a[(i+1)*N+j],false);
-            V bmm0(&b[j],false);
+    FASTOR_IF_CONSTEXPR(N < V::Size) {
 
-            omm0 = fmadd(amm0,bmm0,omm0);
-            omm1 = fmadd(amm1,bmm0,omm1);
+        for (; i<ROUND_DOWN(M,2UL); i+=2UL) {
+            V omm0, omm1;
+            size_t j = 0;
+            for (; j< N1; j+=V::Size) {
+                V amm0(&a[(i    )*N+j],false);
+                V amm1(&a[(i+1UL)*N+j],false);
+                V bmm0(&b[j],false);
+
+                omm0 = fmadd(amm0,bmm0,omm0);
+                omm1 = fmadd(amm1,bmm0,omm1);
+            }
+            T out_s0 = 0;
+            T out_s1 = 0;
+            for (; j< N; ++j) {
+                out_s0 += a[i*N+j]*b[j];
+                out_s1 += a[(i+1)*N+j]*b[j];
+            }
+            out[i]   = omm0.sum() + out_s0;
+            out[i+1] = omm1.sum() + out_s1;
         }
-        T out_s0 = 0;
-        T out_s1 = 0;
-        for (; j< N; j+=1) {
-            out_s0 += a[i*N+j]*b[j];
-            out_s1 += a[(i+1)*N+j]*b[j];
+
+        for (; i<M; ++i) {
+            V omm0;
+            size_t j = 0;
+            for (; j< N1; j+=V::Size) {
+                const V amm0(&a[i*N+j],false);
+                const V bmm0(&b[j],false);
+
+                omm0 = fmadd(amm0,bmm0,omm0);
+            }
+            T out_s0 = 0;
+            for (; j< N; j+=1) {
+                out_s0 += a[i*N+j]*b[j];
+            }
+            out[i]  = omm0.sum() + out_s0;
         }
-        out[i]   = omm0.sum() + out_s0;
-        out[i+1] = omm1.sum() + out_s1;
+        return;
     }
 
-    for (; i<M; ++i) {
-        V omm0;
-        size_t j = 0;
-        for (; j< N0; j+=V::Size) {
-            V amm0(&a[i*N+j],false);
-            V bmm0(&b[j],false);
+    else
+    {
 
-            omm0 = fmadd(amm0,bmm0,omm0);
+        for (; i<M0; i+=unrollOuterloop) {
+
+            const V bmm0(&b[0],isBAligned);
+
+            V omm0(V(&a[(i    )*N],isAAligned)*bmm0);
+            V omm1(V(&a[(i+1UL)*N],isAAligned)*bmm0);
+            V omm2(V(&a[(i+2UL)*N],isAAligned)*bmm0);
+            V omm3(V(&a[(i+3UL)*N],isAAligned)*bmm0);
+            V omm4(V(&a[(i+4UL)*N],isAAligned)*bmm0);
+            V omm5(V(&a[(i+5UL)*N],isAAligned)*bmm0);
+            V omm6(V(&a[(i+6UL)*N],isAAligned)*bmm0);
+            V omm7(V(&a[(i+7UL)*N],isAAligned)*bmm0);
+
+            size_t j = V::Size;
+            for (; j< N1; j+=V::Size) {
+
+                const V bmm0(&b[j],isBAligned);
+
+                const V amm0(&a[(i    )*N+j],isAAligned);
+                const V amm1(&a[(i+1UL)*N+j],isAAligned);
+                const V amm2(&a[(i+2UL)*N+j],isAAligned);
+                const V amm3(&a[(i+3UL)*N+j],isAAligned);
+                const V amm4(&a[(i+4UL)*N+j],isAAligned);
+                const V amm5(&a[(i+5UL)*N+j],isAAligned);
+                const V amm6(&a[(i+6UL)*N+j],isAAligned);
+                const V amm7(&a[(i+7UL)*N+j],isAAligned);
+
+                omm0 = fmadd(amm0,bmm0,omm0);
+                omm1 = fmadd(amm1,bmm0,omm1);
+                omm2 = fmadd(amm2,bmm0,omm2);
+                omm3 = fmadd(amm3,bmm0,omm3);
+                omm4 = fmadd(amm4,bmm0,omm4);
+                omm5 = fmadd(amm5,bmm0,omm5);
+                omm6 = fmadd(amm6,bmm0,omm6);
+                omm7 = fmadd(amm7,bmm0,omm7);
+            }
+
+            out[i    ] = omm0.sum();
+            out[i+1UL] = omm1.sum();
+            out[i+2UL] = omm2.sum();
+            out[i+3UL] = omm3.sum();
+            out[i+4UL] = omm4.sum();
+            out[i+5UL] = omm5.sum();
+            out[i+6UL] = omm6.sum();
+            out[i+7UL] = omm7.sum();
+
+            for (; j< N; ++j) {
+                const T bmm0(b[j]);
+                out[i    ] += a[(i    )*N+j]*bmm0;
+                out[i+1UL] += a[(i+1UL)*N+j]*bmm0;
+                out[i+2UL] += a[(i+2UL)*N+j]*bmm0;
+                out[i+3UL] += a[(i+3UL)*N+j]*bmm0;
+                out[i+4UL] += a[(i+4UL)*N+j]*bmm0;
+                out[i+5UL] += a[(i+5UL)*N+j]*bmm0;
+                out[i+6UL] += a[(i+6UL)*N+j]*bmm0;
+                out[i+7UL] += a[(i+7UL)*N+j]*bmm0;
+            }
         }
-        T out_s0 = 0;
-        for (; j< N; j+=1) {
-            out_s0 += a[i*N+j]*b[j];
+
+        FASTOR_IF_CONSTEXPR (M - M0 == 7) {
+
+            const V bmm0(&b[0],isBAligned);
+
+            V omm0(V(&a[(i    )*N],isAAligned)*bmm0);
+            V omm1(V(&a[(i+1UL)*N],isAAligned)*bmm0);
+            V omm2(V(&a[(i+2UL)*N],isAAligned)*bmm0);
+            V omm3(V(&a[(i+3UL)*N],isAAligned)*bmm0);
+            V omm4(V(&a[(i+4UL)*N],isAAligned)*bmm0);
+            V omm5(V(&a[(i+5UL)*N],isAAligned)*bmm0);
+            V omm6(V(&a[(i+6UL)*N],isAAligned)*bmm0);
+
+            size_t j = V::Size;
+            for (; j< N1; j+=V::Size) {
+
+                const V bmm0(&b[j],isBAligned);
+
+                const V amm0(&a[(i    )*N+j],isAAligned);
+                const V amm1(&a[(i+1UL)*N+j],isAAligned);
+                const V amm2(&a[(i+2UL)*N+j],isAAligned);
+                const V amm3(&a[(i+3UL)*N+j],isAAligned);
+                const V amm4(&a[(i+4UL)*N+j],isAAligned);
+                const V amm5(&a[(i+5UL)*N+j],isAAligned);
+                const V amm6(&a[(i+6UL)*N+j],isAAligned);
+
+                omm0 = fmadd(amm0,bmm0,omm0);
+                omm1 = fmadd(amm1,bmm0,omm1);
+                omm2 = fmadd(amm2,bmm0,omm2);
+                omm3 = fmadd(amm3,bmm0,omm3);
+                omm4 = fmadd(amm4,bmm0,omm4);
+                omm5 = fmadd(amm5,bmm0,omm5);
+                omm6 = fmadd(amm6,bmm0,omm6);
+            }
+
+            out[i    ] = omm0.sum();
+            out[i+1UL] = omm1.sum();
+            out[i+2UL] = omm2.sum();
+            out[i+3UL] = omm3.sum();
+            out[i+4UL] = omm4.sum();
+            out[i+5UL] = omm5.sum();
+            out[i+6UL] = omm6.sum();
+
+            for (; j< N; ++j) {
+                const T bmm0(b[j]);
+                out[i    ] += a[(i    )*N+j]*bmm0;
+                out[i+1UL] += a[(i+1UL)*N+j]*bmm0;
+                out[i+2UL] += a[(i+2UL)*N+j]*bmm0;
+                out[i+3UL] += a[(i+3UL)*N+j]*bmm0;
+                out[i+4UL] += a[(i+4UL)*N+j]*bmm0;
+                out[i+5UL] += a[(i+5UL)*N+j]*bmm0;
+                out[i+6UL] += a[(i+6UL)*N+j]*bmm0;
+            }
         }
-        out[i]  = omm0.sum() + out_s0;
+
+        else FASTOR_IF_CONSTEXPR (M - M0 == 6) {
+
+            const V bmm0(&b[0],isBAligned);
+
+            V omm0(V(&a[(i    )*N],isAAligned)*bmm0);
+            V omm1(V(&a[(i+1UL)*N],isAAligned)*bmm0);
+            V omm2(V(&a[(i+2UL)*N],isAAligned)*bmm0);
+            V omm3(V(&a[(i+3UL)*N],isAAligned)*bmm0);
+            V omm4(V(&a[(i+4UL)*N],isAAligned)*bmm0);
+            V omm5(V(&a[(i+5UL)*N],isAAligned)*bmm0);
+
+            size_t j = V::Size;
+            for (; j< N1; j+=V::Size) {
+
+                const V bmm0(&b[j],isBAligned);
+
+                const V amm0(&a[(i    )*N+j],isAAligned);
+                const V amm1(&a[(i+1UL)*N+j],isAAligned);
+                const V amm2(&a[(i+2UL)*N+j],isAAligned);
+                const V amm3(&a[(i+3UL)*N+j],isAAligned);
+                const V amm4(&a[(i+4UL)*N+j],isAAligned);
+                const V amm5(&a[(i+5UL)*N+j],isAAligned);
+
+                omm0 = fmadd(amm0,bmm0,omm0);
+                omm1 = fmadd(amm1,bmm0,omm1);
+                omm2 = fmadd(amm2,bmm0,omm2);
+                omm3 = fmadd(amm3,bmm0,omm3);
+                omm4 = fmadd(amm4,bmm0,omm4);
+                omm5 = fmadd(amm5,bmm0,omm5);
+            }
+
+            out[i    ] = omm0.sum();
+            out[i+1UL] = omm1.sum();
+            out[i+2UL] = omm2.sum();
+            out[i+3UL] = omm3.sum();
+            out[i+4UL] = omm4.sum();
+            out[i+5UL] = omm5.sum();
+
+            for (; j< N; ++j) {
+                const T bmm0(b[j]);
+                out[i    ] += a[(i    )*N+j]*bmm0;
+                out[i+1UL] += a[(i+1UL)*N+j]*bmm0;
+                out[i+2UL] += a[(i+2UL)*N+j]*bmm0;
+                out[i+3UL] += a[(i+3UL)*N+j]*bmm0;
+                out[i+4UL] += a[(i+4UL)*N+j]*bmm0;
+                out[i+5UL] += a[(i+5UL)*N+j]*bmm0;
+            }
+        }
+
+        else FASTOR_IF_CONSTEXPR (M - M0 == 5) {
+
+            const V bmm0(&b[0],isBAligned);
+
+            V omm0(V(&a[(i    )*N],isAAligned)*bmm0);
+            V omm1(V(&a[(i+1UL)*N],isAAligned)*bmm0);
+            V omm2(V(&a[(i+2UL)*N],isAAligned)*bmm0);
+            V omm3(V(&a[(i+3UL)*N],isAAligned)*bmm0);
+            V omm4(V(&a[(i+4UL)*N],isAAligned)*bmm0);
+
+            size_t j = V::Size;
+            for (; j< N1; j+=V::Size) {
+
+                const V bmm0(&b[j],isBAligned);
+
+                const V amm0(&a[(i    )*N+j],isAAligned);
+                const V amm1(&a[(i+1UL)*N+j],isAAligned);
+                const V amm2(&a[(i+2UL)*N+j],isAAligned);
+                const V amm3(&a[(i+3UL)*N+j],isAAligned);
+                const V amm4(&a[(i+4UL)*N+j],isAAligned);
+
+                omm0 = fmadd(amm0,bmm0,omm0);
+                omm1 = fmadd(amm1,bmm0,omm1);
+                omm2 = fmadd(amm2,bmm0,omm2);
+                omm3 = fmadd(amm3,bmm0,omm3);
+                omm4 = fmadd(amm4,bmm0,omm4);
+            }
+
+            out[i    ] = omm0.sum();
+            out[i+1UL] = omm1.sum();
+            out[i+2UL] = omm2.sum();
+            out[i+3UL] = omm3.sum();
+            out[i+4UL] = omm4.sum();
+
+            for (; j< N; ++j) {
+                const T bmm0(b[j]);
+                out[i    ] += a[(i    )*N+j]*bmm0;
+                out[i+1UL] += a[(i+1UL)*N+j]*bmm0;
+                out[i+2UL] += a[(i+2UL)*N+j]*bmm0;
+                out[i+3UL] += a[(i+3UL)*N+j]*bmm0;
+                out[i+4UL] += a[(i+4UL)*N+j]*bmm0;
+            }
+        }
+
+        else FASTOR_IF_CONSTEXPR (M - M0 == 4) {
+
+            const V bmm0(&b[0],isBAligned);
+
+            V omm0(V(&a[(i    )*N],isAAligned)*bmm0);
+            V omm1(V(&a[(i+1UL)*N],isAAligned)*bmm0);
+            V omm2(V(&a[(i+2UL)*N],isAAligned)*bmm0);
+            V omm3(V(&a[(i+3UL)*N],isAAligned)*bmm0);
+
+            size_t j = V::Size;
+            for (; j< N1; j+=V::Size) {
+
+                const V bmm0(&b[j],isBAligned);
+
+                const V amm0(&a[(i    )*N+j],isAAligned);
+                const V amm1(&a[(i+1UL)*N+j],isAAligned);
+                const V amm2(&a[(i+2UL)*N+j],isAAligned);
+                const V amm3(&a[(i+3UL)*N+j],isAAligned);
+
+                omm0 = fmadd(amm0,bmm0,omm0);
+                omm1 = fmadd(amm1,bmm0,omm1);
+                omm2 = fmadd(amm2,bmm0,omm2);
+                omm3 = fmadd(amm3,bmm0,omm3);
+            }
+
+            out[i    ] = omm0.sum();
+            out[i+1UL] = omm1.sum();
+            out[i+2UL] = omm2.sum();
+            out[i+3UL] = omm3.sum();
+
+            for (; j< N; ++j) {
+                const T bmm0(b[j]);
+                out[i    ] += a[(i    )*N+j]*bmm0;
+                out[i+1UL] += a[(i+1UL)*N+j]*bmm0;
+                out[i+2UL] += a[(i+2UL)*N+j]*bmm0;
+                out[i+3UL] += a[(i+3UL)*N+j]*bmm0;
+            }
+        }
+
+        else FASTOR_IF_CONSTEXPR (M - M0 == 3) {
+
+            const V bmm0(&b[0],isBAligned);
+
+            V omm0(V(&a[(i    )*N],isAAligned)*bmm0);
+            V omm1(V(&a[(i+1UL)*N],isAAligned)*bmm0);
+            V omm2(V(&a[(i+2UL)*N],isAAligned)*bmm0);
+
+            size_t j = V::Size;
+            for (; j< N1; j+=V::Size) {
+
+                const V bmm0(&b[j],isBAligned);
+
+                const V amm0(&a[(i    )*N+j],isAAligned);
+                const V amm1(&a[(i+1UL)*N+j],isAAligned);
+                const V amm2(&a[(i+2UL)*N+j],isAAligned);
+
+                omm0 = fmadd(amm0,bmm0,omm0);
+                omm1 = fmadd(amm1,bmm0,omm1);
+                omm2 = fmadd(amm2,bmm0,omm2);
+            }
+
+            out[i    ] = omm0.sum();
+            out[i+1UL] = omm1.sum();
+            out[i+2UL] = omm2.sum();
+
+            for (; j< N; ++j) {
+                const T bmm0(b[j]);
+                out[i    ] += a[(i    )*N+j]*bmm0;
+                out[i+1UL] += a[(i+1UL)*N+j]*bmm0;
+                out[i+2UL] += a[(i+2UL)*N+j]*bmm0;
+            }
+        }
+
+        else FASTOR_IF_CONSTEXPR (M - M0 == 2) {
+
+            const V bmm0(&b[0],isBAligned);
+
+            V omm0(V(&a[(i    )*N],isAAligned)*bmm0);
+            V omm1(V(&a[(i+1UL)*N],isAAligned)*bmm0);
+
+            size_t j = V::Size;
+            for (; j< N1; j+=V::Size) {
+
+                const V bmm0(&b[j],isBAligned);
+
+                const V amm0(&a[(i    )*N+j],isAAligned);
+                const V amm1(&a[(i+1UL)*N+j],isAAligned);
+
+                omm0 = fmadd(amm0,bmm0,omm0);
+                omm1 = fmadd(amm1,bmm0,omm1);
+            }
+
+            out[i    ] = omm0.sum();
+            out[i+1UL] = omm1.sum();
+
+            for (; j< N; ++j) {
+                const T bmm0(b[j]);
+                out[i    ] += a[(i    )*N+j]*bmm0;
+                out[i+1UL] += a[(i+1UL)*N+j]*bmm0;
+            }
+        }
+
+        else FASTOR_IF_CONSTEXPR (M - M0 == 1) {
+
+            const V bmm0(&b[0],isBAligned);
+
+            V omm0(V(&a[(i    )*N],isAAligned)*bmm0);
+
+            size_t j = V::Size;
+            for (; j< N1; j+=V::Size) {
+
+                const V bmm0(&b[j],isBAligned);
+
+                const V amm0(&a[(i    )*N+j],isAAligned);
+
+                omm0 = fmadd(amm0,bmm0,omm0);
+            }
+
+            out[i    ] = omm0.sum();
+
+            for (; j< N; ++j) {
+                const T bmm0(b[j]);
+                out[i    ] += a[(i    )*N+j]*bmm0;
+            }
+        }
     }
 }
 

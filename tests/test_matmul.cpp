@@ -289,6 +289,66 @@ void run() {
     }
 
     {
+        Tensor<T,2,5> a; a.iota(-5);
+        Tensor<T,5,1> b; b.iota(2.0);
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,3,17> a; a.iota(-5);
+        Tensor<T,17,1> b; b.iota(2.0);
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,4,17> a; a.iota(-5);
+        Tensor<T,17,1> b; b.iota(2.0);
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,5,17> a; a.iota(-5);
+        Tensor<T,17,1> b; b.iota(2.0);
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,6,17> a; a.iota(-5);
+        Tensor<T,17,1> b; b.iota(2.0);
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,7,17> a; a.iota(-5);
+        Tensor<T,17,1> b; b.iota(2.0);
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,8,17> a; a.iota(-5);
+        Tensor<T,17,1> b; b.iota(2.0);
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,9,17> a; a.iota(-5);
+        Tensor<T,17,1> b; b.iota(2.0);
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,5,8> a; a.iota(-5);
+        Tensor<T,8,1> b; b.iota(2.0);
+        SINGLE_TEST(a,b);
+    }
+
+    {
+        Tensor<T,25,17> a; a.iota(-5);
+        Tensor<T,17,1> b; b.iota(2.0);
+        SINGLE_TEST(a,b);
+    }
+
+    {
         Tensor<T,1,2> a; a.iota(-5);
         Tensor<T,2,4> b; b.iota(0);
         SINGLE_TEST(a,b);

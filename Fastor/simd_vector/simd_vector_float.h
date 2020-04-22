@@ -190,18 +190,19 @@ struct SIMDVector<float,simd_abi::avx512> {
     //     return out;
     // }
     FASTOR_INLINE float sum() {
-#ifdef FASTOR_INTEL
+// #ifdef FASTOR_INTEL
+//         return _mm512_reduce_add_ps(value);
+// #else
+//         __m256 low  = _mm512_castps512_ps256(value);
+//         __m256 high = _mm256_castpd_ps(_mm512_extractf64x4_pd(_mm512_castps_pd(value),1));
+//         return _mm256_sum_ps(_mm256_add_ps(low,high));
+// #endif
         return _mm512_reduce_add_ps(value);
-#else
-        __m256 low  = _mm512_castps512_ps256(value);
-        __m256 high = _mm256_castpd_ps(_mm512_extractf64x4_pd(_mm512_castps_pd(value),1));
-        return _mm256_sum_ps(low) + _mm256_sum_ps(high);
-#endif
     }
     FASTOR_INLINE float product() {
         __m256 low  = _mm512_castps512_ps256(value);
         __m256 high = _mm256_castpd_ps(_mm512_extractf64x4_pd(_mm512_castps_pd(value),1));
-        return _mm256_prod_ps(low) + _mm256_prod_ps(high);
+        return _mm256_prod_ps(_mm256_mul_ps(low,high));
     }
     FASTOR_INLINE SIMDVector<float,simd_abi::avx512> reverse() {
         SIMDVector<float,simd_abi::avx512> out;
@@ -216,7 +217,7 @@ struct SIMDVector<float,simd_abi::avx512> {
         __m512 res =  _mm512_mul_ps(value,other.value);
         __m256 low  = _mm512_castps512_ps256(res);
         __m256 high = _mm256_castpd_ps(_mm512_extractf64x4_pd(_mm512_castps_pd(res),1));
-        return _mm256_sum_ps(low) + _mm256_sum_ps(high);
+        return _mm256_sum_ps(_mm256_add_ps(low,high));
     }
 
     __m512 value;

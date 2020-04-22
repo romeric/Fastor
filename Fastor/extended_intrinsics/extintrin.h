@@ -142,18 +142,16 @@ FASTOR_INLINE double _mm_prod_pd(__m128d a) {
 #ifdef FASTOR_AVX_IMPL
 
 FASTOR_INLINE float _mm256_sum_ps(__m256 a) {
-//#ifdef FASTOR_USE_HADD
+#ifdef FASTOR_USE_HADD
     // IVY 14 OPS - HW 16 OPS
-    __m256 sum = _mm256_hadd_ps(a, a);
-    sum = _mm256_hadd_ps(sum, sum);
-    __m128 sum_high = _mm256_extractf128_ps(sum, 0x1);
-    __m128 result = _mm_add_ps(sum_high, _mm256_castps256_ps128(sum));
+    __m256 sum    = _mm256_hadd_ps(a, a);
+    sum           = _mm256_hadd_ps(sum, sum);
+    __m128 result = _mm_add_ps(_mm256_castps256_ps128(sum),_mm256_extractf128_ps(sum, 0x1));
     return _mm_cvtss_f32(result);
-//#else
-//    // IVY 19 OPS - Ends up being more expensive
-//    return _mm_sum_ps(_mm256_castps256_ps128(a)) +
-//            _mm_sum_ps(_mm256_extractf128_ps(a,0x1));
-//#endif
+#else
+   // IVY 14 OPS
+   return _mm_sum_ps(_mm_add_ps(_mm256_castps256_ps128(a),_mm256_extractf128_ps(a,0x1)));
+#endif
 }
 FASTOR_INLINE double _mm256_sum_pd(__m256d a) {
 #ifdef FASTOR_USE_HADD
@@ -163,8 +161,7 @@ FASTOR_INLINE double _mm256_sum_pd(__m256d a) {
     // IVY 8 OPS - HW 10 OPS - SKY 11 OPS (BUT 2 PARALLEL ADDS SO POTENTIALLY 7OPS)
     __m256d sum = _mm256_add_pd(a, _mm256_shuffle_pd(a,a,0x5));
 #endif
-    __m128d sum_high = _mm256_extractf128_pd(sum, 0x1);
-    __m128d result = _mm_add_sd(sum_high, _mm256_castpd256_pd128(sum));
+    __m128d result = _mm_add_sd(_mm256_castpd256_pd128(sum),_mm256_extractf128_pd(sum, 0x1));
     return _mm_cvtsd_f64(result);
 }
 
