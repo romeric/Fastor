@@ -1,7 +1,7 @@
 #ifndef SIMD_VECTOR_DOUBLE_H
 #define SIMD_VECTOR_DOUBLE_H
 
-#include "simd_vector_base.h"
+#include "Fastor/simd_vector/simd_vector_base.h"
 
 namespace Fastor {
 
@@ -16,12 +16,10 @@ struct SIMDVector<double, simd_abi::avx512> {
     using abi_type = simd_abi::avx512;
     static constexpr FASTOR_INDEX Size = internal::get_simd_vector_size<SIMDVector<double,simd_abi::avx512>>::value;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return internal::get_simd_vector_size<SIMDVector<double,simd_abi::avx512>>::value;}
-    static constexpr int unroll_size(FASTOR_INDEX size) {return (static_cast<int>(size) - static_cast<int>(Size));}
 
     FASTOR_INLINE SIMDVector() : value(_mm512_setzero_pd()) {}
     FASTOR_INLINE SIMDVector(double num) : value(_mm512_set1_pd(num)) {}
     FASTOR_INLINE SIMDVector(__m512d regi) : value(regi) {}
-    FASTOR_INLINE SIMDVector(const SIMDVector<double,simd_abi::avx512> &a) : value(a.value) {}
     FASTOR_INLINE SIMDVector(const double *data, bool Aligned=true) {
         if (Aligned)
             value =_mm512_load_pd(data);
@@ -41,10 +39,6 @@ struct SIMDVector<double, simd_abi::avx512> {
     }
     FASTOR_INLINE SIMDVector<double,simd_abi::avx512> operator=(__m512d regi) {
         value = regi;
-        return *this;
-    }
-    FASTOR_INLINE SIMDVector<double,simd_abi::avx512> operator=(const SIMDVector<double,simd_abi::avx512> &a) {
-        value = a.value;
         return *this;
     }
 
@@ -334,12 +328,10 @@ struct SIMDVector<double, simd_abi::avx> {
     using abi_type = simd_abi::avx;
     static constexpr FASTOR_INDEX Size = internal::get_simd_vector_size<SIMDVector<double,simd_abi::avx>>::value;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return internal::get_simd_vector_size<SIMDVector<double,simd_abi::avx>>::value;}
-    static constexpr int unroll_size(FASTOR_INDEX size) {return (static_cast<int>(size) - static_cast<int>(Size));}
 
     FASTOR_INLINE SIMDVector() : value(_mm256_setzero_pd()) {}
     FASTOR_INLINE SIMDVector(double num) : value(_mm256_set1_pd(num)) {}
     FASTOR_INLINE SIMDVector(__m256d regi) : value(regi) {}
-    FASTOR_INLINE SIMDVector(const SIMDVector<double,simd_abi::avx> &a) : value(a.value) {}
     FASTOR_INLINE SIMDVector(const double *data, bool Aligned=true) {
         if (Aligned)
             value =_mm256_load_pd(data);
@@ -359,10 +351,6 @@ struct SIMDVector<double, simd_abi::avx> {
     }
     FASTOR_INLINE SIMDVector<double,simd_abi::avx> operator=(__m256d regi) {
         value = regi;
-        return *this;
-    }
-    FASTOR_INLINE SIMDVector<double,simd_abi::avx> operator=(const SIMDVector<double,simd_abi::avx> &a) {
-        value = a.value;
         return *this;
     }
 
@@ -644,12 +632,10 @@ struct SIMDVector<double, simd_abi::sse> {
     using abi_type = simd_abi::sse;
     static constexpr FASTOR_INDEX Size = internal::get_simd_vector_size<SIMDVector<double,simd_abi::sse>>::value;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return internal::get_simd_vector_size<SIMDVector<double,simd_abi::sse>>::value;}
-    static constexpr int unroll_size(FASTOR_INDEX size) {return (static_cast<int>(size) - static_cast<int>(Size));}
 
     FASTOR_INLINE SIMDVector() : value(_mm_setzero_pd()) {}
     FASTOR_INLINE SIMDVector(double num) : value(_mm_set1_pd(num)) {}
     FASTOR_INLINE SIMDVector(__m128d regi) : value(regi) {}
-    FASTOR_INLINE SIMDVector(const SIMDVector<double, simd_abi::sse> &a) : value(a.value) {}
     FASTOR_INLINE SIMDVector(const double *data, bool Aligned=true) {
         if (Aligned)
             value =_mm_load_pd(data);
@@ -669,10 +655,6 @@ struct SIMDVector<double, simd_abi::sse> {
     }
     FASTOR_INLINE SIMDVector<double,simd_abi::sse> operator=(__m128d regi) {
         value = regi;
-        return *this;
-    }
-    FASTOR_INLINE SIMDVector<double,simd_abi::sse> operator=(const SIMDVector<double,simd_abi::sse> &a) {
-        value = a.value;
         return *this;
     }
 
@@ -939,218 +921,6 @@ FASTOR_INLINE SIMDVector<double,simd_abi::sse> abs(const SIMDVector<double,simd_
 #endif
 
 
+} // end of namespace Fastor
 
-// SCALAR VERSION
-//------------------------------------------------------------------------------------------------------------
-template <>
-struct SIMDVector<double, simd_abi::scalar> {
-    using value_type = double;
-    using scalar_value_type = double;
-    using abi_type = simd_abi::scalar;
-    static constexpr FASTOR_INDEX Size = 1;
-    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return 1;}
-    static constexpr int unroll_size(FASTOR_INDEX size) {return (static_cast<int>(size) - 1);}
-
-    FASTOR_INLINE SIMDVector() : value(0) {}
-    FASTOR_INLINE SIMDVector(double num) : value(num) {}
-    FASTOR_INLINE SIMDVector(const SIMDVector<double,simd_abi::scalar> &a) : value(a.value) {}
-    FASTOR_INLINE SIMDVector(const double *data, bool Aligned=true) : value(*data) {}
-    FASTOR_INLINE SIMDVector(double *data, bool Aligned=true) : value(*data) {}
-
-    FASTOR_INLINE SIMDVector<double,simd_abi::scalar> operator=(double num) {
-        value = num;
-        return *this;
-    }
-    FASTOR_INLINE SIMDVector<double,simd_abi::scalar> operator=(const SIMDVector<double,simd_abi::scalar> &a) {
-        value = a.value;
-        return *this;
-    }
-
-    FASTOR_INLINE void load(const double *data, bool ) {
-        value = *data;
-    }
-    FASTOR_INLINE void store(double *data, bool ) const {
-        data[0] = value;
-    }
-
-    FASTOR_INLINE void load(const double *data) {
-        value = *data;
-    }
-    FASTOR_INLINE void store(double *data) const {
-        data[0] = value;
-    }
-
-    FASTOR_INLINE void aligned_load(const double *data) {
-        value = *data;
-    }
-    FASTOR_INLINE void aligned_store(double *data) const {
-        data[0] = value;
-    }
-
-    FASTOR_INLINE void mask_load(const scalar_value_type *a, uint8_t mask, bool ) {
-        if (mask != 0x0) value = *a;
-    }
-    FASTOR_INLINE void mask_store(scalar_value_type *a, uint8_t mask, bool) const {
-        if (mask != 0x0) a[0] = value;
-    }
-
-    FASTOR_INLINE double operator[](FASTOR_INDEX) const {return value;}
-    FASTOR_INLINE double operator()(FASTOR_INDEX) const {return value;}
-
-    FASTOR_INLINE void set(double num) {
-        value = num;
-    }
-
-    FASTOR_INLINE void set_sequential(double num) {
-        value = num;
-    }
-
-    FASTOR_INLINE void broadcast(const double *data) {
-        value = *data;
-    }
-
-    // In-place operators
-    FASTOR_INLINE void operator+=(double num) {
-        value += num;
-    }
-    FASTOR_INLINE void operator+=(const SIMDVector<double,simd_abi::scalar> &a) {
-        value += a.value;
-    }
-
-    FASTOR_INLINE void operator-=(double num) {
-        value -= num;
-    }
-    FASTOR_INLINE void operator-=(const SIMDVector<double,simd_abi::scalar> &a) {
-        value -= a.value;
-    }
-
-    FASTOR_INLINE void operator*=(double num) {
-        value *= num;
-    }
-    FASTOR_INLINE void operator*=(const SIMDVector<double,simd_abi::scalar> &a) {
-        value *= a.value;
-    }
-
-    FASTOR_INLINE void operator/=(double num) {
-        value /= num;
-    }
-    FASTOR_INLINE void operator/=(const SIMDVector<double,simd_abi::scalar> &a) {
-        value /= a.value;
-    }
-    // end of in-place operators
-
-    FASTOR_INLINE SIMDVector<double,simd_abi::scalar> shift(FASTOR_INDEX) {
-        return *this;
-    }
-    FASTOR_INLINE double sum() {return value;}
-    FASTOR_INLINE double product() {return value;}
-    FASTOR_INLINE SIMDVector<double,simd_abi::scalar> reverse() {
-        return *this;
-    }
-    FASTOR_INLINE double minimum() {return value;}
-    FASTOR_INLINE double maximum() {return value;}
-
-    FASTOR_INLINE double dot(const SIMDVector<double,simd_abi::scalar> &other) {
-        return value*other.value;
-    }
-
-    double value;
-};
-
-
-FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<double,simd_abi::scalar> a) {
-    os << "[" << a.value << "]\n";
-    return os;
-}
-
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> operator+(const SIMDVector<double,simd_abi::scalar> &a, const SIMDVector<double,simd_abi::scalar> &b) {
-    SIMDVector<double,simd_abi::scalar> out;
-    out.value = a.value+b.value;
-    return out;
-}
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> operator+(const SIMDVector<double,simd_abi::scalar> &a, double b) {
-    SIMDVector<double,simd_abi::scalar> out;
-    out.value = a.value+b;
-    return out;
-}
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> operator+(double a, const SIMDVector<double,simd_abi::scalar> &b) {
-    SIMDVector<double,simd_abi::scalar> out;
-    out.value = a+b.value;
-    return out;
-}
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> operator+(const SIMDVector<double,simd_abi::scalar> &b) {
-    return b;
-}
-
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> operator-(const SIMDVector<double,simd_abi::scalar> &a, const SIMDVector<double,simd_abi::scalar> &b) {
-    SIMDVector<double,simd_abi::scalar> out;
-    out.value = a.value-b.value;
-    return out;
-}
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> operator-(const SIMDVector<double,simd_abi::scalar> &a, double b) {
-    SIMDVector<double,simd_abi::scalar> out;
-    out.value = a.value-b;
-    return out;
-}
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> operator-(double a, const SIMDVector<double,simd_abi::scalar> &b) {
-    SIMDVector<double,simd_abi::scalar> out;
-    out.value = a-b.value;
-    return out;
-}
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> operator-(const SIMDVector<double,simd_abi::scalar> &b) {
-    SIMDVector<double,simd_abi::scalar> out;
-    out.value = -b.value;
-    return out;
-}
-
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> operator*(const SIMDVector<double,simd_abi::scalar> &a, const SIMDVector<double,simd_abi::scalar> &b) {
-    SIMDVector<double,simd_abi::scalar> out;
-    out.value = a.value*b.value;
-    return out;
-}
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> operator*(const SIMDVector<double,simd_abi::scalar> &a, double b) {
-    SIMDVector<double,simd_abi::scalar> out;
-    out.value = a.value*b;
-    return out;
-}
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> operator*(double a, const SIMDVector<double,simd_abi::scalar> &b) {
-    SIMDVector<double,simd_abi::scalar> out;
-    out.value = a*b.value;
-    return out;
-}
-
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> operator/(const SIMDVector<double,simd_abi::scalar> &a, const SIMDVector<double,simd_abi::scalar> &b) {
-    SIMDVector<double,simd_abi::scalar> out;
-    out.value = a.value/b.value;
-    return out;
-}
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> operator/(const SIMDVector<double,simd_abi::scalar> &a, double b) {
-    SIMDVector<double,simd_abi::scalar> out;
-    out.value = a.value/b;
-    return out;
-}
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> operator/(double a, const SIMDVector<double,simd_abi::scalar> &b) {
-    SIMDVector<double,simd_abi::scalar> out;
-    out.value = a/b.value;
-    return out;
-}
-
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> rcp(const SIMDVector<double,simd_abi::scalar> &a) {
-    return 1.0/a.value;
-}
-
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> sqrt(const SIMDVector<double,simd_abi::scalar> &a) {
-    return std::sqrt(a.value);
-}
-
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> rsqrt(const SIMDVector<double,simd_abi::scalar> &a) {
-    return 1.0/std::sqrt(a.value);
-}
-
-FASTOR_INLINE SIMDVector<double,simd_abi::scalar> abs(const SIMDVector<double,simd_abi::scalar> &a) {
-    return std::abs(a.value);
-}
-
-
-}
-#endif
+#endif // // SIMD_VECTOR_DOUBLE_H
