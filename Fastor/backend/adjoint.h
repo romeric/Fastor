@@ -2,7 +2,7 @@
 #define ADJOINT_H
 
 
-#include "Fastor/extended_intrinsics/extintrin.h"
+#include "Fastor/simd_vector/extintrin.h"
 
 //! The implementation for adjoint and cofactor are the same, just the store
 //! operations are swapped

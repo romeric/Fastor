@@ -1,12 +1,12 @@
 #ifndef COFACTOR_H
 #define COFACTOR_H
 
-#include "Fastor/extended_intrinsics/extintrin.h"
+#include "Fastor/simd_vector/extintrin.h"
+
+namespace Fastor {
 
 //! The implementation for adjoint and cofactor are the same, just the store
 //! operations are swapped
-
-namespace Fastor {
 
 
 template<typename T, size_t M, size_t N>

@@ -2,7 +2,6 @@
 #define BACKEND_H
 
 
-#include "Fastor/extended_intrinsics/extintrin.h"
 #include "Fastor/backend/transpose.h"
 #include "Fastor/backend/trace.h"
 #include "Fastor/backend/doublecontract.h"

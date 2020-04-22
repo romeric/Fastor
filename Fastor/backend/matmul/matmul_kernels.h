@@ -3,7 +3,7 @@
 
 
 #include "Fastor/commons/commons.h"
-#include "Fastor/extended_intrinsics/extintrin.h"
+#include "Fastor/simd_vector/extintrin.h"
 #include "Fastor/simd_vector/SIMDVector.h"
 #include "Fastor/meta/tensor_meta.h"
 

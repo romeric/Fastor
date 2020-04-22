@@ -2,7 +2,7 @@
 #define TRACE_H
 
 #include "Fastor/commons/commons.h"
-#include "Fastor/extended_intrinsics/extintrin.h"
+#include "Fastor/simd_vector/extintrin.h"
 
 namespace Fastor {
 

@@ -1,7 +1,7 @@
 #ifndef INTERNAL_MATH_H
 #define INTERNAL_MATH_H
 
-#include "Fastor/extended_intrinsics/extintrin.h"
+#include "Fastor/simd_vector/extintrin.h"
 #include "Fastor/meta/tensor_meta.h"
 
 namespace Fastor {
