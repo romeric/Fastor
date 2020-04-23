@@ -51,7 +51,7 @@ int main() {
 
     // An example of summing over three indices
     Tensor<double,5,5,5> D; D.random();
-    auto E = reduction(D);
+    auto E = inner(D);
 
     // An example of tensor permutation
     Tensor<float,3,4,5,2> F; F.random();

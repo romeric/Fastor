@@ -104,6 +104,41 @@ inner(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1
     using rhs_type = typename Derived1::result_type;
     return inner(a.self(),rhs_type(b));
 }
+
+
+
+// multiple chained expressions
+//---------------------------------------------------------------------------------------------------
+#if FASTOR_CXX_VERSION >= 2014
+namespace internal {
+template<typename AbstractTensorType0>
+FASTOR_INLINE
+auto
+innerproduct_chain_expression(const AbstractTensorType0& a)
+-> decltype(a.self())
+{
+    return a.self();
+}
+template<typename AbstractTensorType0, typename AbstractTensorType1, typename ... AbstractTensorTypes>
+FASTOR_INLINE
+auto
+innerproduct_chain_expression(const AbstractTensorType0& a, const AbstractTensorType1& b, const AbstractTensorTypes& ... rest)
+// -> decltype(innerproduct_chain_expression(evaluate(a*b),rest...))
+{
+    const auto src = evaluate(a*b);
+    return innerproduct_chain_expression(src,rest...);
+}
+} // internal
+
+template<typename AbstractTensorType0, typename AbstractTensorType1, typename ... AbstractTensorTypes>
+FASTOR_INLINE
+auto
+inner(const AbstractTensorType0& a, const AbstractTensorType1& b, const AbstractTensorTypes& ... rest)
+-> decltype(internal::innerproduct_chain_expression(a,b,rest...).sum())
+{
+    return internal::innerproduct_chain_expression(a,b,rest...).sum();
+}
+#endif
 //---------------------------------------------------------------------------------------------------
 
 
