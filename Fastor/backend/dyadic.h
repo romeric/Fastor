@@ -15,9 +15,11 @@ template<typename T, size_t SizeA, size_t SizeB>
 FASTOR_INLINE
 void _dyadic(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
-    using V  = SIMDVector<T,DEFAULT_ABI>;
-    constexpr size_t unrollOuterloop = 4UL;
-    constexpr size_t M0 = SizeA / unrollOuterloop * unrollOuterloop;
+    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
+    // constexpr size_t unrollOuterloop = 4UL;
+    // constexpr size_t M0 = SizeA / unrollOuterloop * unrollOuterloop;
+    // Unrolling the inner loop beyond 4 does not give any benefit neither on AVX
+    // nor on AVX512
 
     size_t i = 0;
     for (; i<SizeA; ++i) {
