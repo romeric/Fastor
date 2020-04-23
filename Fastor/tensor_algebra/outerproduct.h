@@ -85,6 +85,37 @@ dyadic(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM
 }
 //---------------------------------------------------------------------------------------------------
 
+
+// multiple chained expressions
+//---------------------------------------------------------------------------------------------------
+#if FASTOR_CXX_VERSION >= 2014
+// template<typename AbstractTensorType0>
+// FASTOR_INLINE
+// auto
+// outer(const AbstractTensorType0& a)
+// {
+//     return a;
+// }
+
+template<typename AbstractTensorType0, typename AbstractTensorType1, typename ... AbstractTensorTypes>
+FASTOR_INLINE
+auto
+outer(const AbstractTensorType0& a, const AbstractTensorType1& b, const AbstractTensorTypes& ... rest)
+{
+    const auto res = outer(a,b);
+    return outer(res, rest...);
+}
+
+template<typename AbstractTensorType0, typename AbstractTensorType1, typename ... AbstractTensorTypes>
+FASTOR_INLINE
+auto
+dyadic(const AbstractTensorType0& a, const AbstractTensorType1& b, const AbstractTensorTypes& ... rest)
+{
+    return outer(a, b, rest...);
+}
+#endif
+//---------------------------------------------------------------------------------------------------
+
 } // end of namespace Fastor
 
 #endif // OUTERPRODUCT_H
