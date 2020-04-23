@@ -330,6 +330,10 @@ void run() {
         auto C = einsum<Index<a,c>,Index<f,g>,Index<c,f,b>,Index<g,d,a>>(A, A, B, B);
         FASTOR_EXIT_ASSERT(abs(C(0,0) + 1.) < Tol);
         FASTOR_EXIT_ASSERT(abs(C(1,1)) < BigTol);
+
+        auto C1 = einsum<Index<a,c>,Index<f,g>,Index<c,f,b>,Index<g,d,a>>(A+0, A+A%A-A%A, B, 1*B);
+        FASTOR_EXIT_ASSERT(abs(C1(0,0) + 1.) < Tol);
+        FASTOR_EXIT_ASSERT(abs(C1(1,1)) < BigTol);
     }
 
     // Tests matmul dispatcher for general matrix-matrix

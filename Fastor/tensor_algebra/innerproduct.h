@@ -107,7 +107,7 @@ inner(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1
 
 
 
-// multiple chained expressions
+// multiple chained expressions - network innerproduct
 //---------------------------------------------------------------------------------------------------
 #if FASTOR_CXX_VERSION >= 2014
 namespace internal {

@@ -6,7 +6,10 @@
 
 namespace Fastor {
 
-
+template<typename T, size_t ... Rest>
+FASTOR_INLINE const Tensor<T,Rest...>& evaluate(const Tensor<T,Rest...> &src) {
+    return src;
+}
 template<class Derived, size_t DIMS>
 FASTOR_INLINE typename Derived::result_type evaluate(const AbstractTensor<Derived,DIMS> &src) {
     typename Derived::result_type out(src);

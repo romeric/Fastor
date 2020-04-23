@@ -86,7 +86,7 @@ dyadic(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM
 //---------------------------------------------------------------------------------------------------
 
 
-// multiple chained expressions
+// multiple chained expressions - network outerproduct
 //---------------------------------------------------------------------------------------------------
 #if FASTOR_CXX_VERSION >= 2014
 // template<typename AbstractTensorType0>
