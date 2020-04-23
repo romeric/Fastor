@@ -99,7 +99,7 @@ struct SIMDVector {
         T arr[Size] = {first,args...};
         std::reverse_copy(arr, arr+Size, value);
         // Relax this restriction
-        static_assert(sizeof...(args)==Size,"CANNOT SET VECTOR WITH SPECIFIED NUMBER OF VALUES DUE TO ABI CONSIDERATION");
+        static_assert(sizeof...(args)+1==Size,"CANNOT SET VECTOR WITH SPECIFIED NUMBER OF VALUES DUE TO ABI CONSIDERATION");
     }
     FASTOR_INLINE void set_sequential(T num0) {
         for (FASTOR_INDEX i=0; i<Size;++i)
