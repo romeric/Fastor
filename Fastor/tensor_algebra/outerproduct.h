@@ -1,6 +1,7 @@
 #ifndef OUTERPRODUCT_H
 #define OUTERPRODUCT_H
 
+#include "Fastor/backend/dyadic.h"
 #include "Fastor/tensor/Tensor.h"
 #include "Fastor/tensor/TensorTraits.h"
 

@@ -136,56 +136,6 @@ struct extractor_abstract_contract<Index<Idx0...>, Index<Idx1...>> {
             out_data[index_out] += a_src.template eval_s<T>((FASTOR_INDEX)index_a)*b_src.template eval_s<T>((FASTOR_INDEX)index_b);
         }
 
-        // int i = 0;
-        // for (; i < ROUND_DOWN(total,stride); i+=stride) {
-        //     int remaining = total;
-        //     for (int n = 0; n < out_dim; ++n) {
-        //         remaining /= maxes_out[n];
-        //         as[n] = ( i / remaining ) % maxes_out[n];
-        //     }
-
-        //     int index_a = as[idx_a[a_dim-1]];
-        //     for(it = 0; it< a_dim; it++) {
-        //         index_a += products_a[it]*as[idx_a[it]];
-        //     }
-        //     int index_b = as[idx_b[b_dim-1]];
-        //     for(it = 0; it< b_dim; it++) {
-        //         index_b += products_b[it]*as[idx_b[it]];
-        //     }
-        //     int index_out = as[idx_out[OutTensor::Dimension-1]];
-        //     for(it = 0; it< static_cast<int>(OutTensor::Dimension); it++) {
-        //         index_out += products_out[it]*as[idx_out[it]];
-        //     }
-
-        //     SIMDVector<T,DEFAULT_ABI> _vec_out = a_src.template eval<T>((FASTOR_INDEX)index_a)*b_src.template eval<T>((FASTOR_INDEX)index_b) +  SIMDVector<T,DEFAULT_ABI>(out_data+index_out);
-        //     _vec_out.store(out_data+index_out);
-        //     print(type_name<SIMDVector<T,DEFAULT_ABI>>());
-        // }
-
-
-        // for (; i < total; ++i) {
-        //     int remaining = total;
-        //     for (int n = 0; n < out_dim; ++n) {
-        //         remaining /= maxes_out[n];
-        //         as[n] = ( i / remaining ) % maxes_out[n];
-        //     }
-
-        //     int index_a = as[idx_a[a_dim-1]];
-        //     for(it = 0; it< a_dim; it++) {
-        //         index_a += products_a[it]*as[idx_a[it]];
-        //     }
-        //     int index_b = as[idx_b[b_dim-1]];
-        //     for(it = 0; it< b_dim; it++) {
-        //         index_b += products_b[it]*as[idx_b[it]];
-        //     }
-        //     int index_out = as[idx_out[OutTensor::Dimension-1]];
-        //     for(it = 0; it< static_cast<int>(OutTensor::Dimension); it++) {
-        //         index_out += products_out[it]*as[idx_out[it]];
-        //     }
-
-        //     out_data[index_out] += a_src.template eval_s<T>((FASTOR_INDEX)index_a)*b_src.template eval_s<T>((FASTOR_INDEX)index_b);
-        // }
-
         return out;
 
       }
@@ -230,11 +180,6 @@ struct extractor_abstract_contract_3<Index<Idx0...>, Index<Idx1...>, Index<Idx2.
         using resulting_index_2 = typename cost_model::resulting_index_2;
 
         constexpr int which_variant = cost_model::which_variant;
-
-#ifdef FASTOR_PRINT_COST
-        constexpr int flop_cost = cost_model::min_cost;
-        print(flop_cost);
-#endif
 
         FASTOR_IF_CONSTEXPR (which_variant == 0) {
             auto tmp = einsum<Index<Idx0...>,Index<Idx1...>>(a,b);

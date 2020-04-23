@@ -9,7 +9,7 @@
 
 #include "Fastor/tensor_algebra/reshape.h"
 #include "Fastor/tensor_algebra/permutation.h"
-#include "Fastor/tensor_algebra/reduction.h"
+#include "Fastor/tensor_algebra/innerproduct.h"
 #include "Fastor/tensor_algebra/summation.h"
 #include "Fastor/tensor_algebra/outerproduct.h"
 #include "Fastor/tensor_algebra/contraction.h"
@@ -295,64 +295,6 @@ einsum(const Tensor<T,I,J> & a, const Tensor<T,K,L> &b) {
         auto out = permutation<Ind>(contraction<Ind0,Ind1>(a,b));
         return voigt(out);
     }
-}
-
-
-// The following two overloads are provided for an external use case
-// A_ijk*B_kl
-template<class Ind0, class Ind1,
-         typename T, size_t I, size_t J, size_t K, size_t L,
-         typename std::enable_if<Ind0::NoIndices==3 && Ind1::NoIndices==2 &&
-                                Ind0::_IndexHolder[0] != Ind0::_IndexHolder[1] &&
-                                Ind0::_IndexHolder[0] != Ind0::_IndexHolder[2] &&
-                                Ind0::_IndexHolder[0] != Ind1::_IndexHolder[0] &&
-                                Ind0::_IndexHolder[0] != Ind1::_IndexHolder[1] &&
-
-                                Ind0::_IndexHolder[1] != Ind0::_IndexHolder[2] &&
-                                Ind0::_IndexHolder[1] != Ind1::_IndexHolder[0] &&
-                                Ind0::_IndexHolder[1] != Ind1::_IndexHolder[1] &&
-
-                                Ind0::_IndexHolder[2] == Ind1::_IndexHolder[0] &&
-                                Ind0::_IndexHolder[2] != Ind1::_IndexHolder[1] &&
-
-                                Ind1::_IndexHolder[0] != Ind1::_IndexHolder[1],bool>::type = 0>
-FASTOR_INLINE Tensor<T,I,J,L>
-einsum(const Tensor<T,I,J,K> &a, const Tensor<T,K,L> &b) {
-
-    Tensor<T,I,J,L> out;
-    _matmul<T,I*J,K,L>(a.data(),b.data(),out.data());
-    return out;
-}
-
-// A_ijk*B_klm
-template<class Ind0, class Ind1,
-         typename T, size_t I, size_t J, size_t K, size_t L, size_t M,
-         typename std::enable_if<Ind0::NoIndices==3 && Ind1::NoIndices==3 &&
-                                Ind0::_IndexHolder[0] != Ind0::_IndexHolder[1] &&
-                                Ind0::_IndexHolder[0] != Ind0::_IndexHolder[2] &&
-                                Ind0::_IndexHolder[0] != Ind1::_IndexHolder[0] &&
-                                Ind0::_IndexHolder[0] != Ind1::_IndexHolder[1] &&
-                                Ind0::_IndexHolder[0] != Ind1::_IndexHolder[2] &&
-
-                                Ind0::_IndexHolder[1] != Ind0::_IndexHolder[2] &&
-                                Ind0::_IndexHolder[1] != Ind1::_IndexHolder[0] &&
-                                Ind0::_IndexHolder[1] != Ind1::_IndexHolder[1] &&
-                                Ind0::_IndexHolder[1] != Ind1::_IndexHolder[2] &&
-
-                                Ind0::_IndexHolder[2] == Ind1::_IndexHolder[0] &&
-                                Ind0::_IndexHolder[2] != Ind1::_IndexHolder[1] &&
-                                Ind0::_IndexHolder[2] != Ind1::_IndexHolder[2] &&
-
-                                Ind1::_IndexHolder[0] != Ind1::_IndexHolder[1] &&
-                                Ind1::_IndexHolder[0] != Ind1::_IndexHolder[2] &&
-
-                                Ind1::_IndexHolder[1] != Ind1::_IndexHolder[2],bool>::type = 0>
-FASTOR_INLINE Tensor<T,I,J,L,M>
-einsum(const Tensor<T,I,J,K> &a, const Tensor<T,K,L,M> &b) {
-
-    Tensor<T,I,J,L,M> out;
-    _matmul<T,I*J,K,L*M>(a.data(),b.data(),out.data());
-    return out;
 }
 
 #endif
