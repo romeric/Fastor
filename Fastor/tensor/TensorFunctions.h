@@ -82,11 +82,6 @@ FASTOR_INLINE Tensor<T,K> matmul(const Tensor<T,J> &a, const Tensor<T,J,K> &b) {
     return out;
 }
 
-template<typename T, size_t ... Rest>
-FASTOR_INLINE T dot(const Tensor<T,Rest...> &b, const Tensor<T,Rest...> &a) {
-    return _doublecontract<T,sizeof...(Rest),1>(a.data(),b.data());
-}
-
 template<typename T, size_t I, size_t J>
 FASTOR_INLINE Tensor<T,J> solve(const Tensor<T,I,J> &A, const Tensor<T,J> &b) {
     return matmul(inverse(A),b);

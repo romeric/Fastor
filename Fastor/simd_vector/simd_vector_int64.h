@@ -208,6 +208,14 @@ struct SIMDVector<int64_t,simd_abi::avx> {
         return quan;
     }
 
+    FASTOR_INLINE int64_t product() {
+        const int64_t *vals = reinterpret_cast<const int64_t*>(&value);
+        int64_t quan = 1;
+        for (FASTOR_INDEX i=0; i<Size; ++i)
+            quan *= vals[i];
+        return quan;
+    }
+
     FASTOR_INLINE int64_t dot(const SIMDVector<int64_t,simd_abi::avx> &other) {
         const int64_t *vals0 = reinterpret_cast<const int64_t*>(&value);
         const int64_t *vals1 = reinterpret_cast<const int64_t*>(&other.value);
@@ -505,9 +513,7 @@ struct SIMDVector<int64_t,simd_abi::sse> {
         return static_cast<int64_t>(quan);
     }
     FASTOR_INLINE SIMDVector<int64_t,simd_abi::sse> reverse() {
-        SIMDVector<int64_t,simd_abi::sse> out;
-        out.value = _mm_reverse_epi64(value);
-        return out;
+        return _mm_reverse_epi64(value);
     }
 
     FASTOR_INLINE int64_t sum() {
@@ -516,6 +522,13 @@ struct SIMDVector<int64_t,simd_abi::sse> {
         for (FASTOR_INDEX i=0; i<2; ++i)
             quan += vals[i];
         return static_cast<int64_t>(quan);
+    }
+    FASTOR_INLINE int64_t product() {
+        const int64_t *vals = reinterpret_cast<const int64_t*>(&value);
+        int64_t quan = 1;
+        for (FASTOR_INDEX i=0; i<Size; ++i)
+            quan *= vals[i];
+        return quan;
     }
 
     FASTOR_INLINE int64_t dot(const SIMDVector<int64_t,simd_abi::sse> &other) {

@@ -80,9 +80,26 @@ FASTOR_INLINE __m256d _mm256_loadul3_pd(const double *value) {
 #endif
 
 
+//! Horizontal summation of registers
+#ifdef FASTOR_SSE2_IMPL
+FASTOR_INLINE int _mm_sum_epi32(__m128i a) {
+    // W/O HADD: IVY 5 - HW 5 - SKY 6
+    // __m128i c = _mm_hadd_epi32(a,a); // SSSE3 one extra op
+    __m128i c = _mm_add_epi32(a,_mm_shuffle_epi32(a,_MM_SHUFFLE(2,3,0,1)));
+    __m128i d = _mm_add_epi32(c,_mm_shuffle_epi32(c,_MM_SHUFFLE(0,1,2,3)));
+    return _mm_cvtsi128_si32(d);
+}
+
+static int _mm_prod_epi32(__m128i a) {
+    // IVY 13 - HW 13 - SKY 12
+    __m128i c = _mm_mul_epu32(a,_mm_shuffle_epi32(a,_MM_SHUFFLE(2,3,0,1)));
+    __m128i d = _mm_mul_epu32(c,_mm_shuffle_epi32(c,_MM_SHUFFLE(2,2,2,2)));
+    return _mm_cvtsi128_si32(d);
+}
+#endif
+
 #ifdef FASTOR_USE_HADD
 #ifdef FASTOR_SSSE3_IMPL
-//! Horizontal summation of registers
 FASTOR_INLINE float _mm_sum_ps(__m128 a) {
     // 10 OPS
     float sum32;

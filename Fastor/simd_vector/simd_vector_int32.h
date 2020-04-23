@@ -516,26 +516,14 @@ struct SIMDVector<int32_t,simd_abi::sse> {
         return quan;
     }
     FASTOR_INLINE SIMDVector<int32_t,simd_abi::sse> reverse() {
-        SIMDVector<int32_t,simd_abi::sse> out;
-        out.value = _mm_reverse_epi32(value);
-        return out;
+        return _mm_reverse_epi32(value);
     }
 
-    FASTOR_INLINE int32_t sum() {
-        int32_t vals[Size]; _mm_storeu_si128((__m128i*)vals, value);
-        int32_t quan = 0;
-        for (FASTOR_INDEX i=0; i<Size; ++i)
-            quan += vals[i];
-        return quan;
-    }
+    FASTOR_INLINE int32_t sum() {return _mm_sum_epi32(value);}
+    FASTOR_INLINE int32_t product() {return _mm_prod_epi32(value);}
 
     FASTOR_INLINE int32_t dot(const SIMDVector<int32_t,simd_abi::sse> &other) {
-        int32_t *vals0 = (int32_t*)&value;
-        int32_t *vals1 = (int32_t*)&other.value;
-        int32_t quan = 0;
-        for (FASTOR_INDEX i=0; i<Size; ++i)
-            quan += vals0[i]*vals1[i];
-        return quan;
+        return _mm_sum_epi32(_mm_mul_epi32x(value,other.value));
     }
 
     __m128i value;

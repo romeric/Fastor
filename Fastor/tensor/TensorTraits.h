@@ -144,6 +144,9 @@ template<template<typename,size_t...> class Derived0,
 struct concat_tensor<Derived0<T,Rest0...>,Derived1<T,Rest1...>,Derived2<T,Rest2...>,Derived3<T,Rest3...>> {
     using type = Tensor<T,Rest0...,Rest1...,Rest2...,Rest3...>;
 };
+
+template <class X, class Y, class ... Z>
+using concatenated_tensor_t = typename concat_tensor<X,Y,Z...>::type;
 //--------------------------------------------------------------------------------------------------------------------//
 
 
