@@ -307,13 +307,13 @@ FASTOR_INLINE SIMDVector<int32_t,simd_abi::avx512> operator/(const SIMDVector<in
 #ifdef FASTOR_INTEL
     out.value = _mm512_div_epi32(a.value,b.value);
 #else
-    int32_t val[out.size()];   _mm512_storeu_si512((__m256i*)val, out.value);
-    int32_t val_a[out.size()]; _mm512_storeu_si512((__m256i*)val_a, a.value);
-    int32_t val_b[out.size()]; _mm512_storeu_si512((__m256i*)val_b, b.value);
+    int32_t val[out.size()];   _mm512_storeu_si512((__m512i*)val, out.value);
+    int32_t val_a[out.size()]; _mm512_storeu_si512((__m512i*)val_a, a.value);
+    int32_t val_b[out.size()]; _mm512_storeu_si512((__m512i*)val_b, b.value);
     for (FASTOR_INDEX i=0; i<out.size(); ++i) {
         val[i] = val_a[i] / val_b[i];
     }
-    out.value = _mm512_loadu_si512((__m256i*)val);
+    out.value = _mm512_loadu_si512((__m512i*)val);
 #endif
     return out;
 }
@@ -322,12 +322,12 @@ FASTOR_INLINE SIMDVector<int32_t,simd_abi::avx512> operator/(const SIMDVector<in
 #ifdef FASTOR_INTEL
     out.value = _mm512_div_epi32(a.value,_mm512_set1_epi32(b));
 #else
-    int32_t val[out.size()];   _mm512_storeu_si512((__m256i*)val, out.value);
-    int32_t val_a[out.size()]; _mm512_storeu_si512((__m256i*)val_a, a.value);
+    int32_t val[out.size()];   _mm512_storeu_si512((__m512i*)val, out.value);
+    int32_t val_a[out.size()]; _mm512_storeu_si512((__m512i*)val_a, a.value);
     for (FASTOR_INDEX i=0; i<out.size(); ++i) {
         val[i] = val_a[i] / b;
     }
-    out.value = _mm512_loadu_si512((__m256i*)val);
+    out.value = _mm512_loadu_si512((__m512i*)val);
 #endif
     return out;
 }
@@ -336,12 +336,12 @@ FASTOR_INLINE SIMDVector<int32_t,simd_abi::avx512> operator/(int32_t a, const SI
 #ifdef FASTOR_INTEL
     out.value = _mm512_div_epi32(_mm512_set1_epi32(a),b.value);
 #else
-    int32_t val[out.size()];   _mm512_storeu_si512((__m256i*)val, out.value);
-    int32_t val_b[out.size()]; _mm512_storeu_si512((__m256i*)val_b, b.value);
+    int32_t val[out.size()];   _mm512_storeu_si512((__m512i*)val, out.value);
+    int32_t val_b[out.size()]; _mm512_storeu_si512((__m512i*)val_b, b.value);
     for (FASTOR_INDEX i=0; i<out.size(); ++i) {
         val[i] = a / val_b[i];
     }
-    out.value = _mm512_loadu_si512((__m256i*)val);
+    out.value = _mm512_loadu_si512((__m512i*)val);
 #endif
     return out;
 }
