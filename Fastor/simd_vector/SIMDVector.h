@@ -520,7 +520,7 @@ template<>
 FASTOR_INLINE SIMDVector<Int64,simd_abi::avx>
 maskload<SIMDVector<Int64,simd_abi::avx>>(const Int64 * FASTOR_RESTRICT a, const int (&maska)[4]) {
     __m256i mask = _mm256_set_epi64x(maska[0],maska[1],maska[2],maska[3]);
-    return _mm256_maskload_epi64(a,(__m256i) mask);
+    return _mm256_maskload_epi64(reinterpret_cast<const long long int*>(a),(__m256i) mask);
 }
 template<>
 FASTOR_INLINE SIMDVector<float,simd_abi::avx>
@@ -544,7 +544,7 @@ template<>
 FASTOR_INLINE SIMDVector<Int64,simd_abi::sse>
 maskload<SIMDVector<Int64,simd_abi::sse>>(const Int64 * FASTOR_RESTRICT a, const int (&maska)[2]) {
     __m128i mask = _mm_set_epi64x(maska[0],maska[1]);
-    return _mm_maskload_epi64(a,(__m128i) mask);
+    return _mm_maskload_epi64(reinterpret_cast<const long long int*>(a),(__m128i) mask);
 }
 template<>
 FASTOR_INLINE SIMDVector<float,simd_abi::sse>
@@ -581,7 +581,7 @@ template<>
 FASTOR_INLINE
 void maskstore(Int64 * FASTOR_RESTRICT a, const int (&maska)[4], SIMDVector<Int64,simd_abi::avx> &v) {
     __m256i mask = _mm256_set_epi64x(maska[0],maska[1],maska[2],maska[3]);
-    _mm256_maskstore_epi64(a,(__m256i) mask, v.value);
+    _mm256_maskstore_epi64(reinterpret_cast<long long int*>(a),(__m256i) mask, v.value);
 }
 template<>
 FASTOR_INLINE
@@ -605,7 +605,7 @@ template<>
 FASTOR_INLINE
 void maskstore(Int64 * FASTOR_RESTRICT a, const int (&maska)[2], SIMDVector<Int64,simd_abi::sse> &v) {
     __m128i mask = _mm_set_epi64x(maska[0],maska[1]);
-    _mm_maskstore_epi64(a,(__m128i) mask, v.value);
+    _mm_maskstore_epi64(reinterpret_cast<long long int*>(a),(__m128i) mask, v.value);
 }
 template<>
 FASTOR_INLINE
