@@ -261,7 +261,11 @@ int main() {
     print(FBLU(BOLD("Testing SIMDVector of int - 256")));
     test_simd_vectors<int,simd_abi::avx>();
     print(FBLU(BOLD("Testing SIMDVector of int - 512")));
+#ifdef FASTOR_AVX512_IMPL
+    test_simd_vectors<int,simd_abi::avx512>();
+#else
     test_simd_vectors<int,simd_abi::fixed_size<16>>();
+#endif
 
     print(FBLU(BOLD("Testing SIMDVector of long long - 64")));
     test_simd_vectors<Int64,simd_abi::scalar>();
