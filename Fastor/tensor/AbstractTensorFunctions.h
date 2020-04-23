@@ -26,7 +26,7 @@ FASTOR_INLINE typename Derived::scalar_type sum(const AbstractTensor<Derived,DIM
     FASTOR_IF_CONSTEXPR(requires_evaluation_v<Derived>) {
         using result_type = typename Derived::result_type;
         const result_type out(src);
-        return sum(out);
+        return out.sum();
     }
 
     using T = typename Derived::scalar_type;
@@ -49,7 +49,7 @@ FASTOR_INLINE typename Derived::scalar_type product(const AbstractTensor<Derived
     FASTOR_IF_CONSTEXPR(requires_evaluation_v<Derived>) {
         using result_type = typename Derived::result_type;
         const result_type out(src);
-        return product(out);
+        return out.product();
     }
 
     using T = typename Derived::scalar_type;
