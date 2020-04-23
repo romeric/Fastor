@@ -423,12 +423,13 @@ SOFTWARE.
 // FASTOR CONSTRUCTS
 //------------------------------------------------------------------------------------------------//
 #include <iostream>
+#include <cstdint>
 #include <string>
 
 namespace Fastor {
 
 using FASTOR_INDEX = size_t;
-using Int64 = long long int;
+using Int64 = int64_t;
 using DEFAULT_FLOAT_TYPE = double;
 using DFT = DEFAULT_FLOAT_TYPE;
 using FASTOR_VINDEX = volatile size_t;
