@@ -5,6 +5,7 @@
 #include "Fastor/tensor/TensorTraits.h"
 #include "Fastor/tensor_algebra/indicial.h"
 #include "Fastor/meta/einsum_meta.h"
+#include "Fastor/expressions/linalg_ops/linalg_traits.h"
 
 namespace Fastor {
 
@@ -182,8 +183,8 @@ struct extractor_perm<Index<Idx...> > {
     template<typename T, size_t ... Rest>
     static
     FASTOR_INLINE
-    typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
-    typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type
+        typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type
     permutation_impl(const Tensor<T,Rest...> &a) {
 
 #if CONTRACT_OPT==-1
@@ -274,13 +275,14 @@ struct extractor_perm<Index<Idx...> > {
 
 
 
-    // Generic abstract permute
-    template<typename Derived, size_t DIMS>
+    // Abstract permutation
+    template<typename Derived, size_t DIMS,
+        enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
     static
     FASTOR_INLINE
     typename permute_impl<typename scalar_type_finder<Derived>::type,
-    Index<Idx...>, typename tensor_type_finder<Derived>::type,
-    typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type
+        Index<Idx...>, typename tensor_type_finder<Derived>::type,
+        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type
     permutation_impl(const AbstractTensor<Derived,DIMS> &a) {
 
         using T = typename scalar_type_finder<Derived>::type;
@@ -347,17 +349,32 @@ struct extractor_perm<Index<Idx...> > {
 template<class Index_I, typename T, size_t ... Rest>
 FASTOR_INLINE
 typename permute_impl<T,Index_I, Tensor<T,Rest...>,
-    typename std_ext::make_index_sequence<sizeof...(Rest)>::type>::type permutation(const Tensor<T, Rest...> &a) {
+    typename std_ext::make_index_sequence<sizeof...(Rest)>::type>::type
+permutation(const Tensor<T, Rest...> &a) {
     return extractor_perm<Index_I>::permutation_impl(a);
 }
 
 
-template<class Index_I, typename Derived, size_t DIMS>
+template<class Index_I, typename Derived, size_t DIMS,
+    enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE
 typename permute_impl<typename scalar_type_finder<Derived>::type,Index_I,
-        typename tensor_type_finder<Derived>::type,
-    typename std_ext::make_index_sequence<DIMS>::type>::type permutation(const AbstractTensor<Derived, DIMS> &a) {
+    typename Derived::result_type,
+    typename std_ext::make_index_sequence<DIMS>::type>::type
+permutation(const AbstractTensor<Derived, DIMS> &a) {
     return extractor_perm<Index_I>::permutation_impl(a);
+}
+
+template<class Index_I, typename Derived, size_t DIMS,
+    enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+FASTOR_INLINE
+typename permute_impl<typename scalar_type_finder<Derived>::type,Index_I,
+    typename Derived::result_type,
+    typename std_ext::make_index_sequence<DIMS>::type>::type
+permutation(const AbstractTensor<Derived, DIMS> &a) {
+    using result_type = typename Derived::result_type;
+    const result_type tmp(a);
+    return extractor_perm<Index_I>::permutation_impl(tmp);
 }
 
 

@@ -265,6 +265,10 @@ void run() {
         FASTOR_EXIT_ASSERT(abs(As.sum() - Bs2.sum()) < BigTol);
         FASTOR_EXIT_ASSERT(abs(As.sum() - Bs3.sum()) < BigTol);
         FASTOR_EXIT_ASSERT(abs(As.sum() - Bs4.sum()) < BigTol);
+
+        Tensor<T,2,2> b; b.iota();
+        auto Bs5 = permutation<Index<j,l>>(b + b%b - b%b);
+        FASTOR_EXIT_ASSERT(abs(b.sum() - Bs5.sum()) < BigTol);
     }
 
     {

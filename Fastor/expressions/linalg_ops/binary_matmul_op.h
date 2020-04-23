@@ -207,8 +207,7 @@ template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t Othe
                             is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::rhs_expr_type>>, bool >::type = false>
 FASTOR_INLINE void assign_add(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<TLhs, TRhs, OtherDIM> &src) {
     using T = typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::scalar_type;
-    // internal::matmul_dispatcher((T)1,src.lhs().self(),src.rhs().self(),(T)1,dst.self());
-    internal::matmul_dispatcher(1.,src.lhs().self(),src.rhs().self(),1.,dst.self());
+    internal::matmul_dispatcher((T)1,src.lhs().self(),src.rhs().self(),(T)1,dst.self());
 }
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
     typename std::enable_if<!is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&
