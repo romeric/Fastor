@@ -108,6 +108,13 @@ constexpr T size_proder_(T one, T two, Ts ... ts) {
 // comparisons
 //----------------------------------------------------------------------------------------------------------//
 template<size_t I, size_t J>
+struct is_equal {
+    static constexpr bool value = I == J;
+};
+template<size_t I, size_t J>
+static constexpr bool is_equal_v_ = is_equal<I,J>::value;
+
+template<size_t I, size_t J>
 struct is_less {
     static constexpr bool value = (I < J);
 };

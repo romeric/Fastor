@@ -2,22 +2,28 @@
 #define INVERSE_H
 
 #include "Fastor/commons/commons.h"
+#include "Fastor/meta/meta.h"
 #include "Fastor/simd_vector/extintrin.h"
 
 namespace Fastor {
 
-template<typename T, size_t N>
+template<typename T, size_t N, enable_if_t_<!is_equal_v_<N,1> && !is_equal_v_<N,2> && !is_equal_v_<N,3> && !is_equal_v_<N,4>, bool> = false>
 FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst);
 
-template<>
-FASTOR_INLINE void _inverse<float,2>(const float *FASTOR_RESTRICT src, float *FASTOR_RESTRICT dst)
-{
-    float det;
+template<typename T, size_t N, enable_if_t_<is_equal_v_<N,1>, bool> = false>
+FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst) {
+    *dst = T(1) / (*src);
+}
 
-    float src0 = src[0];
-    float src1 = src[1];
-    float src2 = src[2];
-    float src3 = src[3];
+template<typename T, size_t N, enable_if_t_<is_equal_v_<N,2>, bool> = false>
+FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst)
+{
+    T det;
+
+    T src0 = src[0];
+    T src1 = src[1];
+    T src2 = src[2];
+    T src3 = src[3];
 
     /* Compute adjoint: */
     dst[0] = + src3;
@@ -29,32 +35,27 @@ FASTOR_INLINE void _inverse<float,2>(const float *FASTOR_RESTRICT src, float *FA
     det = src0 * dst[0] + src1 * dst[2];
 
     /* Multiply adjoint with reciprocal of determinant: */
-    det = static_cast<float>(1.0) / det;
+    det = T(1.0) / det;
     dst[0] *= det;
     dst[1] *= det;
     dst[2] *= det;
     dst[3] *= det;
-#ifdef FASTOR_AVX_IMPL
-    // This might hurt the performance as the data is already loaded
-//    _mm256_store_pd(dst,_mm256_mul_pd(_mm256_load_pd(dst),_mm256_set1_pd(det)));
-#endif
 }
 
-
-template<>
-FASTOR_INLINE void _inverse<float,3>(const float *FASTOR_RESTRICT src, float *FASTOR_RESTRICT dst)
+template<typename T, size_t N, enable_if_t_<is_equal_v_<N,3>, bool> = false>
+FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst)
 {
-    float det;
+    T det;
 
-    float src0 = src[0];
-    float src1 = src[1];
-    float src2 = src[2];
-    float src3 = src[3];
-    float src4 = src[4];
-    float src5 = src[5];
-    float src6 = src[6];
-    float src7 = src[7];
-    float src8 = src[8];
+    T src0 = src[0];
+    T src1 = src[1];
+    T src2 = src[2];
+    T src3 = src[3];
+    T src4 = src[4];
+    T src5 = src[5];
+    T src6 = src[6];
+    T src7 = src[7];
+    T src8 = src[8];
 
     /* Compute adjoint: */
     dst[0] = + src4 * src8 - src5 * src7;
@@ -71,7 +72,7 @@ FASTOR_INLINE void _inverse<float,3>(const float *FASTOR_RESTRICT src, float *FA
     det = src0 * dst[0] + src1 * dst[3] + src2 * dst[6];
 
     /* Multiply adjoint with reciprocal of determinant: */
-    det = static_cast<float>(1.0) / det;
+    det = T(1.0) / det;
 
     dst[0] *= det;
     dst[1] *= det;
@@ -84,89 +85,8 @@ FASTOR_INLINE void _inverse<float,3>(const float *FASTOR_RESTRICT src, float *FA
     dst[8] *= det;
 }
 
-template<>
-FASTOR_INLINE void _inverse<double,2>(const double *FASTOR_RESTRICT src, double *FASTOR_RESTRICT dst)
-{
-    double det;
-
-    double src0 = src[0];
-    double src1 = src[1];
-    double src2 = src[2];
-    double src3 = src[3];
-
-    /* Compute adjoint: */
-    dst[0] = + src3;
-    dst[1] = - src1;
-    dst[2] = - src2;
-    dst[3] = + src0;
-
-    /* Compute determinant: */
-    det = src0 * dst[0] + src1 * dst[2];
-
-    /* Multiply adjoint with reciprocal of determinant: */
-    det = static_cast<double>(1.0) / det;
-    dst[0] *= det;
-    dst[1] *= det;
-    dst[2] *= det;
-    dst[3] *= det;
-#ifdef FASTOR_AVX_IMPL
-    // This might hurt the performance as the data is already loaded
-//    _mm256_store_pd(dst,_mm256_mul_pd(_mm256_load_pd(dst),_mm256_set1_pd(det)));
-#endif
-}
 
 
-template<>
-FASTOR_INLINE void _inverse<double,3>(const double *FASTOR_RESTRICT src, double *FASTOR_RESTRICT dst)
-{
-    double det;
-
-    double src0 = src[0];
-    double src1 = src[1];
-    double src2 = src[2];
-    double src3 = src[3];
-    double src4 = src[4];
-    double src5 = src[5];
-    double src6 = src[6];
-    double src7 = src[7];
-    double src8 = src[8];
-
-    /* Compute adjoint: */
-    dst[0] = + src4 * src8 - src5 * src7;
-    dst[1] = - src1 * src8 + src2 * src7;
-    dst[2] = + src1 * src5 - src2 * src4;
-    dst[3] = - src3 * src8 + src5 * src6;
-    dst[4] = + src0 * src8 - src2 * src6;
-    dst[5] = - src0 * src5 + src2 * src3;
-    dst[6] = + src3 * src7 - src4 * src6;
-    dst[7] = - src0 * src7 + src1 * src6;
-    dst[8] = + src0 * src4 - src1 * src3;
-
-    /* Compute determinant: */
-    det = src0 * dst[0] + src1 * dst[3] + src2 * dst[6];
-
-    /* Multiply adjoint with reciprocal of determinant: */
-    det = static_cast<double>(1.0) / det;
-
-    dst[0] *= det;
-    dst[1] *= det;
-    dst[2] *= det;
-    dst[3] *= det;
-    dst[4] *= det;
-    dst[5] *= det;
-    dst[6] *= det;
-    dst[7] *= det;
-    dst[8] *= det;
-
-#ifdef FASTOR_AVX_IMPL
-    // This might hurt the performance as the data is already loaded
-//    __m256d v0 = _mm256_set1_pd(det);
-//    _mm256_store_pd(dst,_mm256_mul_pd(_mm256_load_pd(dst),v0));
-//    _mm256_store_pd(dst+4,_mm256_mul_pd(_mm256_load_pd(dst+4),v0));
-//    _mm_store_sd(dst+8,_mm_mul_sd(_mm_load_sd(dst+8), _mm256_castpd256_pd128(v0)));
-#endif
-
-}
 
 #if FASTOR_NIL
 #ifdef FASTOR_SSE4_2_IMPL
@@ -552,17 +472,27 @@ FASTOR_INLINE void _inverse_4x4_scalar(const T *FASTOR_RESTRICT m, T *FASTOR_RES
 }
 
 
-template<>
-FASTOR_INLINE void _inverse<float,4>(const float *FASTOR_RESTRICT src, float *FASTOR_RESTRICT dst)
+template<typename T, size_t N, enable_if_t_<is_equal_v_<N,4>, bool> = false>
+FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst)
 {
-    _inverse_4x4_scalar<float>(src,dst);
+    _inverse_4x4_scalar<T>(src,dst);
 }
 
-template<>
-FASTOR_INLINE void _inverse<double,4>(const double *FASTOR_RESTRICT src, double *FASTOR_RESTRICT dst)
-{
-    _inverse_4x4_scalar<double>(src,dst);
-}
+
+// template<typename T, size_t N, enable_if_t_<is_equal_v_<N,4> && is_same_v_<T,float>, bool> = false>
+// FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst)
+// {
+//     __m128 in[4], out[4];
+//     in[0] = _mm_loadu_ps(src);
+//     in[1] = _mm_loadu_ps(src+4);
+//     in[2] = _mm_loadu_ps(src+8);
+//     in[3] = _mm_loadu_ps(src+12);
+//     _inverse_4x4_sse(in,out);
+//     _mm_storeu_ps(dst+0 , out[0]);
+//     _mm_storeu_ps(dst+4 , out[1]);
+//     _mm_storeu_ps(dst+8 , out[2]);
+//     _mm_storeu_ps(dst+12, out[3]);
+// }
 
 } // end of namespace Fastor
 

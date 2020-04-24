@@ -3,6 +3,7 @@
 
 
 #include "Fastor/expressions/linalg_ops/binary_matmul_op.h"
+#include "Fastor/expressions/linalg_ops/unary_inv_op.h"
 #include <type_traits>
 
 
@@ -45,11 +46,47 @@ static constexpr bool has_binary_matmul_op_v = has_binary_matmul_op<Derived>::va
 //----------------------------------------------------------------------------------------------------------//
 
 
+// Is unary inv expression
+//----------------------------------------------------------------------------------------------------------//
+template<typename Derived>
+struct is_unary_inv_op {
+    static constexpr bool value = false;
+};
+template<typename T, size_t ... Rest, size_t DIM>
+struct is_unary_inv_op<UnaryInvOp<Tensor<T,Rest...>,DIM>> {
+    static constexpr bool value = true;
+};
+
+template<typename Derived>
+struct has_unary_inv_op {
+    static constexpr bool value = is_unary_inv_op<Derived>::value ? true : false;
+};
+template<typename T, size_t ... Rest, size_t DIM>
+struct has_unary_inv_op<UnaryInvOp<Tensor<T,Rest...>,DIM>> {
+    static constexpr bool value = true;
+};
+template<template<typename,size_t> class UnaryExpr, typename Expr, size_t DIM>
+struct has_unary_inv_op<UnaryExpr<Expr,DIM>> {
+    static constexpr bool value = has_unary_inv_op<Expr>::value;
+};
+template<template<class,class,size_t> class BinaryExpr, typename TLhs, typename TRhs, size_t DIMS>
+struct has_unary_inv_op<BinaryExpr<TLhs,TRhs,DIMS>> {
+    static constexpr bool value = has_unary_inv_op<TRhs>::value || has_unary_inv_op<TLhs>::value;
+};
+
+// helper
+template<typename Derived>
+static constexpr bool is_unary_inv_op_v = is_unary_inv_op<Derived>::value;
+template<typename Derived>
+static constexpr bool has_unary_inv_op_v = has_unary_inv_op<Derived>::value;
+//----------------------------------------------------------------------------------------------------------//
+
+
 // Is a linear algebra expression
 //----------------------------------------------------------------------------------------------------------//
 template<typename Derived>
 struct has_linalg_op {
-    static constexpr bool value = has_binary_matmul_op<Derived>::value;
+    static constexpr bool value = has_binary_matmul_op<Derived>::value || has_unary_inv_op<Derived>::value;
 };
 
 // helper

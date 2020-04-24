@@ -1,6 +1,7 @@
 #ifndef TENSOR_FUNCTIONS_H
 #define TENSOR_FUNCTIONS_H
 
+#include "Fastor/meta/meta.h"
 #include "Fastor/tensor/Tensor.h"
 #include "Fastor/tensor/TensorTraits.h"
 
@@ -38,11 +39,17 @@ FASTOR_INLINE Tensor<T,I,I> adjoint(const Tensor<T,I,I> &a) {
     return out;
 }
 
-template<typename T, size_t I>
+// The rest of this is postponed to linalg
+template<typename T, size_t I, enable_if_t_<is_less_equal_v_<I,4UL>,bool> = false>
 FASTOR_INLINE Tensor<T,I,I> inverse(const Tensor<T,I,I> &a) {
     Tensor<T,I,I> out;
     _inverse<T,I>(a.data(),out.data());
     return out;
+}
+
+template<typename T, enable_if_t_<is_arithmetic_v_<T>,bool> = false>
+FASTOR_INLINE T norm(const T &a) {
+    return std::abs(a);
 }
 
 template<typename T, size_t ... Rest>
@@ -82,13 +89,13 @@ FASTOR_INLINE Tensor<T,K> matmul(const Tensor<T,J> &a, const Tensor<T,J,K> &b) {
     return out;
 }
 
-template<typename T, size_t I, size_t J>
-FASTOR_INLINE Tensor<T,J> solve(const Tensor<T,I,J> &A, const Tensor<T,J> &b) {
+template<typename T, size_t I>
+FASTOR_INLINE Tensor<T,I> solve(const Tensor<T,I,I> &A, const Tensor<T,I> &b) {
     return matmul(inverse(A),b);
 }
 
-template<typename T, size_t I, size_t J>
-FASTOR_INLINE Tensor<T,J,1> solve(const Tensor<T,I,J> &A, const Tensor<T,J,1> &b) {
+template<typename T, size_t I>
+FASTOR_INLINE Tensor<T,I,1> solve(const Tensor<T,I,I> &A, const Tensor<T,I,1> &b) {
     return matmul(inverse(A),b);
 }
 

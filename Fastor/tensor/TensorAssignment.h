@@ -42,7 +42,7 @@ FASTOR_INLINE void trivial_assign_add(const AbstractTensor<Derived,DIM> &dst, co
         constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
-            V _vec = V(&_data[i], FASTOR_ALIGNED) + src.template eval<T>(i);;
+            V _vec = V(&_data[i], FASTOR_ALIGNED) + src.template eval<T>(i);
             _vec.store(&_data[i], FASTOR_ALIGNED);
         }
         for (; i < src.size(); ++i) {
@@ -68,7 +68,7 @@ FASTOR_INLINE void trivial_assign_sub(const AbstractTensor<Derived,DIM> &dst, co
         constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
-            V _vec = V(&_data[i], FASTOR_ALIGNED) - src.template eval<T>(i);;
+            V _vec = V(&_data[i], FASTOR_ALIGNED) - src.template eval<T>(i);
             _vec.store(&_data[i], FASTOR_ALIGNED);
         }
         for (; i < src.size(); ++i) {
@@ -94,7 +94,7 @@ FASTOR_INLINE void trivial_assign_mul(const AbstractTensor<Derived,DIM> &dst, co
         constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
-            V _vec = V(&_data[i], FASTOR_ALIGNED) * src.template eval<T>(i);;
+            V _vec = V(&_data[i], FASTOR_ALIGNED) * src.template eval<T>(i);
             _vec.store(&_data[i], FASTOR_ALIGNED);
         }
         for (; i < src.size(); ++i) {
@@ -120,7 +120,7 @@ FASTOR_INLINE void trivial_assign_div(const AbstractTensor<Derived,DIM> &dst, co
         constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
-            V _vec = V(&_data[i], FASTOR_ALIGNED) / src.template eval<T>(i);;
+            V _vec = V(&_data[i], FASTOR_ALIGNED) / src.template eval<T>(i);
             _vec.store(&_data[i], FASTOR_ALIGNED);
         }
         for (; i < src.size(); ++i) {
