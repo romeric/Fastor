@@ -199,10 +199,10 @@ this mechanism helps chain the operations to avoid the need for intermediate mem
 
 Aside from basic expression templates, by employing further template metaprogrommaing techniques Fastor can mathematically transform expressions and/or apply compile time graph optimisation to find optimal contraction indices of complex tensor networks, for instance. This gives Fastor the ability to re-structure or completely re-write an expression and simplify it rather symbolically. As an example, consider the expression `trace(matmul(transpose(A),B))` which is `O(n^3)` in computational complexity. Fastor can determine this to be inefficient and will statically dispatch the call to an equivalent but much more efficient routine, in this case `A_ij*B_ij` or `inner(A,B)` which is `O(n^2)`. Further examples of such mathemtical transformation include (but certainly not exclusive to)
 ~~~c++
-determinant(inverse(A)); // transformed to 1/determinant(A), O(n^3) reduction in computation
-transpose(cofactor(A));  // transformed to adjoint(A), O(n^2) reduction in memory access
-transpose(adjoint(A));   // transformed to cofactor(A), O(n^2) reduction in memory access
-matmul(matmul(A,B),b);   // transformed to matmul(A,matmul(B,b)), O(n) reduction in computation
+det(inv(A));             // transformed to 1/det(A), O(n^3) reduction in computation
+trans(cof(A));           // transformed to adj(A), O(n^2) reduction in memory access
+trans(adj(A));           // transformed to cof(A), O(n^2) reduction in memory access
+A % B % b;               // transformed to A % (B % b), O(n) reduction in computation [% is the operator matrix multiplication]
 // and many more
 ~~~
 These expressions are not treated as special cases but rather the **Einstein indicial notation** of the whole expression is constructed under the hood and by simply simplifying/collapsing the indices one obtains the most efficient form that an expression can be evaluated. The expression is then sent to an optimised kernel for evaluation. Note that there are situations that the user may write a complex chain of operations in the most verbose/obvious way perhaps for readibility purposes, but Fastor delays the evaluation of the expression and checks if an equivalent but efficient expression can be computed.
@@ -272,24 +272,22 @@ This will incur almost no runtime cost. As where if the tensors were of type `Te
 ### Boolean tensor algebra
 A set of boolean tensor routines are available in Fastor. Note that, whenever possible most of these operations are performed at compile time
 ~~~c++
-is_uniform();   // does the tensor span equally in all spatial dimensions, generalisation of square matrices
-is_orthogonal();
-does_belong_to_sl3(); // does the tensor belong to special linear 3D group
-does_belong_to_so3(); // does the tensor belong to special orthogonal 3D group
-is_symmetric(int axis_1, int axis_2); // is the tensor symmetric in the axis_1 x axis_2 plane
-is_equal(B); // equality check with another tensor
-is_identity();
+is_uniform();             // does the tensor span equally in all spatial dimensions, generalisation of square matrices
+is_orthogonal();          // is the tensor orthogonal
+does_belong_to_sl3();     // does the tensor belong to special linear 3D group
+does_belong_to_so3();     // does the tensor belong to special orthogonal 3D group
+is_symmetric(axis_1, axis_3); // is the tensor symmetric in the axis_1 x axis_3 plane
 ~~~
 
 ### Basic SIMD optimised linear algebra routines for small tensors
-All basic numerical linear algebra subroutines for small tensors (where the overhead of calling vendor/optimised `BLAS` is typically not worth it) are fully SIMD optimised and efficiently implemented
+All basic numerical linear algebra subroutines for small tensors (where the overhead of calling vendor/optimised `BLAS` is typically not worth it) are fully SIMD optimised and efficiently implemented. Note that Fastor exposes two functionally equivalent interfaces for linear algebra functions, the more verbose names (matmul, determinant, inverse etc) evaluate immediately and can only take tensors as arguments and the less verbose ones (%, det, inv) evaluate lazy
 ~~~c++
 Tensor<double,3,3> A,B;
 // fill A and B
-auto ab = matmul(A,B);          // matrix matrix multiplication of A*B
+auto ab = matmul(A,B);          // matrix matrix multiplication [or equivalently A % B]
 auto a_norm = norm(A);          // Frobenious norm of A
-auto b_det = determinant(B);    // determinant of B
-auto a_inv = inverse(A);        // inverse of A
+auto b_det = determinant(B);    // determinant of B [or equivalently det(B)]
+auto a_inv = inverse(A);        // inverse of A [or equivalently inv(A)]
 auto b_cof = cofactor(B);       // cofactor of B
 ~~~
 
