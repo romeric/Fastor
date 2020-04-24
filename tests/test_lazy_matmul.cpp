@@ -8,8 +8,7 @@ using namespace Fastor;
 
 
 // Generic matmul function for AbstractTensor types
-// Works as long as the return tensor is compile deducible
-// Their applicability on dynamic views should be checked
+// Works as long as the return tensor is compile time deducible
 template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
     enable_if_t_<is_less_equal_v_<DIM0,2> && is_less_equal_v_<DIM1,2>,bool> = 0 >
 FASTOR_INLINE
@@ -47,7 +46,7 @@ matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM
 
     using T = typename scalar_type_finder<Derived0>::type;
 
-    // We cannot choose the best simd because we cannot mix simd types of an expression
+    // We cannot choose the best simd type because the simd types of an expression can't be mixed
     using V = SIMDVector<T,DEFAULT_ABI>;
     // using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,N>::type;
     constexpr size_t SIZE_ = V::Size;
