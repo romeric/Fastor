@@ -318,8 +318,8 @@ Fastor has been tested against the following compilers (on Ubuntu 14.04/16.04/18
 - Intel 16.0.1, Intel 16.0.2, Intel 16.0.3, Intel 17.0.1, Intel 18.2, Intel 19.2
 - MSVC 2019
 
-### Reference/Citation
-Fastor can be cited as
+### Cite as
+For academic purposes, Fastor can be cited as
 ````latex
 @Article{Poya2017,
     author="Poya, Roman and Gil, Antonio J. and Ortigosa, Rogelio",
