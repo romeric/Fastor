@@ -11,16 +11,10 @@
 namespace Fastor {
 
 
-template<class Derived, size_t DIMS>
+template<class Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE typename Derived::scalar_type norm(const AbstractTensor<Derived,DIMS> &_src) {
 
     const Derived &src = _src.self();
-    FASTOR_IF_CONSTEXPR(requires_evaluation_v<Derived>) {
-        using result_type = typename Derived::result_type;
-        const result_type out(src);
-        return norm(out);
-    }
-
     using T = typename Derived::scalar_type;
     using V = SIMDVector<T,DEFAULT_ABI>;
     T _scal=0;
@@ -83,6 +77,15 @@ FASTOR_INLINE typename Derived::scalar_type norm(const AbstractTensor<Derived,DI
 #else
     return sqrts( (omm0 + omm1 + omm2 + omm3).sum() + _scal);
 #endif
+}
+
+
+template<class Derived, size_t DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+FASTOR_INLINE typename Derived::scalar_type norm(const AbstractTensor<Derived,DIMS> &_src) {
+    const Derived &src = _src.self();
+    using result_type = typename Derived::result_type;
+    const result_type out(src);
+    return norm(out);
 }
 
 

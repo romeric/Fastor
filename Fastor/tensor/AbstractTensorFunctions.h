@@ -22,16 +22,10 @@ FASTOR_INLINE typename Derived::result_type evaluate(const AbstractTensor<Derive
 // Fastor expressions
 
 
-template<class Derived, size_t DIMS>
+template<class Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE typename Derived::scalar_type sum(const AbstractTensor<Derived,DIMS> &_src) {
 
     const Derived &src = _src.self();
-    FASTOR_IF_CONSTEXPR(requires_evaluation_v<Derived>) {
-        using result_type = typename Derived::result_type;
-        const result_type out(src);
-        return out.sum();
-    }
-
     using T = typename Derived::scalar_type;
     using V = SIMDVector<T,DEFAULT_ABI>;
     FASTOR_INDEX i;
@@ -45,16 +39,19 @@ FASTOR_INLINE typename Derived::scalar_type sum(const AbstractTensor<Derived,DIM
     return _vec.sum() + _scal;
 }
 
-template<class Derived, size_t DIMS>
+template<class Derived, size_t DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+FASTOR_INLINE typename Derived::scalar_type sum(const AbstractTensor<Derived,DIMS> &_src) {
+    const Derived &src = _src.self();
+    using result_type = typename Derived::result_type;
+    const result_type out(src);
+    return out.sum();
+}
+
+
+template<class Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE typename Derived::scalar_type product(const AbstractTensor<Derived,DIMS> &_src) {
 
     const Derived &src = _src.self();
-    FASTOR_IF_CONSTEXPR(requires_evaluation_v<Derived>) {
-        using result_type = typename Derived::result_type;
-        const result_type out(src);
-        return out.product();
-    }
-
     using T = typename Derived::scalar_type;
     using V = SIMDVector<T,DEFAULT_ABI>;
     FASTOR_INDEX i;
@@ -66,6 +63,14 @@ FASTOR_INLINE typename Derived::scalar_type product(const AbstractTensor<Derived
         _scal *= src.template eval_s<T>(i);
     }
     return _vec.product() * _scal;
+}
+
+template<class Derived, size_t DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+FASTOR_INLINE typename Derived::scalar_type product(const AbstractTensor<Derived,DIMS> &_src) {
+    const Derived &src = _src.self();
+    using result_type = typename Derived::result_type;
+    const result_type out(src);
+    return out.product();
 }
 
 
