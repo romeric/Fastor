@@ -95,6 +95,13 @@ struct TensorFixedViewExpr2D;
 template<typename Expr, typename Seq0, typename Seq1, size_t DIMS>
 struct TensorConstFixedViewExpr2D;
 
+template<class TensorType, typename ... Fseqs>
+struct TensorConstFixedViewExprnD;
+
+template<class TensorType, typename ... Fseqs>
+struct TensorFixedViewExprnD;
+
+
 template <FASTOR_INDEX ... All>
 struct Index;
 

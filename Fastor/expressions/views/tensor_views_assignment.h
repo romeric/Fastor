@@ -20,11 +20,19 @@ FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const
     trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
 }\
 template<typename Derived, size_t DIM, typename TensorType, typename Seq0, typename Seq1>\
-FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const TensorFixedViewExpr2D<TensorType,Seq0,Seq1,2>& src) {\
+FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const TensorConstFixedViewExpr2D<TensorType,Seq0,Seq1,2>& src) {\
     trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
 }\
 template<typename Derived, size_t DIM, typename TensorType, typename Seq0, typename Seq1>\
-FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const TensorConstFixedViewExpr2D<TensorType,Seq0,Seq1,2>& src) {\
+FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const TensorFixedViewExpr2D<TensorType,Seq0,Seq1,2>& src) {\
+    trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
+}\
+template<typename Derived, size_t DIM, typename TensorType, typename ... Fseq>\
+FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const TensorConstFixedViewExprnD<TensorType,Fseq...>& src) {\
+    trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
+}\
+template<typename Derived, size_t DIM, typename TensorType, typename ... Fseq>\
+FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const TensorFixedViewExprnD<TensorType,Fseq...>& src) {\
     trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
 }\
 template<typename Derived, size_t DIM, typename TensorType, size_t OtherDIM>\

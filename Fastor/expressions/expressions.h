@@ -13,6 +13,7 @@
 
 #include "Fastor/expressions/views/tensor_fixed_views_1d.h"
 #include "Fastor/expressions/views/tensor_fixed_views_2d.h"
+#include "Fastor/expressions/views/tensor_fixed_views_nd.h"
 #include "Fastor/expressions/views/tensor_random_views.h"
 #include "Fastor/expressions/views/tensor_filter_views.h"
 #include "Fastor/expressions/views/tensor_views.h"

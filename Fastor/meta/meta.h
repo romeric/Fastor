@@ -84,12 +84,6 @@ inline T partial_prod_reverse(const T (&ind)[N], T up_to, T num=N-1) {
     return num == up_to ? ind[num] : ind[num]*partial_prod_reverse(ind, up_to, num-1);
 }
 
-template<size_t Idx, size_t ... Rest>
-struct get_all {
-    static const size_t indices[sizeof...(Rest)];
-};
-
-
 template<typename T>
 constexpr T size_proder_(T one){
     return one.size();
@@ -102,6 +96,38 @@ template<typename T, typename ... Ts>
 constexpr T size_proder_(T one, T two, Ts ... ts) {
     return _proder_(_proder_(one,two),ts...);
 }
+//----------------------------------------------------------------------------------------------------------//
+
+//----------------------------------------------------------------------------------------------------------//
+template<size_t Idx, size_t ... Rest>
+struct get_value;
+template<size_t Idx, size_t First, size_t ... Rest>
+struct get_value<Idx, First, Rest...> {
+    static const size_t value = get_value<Idx-1, Rest...>::value;
+};
+template<size_t First, size_t ... Rest>
+struct get_value<1,First,Rest...> {
+    static const size_t value = First;
+};
+template<size_t Idx>
+// Work around to avoid compiler errors
+struct get_value<Idx> {
+    static const size_t value = 0;
+};
+
+template <size_t N, typename... Args>
+constexpr inline auto get_index(Args&&... as)
+-> decltype(std::get<N>(std::forward_as_tuple(std::forward<Args>(as)...))) {
+    return std::get<N>(std::forward_as_tuple(std::forward<Args>(as)...));
+}
+
+template<int N, typename... Ts>
+using get_nth_type = typename std::tuple_element<N, std::tuple<Ts...>>::type;
+
+template<size_t Idx, size_t ... Rest>
+struct get_all {
+    static const size_t indices[sizeof...(Rest)];
+};
 //----------------------------------------------------------------------------------------------------------//
 
 

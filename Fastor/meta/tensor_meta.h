@@ -20,50 +20,6 @@ template<typename T> struct stride_finder {
 
 
 //----------------------------------------------------------------------------------------------------------//
-template<size_t Idx, size_t ... Rest>
-struct get_value;
-template<size_t Idx, size_t First, size_t ... Rest>
-struct get_value<Idx, First, Rest...> {
-    static const size_t value = get_value<Idx-1, Rest...>::value;
-};
-template<size_t First, size_t ... Rest>
-struct get_value<1,First,Rest...> {
-    static const size_t value = First;
-};
-template<size_t Idx>
-// Work around to avoid compiler errors
-struct get_value<Idx> {
-    static const size_t value = 0;
-};
-
-template <size_t N, typename... Args>
-constexpr inline auto get_index(Args&&... as)
--> decltype(std::get<N>(std::forward_as_tuple(std::forward<Args>(as)...))) {
-    return std::get<N>(std::forward_as_tuple(std::forward<Args>(as)...));
-}
-//----------------------------------------------------------------------------------------------------------//
-
-//-----------
-template<int first, int last, int step>
-struct range_detector {
-    static constexpr int range = last - first;
-    static constexpr int value = range % step==0 ? range/step : range/step+1;
-};
-
-namespace internal {
-template<class Seq>
-struct fseq_range_detector;
-
-template<template<int,int,int> class Seq, int first, int last, int step>
-struct fseq_range_detector<Seq<first,last,step>> {
-    static constexpr int range = last - first;
-    static constexpr int value = range % step==0 ? range/step : range/step+1;
-};
-}
-//-----------
-
-
-//----------------------------------------------------------------------------------------------------------//
 template <size_t...T>
 struct is_unique : std::integral_constant<bool, true> {};
 
@@ -113,29 +69,6 @@ namespace std_ext  // back port to c++11
     template<> struct make_index_sequence<1> : index_sequence<0> { };
 }
 //----------------------------------------------------------------------------------------------------------//
-
-
-
-
-
-//----------------------------------------------------------------------------------------------------------//
-template<size_t F0, size_t L0, size_t S0, size_t F1, size_t L1, size_t S1, size_t Ncol, class Y>
-struct ravel_2d_indices;
-
-template<size_t F0, size_t L0, size_t S0, size_t F1, size_t L1, size_t S1, size_t Ncol, size_t ... ss>
-struct ravel_2d_indices<F0,L0,S0,F1,L1,S1,Ncol,std_ext::index_sequence<ss...>> {
-    static constexpr size_t size_1 = range_detector<F1,L1,S1>::value;
-    static constexpr std::array<size_t,sizeof...(ss)> idx = {(S0*(ss/size_1)*Ncol + S1*(ss%size_1) + F0*Ncol + F1)...};
-};
-template<size_t F0, size_t L0, size_t S0, size_t F1, size_t L1, size_t S1, size_t Ncol, size_t ... ss>
-constexpr std::array<size_t,sizeof...(ss)>
-ravel_2d_indices<F0,L0,S0,F1,L1,S1,Ncol,std_ext::index_sequence<ss...>>::idx;
-//----------------------------------------------------------------------------------------------------------//
-
-
-
-
-
 
 
 

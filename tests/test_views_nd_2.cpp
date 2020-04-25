@@ -32,10 +32,10 @@ void run_vectorisable() {
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < BigTol);
 
     // Assigning different view to a view [checks copy operators for abstract expressions]
-    a(0,all,all,all) = c(1,all,all,all);
+    a(0,all,all,all) = c(fix<1>,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 18752) < Tol);
     a.iota(1);
-    a(0,all,all,all) += c(1,all,all,all);
+    a(0,all,all,all) += c(fix<1>,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 20832) < Tol);
     a(0,all,all,all) -= c(1,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < Tol);
