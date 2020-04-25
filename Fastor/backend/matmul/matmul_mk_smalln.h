@@ -809,6 +809,9 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
             omm9  = fmadd(amm9,bmm0,omm9);
         }
 
+        // Not all aside from the last vector
+        // needs to be mask stored, however clang
+        // just does not like
 #ifdef FASTOR_HAS_AVX512_MASKS
         omm0.mask_store(&out[(j  )*N],mask,false);
         omm1.mask_store(&out[(j+1)*N],mask,false);
