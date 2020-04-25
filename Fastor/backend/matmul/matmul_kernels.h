@@ -389,12 +389,8 @@ void _matmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * 
 
     // Now treat the remaining M-M1 rows
     FASTOR_IF_CONSTEXPR (M-M1 > 0) {
-        // Hack to get around MSVC zero length array issue
-#ifdef FASTOR_WINDOWS_OS
+        // Hack to get around zero length array issue
         constexpr size_t MM1 = M-M1 != 0 ? M-M1 : 1;
-#else
-        constexpr size_t MM1 = M-M1;
-#endif
         size_t j = 0;
         for (; j < N0; j += unrollInnerBlock) {
             // If MM1==0 the function never gets invoked anyway
@@ -564,12 +560,8 @@ void _matmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT 
 
     // Now treat the remaining M-M1 rows
     FASTOR_IF_CONSTEXPR (M-M1 > 0) {
-        // Hack to get around MSVC zero length array issue
-#ifdef FASTOR_WINDOWS_OS
+        // Hack to get around zero length array issue
         constexpr size_t MM1 = M-M1 != 0 ? M-M1 : 1;
-#else
-        constexpr size_t MM1 = M-M1;
-#endif
         size_t j = 0;
         for (; j < N0; j += unrollInnerBlock) {
             // If MM1==0 the function never gets invoked anyway

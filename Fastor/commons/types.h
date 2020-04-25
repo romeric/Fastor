@@ -21,7 +21,7 @@ std::string type_name()
     std::unique_ptr<char, void(*)(void*)> own (nullptr,std::free);
 #if defined(__GNUC__)
     int status = 0;
-    char* demangled = abi::__cxa_demangle(typeid(TR).name(),0,0,&status);
+    char* demangled = abi::__cxa_demangle(typeid(TR).name(),nullptr,nullptr,&status);
     std::string r = own != nullptr ? own.get() : std::string(demangled);
 #else
     std::string r = own != nullptr ? own.get() : typeid(TR).name();

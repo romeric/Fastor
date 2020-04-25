@@ -15,7 +15,11 @@ FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst
     *dst = T(1) / (*src);
 }
 
+#ifdef FASTOR_SSE2_IMPL
+template<typename T, size_t N, enable_if_t_<is_equal_v_<N,2> && !is_same_v_<T,double>, bool> = false>
+#else
 template<typename T, size_t N, enable_if_t_<is_equal_v_<N,2>, bool> = false>
+#endif
 FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst)
 {
     T det;
@@ -41,6 +45,39 @@ FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst
     dst[2] *= det;
     dst[3] *= det;
 }
+
+#ifdef FASTOR_SSE2_IMPL
+template<typename T, size_t N, enable_if_t_<is_equal_v_<N,2> && is_same_v_<T,double>, bool> = false>
+FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst)
+{
+    // This is much superior to the scalar code as
+    // gcc/clang can't auto-vectorise the scalar code
+
+    // 8 shuffles + 1 add + 3 mul + 1 div
+    // Sky 8 + 4 + 12 + 14     = 38
+
+    __m128d row0   = _mm_loadu_pd(src);
+    __m128d row1   = _mm_loadu_pd(src+2);
+
+    __m128d tmp    = row0;
+    row0           = _mm_shuffle_pd(row0,_mm_neg_pd(row0),0x2);
+    row1           = _mm_shuffle_pd(_mm_neg_pd(row1),row1,0x2);
+    // these two registers hold the adjoint
+    __m128d irow0  = _mm_shuffle_pd(row1,row0,0x3);
+    __m128d irow1  = _mm_shuffle_pd(row1,row0,0x0);
+    // dot product to compute determinant
+    __m128d det    = _mm_mul_pd(tmp,_mm_reverse_pd(row1));
+    det            = _mm_add_pd(det,_mm_reverse_pd(det));
+    // one by determinant
+    __m128d invdet = _mm_div_pd(_mm_set1_pd(1.0),det);
+    // scale
+    irow0          = _mm_mul_pd(irow0,invdet);
+    irow1          = _mm_mul_pd(irow1,invdet);
+
+    _mm_storeu_pd(dst  ,irow0);
+    _mm_storeu_pd(dst+2,irow1);
+}
+#endif
 
 template<typename T, size_t N, enable_if_t_<is_equal_v_<N,3>, bool> = false>
 FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst)
@@ -86,266 +123,12 @@ FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst
 }
 
 
-
-
-#if FASTOR_NIL
-#ifdef FASTOR_SSE4_2_IMPL
-
-FASTOR_INLINE __m128 _mm_dot_ps(__m128 v1, __m128 v2)
-{
-   __m128 mul0 = _mm_mul_ps(v1, v2);
-   __m128 swp0 = _mm_shuffle_ps(mul0, mul0, _MM_SHUFFLE(2, 3, 0, 1));
-   __m128 add0 = _mm_add_ps(mul0, swp0);
-   __m128 swp1 = _mm_shuffle_ps(add0, add0, _MM_SHUFFLE(0, 1, 2, 3));
-   __m128 add1 = _mm_add_ps(add0, swp1);
-   return add1;
-}
-
-FASTOR_INLINE void _inverse_4x4_sse(__m128 const in[4], __m128 out[4])
-{
-    __m128 Fac0;
-    {
-        //  valType SubFactor00 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
-        //  valType SubFactor00 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
-        //  valType SubFactor06 = m[1][2] * m[3][3] - m[3][2] * m[1][3];
-        //  valType SubFactor13 = m[1][2] * m[2][3] - m[2][2] * m[1][3];
-
-        __m128 Swp0a = _mm_shuffle_ps(in[3], in[2], _MM_SHUFFLE(3, 3, 3, 3));
-        __m128 Swp0b = _mm_shuffle_ps(in[3], in[2], _MM_SHUFFLE(2, 2, 2, 2));
-
-        __m128 Swp00 = _mm_shuffle_ps(in[2], in[1], _MM_SHUFFLE(2, 2, 2, 2));
-        __m128 Swp01 = _mm_shuffle_ps(Swp0a, Swp0a, _MM_SHUFFLE(2, 0, 0, 0));
-        __m128 Swp02 = _mm_shuffle_ps(Swp0b, Swp0b, _MM_SHUFFLE(2, 0, 0, 0));
-        __m128 Swp03 = _mm_shuffle_ps(in[2], in[1], _MM_SHUFFLE(3, 3, 3, 3));
-
-        __m128 Mul00 = _mm_mul_ps(Swp00, Swp01);
-        __m128 Mul01 = _mm_mul_ps(Swp02, Swp03);
-        Fac0 = _mm_sub_ps(Mul00, Mul01);
-
-//        bool stop = true;
-    }
-
-    __m128 Fac1;
-    {
-        //  valType SubFactor01 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
-        //  valType SubFactor01 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
-        //  valType SubFactor07 = m[1][1] * m[3][3] - m[3][1] * m[1][3];
-        //  valType SubFactor14 = m[1][1] * m[2][3] - m[2][1] * m[1][3];
-
-        __m128 Swp0a = _mm_shuffle_ps(in[3], in[2], _MM_SHUFFLE(3, 3, 3, 3));
-        __m128 Swp0b = _mm_shuffle_ps(in[3], in[2], _MM_SHUFFLE(1, 1, 1, 1));
-
-        __m128 Swp00 = _mm_shuffle_ps(in[2], in[1], _MM_SHUFFLE(1, 1, 1, 1));
-        __m128 Swp01 = _mm_shuffle_ps(Swp0a, Swp0a, _MM_SHUFFLE(2, 0, 0, 0));
-        __m128 Swp02 = _mm_shuffle_ps(Swp0b, Swp0b, _MM_SHUFFLE(2, 0, 0, 0));
-        __m128 Swp03 = _mm_shuffle_ps(in[2], in[1], _MM_SHUFFLE(3, 3, 3, 3));
-
-        __m128 Mul00 = _mm_mul_ps(Swp00, Swp01);
-        __m128 Mul01 = _mm_mul_ps(Swp02, Swp03);
-        Fac1 = _mm_sub_ps(Mul00, Mul01);
-
-//         bool stop = true;
-    }
-
-
-    __m128 Fac2;
-    {
-        //  valType SubFactor02 = m[2][1] * m[3][2] - m[3][1] * m[2][2];
-        //  valType SubFactor02 = m[2][1] * m[3][2] - m[3][1] * m[2][2];
-        //  valType SubFactor08 = m[1][1] * m[3][2] - m[3][1] * m[1][2];
-        //  valType SubFactor15 = m[1][1] * m[2][2] - m[2][1] * m[1][2];
-
-        __m128 Swp0a = _mm_shuffle_ps(in[3], in[2], _MM_SHUFFLE(2, 2, 2, 2));
-        __m128 Swp0b = _mm_shuffle_ps(in[3], in[2], _MM_SHUFFLE(1, 1, 1, 1));
-
-        __m128 Swp00 = _mm_shuffle_ps(in[2], in[1], _MM_SHUFFLE(1, 1, 1, 1));
-        __m128 Swp01 = _mm_shuffle_ps(Swp0a, Swp0a, _MM_SHUFFLE(2, 0, 0, 0));
-        __m128 Swp02 = _mm_shuffle_ps(Swp0b, Swp0b, _MM_SHUFFLE(2, 0, 0, 0));
-        __m128 Swp03 = _mm_shuffle_ps(in[2], in[1], _MM_SHUFFLE(2, 2, 2, 2));
-
-        __m128 Mul00 = _mm_mul_ps(Swp00, Swp01);
-        __m128 Mul01 = _mm_mul_ps(Swp02, Swp03);
-        Fac2 = _mm_sub_ps(Mul00, Mul01);
-
-//        bool stop = true;
-    }
-
-    __m128 Fac3;
-    {
-        //  valType SubFactor03 = m[2][0] * m[3][3] - m[3][0] * m[2][3];
-        //  valType SubFactor03 = m[2][0] * m[3][3] - m[3][0] * m[2][3];
-        //  valType SubFactor09 = m[1][0] * m[3][3] - m[3][0] * m[1][3];
-        //  valType SubFactor16 = m[1][0] * m[2][3] - m[2][0] * m[1][3];
-
-        __m128 Swp0a = _mm_shuffle_ps(in[3], in[2], _MM_SHUFFLE(3, 3, 3, 3));
-        __m128 Swp0b = _mm_shuffle_ps(in[3], in[2], _MM_SHUFFLE(0, 0, 0, 0));
-
-        __m128 Swp00 = _mm_shuffle_ps(in[2], in[1], _MM_SHUFFLE(0, 0, 0, 0));
-        __m128 Swp01 = _mm_shuffle_ps(Swp0a, Swp0a, _MM_SHUFFLE(2, 0, 0, 0));
-        __m128 Swp02 = _mm_shuffle_ps(Swp0b, Swp0b, _MM_SHUFFLE(2, 0, 0, 0));
-        __m128 Swp03 = _mm_shuffle_ps(in[2], in[1], _MM_SHUFFLE(3, 3, 3, 3));
-
-        __m128 Mul00 = _mm_mul_ps(Swp00, Swp01);
-        __m128 Mul01 = _mm_mul_ps(Swp02, Swp03);
-        Fac3 = _mm_sub_ps(Mul00, Mul01);
-
-//        bool stop = true;
-    }
-
-    __m128 Fac4;
-    {
-        //  valType SubFactor04 = m[2][0] * m[3][2] - m[3][0] * m[2][2];
-        //  valType SubFactor04 = m[2][0] * m[3][2] - m[3][0] * m[2][2];
-        //  valType SubFactor10 = m[1][0] * m[3][2] - m[3][0] * m[1][2];
-        //  valType SubFactor17 = m[1][0] * m[2][2] - m[2][0] * m[1][2];
-
-        __m128 Swp0a = _mm_shuffle_ps(in[3], in[2], _MM_SHUFFLE(2, 2, 2, 2));
-        __m128 Swp0b = _mm_shuffle_ps(in[3], in[2], _MM_SHUFFLE(0, 0, 0, 0));
-
-        __m128 Swp00 = _mm_shuffle_ps(in[2], in[1], _MM_SHUFFLE(0, 0, 0, 0));
-        __m128 Swp01 = _mm_shuffle_ps(Swp0a, Swp0a, _MM_SHUFFLE(2, 0, 0, 0));
-        __m128 Swp02 = _mm_shuffle_ps(Swp0b, Swp0b, _MM_SHUFFLE(2, 0, 0, 0));
-        __m128 Swp03 = _mm_shuffle_ps(in[2], in[1], _MM_SHUFFLE(2, 2, 2, 2));
-
-        __m128 Mul00 = _mm_mul_ps(Swp00, Swp01);
-        __m128 Mul01 = _mm_mul_ps(Swp02, Swp03);
-        Fac4 = _mm_sub_ps(Mul00, Mul01);
-
-//        bool stop = true;
-    }
-
-    __m128 Fac5;
-    {
-        //  valType SubFactor05 = m[2][0] * m[3][1] - m[3][0] * m[2][1];
-        //  valType SubFactor05 = m[2][0] * m[3][1] - m[3][0] * m[2][1];
-        //  valType SubFactor12 = m[1][0] * m[3][1] - m[3][0] * m[1][1];
-        //  valType SubFactor18 = m[1][0] * m[2][1] - m[2][0] * m[1][1];
-
-        __m128 Swp0a = _mm_shuffle_ps(in[3], in[2], _MM_SHUFFLE(1, 1, 1, 1));
-        __m128 Swp0b = _mm_shuffle_ps(in[3], in[2], _MM_SHUFFLE(0, 0, 0, 0));
-
-        __m128 Swp00 = _mm_shuffle_ps(in[2], in[1], _MM_SHUFFLE(0, 0, 0, 0));
-        __m128 Swp01 = _mm_shuffle_ps(Swp0a, Swp0a, _MM_SHUFFLE(2, 0, 0, 0));
-        __m128 Swp02 = _mm_shuffle_ps(Swp0b, Swp0b, _MM_SHUFFLE(2, 0, 0, 0));
-        __m128 Swp03 = _mm_shuffle_ps(in[2], in[1], _MM_SHUFFLE(1, 1, 1, 1));
-
-        __m128 Mul00 = _mm_mul_ps(Swp00, Swp01);
-        __m128 Mul01 = _mm_mul_ps(Swp02, Swp03);
-        Fac5 = _mm_sub_ps(Mul00, Mul01);
-
-//        bool stop = true;
-    }
-
-    __m128 SignA = _mm_set_ps( 1.0f,-1.0f, 1.0f,-1.0f);
-    __m128 SignB = _mm_set_ps(-1.0f, 1.0f,-1.0f, 1.0f);
-
-    // m[1][0]
-    // m[0][0]
-    // m[0][0]
-    // m[0][0]
-    __m128 Temp0 = _mm_shuffle_ps(in[1], in[0], _MM_SHUFFLE(0, 0, 0, 0));
-    __m128 Vec0 = _mm_shuffle_ps(Temp0, Temp0, _MM_SHUFFLE(2, 2, 2, 0));
-
-    // m[1][1]
-    // m[0][1]
-    // m[0][1]
-    // m[0][1]
-    __m128 Temp1 = _mm_shuffle_ps(in[1], in[0], _MM_SHUFFLE(1, 1, 1, 1));
-    __m128 Vec1 = _mm_shuffle_ps(Temp1, Temp1, _MM_SHUFFLE(2, 2, 2, 0));
-
-    // m[1][2]
-    // m[0][2]
-    // m[0][2]
-    // m[0][2]
-    __m128 Temp2 = _mm_shuffle_ps(in[1], in[0], _MM_SHUFFLE(2, 2, 2, 2));
-    __m128 Vec2 = _mm_shuffle_ps(Temp2, Temp2, _MM_SHUFFLE(2, 2, 2, 0));
-
-    // m[1][3]
-    // m[0][3]
-    // m[0][3]
-    // m[0][3]
-    __m128 Temp3 = _mm_shuffle_ps(in[1], in[0], _MM_SHUFFLE(3, 3, 3, 3));
-    __m128 Vec3 = _mm_shuffle_ps(Temp3, Temp3, _MM_SHUFFLE(2, 2, 2, 0));
-
-    // col0
-    // + (Vec1[0] * Fac0[0] - Vec2[0] * Fac1[0] + Vec3[0] * Fac2[0]),
-    // - (Vec1[1] * Fac0[1] - Vec2[1] * Fac1[1] + Vec3[1] * Fac2[1]),
-    // + (Vec1[2] * Fac0[2] - Vec2[2] * Fac1[2] + Vec3[2] * Fac2[2]),
-    // - (Vec1[3] * Fac0[3] - Vec2[3] * Fac1[3] + Vec3[3] * Fac2[3]),
-    __m128 Mul00 = _mm_mul_ps(Vec1, Fac0);
-    __m128 Mul01 = _mm_mul_ps(Vec2, Fac1);
-    __m128 Mul02 = _mm_mul_ps(Vec3, Fac2);
-    __m128 Sub00 = _mm_sub_ps(Mul00, Mul01);
-    __m128 Add00 = _mm_add_ps(Sub00, Mul02);
-    __m128 Inv0 = _mm_mul_ps(SignB, Add00);
-
-    // col1
-    // - (Vec0[0] * Fac0[0] - Vec2[0] * Fac3[0] + Vec3[0] * Fac4[0]),
-    // + (Vec0[0] * Fac0[1] - Vec2[1] * Fac3[1] + Vec3[1] * Fac4[1]),
-    // - (Vec0[0] * Fac0[2] - Vec2[2] * Fac3[2] + Vec3[2] * Fac4[2]),
-    // + (Vec0[0] * Fac0[3] - Vec2[3] * Fac3[3] + Vec3[3] * Fac4[3]),
-    __m128 Mul03 = _mm_mul_ps(Vec0, Fac0);
-    __m128 Mul04 = _mm_mul_ps(Vec2, Fac3);
-    __m128 Mul05 = _mm_mul_ps(Vec3, Fac4);
-    __m128 Sub01 = _mm_sub_ps(Mul03, Mul04);
-    __m128 Add01 = _mm_add_ps(Sub01, Mul05);
-    __m128 Inv1 = _mm_mul_ps(SignA, Add01);
-
-    // col2
-    // + (Vec0[0] * Fac1[0] - Vec1[0] * Fac3[0] + Vec3[0] * Fac5[0]),
-    // - (Vec0[0] * Fac1[1] - Vec1[1] * Fac3[1] + Vec3[1] * Fac5[1]),
-    // + (Vec0[0] * Fac1[2] - Vec1[2] * Fac3[2] + Vec3[2] * Fac5[2]),
-    // - (Vec0[0] * Fac1[3] - Vec1[3] * Fac3[3] + Vec3[3] * Fac5[3]),
-    __m128 Mul06 = _mm_mul_ps(Vec0, Fac1);
-    __m128 Mul07 = _mm_mul_ps(Vec1, Fac3);
-    __m128 Mul08 = _mm_mul_ps(Vec3, Fac5);
-    __m128 Sub02 = _mm_sub_ps(Mul06, Mul07);
-    __m128 Add02 = _mm_add_ps(Sub02, Mul08);
-    __m128 Inv2 = _mm_mul_ps(SignB, Add02);
-
-    // col3
-    // - (Vec1[0] * Fac2[0] - Vec1[0] * Fac4[0] + Vec2[0] * Fac5[0]),
-    // + (Vec1[0] * Fac2[1] - Vec1[1] * Fac4[1] + Vec2[1] * Fac5[1]),
-    // - (Vec1[0] * Fac2[2] - Vec1[2] * Fac4[2] + Vec2[2] * Fac5[2]),
-    // + (Vec1[0] * Fac2[3] - Vec1[3] * Fac4[3] + Vec2[3] * Fac5[3]));
-    __m128 Mul09 = _mm_mul_ps(Vec0, Fac2);
-    __m128 Mul10 = _mm_mul_ps(Vec1, Fac4);
-    __m128 Mul11 = _mm_mul_ps(Vec2, Fac5);
-    __m128 Sub03 = _mm_sub_ps(Mul09, Mul10);
-    __m128 Add03 = _mm_add_ps(Sub03, Mul11);
-    __m128 Inv3 = _mm_mul_ps(SignA, Add03);
-
-    __m128 Row0 = _mm_shuffle_ps(Inv0, Inv1, _MM_SHUFFLE(0, 0, 0, 0));
-    __m128 Row1 = _mm_shuffle_ps(Inv2, Inv3, _MM_SHUFFLE(0, 0, 0, 0));
-    __m128 Row2 = _mm_shuffle_ps(Row0, Row1, _MM_SHUFFLE(2, 0, 2, 0));
-
-    //  valType Determinant = m[0][0] * Inverse[0][0]
-    //                      + m[0][1] * Inverse[1][0]
-    //                      + m[0][2] * Inverse[2][0]
-    //                      + m[0][3] * Inverse[3][0];
-#ifdef FASTOR_SSE4_1_IMPL
-    __m128 Det0 = _mm_dp_ps(in[0], Row2, 0xff);
+#ifdef FASTOR_SSE2_IMPL
+template<typename T, size_t N, enable_if_t_<is_equal_v_<N,4> && !is_same_v_<T,float> && !is_same_v_<T,double>, bool> = false>
 #else
-    __m128 Det0 = _mm_dot_ps(in[0], Row2);
+template<typename T, size_t N, enable_if_t_<is_equal_v_<N,4>, bool> = false>
 #endif
-    // Avoid compilation error by using _mm_dot_ps instead
-    // __m128 Det0 = _mm_dot_ps(in[0], Row2);
-    __m128 Rcp0 = _mm_div_ps(ONEPS, Det0);
-    //__m128 Rcp0 = _mm_rcp_ps(Det0);
-
-    //  Inverse /= Determinant;
-    out[0] = _mm_mul_ps(Inv0, Rcp0);
-    out[1] = _mm_mul_ps(Inv1, Rcp0);
-    out[2] = _mm_mul_ps(Inv2, Rcp0);
-    out[3] = _mm_mul_ps(Inv3, Rcp0);
-}
-
-#endif
-#endif
-
-
-template<typename T>
-FASTOR_INLINE void _inverse_4x4_scalar(const T *FASTOR_RESTRICT m, T *FASTOR_RESTRICT invOut)
+FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT m, T *FASTOR_RESTRICT dst)
 {
     T inv[16], det;
     int i;
@@ -468,31 +251,249 @@ FASTOR_INLINE void _inverse_4x4_scalar(const T *FASTOR_RESTRICT m, T *FASTOR_RES
     det = T(1.0) / det;
 
     for (i = 0; i < 16; i++)
-        invOut[i] = inv[i] * det;
+        dst[i] = inv[i] * det;
 }
 
 
-template<typename T, size_t N, enable_if_t_<is_equal_v_<N,4>, bool> = false>
+#ifdef FASTOR_SSE2_IMPL
+template<typename T, size_t N, enable_if_t_<is_equal_v_<N,4> && is_same_v_<T,float>, bool> = false>
 FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst)
 {
-    _inverse_4x4_scalar<T>(src,dst);
+    // From Intel's SSE matrix library
+    // The inverse is calculated using "Divide and Conquer" technique. The
+    // original matrix is divide into four 2x2 sub-matrices. Since each
+    // register of the matrix holds two elements, the smaller matrices are
+    // consisted of two registers. Hence we get a better locality of the
+    // calculations.
+
+    const __m128 p4f_sign_PNNP = _mm_castsi128_ps(_mm_set_epi32(0x00000000, 0x80000000, 0x80000000, 0x00000000));
+
+    // Load the full matrix into registers
+    __m128 _L1 = _mm_loadu_ps(src +  0);
+    __m128 _L2 = _mm_loadu_ps(src +  4);
+    __m128 _L3 = _mm_loadu_ps(src +  8);
+    __m128 _L4 = _mm_loadu_ps(src + 12);
+
+    __m128 A, B, C, D; // the four sub-matrices
+
+    A = _mm_movelh_ps(_L1, _L2);
+    B = _mm_movehl_ps(_L2, _L1);
+    C = _mm_movelh_ps(_L3, _L4);
+    D = _mm_movehl_ps(_L4, _L3);
+
+    // partial inverse of the sub-matrices
+    __m128 iA, iB, iC, iD, DC, AB;
+    __m128 dA, dB, dC, dD;                 // determinant of the sub-matrices
+    __m128 det, d, d1, d2;
+    __m128 rd;                             // reciprocal of the determinant
+
+    //  AB = A# * B
+    AB = _mm_mul_ps(_mm_shuffle_ps(A,A,0x0F), B);
+    AB = _mm_sub_ps(AB,_mm_mul_ps(_mm_shuffle_ps(A,A,0xA5), _mm_shuffle_ps(B,B,0x4E)));
+    //  DC = D# * C
+    DC = _mm_mul_ps(_mm_shuffle_ps(D,D,0x0F), C);
+    DC = _mm_sub_ps(DC,_mm_mul_ps(_mm_shuffle_ps(D,D,0xA5), _mm_shuffle_ps(C,C,0x4E)));
+
+    //  dA = |A|
+    dA = _mm_mul_ps(_mm_shuffle_ps(A, A, 0x5F),A);
+    dA = _mm_sub_ss(dA, _mm_movehl_ps(dA,dA));
+    //  dB = |B|
+    dB = _mm_mul_ps(_mm_shuffle_ps(B, B, 0x5F),B);
+    dB = _mm_sub_ss(dB, _mm_movehl_ps(dB,dB));
+
+    //  dC = |C|
+    dC = _mm_mul_ps(_mm_shuffle_ps(C, C, 0x5F),C);
+    dC = _mm_sub_ss(dC, _mm_movehl_ps(dC,dC));
+    //  dD = |D|
+    dD = _mm_mul_ps(_mm_shuffle_ps(D, D, 0x5F),D);
+    dD = _mm_sub_ss(dD, _mm_movehl_ps(dD,dD));
+
+    //  d = trace(AB*DC) = trace(A#*B*D#*C)
+    d = _mm_mul_ps(_mm_shuffle_ps(DC,DC,0xD8),AB);
+
+    //  iD = C*A#*B
+    iD = _mm_mul_ps(_mm_shuffle_ps(C,C,0xA0), _mm_movelh_ps(AB,AB));
+    iD = _mm_add_ps(iD,_mm_mul_ps(_mm_shuffle_ps(C,C,0xF5), _mm_movehl_ps(AB,AB)));
+    //  iA = B*D#*C
+    iA = _mm_mul_ps(_mm_shuffle_ps(B,B,0xA0), _mm_movelh_ps(DC,DC));
+    iA = _mm_add_ps(iA,_mm_mul_ps(_mm_shuffle_ps(B,B,0xF5), _mm_movehl_ps(DC,DC)));
+
+    //  d = trace(AB*DC) = trace(A#*B*D#*C) [continue]
+    d  = _mm_add_ps(d, _mm_movehl_ps(d, d));
+    d  = _mm_add_ss(d, _mm_shuffle_ps(d, d, 1));
+    d1 = _mm_mul_ss(dA,dD);
+    d2 = _mm_mul_ss(dB,dC);
+
+    //  iD = D*|A| - C*A#*B
+    iD = _mm_sub_ps(_mm_mul_ps(D,_mm_shuffle_ps(dA,dA,0)), iD);
+
+    //  iA = A*|D| - B*D#*C;
+    iA = _mm_sub_ps(_mm_mul_ps(A,_mm_shuffle_ps(dD,dD,0)), iA);
+
+    //  det = |A|*|D| + |B|*|C| - trace(A#*B*D#*C)
+    det = _mm_sub_ss(_mm_add_ss(d1,d2),d);
+    rd  = _mm_div_ss(_mm_set_ss(1.0f), det);
+
+    //  iB = D * (A#B)# = D*B#*A
+    iB = _mm_mul_ps(D, _mm_shuffle_ps(AB,AB,0x33));
+    iB = _mm_sub_ps(iB, _mm_mul_ps(_mm_shuffle_ps(D,D,0xB1), _mm_shuffle_ps(AB,AB,0x66)));
+    //  iC = A * (D#C)# = A*C#*D
+    iC = _mm_mul_ps(A, _mm_shuffle_ps(DC,DC,0x33));
+    iC = _mm_sub_ps(iC, _mm_mul_ps(_mm_shuffle_ps(A,A,0xB1), _mm_shuffle_ps(DC,DC,0x66)));
+
+    rd = _mm_shuffle_ps(rd,rd,0);
+    rd = _mm_xor_ps(rd, p4f_sign_PNNP);
+
+    //  iB = C*|B| - D*B#*A
+    iB = _mm_sub_ps(_mm_mul_ps(C,_mm_shuffle_ps(dB,dB,0)), iB);
+
+    //  iC = B*|C| - A*C#*D;
+    iC = _mm_sub_ps(_mm_mul_ps(B,_mm_shuffle_ps(dC,dC,0)), iC);
+
+    //  iX = iX / det
+    iA = _mm_mul_ps(rd,iA);
+    iB = _mm_mul_ps(rd,iB);
+    iC = _mm_mul_ps(rd,iC);
+    iD = _mm_mul_ps(rd,iD);
+
+    _mm_storeu_ps(dst+0,  _mm_shuffle_ps(iA,iB,0x77));
+    _mm_storeu_ps(dst+4,  _mm_shuffle_ps(iA,iB,0x22));
+    _mm_storeu_ps(dst+8,  _mm_shuffle_ps(iC,iD,0x77));
+    _mm_storeu_ps(dst+12, _mm_shuffle_ps(iC,iD,0x22));
 }
 
 
-// template<typename T, size_t N, enable_if_t_<is_equal_v_<N,4> && is_same_v_<T,float>, bool> = false>
-// FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst)
-// {
-//     __m128 in[4], out[4];
-//     in[0] = _mm_loadu_ps(src);
-//     in[1] = _mm_loadu_ps(src+4);
-//     in[2] = _mm_loadu_ps(src+8);
-//     in[3] = _mm_loadu_ps(src+12);
-//     _inverse_4x4_sse(in,out);
-//     _mm_storeu_ps(dst+0 , out[0]);
-//     _mm_storeu_ps(dst+4 , out[1]);
-//     _mm_storeu_ps(dst+8 , out[2]);
-//     _mm_storeu_ps(dst+12, out[3]);
-// }
+template<typename T, size_t N, enable_if_t_<is_equal_v_<N,4> && is_same_v_<T,double>, bool> = false>
+FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst)
+{
+    // From Intel's SSE matrix library
+    // The inverse is calculated using "Divide and Conquer" technique. The
+    // original matrix is divide into four 2x2 sub-matrices. Since each
+    // register of the matrix holds two elements, the smaller matrices are
+    // consisted of two registers. Hence we get a better locality of the
+    // calculations.
+
+    const __m128d _Sign_NP = _mm_castsi128_pd(_mm_set_epi32(0x0,0x0,0x80000000,0x0));
+    const __m128d _Sign_PN = _mm_castsi128_pd(_mm_set_epi32(0x80000000,0x0,0x0,0x0));
+
+    // the four sub-matrices
+    __m128d A1, A2, B1, B2, C1, C2, D1, D2;
+
+    A1 = _mm_loadu_pd(src + 0); B1 = _mm_loadu_pd(src + 2);
+    A2 = _mm_loadu_pd(src + 4); B2 = _mm_loadu_pd(src + 6);
+    C1 = _mm_loadu_pd(src + 8); D1 = _mm_loadu_pd(src +10);
+    C2 = _mm_loadu_pd(src +12); D2 = _mm_loadu_pd(src +14);
+
+    // partial inverse of the sub-matrices
+    __m128d iA1, iA2, iB1, iB2, iC1, iC2, iD1, iD2, DC1, DC2, AB1, AB2;
+    __m128d dA, dB, dC, dD;     // determinant of the sub-matrices
+    __m128d det, d1, d2, rd;
+
+    //  dA = |A|
+    dA = _mm_shuffle_pd(A2, A2, 1);
+    dA = _mm_mul_pd(A1, dA);
+    dA = _mm_sub_sd(dA, _mm_shuffle_pd(dA,dA,3));
+    //  dB = |B|
+    dB = _mm_shuffle_pd(B2, B2, 1);
+    dB = _mm_mul_pd(B1, dB);
+    dB = _mm_sub_sd(dB, _mm_shuffle_pd(dB,dB,3));
+
+    //  AB = A# * B
+    AB1 = _mm_mul_pd(B1, _mm_shuffle_pd(A2,A2,3));
+    AB2 = _mm_mul_pd(B2, _mm_shuffle_pd(A1,A1,0));
+    AB1 = _mm_sub_pd(AB1, _mm_mul_pd(B2, _mm_shuffle_pd(A1,A1,3)));
+    AB2 = _mm_sub_pd(AB2, _mm_mul_pd(B1, _mm_shuffle_pd(A2,A2,0)));
+
+    //  dC = |C|
+    dC = _mm_shuffle_pd(C2, C2, 1);
+    dC = _mm_mul_pd(C1, dC);
+    dC = _mm_sub_sd(dC, _mm_shuffle_pd(dC,dC,3));
+    //  dD = |D|
+    dD = _mm_shuffle_pd(D2, D2, 1);
+    dD = _mm_mul_pd(D1, dD);
+    dD = _mm_sub_sd(dD, _mm_shuffle_pd(dD,dD,3));
+
+    //  DC = D# * C
+    DC1 = _mm_mul_pd(C1, _mm_shuffle_pd(D2,D2,3));
+    DC2 = _mm_mul_pd(C2, _mm_shuffle_pd(D1,D1,0));
+    DC1 = _mm_sub_pd(DC1, _mm_mul_pd(C2, _mm_shuffle_pd(D1,D1,3)));
+    DC2 = _mm_sub_pd(DC2, _mm_mul_pd(C1, _mm_shuffle_pd(D2,D2,0)));
+
+    //  rd = trace(AB*DC) = trace(A#*B*D#*C)
+    d1 = _mm_mul_pd(AB1, _mm_shuffle_pd(DC1, DC2, 0));
+    d2 = _mm_mul_pd(AB2, _mm_shuffle_pd(DC1, DC2, 3));
+    rd = _mm_add_pd(d1, d2);
+    rd = _mm_add_sd(rd, _mm_shuffle_pd(rd, rd,3));
+
+    //  iD = C*A#*B
+    iD1 = _mm_mul_pd(AB1, _mm_shuffle_pd(C1,C1,0));
+    iD2 = _mm_mul_pd(AB1, _mm_shuffle_pd(C2,C2,0));
+    iD1 = _mm_add_pd(iD1, _mm_mul_pd(AB2, _mm_shuffle_pd(C1,C1,3)));
+    iD2 = _mm_add_pd(iD2, _mm_mul_pd(AB2, _mm_shuffle_pd(C2,C2,3)));
+
+    //  iA = B*D#*C
+    iA1 = _mm_mul_pd(DC1, _mm_shuffle_pd(B1,B1,0));
+    iA2 = _mm_mul_pd(DC1, _mm_shuffle_pd(B2,B2,0));
+    iA1 = _mm_add_pd(iA1, _mm_mul_pd(DC2, _mm_shuffle_pd(B1,B1,3)));
+    iA2 = _mm_add_pd(iA2, _mm_mul_pd(DC2, _mm_shuffle_pd(B2,B2,3)));
+
+    //  iD = D*|A| - C*A#*B
+    dA = _mm_shuffle_pd(dA,dA,0);
+    iD1 = _mm_sub_pd(_mm_mul_pd(D1, dA), iD1);
+    iD2 = _mm_sub_pd(_mm_mul_pd(D2, dA), iD2);
+
+    //  iA = A*|D| - B*D#*C;
+    dD = _mm_shuffle_pd(dD,dD,0);
+    iA1 = _mm_sub_pd(_mm_mul_pd(A1, dD), iA1);
+    iA2 = _mm_sub_pd(_mm_mul_pd(A2, dD), iA2);
+
+    d1 = _mm_mul_sd(dA, dD);
+    d2 = _mm_mul_sd(dB, dC);
+
+    //  iB = D * (A#B)# = D*B#*A
+    iB1 = _mm_mul_pd(D1, _mm_shuffle_pd(AB2,AB1,1));
+    iB2 = _mm_mul_pd(D2, _mm_shuffle_pd(AB2,AB1,1));
+    iB1 = _mm_sub_pd(iB1, _mm_mul_pd(_mm_shuffle_pd(D1,D1,1), _mm_shuffle_pd(AB2,AB1,2)));
+    iB2 = _mm_sub_pd(iB2, _mm_mul_pd(_mm_shuffle_pd(D2,D2,1), _mm_shuffle_pd(AB2,AB1,2)));
+
+    //  det = |A|*|D| + |B|*|C| - trace(A#*B*D#*C)
+    det = _mm_add_sd(d1, d2);
+    det = _mm_sub_sd(det, rd);
+
+    //  iC = A * (D#C)# = A*C#*D
+    iC1 = _mm_mul_pd(A1, _mm_shuffle_pd(DC2,DC1,1));
+    iC2 = _mm_mul_pd(A2, _mm_shuffle_pd(DC2,DC1,1));
+    iC1 = _mm_sub_pd(iC1, _mm_mul_pd(_mm_shuffle_pd(A1,A1,1), _mm_shuffle_pd(DC2,DC1,2)));
+    iC2 = _mm_sub_pd(iC2, _mm_mul_pd(_mm_shuffle_pd(A2,A2,1), _mm_shuffle_pd(DC2,DC1,2)));
+
+    rd = _mm_div_sd(_mm_set_sd(1.0), det);
+    rd = _mm_shuffle_pd(rd,rd,0);
+
+    //  iB = C*|B| - D*B#*A
+    dB = _mm_shuffle_pd(dB,dB,0);
+    iB1 = _mm_sub_pd(_mm_mul_pd(C1, dB), iB1);
+    iB2 = _mm_sub_pd(_mm_mul_pd(C2, dB), iB2);
+
+    d1 = _mm_xor_pd(rd, _Sign_PN);
+    d2 = _mm_xor_pd(rd, _Sign_NP);
+
+    //  iC = B*|C| - A*C#*D;
+    dC = _mm_shuffle_pd(dC,dC,0);
+    iC1 = _mm_sub_pd(_mm_mul_pd(B1, dC), iC1);
+    iC2 = _mm_sub_pd(_mm_mul_pd(B2, dC), iC2);
+
+    _mm_storeu_pd(dst+0,    _mm_mul_pd(_mm_shuffle_pd(iA2, iA1, 3), d1));
+    _mm_storeu_pd(dst+4,    _mm_mul_pd(_mm_shuffle_pd(iA2, iA1, 0), d2));
+    _mm_storeu_pd(dst+2,    _mm_mul_pd(_mm_shuffle_pd(iB2, iB1, 3), d1));
+    _mm_storeu_pd(dst+4+2,  _mm_mul_pd(_mm_shuffle_pd(iB2, iB1, 0), d2));
+    _mm_storeu_pd(dst+2*4,  _mm_mul_pd(_mm_shuffle_pd(iC2, iC1, 3), d1));
+    _mm_storeu_pd(dst+3*4,  _mm_mul_pd(_mm_shuffle_pd(iC2, iC1, 0), d2));
+    _mm_storeu_pd(dst+2*4+2,_mm_mul_pd(_mm_shuffle_pd(iD2, iD1, 3), d1));
+    _mm_storeu_pd(dst+3*4+2,_mm_mul_pd(_mm_shuffle_pd(iD2, iD1, 0), d2));
+}
+#endif
+
+
 
 } // end of namespace Fastor
 

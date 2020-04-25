@@ -155,7 +155,6 @@ FASTOR_INLINE T product() const {
     if ((Size==0) || (Size==1)) return _data[0];
 
     using V = SIMDVector<T,DEFAULT_ABI>;
-    constexpr FASTOR_INDEX stride = V::Size;
     FASTOR_INDEX i = 0;
 
     V vec = static_cast<T>(1);

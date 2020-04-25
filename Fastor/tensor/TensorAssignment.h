@@ -6,11 +6,10 @@ namespace Fastor {
 //----------------------------------------------------------------------------------------------------------//
 //----------------------------------------------------------------------------------------------------------//
 template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM>
-FASTOR_INLINE void trivial_assign(const AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src_) {
+FASTOR_INLINE void trivial_assign(AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src_) {
     using T = typename scalar_type_finder<Derived>::type;
     const OtherDerived &src = src_.self();
     FASTOR_ASSERT(src.size()==dst.self().size(), "TENSOR SIZE MISMATCH");
-    //if (dst.self().data()==src.self().data()) return;
     T* _data = dst.self().data();
 
     FASTOR_IF_CONSTEXPR(!internal::is_binary_cmp_op<OtherDerived>::value) {
@@ -31,7 +30,7 @@ FASTOR_INLINE void trivial_assign(const AbstractTensor<Derived,DIM> &dst, const 
 }
 
 template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM>
-FASTOR_INLINE void trivial_assign_add(const AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src_) {
+FASTOR_INLINE void trivial_assign_add(AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src_) {
     using T = typename scalar_type_finder<Derived>::type;
     const OtherDerived &src = src_.self();
     FASTOR_ASSERT(src.size()==dst.self().size(), "TENSOR SIZE MISMATCH");
@@ -57,7 +56,7 @@ FASTOR_INLINE void trivial_assign_add(const AbstractTensor<Derived,DIM> &dst, co
 }
 
 template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM>
-FASTOR_INLINE void trivial_assign_sub(const AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src_) {
+FASTOR_INLINE void trivial_assign_sub(AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src_) {
     using T = typename scalar_type_finder<Derived>::type;
     const OtherDerived &src = src_.self();
     FASTOR_ASSERT(src.size()==dst.self().size(), "TENSOR SIZE MISMATCH");
@@ -83,7 +82,7 @@ FASTOR_INLINE void trivial_assign_sub(const AbstractTensor<Derived,DIM> &dst, co
 }
 
 template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM>
-FASTOR_INLINE void trivial_assign_mul(const AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src_) {
+FASTOR_INLINE void trivial_assign_mul(AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src_) {
     using T = typename scalar_type_finder<Derived>::type;
     const OtherDerived &src = src_.self();
     FASTOR_ASSERT(src.size()==dst.self().size(), "TENSOR SIZE MISMATCH");
@@ -109,7 +108,7 @@ FASTOR_INLINE void trivial_assign_mul(const AbstractTensor<Derived,DIM> &dst, co
 }
 
 template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM>
-FASTOR_INLINE void trivial_assign_div(const AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src_) {
+FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src_) {
     using T = typename scalar_type_finder<Derived>::type;
     const OtherDerived &src = src_.self();
     FASTOR_ASSERT(src.size()==dst.self().size(), "TENSOR SIZE MISMATCH");
@@ -138,7 +137,7 @@ FASTOR_INLINE void trivial_assign_div(const AbstractTensor<Derived,DIM> &dst, co
 //----------------------------------------------------------------------------------------------------------//
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_arithmetic_v_<U>, bool> = false>
-FASTOR_INLINE void trivial_assign(const AbstractTensor<Derived,DIM> &dst, U num) {
+FASTOR_INLINE void trivial_assign(AbstractTensor<Derived,DIM> &dst, U num) {
     using T = typename scalar_type_finder<Derived>::type;
     using V = SIMDVector<T,DEFAULT_ABI>;
     constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
@@ -156,7 +155,7 @@ FASTOR_INLINE void trivial_assign(const AbstractTensor<Derived,DIM> &dst, U num)
 
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_arithmetic_v_<U>, bool> = false>
-FASTOR_INLINE void trivial_assign_add(const AbstractTensor<Derived,DIM> &dst, U num) {
+FASTOR_INLINE void trivial_assign_add(AbstractTensor<Derived,DIM> &dst, U num) {
     using T = typename scalar_type_finder<Derived>::type;
     using V = SIMDVector<T,DEFAULT_ABI>;
     constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
@@ -176,7 +175,7 @@ FASTOR_INLINE void trivial_assign_add(const AbstractTensor<Derived,DIM> &dst, U 
 
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_arithmetic_v_<U>, bool> = false>
-FASTOR_INLINE void trivial_assign_sub(const AbstractTensor<Derived,DIM> &dst, U num) {
+FASTOR_INLINE void trivial_assign_sub(AbstractTensor<Derived,DIM> &dst, U num) {
     using T = typename scalar_type_finder<Derived>::type;
     using V = SIMDVector<T,DEFAULT_ABI>;
     constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
@@ -196,7 +195,7 @@ FASTOR_INLINE void trivial_assign_sub(const AbstractTensor<Derived,DIM> &dst, U 
 
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_arithmetic_v_<U>, bool> = false>
-FASTOR_INLINE void trivial_assign_mul(const AbstractTensor<Derived,DIM> &dst, U num) {
+FASTOR_INLINE void trivial_assign_mul(AbstractTensor<Derived,DIM> &dst, U num) {
     using T = typename scalar_type_finder<Derived>::type;
     using V = SIMDVector<T,DEFAULT_ABI>;
     constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
@@ -216,7 +215,7 @@ FASTOR_INLINE void trivial_assign_mul(const AbstractTensor<Derived,DIM> &dst, U 
 
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_arithmetic_v_<U>, bool> = false>
-FASTOR_INLINE void trivial_assign_div(const AbstractTensor<Derived,DIM> &dst, U num) {
+FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
     using T = typename scalar_type_finder<Derived>::type;
     using V = SIMDVector<T,DEFAULT_ABI>;
     constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
@@ -237,50 +236,50 @@ FASTOR_INLINE void trivial_assign_div(const AbstractTensor<Derived,DIM> &dst, U 
 
 //----------------------------------------------------------------------------------------------------------//
 template<typename Derived, size_t DIM, typename T, size_t ...Rest>
-FASTOR_INLINE void assign(const AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
+FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
     if (dst.self().data()==src.data()) return;
     trivial_assign(dst.self(),src);
 }
 template<typename Derived, size_t DIM, typename T, size_t ...Rest>
-FASTOR_INLINE void assign_add(const AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
+FASTOR_INLINE void assign_add(AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
     trivial_assign_add(dst.self(),src);
 }
 template<typename Derived, size_t DIM, typename T, size_t ...Rest>
-FASTOR_INLINE void assign_sub(const AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
+FASTOR_INLINE void assign_sub(AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
     trivial_assign_sub(dst.self(),src);
 }
 template<typename Derived, size_t DIM, typename T, size_t ...Rest>
-FASTOR_INLINE void assign_mul(const AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
+FASTOR_INLINE void assign_mul(AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
     trivial_assign_mul(dst.self(),src);
 }
 template<typename Derived, size_t DIM, typename T, size_t ...Rest>
-FASTOR_INLINE void assign_div(const AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
+FASTOR_INLINE void assign_div(AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
     trivial_assign_div(dst.self(),src);
 }
 
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_arithmetic_v_<U>,bool> = false>
-FASTOR_INLINE void assign(const AbstractTensor<Derived,DIM> &dst, U num) {
+FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, U num) {
     trivial_assign(dst.self(),num);
 }
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_arithmetic_v_<U>,bool> = false>
-FASTOR_INLINE void assign_add(const AbstractTensor<Derived,DIM> &dst, U num) {
+FASTOR_INLINE void assign_add(AbstractTensor<Derived,DIM> &dst, U num) {
     trivial_assign_add(dst.self(),num);
 }
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_arithmetic_v_<U>,bool> = false>
-FASTOR_INLINE void assign_sub(const AbstractTensor<Derived,DIM> &dst, U num) {
+FASTOR_INLINE void assign_sub(AbstractTensor<Derived,DIM> &dst, U num) {
     trivial_assign_sub(dst.self(),num);
 }
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_arithmetic_v_<U>,bool> = false>
-FASTOR_INLINE void assign_mul(const AbstractTensor<Derived,DIM> &dst, U num) {
+FASTOR_INLINE void assign_mul(AbstractTensor<Derived,DIM> &dst, U num) {
     trivial_assign_mul(dst.self(),num);
 }
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_arithmetic_v_<U>,bool> = false>
-FASTOR_INLINE void assign_div(const AbstractTensor<Derived,DIM> &dst, U num) {
+FASTOR_INLINE void assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
     trivial_assign_div(dst.self(),num);
 }
 //----------------------------------------------------------------------------------------------------------//

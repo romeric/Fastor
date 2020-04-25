@@ -101,17 +101,25 @@ FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int
             omm8  = fmadd(amm8,bmm0,omm8);
         }
 
-        omm0.store(&out[(j  )*N],false);
-        omm1.store(&out[(j+1)*N],false);
-        omm2.store(&out[(j+2)*N],false);
-        omm3.store(&out[(j+3)*N],false);
-        omm4.store(&out[(j+4)*N],false);
-        omm5.store(&out[(j+5)*N],false);
-        omm6.store(&out[(j+6)*N],false);
-        omm7.store(&out[(j+7)*N],false);
 #ifdef FASTOR_HAS_AVX512_MASKS
+        omm0.mask_store(&out[(j  )*N],mask,false);
+        omm1.mask_store(&out[(j+1)*N],mask,false);
+        omm2.mask_store(&out[(j+2)*N],mask,false);
+        omm3.mask_store(&out[(j+3)*N],mask,false);
+        omm4.mask_store(&out[(j+4)*N],mask,false);
+        omm5.mask_store(&out[(j+5)*N],mask,false);
+        omm6.mask_store(&out[(j+6)*N],mask,false);
+        omm7.mask_store(&out[(j+7)*N],mask,false);
         omm8.mask_store(&out[(j+8)*N],mask,false);
 #else
+        maskstore(&out[(j  )*N],maska,omm0);
+        maskstore(&out[(j+1)*N],maska,omm1);
+        maskstore(&out[(j+2)*N],maska,omm2);
+        maskstore(&out[(j+3)*N],maska,omm3);
+        maskstore(&out[(j+4)*N],maska,omm4);
+        maskstore(&out[(j+5)*N],maska,omm5);
+        maskstore(&out[(j+6)*N],maska,omm6);
+        maskstore(&out[(j+7)*N],maska,omm7);
         maskstore(&out[(j+8)*N],maska,omm8);
 #endif
         return;
@@ -194,16 +202,23 @@ FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int
             omm7  = fmadd(amm7,bmm0,omm7);
         }
 
-        omm0.store(&out[(j  )*N],false);
-        omm1.store(&out[(j+1)*N],false);
-        omm2.store(&out[(j+2)*N],false);
-        omm3.store(&out[(j+3)*N],false);
-        omm4.store(&out[(j+4)*N],false);
-        omm5.store(&out[(j+5)*N],false);
-        omm6.store(&out[(j+6)*N],false);
 #ifdef FASTOR_HAS_AVX512_MASKS
+        omm0.mask_store(&out[(j  )*N],mask,false);
+        omm1.mask_store(&out[(j+1)*N],mask,false);
+        omm2.mask_store(&out[(j+2)*N],mask,false);
+        omm3.mask_store(&out[(j+3)*N],mask,false);
+        omm4.mask_store(&out[(j+4)*N],mask,false);
+        omm5.mask_store(&out[(j+5)*N],mask,false);
+        omm6.mask_store(&out[(j+6)*N],mask,false);
         omm7.mask_store(&out[(j+7)*N],mask,false);
 #else
+        maskstore(&out[(j  )*N],maska,omm0);
+        maskstore(&out[(j+1)*N],maska,omm1);
+        maskstore(&out[(j+2)*N],maska,omm2);
+        maskstore(&out[(j+3)*N],maska,omm3);
+        maskstore(&out[(j+4)*N],maska,omm4);
+        maskstore(&out[(j+5)*N],maska,omm5);
+        maskstore(&out[(j+6)*N],maska,omm6);
         maskstore(&out[(j+7)*N],maska,omm7);
 #endif
         return;
@@ -280,15 +295,21 @@ FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int
             omm6  = fmadd(amm6,bmm0,omm6);
         }
 
-        omm0.store(&out[(j  )*N],false);
-        omm1.store(&out[(j+1)*N],false);
-        omm2.store(&out[(j+2)*N],false);
-        omm3.store(&out[(j+3)*N],false);
-        omm4.store(&out[(j+4)*N],false);
-        omm5.store(&out[(j+5)*N],false);
 #ifdef FASTOR_HAS_AVX512_MASKS
+        omm0.mask_store(&out[(j  )*N],mask,false);
+        omm1.mask_store(&out[(j+1)*N],mask,false);
+        omm2.mask_store(&out[(j+2)*N],mask,false);
+        omm3.mask_store(&out[(j+3)*N],mask,false);
+        omm4.mask_store(&out[(j+4)*N],mask,false);
+        omm5.mask_store(&out[(j+5)*N],mask,false);
         omm6.mask_store(&out[(j+6)*N],mask,false);
 #else
+        maskstore(&out[(j  )*N],maska,omm0);
+        maskstore(&out[(j+1)*N],maska,omm1);
+        maskstore(&out[(j+2)*N],maska,omm2);
+        maskstore(&out[(j+3)*N],maska,omm3);
+        maskstore(&out[(j+4)*N],maska,omm4);
+        maskstore(&out[(j+5)*N],maska,omm5);
         maskstore(&out[(j+6)*N],maska,omm6);
 #endif
         return;
@@ -359,18 +380,22 @@ FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int
             omm5  = fmadd(amm5,bmm0,omm5);
         }
 
-        omm0.store(&out[(j  )*N],false);
-        omm1.store(&out[(j+1)*N],false);
-        omm2.store(&out[(j+2)*N],false);
-        omm3.store(&out[(j+3)*N],false);
-        omm4.store(&out[(j+4)*N],false);
 #ifdef FASTOR_HAS_AVX512_MASKS
+        omm0.mask_store(&out[(j  )*N],mask,false);
+        omm1.mask_store(&out[(j+1)*N],mask,false);
+        omm2.mask_store(&out[(j+2)*N],mask,false);
+        omm3.mask_store(&out[(j+3)*N],mask,false);
+        omm4.mask_store(&out[(j+4)*N],mask,false);
         omm5.mask_store(&out[(j+5)*N],mask,false);
 #else
+        maskstore(&out[(j  )*N],maska,omm0);
+        maskstore(&out[(j+1)*N],maska,omm1);
+        maskstore(&out[(j+2)*N],maska,omm2);
+        maskstore(&out[(j+3)*N],maska,omm3);
+        maskstore(&out[(j+4)*N],maska,omm4);
         maskstore(&out[(j+5)*N],maska,omm5);
 #endif
         return;
-
 }
 
 
@@ -432,17 +457,20 @@ FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int
             omm4  = fmadd(amm4,bmm0,omm4);
         }
 
-        omm0.store(&out[(j  )*N],false);
-        omm1.store(&out[(j+1)*N],false);
-        omm2.store(&out[(j+2)*N],false);
-        omm3.store(&out[(j+3)*N],false);
 #ifdef FASTOR_HAS_AVX512_MASKS
+        omm0.mask_store(&out[(j  )*N],mask,false);
+        omm1.mask_store(&out[(j+1)*N],mask,false);
+        omm2.mask_store(&out[(j+2)*N],mask,false);
+        omm3.mask_store(&out[(j+3)*N],mask,false);
         omm4.mask_store(&out[(j+4)*N],mask,false);
 #else
+        maskstore(&out[(j  )*N],maska,omm0);
+        maskstore(&out[(j+1)*N],maska,omm1);
+        maskstore(&out[(j+2)*N],maska,omm2);
+        maskstore(&out[(j+3)*N],maska,omm3);
         maskstore(&out[(j+4)*N],maska,omm4);
 #endif
         return;
-
 }
 
 
@@ -462,7 +490,6 @@ FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int
 #else
         const V bmm0(maskload<V>(&b[0],maska));
 #endif
-
         const V amm0(a[(j  )*K]);
         const V amm1(a[(j+1)*K]);
         const V amm2(a[(j+2)*K]);
@@ -498,16 +525,18 @@ FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int
             omm3  = fmadd(amm3,bmm0,omm3);
         }
 
-        omm0.store(&out[(j  )*N],false);
-        omm1.store(&out[(j+1)*N],false);
-        omm2.store(&out[(j+2)*N],false);
 #ifdef FASTOR_HAS_AVX512_MASKS
+        omm0.mask_store(&out[(j  )*N],mask,false);
+        omm1.mask_store(&out[(j+1)*N],mask,false);
+        omm2.mask_store(&out[(j+2)*N],mask,false);
         omm3.mask_store(&out[(j+3)*N],mask,false);
 #else
+        maskstore(&out[(j  )*N],maska,omm0);
+        maskstore(&out[(j+1)*N],maska,omm1);
+        maskstore(&out[(j+2)*N],maska,omm2);
         maskstore(&out[(j+3)*N],maska,omm3);
 #endif
         return;
-
 }
 
 
@@ -557,15 +586,16 @@ FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int
             omm2  = fmadd(amm2,bmm0,omm2);
         }
 
-        omm0.store(&out[(j  )*N],false);
-        omm1.store(&out[(j+1)*N],false);
 #ifdef FASTOR_HAS_AVX512_MASKS
+        omm0.mask_store(&out[(j  )*N],mask,false);
+        omm1.mask_store(&out[(j+1)*N],mask,false);
         omm2.mask_store(&out[(j+2)*N],mask,false);
 #else
+        maskstore(&out[(j  )*N],maska,omm0);
+        maskstore(&out[(j+1)*N],maska,omm1);
         maskstore(&out[(j+2)*N],maska,omm2);
 #endif
         return;
-
 }
 
 
@@ -609,14 +639,14 @@ FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int
             omm1  = fmadd(amm1,bmm0,omm1);
         }
 
-        omm0.store(&out[(j  )*N],false);
 #ifdef FASTOR_HAS_AVX512_MASKS
+        omm0.mask_store(&out[(j  )*N],mask,false);
         omm1.mask_store(&out[(j+1)*N],mask,false);
 #else
+        maskstore(&out[(j  )*N],maska,omm0);
         maskstore(&out[(j+1)*N],maska,omm1);
 #endif
         return;
-
 }
 
 
@@ -660,7 +690,6 @@ FASTOR_INLINE void matmul_mk_uptosimd_remainder_kernel(const size_t j, const int
         maskstore(&out[(j )*N],maska,omm0);
 #endif
         return;
-
 }
 
 
@@ -780,18 +809,27 @@ void _matmul_mk_smalln(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
             omm9  = fmadd(amm9,bmm0,omm9);
         }
 
-        omm0.store(&out[(j  )*N],false);
-        omm1.store(&out[(j+1)*N],false);
-        omm2.store(&out[(j+2)*N],false);
-        omm3.store(&out[(j+3)*N],false);
-        omm4.store(&out[(j+4)*N],false);
-        omm5.store(&out[(j+5)*N],false);
-        omm6.store(&out[(j+6)*N],false);
-        omm7.store(&out[(j+7)*N],false);
-        omm8.store(&out[(j+8)*N],false);
 #ifdef FASTOR_HAS_AVX512_MASKS
+        omm0.mask_store(&out[(j  )*N],mask,false);
+        omm1.mask_store(&out[(j+1)*N],mask,false);
+        omm2.mask_store(&out[(j+2)*N],mask,false);
+        omm3.mask_store(&out[(j+3)*N],mask,false);
+        omm4.mask_store(&out[(j+4)*N],mask,false);
+        omm5.mask_store(&out[(j+5)*N],mask,false);
+        omm6.mask_store(&out[(j+6)*N],mask,false);
+        omm7.mask_store(&out[(j+7)*N],mask,false);
+        omm8.mask_store(&out[(j+8)*N],mask,false);
         omm9.mask_store(&out[(j+9)*N],mask,false);
 #else
+        maskstore(&out[(j  )*N],maska,omm0);
+        maskstore(&out[(j+1)*N],maska,omm1);
+        maskstore(&out[(j+2)*N],maska,omm2);
+        maskstore(&out[(j+3)*N],maska,omm3);
+        maskstore(&out[(j+4)*N],maska,omm4);
+        maskstore(&out[(j+5)*N],maska,omm5);
+        maskstore(&out[(j+6)*N],maska,omm6);
+        maskstore(&out[(j+7)*N],maska,omm7);
+        maskstore(&out[(j+8)*N],maska,omm8);
         maskstore(&out[(j+9)*N],maska,omm9);
 #endif
     }

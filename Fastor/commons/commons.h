@@ -485,8 +485,8 @@ FASTOR_INLINE void FASTOR_WARN(bool cond, const std::string &x) {
 
 } // end of namespace Fastor
 
-#define _FASTOR_TOSTRING(X) #X
-#define FASTOR_TOSTRING(X) _FASTOR_TOSTRING(X)
+#define FASTOR_TOSTRING_(X) #X
+#define FASTOR_TOSTRING(X) FASTOR_TOSTRING_(X)
 
 
 #ifndef FASTOR_NO_STATIC_WARNING
@@ -498,8 +498,8 @@ FASTOR_INLINE void FASTOR_WARN(bool cond, const std::string &x) {
     #error FASTOR STATIC WARNING DOES NOT SUPPORT THIS COMPILER
 #endif
 
-#define FASTOR_CAT(x,y) _FASTOR_CAT1(x,y)
-#define _FASTOR_CAT1(x,y) x##y
+#define FASTOR_CAT(x,y) FASTOR_CAT1_(x,y)
+#define FASTOR_CAT1_(x,y) x##y
 
 
 namespace Fastor {
