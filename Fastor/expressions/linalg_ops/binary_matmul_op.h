@@ -33,10 +33,12 @@ struct BinaryMatMulOp: public AbstractTensor<BinaryMatMulOp<TLhs, TRhs, DIM0>,DI
                                         >
                                     >;
 
-    FASTOR_INLINE BinaryMatMulOp(lhs_expr_type inlhs, rhs_expr_type inrhs) : _lhs(inlhs), _rhs(inrhs) {}
+    constexpr FASTOR_INLINE BinaryMatMulOp(lhs_expr_type inlhs, rhs_expr_type inrhs) : _lhs(inlhs), _rhs(inrhs) {
+        static_assert(lhs_rank <=2 && rhs_rank <=2, "EXPRESSIONS FOR MATRIX MULTIPLICATION HAVE TO BE 2-DIMENSIONAL");
+    }
 
-    FASTOR_INLINE FASTOR_INDEX size() const {return M*N;}
-    FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return i==0 ? M : N;}
+    constexpr FASTOR_INLINE FASTOR_INDEX size() const {return M*N;}
+    constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return i==0 ? M : N;}
 
     constexpr FASTOR_INLINE lhs_expr_type lhs() const {return _lhs;}
     constexpr FASTOR_INLINE rhs_expr_type rhs() const {return _rhs;}
@@ -48,7 +50,7 @@ private:
 
 template<typename TLhs, typename TRhs, size_t DIM0, size_t DIM1,
          enable_if_t_<!is_arithmetic_v_<TLhs> &&!is_arithmetic_v_<TRhs>,bool> = 0 >
-FASTOR_INLINE BinaryMatMulOp<TLhs, TRhs, meta_min<DIM0,DIM1>::value>
+constexpr FASTOR_INLINE BinaryMatMulOp<TLhs, TRhs, meta_min<DIM0,DIM1>::value>
 operator %(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1> &rhs) {
   return BinaryMatMulOp<TLhs, TRhs, meta_min<DIM0,DIM1>::value>(lhs.self(), rhs.self());
 }

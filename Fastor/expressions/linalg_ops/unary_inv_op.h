@@ -60,11 +60,16 @@ FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& ou
 
     Tensor<T,N,N> inv_a = inverse(a);
 
-    Tensor<T,M-N,M-N> block_bb = inverse(static_cast<Tensor<T,M-N,M-N>>(d - c % inv_a % b));
+    Tensor<T,M-N,N> c_inva = matmul(c, inv_a);
 
-    Tensor<T,N  ,N  > block_aa = inv_a + inv_a % b % block_bb % c % inv_a;
-    Tensor<T,N  ,M-N> block_ab = -inv_a % b % block_bb;
-    Tensor<T,M-N,N  > block_ba = -block_bb % c % inv_a;
+    Tensor<T,M-N,M-N> block_bb = inverse(static_cast<Tensor<T,M-N,M-N>>(d - matmul(c_inva, b)));
+
+    Tensor<T,N,M-N> inva_b = matmul(inv_a, b);
+    Tensor<T,M-N,N> bb_c_inva = matmul(block_bb, c_inva);
+
+    Tensor<T,N  ,N  > block_aa = inv_a + matmul(inva_b, bb_c_inva);
+    Tensor<T,N  ,M-N> block_ab = -matmul(inva_b, block_bb);
+    Tensor<T,M-N,N  > block_ba = -bb_c_inva;
 
     out(fseq<0,N>(),fseq<0,N>()) = block_aa;
     out(fseq<0,N>(),fseq<N,M>()) = block_ab;
@@ -84,12 +89,17 @@ FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& ou
     Tensor<T,N,N> inv_a;
     inverse_dispatcher(a, inv_a);
 
-    Tensor<T,M-N,M-N> block_bb;
-    inverse_dispatcher(static_cast<Tensor<T,M-N,M-N>>(d - c % inv_a % b),block_bb);
+    Tensor<T,M-N,N> c_inva = matmul(c, inv_a);
 
-    Tensor<T,N  ,N  > block_aa = inv_a + inv_a % b % block_bb % c % inv_a;
-    Tensor<T,N  ,M-N> block_ab = -inv_a % b % block_bb;
-    Tensor<T,M-N,N  > block_ba = -block_bb % c % inv_a;
+    Tensor<T,M-N,M-N> block_bb;
+    inverse_dispatcher(static_cast<Tensor<T,M-N,M-N>>(d - matmul(c_inva, b)),block_bb);
+
+    Tensor<T,N,M-N> inva_b = matmul(inv_a, b);
+    Tensor<T,M-N,N> bb_c_inva = matmul(block_bb, c_inva);
+
+    Tensor<T,N  ,N  > block_aa = inv_a + matmul(inva_b, bb_c_inva);
+    Tensor<T,N  ,M-N> block_ab = -matmul(inva_b, block_bb);
+    Tensor<T,M-N,N  > block_ba = -bb_c_inva;
 
     out(fseq<0,N>(),fseq<0,N>()) = block_aa;
     out(fseq<0,N>(),fseq<N,M>()) = block_ab;
@@ -109,12 +119,17 @@ FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& ou
     Tensor<T,N,N> inv_a;
     inverse_dispatcher(a, inv_a);
 
-    Tensor<T,M-N,M-N> block_bb;
-    inverse_dispatcher(static_cast<Tensor<T,M-N,M-N>>(d - c % inv_a % b),block_bb);
+    Tensor<T,M-N,N> c_inva = matmul(c, inv_a);
 
-    Tensor<T,N  ,N  > block_aa = inv_a + inv_a % b % block_bb % c % inv_a;
-    Tensor<T,N  ,M-N> block_ab = -inv_a % b % block_bb;
-    Tensor<T,M-N,N  > block_ba = -block_bb % c % inv_a;
+    Tensor<T,M-N,M-N> block_bb;
+    inverse_dispatcher(static_cast<Tensor<T,M-N,M-N>>(d - matmul(c_inva, b)),block_bb);
+
+    Tensor<T,N,M-N> inva_b = matmul(inv_a, b);
+    Tensor<T,M-N,N> bb_c_inva = matmul(block_bb, c_inva);
+
+    Tensor<T,N  ,N  > block_aa = inv_a + matmul(inva_b, bb_c_inva);
+    Tensor<T,N  ,M-N> block_ab = -matmul(inva_b, block_bb);
+    Tensor<T,M-N,N  > block_ba = -bb_c_inva;
 
     out(fseq<0,N>(),fseq<0,N>()) = block_aa;
     out(fseq<0,N>(),fseq<N,M>()) = block_ab;
@@ -134,12 +149,17 @@ FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& ou
     Tensor<T,N,N> inv_a;
     inverse_dispatcher(a, inv_a);
 
-    Tensor<T,M-N,M-N> block_bb;
-    inverse_dispatcher(static_cast<Tensor<T,M-N,M-N>>(d - c % inv_a % b),block_bb);
+    Tensor<T,M-N,N> c_inva = matmul(c, inv_a);
 
-    Tensor<T,N  ,N  > block_aa = inv_a + inv_a % b % block_bb % c % inv_a;
-    Tensor<T,N  ,M-N> block_ab = -inv_a % b % block_bb;
-    Tensor<T,M-N,N  > block_ba = -block_bb % c % inv_a;
+    Tensor<T,M-N,M-N> block_bb;
+    inverse_dispatcher(static_cast<Tensor<T,M-N,M-N>>(d - matmul(c_inva, b)),block_bb);
+
+    Tensor<T,N,M-N> inva_b = matmul(inv_a, b);
+    Tensor<T,M-N,N> bb_c_inva = matmul(block_bb, c_inva);
+
+    Tensor<T,N  ,N  > block_aa = inv_a + matmul(inva_b, bb_c_inva);
+    Tensor<T,N  ,M-N> block_ab = -matmul(inva_b, block_bb);
+    Tensor<T,M-N,N  > block_ba = -bb_c_inva;
 
     out(fseq<0,N>(),fseq<0,N>()) = block_aa;
     out(fseq<0,N>(),fseq<N,M>()) = block_ab;
@@ -159,12 +179,17 @@ FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& ou
     Tensor<T,N,N> inv_a;
     inverse_dispatcher(a, inv_a);
 
-    Tensor<T,M-N,M-N> block_bb;
-    inverse_dispatcher(static_cast<Tensor<T,M-N,M-N>>(d - c % inv_a % b),block_bb);
+    Tensor<T,M-N,N> c_inva = matmul(c, inv_a);
 
-    Tensor<T,N  ,N  > block_aa = inv_a + inv_a % b % block_bb % c % inv_a;
-    Tensor<T,N  ,M-N> block_ab = -inv_a % b % block_bb;
-    Tensor<T,M-N,N  > block_ba = -block_bb % c % inv_a;
+    Tensor<T,M-N,M-N> block_bb;
+    inverse_dispatcher(static_cast<Tensor<T,M-N,M-N>>(d - matmul(c_inva, b)),block_bb);
+
+    Tensor<T,N,M-N> inva_b = matmul(inv_a, b);
+    Tensor<T,M-N,N> bb_c_inva = matmul(block_bb, c_inva);
+
+    Tensor<T,N  ,N  > block_aa = inv_a + matmul(inva_b, bb_c_inva);
+    Tensor<T,N  ,M-N> block_ab = -matmul(inva_b, block_bb);
+    Tensor<T,M-N,N  > block_ba = -bb_c_inva;
 
     out(fseq<0,N>(),fseq<0,N>()) = block_aa;
     out(fseq<0,N>(),fseq<N,M>()) = block_ab;

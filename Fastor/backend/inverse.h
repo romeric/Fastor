@@ -16,7 +16,7 @@ FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst
 }
 
 #ifdef FASTOR_SSE2_IMPL
-template<typename T, size_t N, enable_if_t_<is_equal_v_<N,2> && !is_same_v_<T,double>, bool> = false>
+template<typename T, size_t N, enable_if_t_<is_equal_v_<N,2> && !is_same_v_<T,float> && !is_same_v_<T,double>, bool> = false>
 #else
 template<typename T, size_t N, enable_if_t_<is_equal_v_<N,2>, bool> = false>
 #endif
@@ -47,6 +47,35 @@ FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst
 }
 
 #ifdef FASTOR_SSE2_IMPL
+template<typename T, size_t N, enable_if_t_<is_equal_v_<N,2> && is_same_v_<T,float>, bool> = false>
+FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst)
+{
+    // This is much superior to the scalar code as
+    // gcc/clang can't auto-vectorise the scalar code
+
+    // 6 shuffles + 1 add + 1 mul + 1 div
+    // Sky 6 + 4 + 4 + 11     = 25
+
+    __m128 mat  = _mm_loadu_ps(src);
+    // xor to swap off-diagonals sings
+    __m128 nmat = _mm_neg_ps(mat);
+    // two shuffles to get adjoint
+    __m128 adj  = _mm_shuffle_ps(mat, nmat, 0x009C );
+    adj         = _mm_shuffle_ps(adj, adj , 0x39   );
+
+    // compute determinat
+    __m128 tmp0 = _mm_shuffle_ps(mat , mat , 0x00D8);
+    tmp0        = _mm_mul_ps    (adj , tmp0        );
+    __m128 tmp1 = _mm_shuffle_ps(tmp0, tmp0, 0x1   );
+    __m128 det  = _mm_div_ss    (ONEPS, _mm_add_ss(tmp0,tmp1));
+    // broadcast det to all elements of __m128
+    det         = _mm_shuffle_ps(det, det,  0x0    );
+    // divide adjoint by determinant
+    __m128 inv  = _mm_mul_ps    (adj, det);
+
+    _mm_storeu_ps(dst, inv);
+}
+
 template<typename T, size_t N, enable_if_t_<is_equal_v_<N,2> && is_same_v_<T,double>, bool> = false>
 FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst)
 {
@@ -498,4 +527,3 @@ FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst
 } // end of namespace Fastor
 
 #endif // INVERSE_H
-
