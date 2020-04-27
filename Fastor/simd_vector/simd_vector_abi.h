@@ -21,9 +21,6 @@ using native = simd_abi::avx512;
 #elif defined(FASTOR_AVX_IMPL)
 using native = simd_abi::avx;
 #elif defined(FASTOR_SSE2_IMPL)
-// For integral types atleast FASTOR_SSE4_2_IMPL is
-// needed as simd_abi::sse would fall-back to scalar
-// code and will hurt their performance really bad
 using native = simd_abi::sse;
 #else
 using native = simd_abi::scalar;
