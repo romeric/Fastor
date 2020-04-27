@@ -43,8 +43,8 @@ FASTOR_INLINE void _transpose(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT o
     constexpr size_t innerBlock = V::Size * numSIMDCols;
     constexpr size_t outerBlock = V::Size * numSIMDRows;
 
-    T FASTOR_ALIGN pack_a[outerBlock*innerBlock];
-    T FASTOR_ALIGN pack_out[outerBlock*innerBlock];
+    T FASTOR_ARCH_ALIGN pack_a[outerBlock*innerBlock];
+    T FASTOR_ARCH_ALIGN pack_out[outerBlock*innerBlock];
 
     constexpr size_t M0 = M / innerBlock * innerBlock;
     constexpr size_t N0 = N / outerBlock * outerBlock;
@@ -149,38 +149,38 @@ FASTOR_INLINE void _transpose<float,3,3>(const float * FASTOR_RESTRICT a, float 
 
 template<>
 FASTOR_INLINE void _transpose<float,4,4>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
-    __m128 row1 = _mm_load_ps(a);
-    __m128 row2 = _mm_load_ps(a+4);
-    __m128 row3 = _mm_load_ps(a+8);
-    __m128 row4 = _mm_load_ps(a+12);
+    __m128 row1 = _mm_loadu_ps(a);
+    __m128 row2 = _mm_loadu_ps(a+4);
+    __m128 row3 = _mm_loadu_ps(a+8);
+    __m128 row4 = _mm_loadu_ps(a+12);
      _MM_TRANSPOSE4_PS(row1, row2, row3, row4);
-     _mm_store_ps(out   , row1);
-     _mm_store_ps(out+4 , row2);
-     _mm_store_ps(out+8 , row3);
-     _mm_store_ps(out+12, row4);
+     _mm_storeu_ps(out   , row1);
+     _mm_storeu_ps(out+4 , row2);
+     _mm_storeu_ps(out+8 , row3);
+     _mm_storeu_ps(out+12, row4);
 }
 #endif
 
 #ifdef FASTOR_AVX_IMPL
 template<>
 FASTOR_INLINE void _transpose<float,8,8>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
-    __m256 row1 = _mm256_load_ps(a);
-    __m256 row2 = _mm256_load_ps(a+8);
-    __m256 row3 = _mm256_load_ps(a+16);
-    __m256 row4 = _mm256_load_ps(a+24);
-    __m256 row5 = _mm256_load_ps(a+32);
-    __m256 row6 = _mm256_load_ps(a+40);
-    __m256 row7 = _mm256_load_ps(a+48);
-    __m256 row8 = _mm256_load_ps(a+56);
+    __m256 row1 = _mm256_loadu_ps(a);
+    __m256 row2 = _mm256_loadu_ps(a+8);
+    __m256 row3 = _mm256_loadu_ps(a+16);
+    __m256 row4 = _mm256_loadu_ps(a+24);
+    __m256 row5 = _mm256_loadu_ps(a+32);
+    __m256 row6 = _mm256_loadu_ps(a+40);
+    __m256 row7 = _mm256_loadu_ps(a+48);
+    __m256 row8 = _mm256_loadu_ps(a+56);
     internal::_MM_TRANSPOSE8_PS(row1, row2, row3, row4, row5, row6, row7, row8);
-    _mm256_store_ps(out, row1);
-    _mm256_store_ps(out+8, row2);
-    _mm256_store_ps(out+16, row3);
-    _mm256_store_ps(out+24, row4);
-    _mm256_store_ps(out+32, row5);
-    _mm256_store_ps(out+40, row6);
-    _mm256_store_ps(out+48, row7);
-    _mm256_store_ps(out+56, row8);
+    _mm256_storeu_ps(out, row1);
+    _mm256_storeu_ps(out+8, row2);
+    _mm256_storeu_ps(out+16, row3);
+    _mm256_storeu_ps(out+24, row4);
+    _mm256_storeu_ps(out+32, row5);
+    _mm256_storeu_ps(out+40, row6);
+    _mm256_storeu_ps(out+48, row7);
+    _mm256_storeu_ps(out+56, row8);
 }
 #endif
 
