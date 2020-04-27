@@ -36,7 +36,7 @@ public:
         return sizer;
     }
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return _seqs[i].size();}
-    constexpr const TensorType<T,Rest...>& expr() const {return _expr;};
+    constexpr const TensorType<T,Rest...>& expr() const {return _expr;}
 
     FASTOR_INLINE TensorConstViewExpr(const TensorType<T,Rest...> &_ex, std::array<seq,sizeof...(Rest)> _s) : _expr(_ex), _seqs(std::move(_s)) {
         static_assert(DIMS==sizeof...(Rest),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
@@ -234,7 +234,7 @@ public:
         return sizer;
     }
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return _seqs[i].size();}
-    constexpr const TensorType<T,Rest...>& expr() const {return _expr;};
+    constexpr const TensorType<T,Rest...>& expr() const {return _expr;}
 
     FASTOR_INLINE TensorViewExpr<TensorType<T,Rest...>,DIMS>& noalias() {
         _does_alias = true;

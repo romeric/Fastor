@@ -103,7 +103,7 @@ public:
     // Generic AbstractTensors
 #ifndef FASTOR_DISABLE_SPECIALISED_CTR
     template<typename Derived, size_t DIMS,
-        enable_if_t_<(!has_tensor_view_v<Derived> && !has_tensor_fixed_view_2d_v<Derived>) || DIMS!=sizeof...(Rest),bool> = false>
+        enable_if_t_<(!has_tensor_view_v<Derived> && !has_tensor_fixed_view_2d_v<Derived> && !has_tensor_fixed_view_nd_v<Derived>) || DIMS!=sizeof...(Rest),bool> = false>
 #else
     template<typename Derived, size_t DIMS>
 #endif

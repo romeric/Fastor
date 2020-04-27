@@ -34,13 +34,11 @@ public:
     static constexpr FASTOR_INDEX Dimension = sizeof...(Fseqs);
     static constexpr FASTOR_INDEX DIMS = sizeof...(Fseqs);
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
-    static constexpr FASTOR_INLINE FASTOR_INDEX size() {
-        return dimension_helper::Size;
-    }
-    static constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) {
-        return dimension_helper::dims[i];
-    }
-    constexpr const TensorType<T,Rest...>& expr() const {return _expr;};
+    constexpr FASTOR_INLINE bool is_vectorisable() const {return _is_vectorisable;}
+    constexpr FASTOR_INLINE bool is_strided_vectorisable() const {return _is_strided_vectorisable;}
+    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return dimension_helper::Size;}
+    static constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) {return dimension_helper::dims[i];}
+    constexpr const TensorType<T,Rest...>& expr() const {return _expr;}
 private:
     static constexpr std::array<int,sizeof...(Fseqs)> _dims = dimension_helper::dims;
     static constexpr bool _is_vectorisable = _dims[DIMS-1] % V::Size == 0 && (get_nth_type<DIMS-1,Fseqs...>::_step==1) ? true : false;
@@ -243,13 +241,11 @@ public:
     static constexpr FASTOR_INDEX Dimension = sizeof...(Fseqs);
     static constexpr FASTOR_INDEX DIMS = sizeof...(Fseqs);
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
-    static constexpr FASTOR_INLINE FASTOR_INDEX size() {
-        return dimension_helper::Size;
-    }
-    static constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) {
-        return dimension_helper::dims[i];
-    }
-    constexpr const TensorType<T,Rest...>& expr() const {return _expr;};
+    constexpr FASTOR_INLINE bool is_vectorisable() const {return _is_vectorisable;}
+    constexpr FASTOR_INLINE bool is_strided_vectorisable() const {return _is_strided_vectorisable;}
+    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return dimension_helper::Size;}
+    static constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) {return dimension_helper::dims[i];}
+    constexpr const TensorType<T,Rest...>& expr() const {return _expr;}
 private:
     static constexpr std::array<int,sizeof...(Fseqs)> _dims = dimension_helper::dims;
     static constexpr bool _is_vectorisable = _dims[DIMS-1] % V::Size == 0 && (get_nth_type<DIMS-1,Fseqs...>::_step==1) ? true : false;

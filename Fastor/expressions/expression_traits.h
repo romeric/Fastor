@@ -99,6 +99,10 @@ template<typename T, size_t DIMS, size_t M, size_t N, size_t ...Rest>
 struct is_tensor_view<TensorViewExpr<Tensor<T,M,N,Rest...>,DIMS>> {
     static constexpr bool value = true;
 };
+template<typename T, size_t DIMS, size_t M, size_t N, size_t ...Rest>
+struct is_tensor_view<TensorConstViewExpr<Tensor<T,M,N,Rest...>,DIMS>> {
+    static constexpr bool value = true;
+};
 
 template<typename Derived>
 struct has_tensor_view {
@@ -106,6 +110,10 @@ struct has_tensor_view {
 };
 template<typename T, size_t DIMS, size_t M, size_t N, size_t ...Rest>
 struct has_tensor_view<TensorViewExpr<Tensor<T,M,N,Rest...>,DIMS>> {
+    static constexpr bool value = true;
+};
+template<typename T, size_t DIMS, size_t M, size_t N, size_t ...Rest>
+struct has_tensor_view<TensorConstViewExpr<Tensor<T,M,N,Rest...>,DIMS>> {
     static constexpr bool value = true;
 };
 template<template<typename,size_t> class UnaryExpr, typename Expr, size_t DIM>
@@ -131,6 +139,10 @@ template<typename T, size_t M, size_t N, typename Seq0, typename Seq1>
 struct is_tensor_fixed_view_2d<TensorFixedViewExpr2D<Tensor<T,M,N>,Seq0,Seq1,2>> {
     static constexpr bool value = true;
 };
+template<typename T, size_t M, size_t N, typename Seq0, typename Seq1>
+struct is_tensor_fixed_view_2d<TensorConstFixedViewExpr2D<Tensor<T,M,N>,Seq0,Seq1,2>> {
+    static constexpr bool value = true;
+};
 
 template<typename Derived>
 struct has_tensor_fixed_view_2d {
@@ -138,6 +150,10 @@ struct has_tensor_fixed_view_2d {
 };
 template<typename T, size_t M, size_t N, typename Seq0, typename Seq1>
 struct has_tensor_fixed_view_2d<TensorFixedViewExpr2D<Tensor<T,M,N>,Seq0,Seq1,2>> {
+    static constexpr bool value = true;
+};
+template<typename T, size_t M, size_t N, typename Seq0, typename Seq1>
+struct has_tensor_fixed_view_2d<TensorConstFixedViewExpr2D<Tensor<T,M,N>,Seq0,Seq1,2>> {
     static constexpr bool value = true;
 };
 template<template<typename,size_t> class UnaryExpr, typename Expr, size_t DIM>
@@ -151,6 +167,46 @@ struct has_tensor_fixed_view_2d<BinaryExpr<TLhs,TRhs,DIMS>> {
 
 template<typename Derived>
 static constexpr bool has_tensor_fixed_view_2d_v = has_tensor_fixed_view_2d<Derived>::value;
+//----------------------------------------------------------------------------------------------------------//
+
+
+//----------------------------------------------------------------------------------------------------------//
+template<typename Derived>
+struct is_tensor_fixed_view_nd {
+    static constexpr bool value = false;
+};
+template<typename T, size_t ...Rest, typename ...Fseq>
+struct is_tensor_fixed_view_nd<TensorFixedViewExprnD<Tensor<T,Rest...>,Fseq...>> {
+    static constexpr bool value = true;
+};
+template<typename T, size_t ...Rest, typename ...Fseq>
+struct is_tensor_fixed_view_nd<TensorConstFixedViewExprnD<Tensor<T,Rest...>,Fseq...>> {
+    static constexpr bool value = true;
+};
+
+template<typename Derived>
+struct has_tensor_fixed_view_nd {
+    static constexpr bool value = is_tensor_fixed_view_nd<Derived>::value ? true : false;
+};
+template<typename T, size_t ...Rest, typename ...Fseq>
+struct has_tensor_fixed_view_nd<TensorFixedViewExprnD<Tensor<T,Rest...>,Fseq...>> {
+    static constexpr bool value = true;
+};
+template<typename T, size_t ...Rest, typename ...Fseq>
+struct has_tensor_fixed_view_nd<TensorConstFixedViewExprnD<Tensor<T,Rest...>,Fseq...>> {
+    static constexpr bool value = true;
+};
+template<template<typename,size_t> class UnaryExpr, typename Expr, size_t DIM>
+struct has_tensor_fixed_view_nd<UnaryExpr<Expr,DIM>> {
+    static constexpr bool value = has_tensor_fixed_view_nd<Expr>::value;
+};
+template<template<class,class,size_t> class BinaryExpr, typename TLhs, typename TRhs, size_t DIMS>
+struct has_tensor_fixed_view_nd<BinaryExpr<TLhs,TRhs,DIMS>> {
+    static constexpr bool value = has_tensor_fixed_view_nd<TRhs>::value || has_tensor_fixed_view_nd<TLhs>::value;
+};
+
+template<typename Derived>
+static constexpr bool has_tensor_fixed_view_nd_v = has_tensor_fixed_view_nd<Derived>::value;
 //----------------------------------------------------------------------------------------------------------//
 
 
