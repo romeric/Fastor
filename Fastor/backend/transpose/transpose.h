@@ -367,12 +367,32 @@ FASTOR_INLINE void _transpose_dispatch(const T * FASTOR_RESTRICT a, T * FASTOR_R
             out[j*M+i] = a[i*N+j];
 }
 template<>
+FASTOR_INLINE void _transpose_dispatch<float,2,2>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
+    _transpose<float,2,2>(a,out);
+}
+template<>
+FASTOR_INLINE void _transpose_dispatch<float,3,3>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
+    _transpose<float,3,3>(a,out);
+}
+template<>
 FASTOR_INLINE void _transpose_dispatch<float,4,4>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
     _transpose<float,4,4>(a,out);
 }
 template<>
 FASTOR_INLINE void _transpose_dispatch<float,8,8>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
     _transpose<float,8,8>(a,out);
+}
+template<>
+FASTOR_INLINE void _transpose_dispatch<float,16,16>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
+    _transpose<float,16,16>(a,out);
+}
+template<>
+FASTOR_INLINE void _transpose_dispatch<double,2,2>(const double * FASTOR_RESTRICT a, double * FASTOR_RESTRICT out) {
+    _transpose<double,2,2>(a,out);
+}
+template<>
+FASTOR_INLINE void _transpose_dispatch<double,3,3>(const double * FASTOR_RESTRICT a, double * FASTOR_RESTRICT out) {
+    _transpose<double,3,3>(a,out);
 }
 template<>
 FASTOR_INLINE void _transpose_dispatch<double,4,4>(const double * FASTOR_RESTRICT a, double * FASTOR_RESTRICT out) {

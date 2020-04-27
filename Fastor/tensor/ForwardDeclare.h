@@ -129,10 +129,8 @@ FASTOR_MAKE_BINARY_CMP_OP_FORWARD_DECLARATION(GE)
 FASTOR_MAKE_BINARY_CMP_OP_FORWARD_DECLARATION(AND)
 FASTOR_MAKE_BINARY_CMP_OP_FORWARD_DECLARATION(OR)
 
-namespace internal {
 template<typename Derived>
 struct is_binary_cmp_op;
-}
 //----------------------------------------------------------------
 
 }
