@@ -185,6 +185,7 @@ FASTOR_INLINE void _transpose<float,8,8>(const float * FASTOR_RESTRICT a, float 
 #endif
 
 #if defined(FASTOR_AVX512F_IMPL) && defined(FASTOR_AVX512DQ_IMPL)
+template<>
 FASTOR_INLINE void _transpose<float,16,16>(const float * FASTOR_RESTRICT a, float * FASTOR_RESTRICT out) {
     internal::_MM_TRANSPOSE16_PS(a,out);
 }
