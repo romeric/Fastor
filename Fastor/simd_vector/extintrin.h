@@ -535,58 +535,6 @@ FASTOR_INLINE double _mm256_get3_pd(__m256d a) {
 #endif
 
 
-
-//!----------------------------------------------------------------
-#ifdef FASTOR_AVX_IMPL
-// Equivalent to _MM_TRANSPOSE4_PS
-#define _MM_TRANSPOSE4_PD(row0,row1,row2,row3)                   \
-{                                                                \
-    __m256d tmp3, tmp2, tmp1, tmp0;                              \
-                                                                 \
-    tmp0 = _mm256_shuffle_pd((row0),(row1), 0x0);                \
-    tmp2 = _mm256_shuffle_pd((row0),(row1), 0xF);                \
-    tmp1 = _mm256_shuffle_pd((row2),(row3), 0x0);                \
-    tmp3 = _mm256_shuffle_pd((row2),(row3), 0xF);                \
-                                                                 \
-    (row0) = _mm256_permute2f128_pd(tmp0, tmp1, 0x20);   \
-    (row1) = _mm256_permute2f128_pd(tmp2, tmp3, 0x20);   \
-    (row2) = _mm256_permute2f128_pd(tmp0, tmp1, 0x31);   \
-    (row3) = _mm256_permute2f128_pd(tmp2, tmp3, 0x31);   \
-}
-// For 8x8 PS
-FASTOR_INLINE void _MM_TRANSPOSE8_PS(__m256 &row0, __m256 &row1, __m256 &row2,
-                              __m256 &row3, __m256 &row4, __m256 &row5,
-                              __m256 &row6, __m256 &row7) {
-    __m256 __t0, __t1, __t2, __t3, __t4, __t5, __t6, __t7;
-    __m256 __tt0, __tt1, __tt2, __tt3, __tt4, __tt5, __tt6, __tt7;
-    __t0 = _mm256_unpacklo_ps(row0, row1);
-    __t1 = _mm256_unpackhi_ps(row0, row1);
-    __t2 = _mm256_unpacklo_ps(row2, row3);
-    __t3 = _mm256_unpackhi_ps(row2, row3);
-    __t4 = _mm256_unpacklo_ps(row4, row5);
-    __t5 = _mm256_unpackhi_ps(row4, row5);
-    __t6 = _mm256_unpacklo_ps(row6, row7);
-    __t7 = _mm256_unpackhi_ps(row6, row7);
-    __tt0 = _mm256_shuffle_ps(__t0,__t2,_MM_SHUFFLE(1,0,1,0));
-    __tt1 = _mm256_shuffle_ps(__t0,__t2,_MM_SHUFFLE(3,2,3,2));
-    __tt2 = _mm256_shuffle_ps(__t1,__t3,_MM_SHUFFLE(1,0,1,0));
-    __tt3 = _mm256_shuffle_ps(__t1,__t3,_MM_SHUFFLE(3,2,3,2));
-    __tt4 = _mm256_shuffle_ps(__t4,__t6,_MM_SHUFFLE(1,0,1,0));
-    __tt5 = _mm256_shuffle_ps(__t4,__t6,_MM_SHUFFLE(3,2,3,2));
-    __tt6 = _mm256_shuffle_ps(__t5,__t7,_MM_SHUFFLE(1,0,1,0));
-    __tt7 = _mm256_shuffle_ps(__t5,__t7,_MM_SHUFFLE(3,2,3,2));
-    row0 = _mm256_permute2f128_ps(__tt0, __tt4, 0x20);
-    row1 = _mm256_permute2f128_ps(__tt1, __tt5, 0x20);
-    row2 = _mm256_permute2f128_ps(__tt2, __tt6, 0x20);
-    row3 = _mm256_permute2f128_ps(__tt3, __tt7, 0x20);
-    row4 = _mm256_permute2f128_ps(__tt0, __tt4, 0x31);
-    row5 = _mm256_permute2f128_ps(__tt1, __tt5, 0x31);
-    row6 = _mm256_permute2f128_ps(__tt2, __tt6, 0x31);
-    row7 = _mm256_permute2f128_ps(__tt3, __tt7, 0x31);
-}
-#endif
-
-
 //!------------------------------------------------------------------
 // Integral arithmetics that are not available pre AVX2
 #ifdef FASTOR_SSE2_IMPL
@@ -735,7 +683,7 @@ FASTOR_INLINE __m256i _mm256_mul_epi64x(__m256i _a, __m256i _b) {
 #ifdef FASTOR_SSE4_2_IMPL
 static FASTOR_INLINE __m128d _add_pd(__m128d a) {
     // IVY 4 OPS
-    __m128 shuftmp= _mm_movehl_ps(ZEROPS, _mm_castpd_ps(a));  // there is no movhlpd
+    __m128 shuftmp= _mm_movehl_ps(ZEROPS, _mm_castpd_ps(a));
     __m128d shuf  = _mm_castps_pd(shuftmp);
     return  _mm_add_sd(a, shuf);
 }
@@ -780,7 +728,7 @@ FASTOR_INLINE __m128 _add_ps(__m256 a) {
 #endif
 
 // horizontal add_sub
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 FASTOR_INLINE __m128 _addsub_ps(__m128 a) {
     // 8 OPS
     // If a = [a0 a1 a2 a3] this function returns (a1+a3)-(a0+a2)
@@ -790,7 +738,6 @@ FASTOR_INLINE __m128 _addsub_ps(__m128 a) {
     shuf        = _mm_shuffle_ps(sums,sums,_MM_SHUFFLE(2,3,0,1));
     return _mm_sub_ps(shuf, sums);
 }
-
 
 FASTOR_INLINE __m128 _mulsub_ps(__m128 a) {
     // 10 OPS
@@ -804,12 +751,8 @@ FASTOR_INLINE __m128 _mulsub_ps(__m128 a) {
 
 FASTOR_INLINE __m128d _hsub_pd(__m128d a) {
     // horizontal sub, returns a[0] - a[1]
-    // 4 OPS  W/O HSUB - 5 OPS WITH HSUB
-#ifdef FASTOR_USE_HADD
-    return _mm_hsub_pd(a,a);
-#else
+    // 4 OPS
     return _mm_sub_sd(a,_mm_shuffle_pd(a,a,0x1));
-#endif
 }
 #endif
 
@@ -823,7 +766,7 @@ FASTOR_INLINE __m128d _mm256_dp_pd(__m256d __X, __m256d __Y) {
 #endif
 
 
-// Additional math functions for scalars -> the name sqrts is to sqrts ambiguity with libm sqrt
+// Additional math functions for scalars -> the name sqrts is to remove ambiguity with libm sqrt
 template<typename T, typename std::enable_if<std::is_arithmetic<T>::value,bool>::type=0>
 FASTOR_INLINE T sqrts(T a) {return std::sqrt(a);}
 #ifdef FASTOR_SSE4_2_IMPL
