@@ -8,7 +8,6 @@
 #include "Fastor/tensor/Ranges.h"
 #include "Fastor/tensor/ForwardDeclare.h"
 #include "Fastor/expressions/linalg_ops/linalg_ops.h"
-#include "Fastor/meta/tensor_pre_meta.h"
 
 namespace Fastor {
 
@@ -104,8 +103,7 @@ public:
     // Generic AbstractTensors
 #ifndef FASTOR_DISABLE_SPECIALISED_CTR
     template<typename Derived, size_t DIMS,
-        typename std::enable_if<(!internal::has_tensor_view<Derived>::value &&
-        !internal::has_tensor_fixed_view_2d<Derived>::value) || DIMS!=sizeof...(Rest),bool>::type=0>
+        enable_if_t_<(!has_tensor_view_v<Derived> && !has_tensor_fixed_view_2d_v<Derived>) || DIMS!=sizeof...(Rest),bool> = false>
 #else
     template<typename Derived, size_t DIMS>
 #endif

@@ -76,7 +76,7 @@ FASTOR_INLINE typename Derived::scalar_type product(const AbstractTensor<Derived
 
 template<class Derived, size_t DIMS>
 FASTOR_INLINE bool all_of(const AbstractTensor<Derived,DIMS> &_src) {
-    static_assert(internal::is_binary_cmp_op<Derived>::value,"INPUT SHOULD BE A BOOLEAN EXPRESSION");
+    static_assert(is_binary_cmp_op_v<Derived>,"INPUT SHOULD BE A BOOLEAN EXPRESSION");
     const Derived &src = _src.self();
     bool val = true;
     for (FASTOR_INDEX i = 0; i < src.size(); ++i) {
@@ -90,7 +90,7 @@ FASTOR_INLINE bool all_of(const AbstractTensor<Derived,DIMS> &_src) {
 
 template<class Derived, size_t DIMS>
 FASTOR_INLINE bool any_of(const AbstractTensor<Derived,DIMS> &_src) {
-    static_assert(internal::is_binary_cmp_op<Derived>::value,"INPUT SHOULD BE A BOOLEAN EXPRESSION");
+    static_assert(is_binary_cmp_op_v<Derived>,"INPUT SHOULD BE A BOOLEAN EXPRESSION");
     const Derived &src = _src.self();
     bool val = false;
     for (FASTOR_INDEX i = 0; i < src.size(); ++i) {
@@ -104,7 +104,7 @@ FASTOR_INLINE bool any_of(const AbstractTensor<Derived,DIMS> &_src) {
 
 template<class Derived, size_t DIMS>
 FASTOR_INLINE bool none_of(const AbstractTensor<Derived,DIMS> &_src) {
-    static_assert(internal::is_binary_cmp_op<Derived>::value,"INPUT SHOULD BE A BOOLEAN EXPRESSION");
+    static_assert(is_binary_cmp_op_v<Derived>,"INPUT SHOULD BE A BOOLEAN EXPRESSION");
     const Derived &src = _src.self();
     bool val = false;
     for (FASTOR_INDEX i = 0; i < src.size(); ++i) {

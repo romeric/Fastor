@@ -12,7 +12,7 @@ FASTOR_INLINE void trivial_assign(AbstractTensor<Derived,DIM> &dst, const Abstra
     FASTOR_ASSERT(src.size()==dst.self().size(), "TENSOR SIZE MISMATCH");
     T* _data = dst.self().data();
 
-    FASTOR_IF_CONSTEXPR(!internal::is_binary_cmp_op<OtherDerived>::value) {
+    FASTOR_IF_CONSTEXPR(!is_binary_cmp_op_v<OtherDerived>) {
         constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
@@ -37,7 +37,7 @@ FASTOR_INLINE void trivial_assign_add(AbstractTensor<Derived,DIM> &dst, const Ab
     T* _data = dst.self().data();
     using V = SIMDVector<T,DEFAULT_ABI>;
 
-    FASTOR_IF_CONSTEXPR(!internal::is_binary_cmp_op<OtherDerived>::value) {
+    FASTOR_IF_CONSTEXPR(!is_binary_cmp_op_v<OtherDerived>) {
         constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
@@ -63,7 +63,7 @@ FASTOR_INLINE void trivial_assign_sub(AbstractTensor<Derived,DIM> &dst, const Ab
     T* _data = dst.self().data();
     using V = SIMDVector<T,DEFAULT_ABI>;
 
-    FASTOR_IF_CONSTEXPR(!internal::is_binary_cmp_op<OtherDerived>::value) {
+    FASTOR_IF_CONSTEXPR(!is_binary_cmp_op_v<OtherDerived>) {
         constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
@@ -89,7 +89,7 @@ FASTOR_INLINE void trivial_assign_mul(AbstractTensor<Derived,DIM> &dst, const Ab
     T* _data = dst.self().data();
     using V = SIMDVector<T,DEFAULT_ABI>;
 
-    FASTOR_IF_CONSTEXPR(!internal::is_binary_cmp_op<OtherDerived>::value) {
+    FASTOR_IF_CONSTEXPR(!is_binary_cmp_op_v<OtherDerived>) {
         constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
@@ -115,7 +115,7 @@ FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, const Ab
     T* _data = dst.self().data();
     using V = SIMDVector<T,DEFAULT_ABI>;
 
-    FASTOR_IF_CONSTEXPR(!internal::is_binary_cmp_op<OtherDerived>::value) {
+    FASTOR_IF_CONSTEXPR(!is_binary_cmp_op_v<OtherDerived>) {
         constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {

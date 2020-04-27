@@ -79,27 +79,9 @@ public:
     // Provide generic AbstractTensors copy constructor though
     //----------------------------------------------------------------------------------------------------------//
     template<typename Derived, size_t DIMS>
-    FASTOR_INLINE void operator=(const AbstractTensor<Derived,DIMS>& src_) {
-        const Derived &src = src_.self();
-        FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
-
-        FASTOR_IF_CONSTEXPR(!internal::is_binary_cmp_op<Derived>::value) {
-            using scalar_type_ = typename scalar_type_finder<Derived>::type;
-            constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
-            FASTOR_INDEX i;
-            for (i = 0; i <ROUND_DOWN(src.size(),Stride_); i+=Stride_) {
-                // Unalign load for tensor maps as we do not know how the data is mapped
-                src.template eval<T>(i).store(&_data[i], false);
-            }
-            for (; i < src.size(); ++i) {
-                _data[i] = src.template eval_s<T>(i);
-            }
-        }
-        else {
-            for (FASTOR_INDEX i = 0; i < src.size(); ++i) {
-                _data[i] = src.template eval_s<T>(i);
-            }
-        }
+    FASTOR_INLINE void operator=(const AbstractTensor<Derived,DIMS>& src) {
+        FASTOR_ASSERT(src.self().size()==size(), "TENSOR SIZE MISMATCH");
+        assign(*this, src.self());
     }
 
     // AbstractTensor and scalar in-place operators
