@@ -6,7 +6,6 @@ using namespace Fastor;
 #define BigTol 1e-5
 #define HugeTol 1e-2
 
-constexpr seq sall = seq(0,-1,1);
 
 
 template<typename T>
@@ -21,139 +20,139 @@ void run_vectorisable() {
     FASTOR_EXIT_ASSERT(abs(c.sum() - 37728) < Tol);
 
     // Assigning the same view to a view [check copy operators for views]
-    a(sall,sall,sall,sall) = b(sall,sall,sall,sall);
+    a(all,all,all,all) = b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 9536) < Tol);
     a.iota(1);
-    a(sall,sall,sall,sall) += b(sall,sall,sall,sall);
+    a(all,all,all,all) += b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 17792) < Tol);
-    a(sall,sall,sall,sall) -= b(sall,sall,sall,sall);
+    a(all,all,all,all) -= b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < Tol);
-    a(sall,sall,sall,sall) *= b(sall,sall,sall,sall);
+    a(all,all,all,all) *= b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 789824) < Tol);
-    a(sall,sall,sall,sall) /= b(sall,sall,sall,sall);
+    a(all,all,all,all) /= b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < BigTol);
 
     // Assigning different view to a view [checks copy operators for abstract expressions]
-    a(0,sall,sall,sall) = c(1,sall,sall,sall);
+    a(fix<0>,all,all,all) = c(fix<1>,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 18752) < Tol);
     a.iota(1);
-    a(0,sall,sall,sall) += c(1,sall,sall,sall);
+    a(fix<0>,all,all,all) += c(fix<1>,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 20832) < Tol);
-    a(0,sall,sall,sall) -= c(1,sall,sall,sall);
+    a(fix<0>,all,all,all) -= c(fix<1>,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < Tol);
-    a(0,sall,sall,sall) *= c(1,sall,sall,sall);
+    a(fix<0>,all,all,all) *= c(fix<1>,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 436736) < Tol);
-    a(0,sall,sall,sall) /= c(1,sall,sall,sall);
+    a(fix<0>,all,all,all) /= c(fix<1>,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < BigTol);
 
     // Assigning different view to a view [checks copy operators for abstract expressions]
-    a(0,sall,sall,sall) = c(1,sall,sall,sall)+1-1;
+    a(fix<0>,all,all,all) = c(fix<1>,all,all,all)+1-1;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 18752) < Tol);
     a.iota(1);
-    a(0,sall,sall,sall) += c(1,sall,sall,sall)+1-1;
+    a(fix<0>,all,all,all) += c(fix<1>,all,all,all)+1-1;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 20832) < Tol);
-    a(0,sall,sall,sall) -= c(1,sall,sall,sall)+1-1;
+    a(fix<0>,all,all,all) -= c(fix<1>,all,all,all)+1-1;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < Tol);
-    a(0,sall,sall,sall) *= c(1,sall,sall,sall)+1-1;
+    a(fix<0>,all,all,all) *= c(fix<1>,all,all,all)+1-1;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 436736) < Tol);
-    a(0,sall,sall,sall) /= c(1,sall,sall,sall)+1-1;
+    a(fix<0>,all,all,all) /= c(fix<1>,all,all,all)+1-1;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < BigTol);
 
     // Assigning numbers to a view [checks copy operators for numbers]
-    a(0,sall,1,sall) = 2;
+    a(fix<0>,all,fix<1>,all) = 2;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7024) < Tol);
     a.iota(1);
-    a(0,sall,1,sall) += 2;
+    a(fix<0>,all,fix<1>,all) += 2;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8320) < Tol);
-    a(0,sall,1,sall) -= 2;
+    a(fix<0>,all,fix<1>,all) -= 2;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < Tol);
-    a(0,sall,1,sall) *= 2;
+    a(fix<0>,all,fix<1>,all) *= 2;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 9552) < Tol);
-    a(0,sall,1,sall) /= 2;
+    a(fix<0>,all,fix<1>,all) /= 2;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < BigTol);
 
     // Assigning different view to a view (non-equal order) [checks copy operators for abstract expressions]
     a.iota(1);
     Tensor<T,4,2,16> d; d.iota(1);
-    a(0,0,sall,sall) = d(0,sall,sall);
+    a(fix<0>,fix<0>,all,all) = d(fix<0>,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < BigTol);
-    a(0,0,sall,sall) += d(0,sall,sall);
+    a(fix<0>,fix<0>,all,all) += d(fix<0>,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8784) < BigTol);
-    a(0,0,sall,sall) -= d(0,sall,sall);
+    a(fix<0>,fix<0>,all,all) -= d(fix<0>,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < BigTol);
-    a(0,0,sall,sall) *= d(0,sall,sall);
+    a(fix<0>,fix<0>,all,all) *= d(fix<0>,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 19168) < BigTol);
-    a(0,0,sall,sall) /= d(0,sall,sall);
+    a(fix<0>,fix<0>,all,all) /= d(fix<0>,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < BigTol);
 
     // Assigning different view to a view (non-equal order) [checks copy operators for abstract expressions]
     a.iota(1);
-    a(0,0,sall,sall) = d(0,sall,sall) + 3 - 3;
+    a(fix<0>,fix<0>,all,all) = d(fix<0>,all,all) + 3 - 3;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < BigTol);
-    a(0,0,sall,sall) += d(0,sall,sall) + 3 - 3;
+    a(fix<0>,fix<0>,all,all) += d(fix<0>,all,all) + 3 - 3;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8784) < BigTol);
-    a(0,0,sall,sall) -= d(0,sall,sall) + 3 - 3;
+    a(fix<0>,0,all,all) -= d(fix<0>,all,all) + 3 - 3;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < BigTol);
-    a(0,0,sall,sall) *= d(0,sall,sall) + 3 - 3;
+    a(fix<0>,0,all,all) *= d(fix<0>,all,all) + 3 - 3;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 19168) < BigTol);
-    a(0,0,sall,sall) /= d(0,sall,sall) + 3 - 3;
+    a(fix<0>,0,all,all) /= d(fix<0>,all,all) + 3 - 3;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < BigTol);
 
     // Constructing tensor from a tensor view [checks specialised constructors]
     a.iota(1);
-    a = a(sall,sall,sall,sall);
+    a = a(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < BigTol);
-    decltype(a) e = a(sall,sall,sall,sall);
+    decltype(a) e = a(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(e.sum() - 8256) < BigTol);
-    e += b(sall,sall,sall,sall);
+    e += b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(e.sum() - 17792) < Tol);
-    e -= b(sall,sall,sall,sall);
+    e -= b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(e.sum() - 8256) < Tol);
-    e *= b(sall,sall,sall,sall);
+    e *= b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(e.sum() - 789824) < Tol);
-    e /= b(sall,sall,sall,sall);
+    e /= b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(e.sum() - 8256) < BigTol);
 
     // Constructing tensor from an expression that has tensor view [checks specialised constructors]
     a.iota(1);
-    a = a(sall,sall,sall,sall) + 0;
+    a = a(all,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8256) < BigTol);
-    e = a(sall,sall,sall,sall) + 0;
+    e = a(all,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(e.sum() - 8256) < BigTol);
-    e += b(sall,sall,sall,sall) + 0;
+    e += b(all,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(e.sum() - 17792) < Tol);
-    e -= b(sall,sall,sall,sall) + 0;
+    e -= b(all,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(e.sum() - 8256) < Tol);
-    e *= b(sall,sall,sall,sall) + 0;
+    e *= b(all,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(e.sum() - 789824) < Tol);
-    e /= b(sall,sall,sall,sall) + 0;
+    e /= b(all,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(e.sum() - 8256) < BigTol);
 
     // Constructing tensor from a tensor view (non-equal order)
     a.iota(1);
-    Tensor<T,8> f = a(0,0,0,seq(0,last,2));
+    Tensor<T,8> f = a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(f.sum() - 64) < Tol);
-    f += a(0,0,0,seq(0,last,2));
+    f += a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(f.sum() - 128) < Tol);
-    f -= a(0,0,0,seq(0,last,2));
+    f -= a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(f.sum() - 64) < Tol);
-    f *= a(0,0,0,seq(0,last,2));
+    f *= a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(f.sum() - 680) < Tol);
-    f /= a(0,0,0,seq(0,last,2));
+    f /= a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(f.sum() - 64) < BigTol);
 
     // Constructing tensor from a tensor view (equal order)
     a.iota(1);
     Tensor<T,1,1,1,8> g; g.zeros();
-    g = a(0,0,0,seq(0,last,2));
+    g = a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(g.sum() - 64) < Tol);
-    g += a(0,0,0,seq(0,last,2));
+    g += a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(g.sum() - 128) < Tol);
-    g -= a(0,0,0,seq(0,last,2));
+    g -= a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(g.sum() - 64) < Tol);
-    g *= a(0,0,0,seq(0,last,2));
+    g *= a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(g.sum() - 680) < Tol);
-    g /= a(0,0,0,seq(0,last,2));
+    g /= a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(g.sum() - 64) < BigTol);
 
     print(FGRN(BOLD("All tests passed successfully")));
@@ -172,139 +171,139 @@ void run_non_vectorisable() {
     FASTOR_EXIT_ASSERT(abs(c.sum() - 34290) < Tol);
 
     // Assigning the same view to a view [check copy operators for views]
-    a(sall,sall,sall,sall) = b(sall,sall,sall,sall);
+    a(all,all,all,all) = b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8460) < Tol);
     a.iota(1);
-    a(sall,sall,sall,sall) += b(sall,sall,sall,sall);
+    a(all,all,all,all) += b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 15720) < Tol);
-    a(sall,sall,sall,sall) -= b(sall,sall,sall,sall);
+    a(all,all,all,all) -= b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7260) < Tol);
-    a(sall,sall,sall,sall) *= b(sall,sall,sall,sall);
+    a(all,all,all,all) *= b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 655820) < Tol);
-    a(sall,sall,sall,sall) /= b(sall,sall,sall,sall);
+    a(all,all,all,all) /= b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7260) < BigTol);
 
     // Assigning different view to a view [checks copy operators for abstract expressions]
-    a(0,sall,sall,sall) = c(1,sall,sall,sall);
+    a(fix<0>,all,all,all) = c(fix<1>,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 16860) < Tol);
     a.iota(1);
-    a(0,sall,sall,sall) += c(1,sall,sall,sall);
+    a(fix<0>,all,all,all) += c(fix<1>,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 18690) < Tol);
-    a(0,sall,sall,sall) -= c(1,sall,sall,sall);
+    a(fix<0>,all,all,all) -= c(fix<1>,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7260) < Tol);
-    a(0,sall,sall,sall) *= c(1,sall,sall,sall);
+    a(fix<0>,all,all,all) *= c(fix<1>,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 372040) < Tol);
-    a(0,sall,sall,sall) /= c(1,sall,sall,sall);
+    a(fix<0>,all,all,all) /= c(fix<1>,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7260) < BigTol);
 
     // // Assigning different view to a view [checks copy operators for abstract expressions]
-    a(0,sall,sall,sall) = c(1,sall,sall,sall) + 0;
+    a(fix<0>,all,all,all) = c(fix<1>,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 16860) < Tol);
     a.iota(1);
-    a(0,sall,sall,sall) += c(1,sall,sall,sall) + 0;
+    a(fix<0>,all,all,all) += c(fix<1>,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 18690) < Tol);
-    a(0,sall,sall,sall) -= c(1,sall,sall,sall) + 0;
+    a(fix<0>,all,all,all) -= c(fix<1>,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7260) < Tol);
-    a(0,sall,sall,sall) *= c(1,sall,sall,sall) + 0;
+    a(fix<0>,all,all,all) *= c(fix<1>,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 372040) < Tol);
-    a(0,sall,sall,sall) /= c(1,sall,sall,sall) + 0;
+    a(fix<0>,all,all,all) /= c(fix<1>,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7260) < BigTol);
 
     // Assigning numbers to a view [checks copy operators for numbers]
-    a(0,sall,1,sall) = 2;
+    a(0,all,1,all) = 2;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 6180) < Tol);
     a.iota(1);
-    a(0,sall,1,sall) += 2;
+    a(fix<0>,all,fix<1>,all) += 2;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7320) < Tol);
-    a(0,sall,1,sall) -= 2;
+    a(fix<0>,all,fix<1>,all) -= 2;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7260) < Tol);
-    a(0,sall,1,sall) *= 2;
+    a(fix<0>,all,fix<1>,all) *= 2;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 8400) < Tol);
-    a(0,sall,1,sall) /= 2;
+    a(fix<0>,all,fix<1>,all) /= 2;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7260) < BigTol);
 
     // Assigning different view to a view (non-equal order) [checks copy operators for abstract expressions]
     a.iota(1);
     Tensor<T,4,2,15> d; d.iota(1);
-    a(0,0,sall,sall) = d(0,sall,sall);
+    a(fix<0>,fix<0>,all,all) = d(fix<0>,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7260) < BigTol);
-    a(0,0,sall,sall) += d(0,sall,sall);
+    a(fix<0>,fix<0>,all,all) += d(fix<0>,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7725) < BigTol);
-    a(0,0,sall,sall) -= d(0,sall,sall);
+    a(fix<0>,fix<0>,all,all) -= d(fix<0>,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7260) < BigTol);
-    a(0,0,sall,sall) *= d(0,sall,sall);
+    a(fix<0>,fix<0>,all,all) *= d(fix<0>,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 16250) < BigTol);
-    a(0,0,sall,sall) /= d(0,sall,sall);
+    a(fix<0>,fix<0>,all,all) /= d(fix<0>,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7260) < BigTol);
 
     // Assigning different view to a view (non-equal order) [checks copy operators for abstract expressions]
     a.iota(1);
-    a(0,0,sall,sall) = d(0,sall,sall) + 0;
+    a(fix<0>,fix<0>,all,all) = d(fix<0>,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7260) < BigTol);
-    a(0,0,sall,sall) += d(0,sall,sall) + 0;
+    a(fix<0>,fix<0>,all,all) += d(fix<0>,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7725) < BigTol);
-    a(0,0,sall,sall) -= d(0,sall,sall) + 0;
+    a(fix<0>,fix<0>,all,all) -= d(fix<0>,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7260) < BigTol);
-    a(0,0,sall,sall) *= d(0,sall,sall) + 0;
+    a(fix<0>,fix<0>,all,all) *= d(fix<0>,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 16250) < BigTol);
-    a(0,0,sall,sall) /= d(0,sall,sall) + 0;
+    a(fix<0>,fix<0>,all,all) /= d(fix<0>,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7260) < BigTol);
 
     // Constructing tensor from a tensor view [checks specialised constructors]
     a.iota(1);
-    a = a(sall,sall,sall,sall);
+    a = a(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7260) < BigTol);
-    decltype(a) e = a(sall,sall,sall,sall);
+    decltype(a) e = a(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(e.sum() - 7260) < BigTol);
-    e += b(sall,sall,sall,sall);
+    e += b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(e.sum() - 15720) < Tol);
-    e -= b(sall,sall,sall,sall);
+    e -= b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(e.sum() - 7260) < Tol);
-    e *= b(sall,sall,sall,sall);
+    e *= b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(e.sum() - 655820) < Tol);
-    e /= b(sall,sall,sall,sall);
+    e /= b(all,all,all,all);
     FASTOR_EXIT_ASSERT(abs(e.sum() - 7260) < BigTol);
 
     // Constructing tensor from an expression that has tensor view [checks specialised constructors]
     a.iota(1);
-    a = a(sall,sall,sall,sall) + 0;
+    a = a(all,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(a.sum() - 7260) < BigTol);
-    e = a(sall,sall,sall,sall) + 0;
+    e = a(all,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(e.sum() - 7260) < BigTol);
-    e += b(sall,sall,sall,sall) + 0;
+    e += b(all,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(e.sum() - 15720) < Tol);
-    e -= b(sall,sall,sall,sall) + 0;
+    e -= b(all,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(e.sum() - 7260) < Tol);
-    e *= b(sall,sall,sall,sall) + 0;
+    e *= b(all,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(e.sum() - 655820) < Tol);
-    e /= b(sall,sall,sall,sall) + 0;
+    e /= b(all,all,all,all) + 0;
     FASTOR_EXIT_ASSERT(abs(e.sum() - 7260) < BigTol);
 
     // Constructing tensor from a tensor view (non-equal order)
     a.iota(1);
     Tensor<T,8> f = a(0,0,0,seq(0,last,2));
     FASTOR_EXIT_ASSERT(abs(f.sum() - 64) < Tol);
-    f += a(0,0,0,seq(0,last,2));
+    f += a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(f.sum() - 128) < Tol);
-    f -= a(0,0,0,seq(0,last,2));
+    f -= a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(f.sum() - 64) < Tol);
-    f *= a(0,0,0,seq(0,last,2));
+    f *= a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(f.sum() - 680) < Tol);
-    f /= a(0,0,0,seq(0,last,2));
+    f /= a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(f.sum() - 64) < BigTol);
 
     // Constructing tensor from a tensor view (equal order)
     a.iota(1);
     Tensor<T,1,1,1,8> g; g.zeros();
-    g = a(0,0,0,seq(0,last,2));
+    g = a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(g.sum() - 64) < Tol);
-    g += a(0,0,0,seq(0,last,2));
+    g += a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(g.sum() - 128) < Tol);
-    g -= a(0,0,0,seq(0,last,2));
+    g -= a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(g.sum() - 64) < Tol);
-    g *= a(0,0,0,seq(0,last,2));
+    g *= a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(g.sum() - 680) < Tol);
-    g /= a(0,0,0,seq(0,last,2));
+    g /= a(fix<0>,fix<0>,fix<0>,fseq<0,last,2>());
     FASTOR_EXIT_ASSERT(abs(g.sum() - 64) < BigTol);
 
     print(FGRN(BOLD("All tests passed successfully")));

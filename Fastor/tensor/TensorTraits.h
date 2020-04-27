@@ -31,15 +31,23 @@ struct scalar_type_finder<Expr<TLhs,TRhs,DIMS>> {
     using type = typename std::conditional<std::is_arithmetic<TLhs>::value,
         typename scalar_type_finder<TRhs>::type, typename scalar_type_finder<TLhs>::type>::type;
 };
-
-template<typename T, size_t ... Rest>
-struct scalar_type_finder<TensorMap<T,Rest...>> {
-    using type = T;
-};
 template<template<typename,typename,typename,size_t> class TensorFixedViewExpr,
     typename Expr, typename Seq0, typename Seq1, size_t DIMS>
 struct scalar_type_finder<TensorFixedViewExpr<Expr,Seq0,Seq1,DIMS>> {
     using type = typename scalar_type_finder<Expr>::type;
+};
+template<template<typename,size_t...> class TensorType, typename T, size_t ...Rest, typename ... Fseqs>
+struct scalar_type_finder<TensorConstFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>> {
+    using type = T;
+};
+template<template<typename,size_t...> class TensorType, typename T, size_t ...Rest, typename ... Fseqs>
+struct scalar_type_finder<TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>> {
+    using type = T;
+};
+
+template<typename T, size_t ... Rest>
+struct scalar_type_finder<TensorMap<T,Rest...>> {
+    using type = T;
 };
 //--------------------------------------------------------------------------------------------------------------------//
 
@@ -73,6 +81,19 @@ struct tensor_type_finder<BinaryExpr<TLhs,TRhs,DIMS>> {
     // using type = typename tensor_type_finder<TLhs>::type;
     using type = typename std::conditional<std::is_arithmetic<TLhs>::value,
         typename tensor_type_finder<TRhs>::type, typename tensor_type_finder<TLhs>::type>::type;
+};
+template<template<typename,typename,typename,size_t> class TensorFixedViewExpr,
+    typename Expr, typename Seq0, typename Seq1, size_t DIMS>
+struct tensor_type_finder<TensorFixedViewExpr<Expr,Seq0,Seq1,DIMS>> {
+    using type = typename tensor_type_finder<Expr>::type;
+};
+template<template<typename,size_t...> class TensorType, typename T, size_t ...Rest, typename ... Fseqs>
+struct tensor_type_finder<TensorConstFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>> {
+    using type = TensorType<T,Rest...>;
+};
+template<template<typename,size_t...> class TensorType, typename T, size_t ...Rest, typename ... Fseqs>
+struct tensor_type_finder<TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>> {
+    using type = TensorType<T,Rest...>;
 };
 
 template<typename T, size_t ... Rest>

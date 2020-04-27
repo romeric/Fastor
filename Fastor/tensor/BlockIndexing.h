@@ -146,11 +146,17 @@ FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,2> operator()(Int num, seq _s1) {
     return TensorViewExpr<Tensor<T,Rest...>,2>(*this,seq(num),_s1);
 }
 
-// template<typename ... Seq, enable_if_t_<!is_arithmetic_pack<Seq...>::value && !is_fixed_sequence_pack_v<Seq...>,bool> = false>
-template<typename ... Seq, enable_if_t_<!is_arithmetic_pack<Seq...>::value,bool> = false>
+template<typename ... Seq, enable_if_t_<!is_arithmetic_pack<Seq...>::value && !is_fixed_sequence_pack_v<Seq...>,bool> = false>
+// template<typename ... Seq, enable_if_t_<!is_arithmetic_pack<Seq...>::value,bool> = false>
 FASTOR_INLINE TensorViewExpr<Tensor<T,Rest...>,sizeof...(Seq)> operator()(Seq ... _seqs) {
     static_assert(Dimension==sizeof...(Seq),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     return TensorViewExpr<Tensor<T,Rest...>,sizeof...(Seq)>(*this, {_seqs...});
+}
+
+template<typename ...Fseq, enable_if_t_<is_fixed_sequence_pack_v<Fseq...>,bool> = false>
+FASTOR_INLINE TensorFixedViewExprnD<Tensor<T,Rest...>,Fseq...> operator()(Fseq... ) {
+    static_assert(Dimension==sizeof...(Fseq),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+    return TensorFixedViewExprnD<Tensor<T,Rest...>,Fseq...>(*this);
 }
 
 // if fseq == fall - then just return a reference to the tensor
@@ -374,6 +380,12 @@ FASTOR_INLINE TensorConstViewExpr<Tensor<T,Rest...>,sizeof...(Seq)> operator()(S
     return TensorConstViewExpr<Tensor<T,Rest...>,sizeof...(Seq)>(*this, {_seqs...});
 }
 
+template<typename ...Fseq, enable_if_t_<is_fixed_sequence_pack_v<Fseq...>,bool> = false>
+FASTOR_INLINE TensorConstFixedViewExprnD<Tensor<T,Rest...>,Fseq...> operator()(Fseq... ) const {
+    static_assert(Dimension==sizeof...(Fseq),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+    return TensorConstFixedViewExprnD<Tensor<T,Rest...>,Fseq...>(*this);
+}
+
 template<int F0, int L0, int S0>
 FASTOR_INLINE TensorConstFixedViewExpr1D<Tensor<T,Rest...>,
         typename to_positive<fseq<F0,L0,S0>,prod<Rest...>::value>::type,1> operator()(fseq<F0,L0,S0>) const {
@@ -497,12 +509,6 @@ operator()(fseq<F,L,S>, const Tensor<Int,N> &_it0) const {
     }
     return TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,
         to_positive<fseq<F,L,S>,get_value<1,Rest...>::value>::type::Size,N>,2> (*this,tmp_it);
-}
-
-template<typename ...Fseq, enable_if_t_<is_fixed_sequence_pack_v<Fseq...>,bool> = false>
-FASTOR_INLINE TensorConstFixedViewExprnD<Tensor<T,Rest...>,Fseq...> operator()(Fseq... ) const {
-    static_assert(Dimension==sizeof...(Fseq),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
-    return TensorConstFixedViewExprnD<Tensor<T,Rest...>,Fseq...>(*this);
 }
 //----------------------------------------------------------------------------------------------------------//
 //----------------------------------------------------------------------------------------------------------//

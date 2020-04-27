@@ -57,6 +57,9 @@ static constexpr fseq<0,-1,1> fall;
 
 template<int F>
 static constexpr fseq<F,F+1,1> fix;
+
+static constexpr fseq<0 ,1 ,1> ffirst;
+static constexpr fseq<-1,-1,1> flast;
 //----------------------------------------------------------------------------------------------------------//
 
 
@@ -149,16 +152,18 @@ struct to_positive;
 
 template<int F, int L, int S, size_t N>
 struct to_positive<fseq<F,L,S>,N> {
-    static constexpr int first = (F < 0) ? F + N + 1 : F;
-    static constexpr int last = (L < 0) ? L + N + 1 : L;
-    using type = fseq<first,last,S>;
+    // Same logic as seq used in the constructor of dynamic tensor views
+    static constexpr int _first = (L==0 && F==-1) ? N-1 : ( L < 0 && F < 0 ? F + N + 1 : F);
+    static constexpr int _last  = (L < 0 && F >=0) ? L + N + 1 : ( (L==0 && F==-1) ? N : ( L < 0 && F < 0 ? L + N + 1 : L) );
+    using type = fseq<_first,_last,S>;
 };
 
 template<int F, int L, int S, size_t N>
 struct to_positive<iseq<F,L,S>,N> {
-    static constexpr int first = (F < 0) ? F + N + 1 : F;
-    static constexpr int last = (L < 0) ? L + N + 1 : L;
-    using type = iseq<first,last,S>;
+    // Same logic as seq used in the constructor of dynamic tensor views
+    static constexpr int _first = (L==0 && F==-1) ? N-1 : ( L < 0 && F < 0 ? F + N + 1 : F);
+    static constexpr int _last  = (L < 0 && F >=0) ? L + N + 1 : ( (L==0 && F==-1) ? N : ( L < 0 && F < 0 ? L + N + 1 : L) );
+    using type = iseq<_first,_last,S>;
 };
 
 template<class Seq, size_t N>
@@ -177,6 +182,9 @@ struct get_fixed_sequence_pack_dimensions<Derived<T, Rest...>, std_ext::index_se
     using type = Derived<T,internal::fseq_range_detector<to_positive_t<Fseqs,Rest>>::value...>;
     static constexpr size_t Size = prod<dims[ss]...>::value;
 };
+
+template<template<typename,size_t...> class Derived, typename T, size_t ...Rest, size_t... ss, typename ... Fseqs>
+constexpr std::array<int,sizeof...(Fseqs)> get_fixed_sequence_pack_dimensions<Derived<T, Rest...>, std_ext::index_sequence<ss...>, Fseqs...>::dims;
 //----------------------------------------------------------------------------------------------------------//
 
 

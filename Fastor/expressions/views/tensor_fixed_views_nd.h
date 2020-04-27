@@ -138,12 +138,10 @@ public:
         else {
 
             V _vec;
-            std::array<int,V::Size> inds;
+            std::array<int,V::Size> inds = {};
             std::array<int,DIMS> as_ = as;
             for (auto j=0; j<V::Size; ++j) {
-                int _sum = 0;
-                get_index_s<0,DIMS-1>::Do(sum, as);
-                inds[j] = _sum;
+                get_index_v<0,DIMS-1>::Do(j, inds, as);
 
                 for(int jt = (int)DIMS-1; jt>=0; jt--)
                 {
@@ -175,7 +173,7 @@ private:
     template<size_t from, size_t to>
     struct get_index_v {
         template<size_t DIMS, size_t VSize>
-        static void Do(size_t j, std::array<int,VSize> &inds, const std::array<int,DIMS>& as) {
+        static FASTOR_INLINE void Do(size_t j, std::array<int,VSize> &inds, const std::array<int,DIMS>& as) {
             inds[j] += products_[from]*as[from]*get_nth_pt<from,Fseqs...>::_step + get_nth_pt<from,Fseqs...>::_first*products_[from];
             get_index_v<from+1,to>::Do(j, inds, as);
         }
@@ -183,7 +181,7 @@ private:
     template<size_t from>
     struct get_index_v<from,from> {
         template<size_t DIMS, size_t VSize>
-        static void Do(size_t j, std::array<int,VSize> &inds, const std::array<int,DIMS>& as) {
+        static FASTOR_INLINE void Do(size_t j, std::array<int,VSize> &inds, const std::array<int,DIMS>& as) {
             inds[j] += products_[from]*as[from]*get_nth_pt<from,Fseqs...>::_step + get_nth_pt<from,Fseqs...>::_first*products_[from];
         }
     };
@@ -191,7 +189,7 @@ private:
     template<size_t from, size_t to>
     struct get_index_s {
         template<size_t DIMS>
-        static void Do(int &ind, const std::array<int,DIMS>& as) {
+        static FASTOR_INLINE void Do(int &ind, const std::array<int,DIMS>& as) {
             ind += products_[from]*as[from]*get_nth_pt<from,Fseqs...>::_step + get_nth_pt<from,Fseqs...>::_first*products_[from];
             get_index_s<from+1,to>::Do(ind, as);
         }
@@ -199,7 +197,7 @@ private:
     template<size_t from>
     struct get_index_s<from,from> {
         template<size_t DIMS>
-        static void Do(int &ind, const std::array<int,DIMS>& as) {
+        static FASTOR_INLINE void Do(int &ind, const std::array<int,DIMS>& as) {
             ind += products_[from]*as[from]*get_nth_pt<from,Fseqs...>::_step + get_nth_pt<from,Fseqs...>::_first*products_[from];
         }
     };
@@ -219,7 +217,6 @@ constexpr std::array<int,sizeof...(Fseqs)> TensorConstFixedViewExprnD<TensorType
 
 
 
-
 //----------------------------------------------------------------------------------------------//
 // Generic non-const fixed tensor views based on sequences/slices
 //----------------------------------------------------------------------------------------------//
@@ -229,7 +226,7 @@ struct TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...> :
 
 private:
     TensorType<T,Rest...> &_expr;
-    bool does_alias = false;
+    bool _does_alias = false;
     constexpr FASTOR_INLINE Tensor<T,Rest...> get_tensor() const {return _expr;};
     static constexpr std::array<size_t,sizeof...(Fseqs)> products_ = nprods_views<Index<Rest...>,
         typename std_ext::make_index_sequence<sizeof...(Fseqs)>::type>::values;
@@ -260,7 +257,7 @@ private:
 public:
 
     FASTOR_INLINE TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>& noalias() {
-        does_alias = true;
+        _does_alias = true;
         return *this;
     }
 
@@ -272,8 +269,8 @@ public:
     //----------------------------------------------------------------------------------//
     void operator=(const TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
@@ -361,8 +358,8 @@ public:
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && !requires_evaluation_v<Derived>,bool> = false>
     void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
@@ -469,8 +466,1011 @@ public:
             // }
         }
     }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator+=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && !requires_evaluation_v<Derived>,bool> = false>
+    void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+#if !(FASTOR_NO_ALIAS)
+        if (_does_alias) {
+            _does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other;
+            // assign temporary to this
+            this->operator+=(tmp);
+            return;
+        }
+#endif
+        const Derived& other_src = other.self();
+#ifndef NDEBUG
+        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        T *_data = _expr.data();
+        std::array<int,DIMS> as = {};
+        int total = size();
+        int jt, counter = 0;
+
+        if (_is_vectorisable) {
+            using V=SIMDVector<T,DEFAULT_ABI>;
+            V _vec_out;
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                // V _vec = other_src.template eval<T>(counter);
+                V _vec = other_src.template teval<T>(as);
+                _vec_out.load(&_data[ind],false);
+                _vec_out += _vec;
+                _vec_out.store(&_data[ind],false);
+
+                counter+=V::Size;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    if (jt == _dims.size()-1) as[jt]+=V::Size;
+                    else as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+        else
+        {
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                // _data[ind] += other_src.template eval_s<T>(counter);
+                _data[ind] += other_src.template teval_s<T>(as);
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+    }
+
+
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator-=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && !requires_evaluation_v<Derived>,bool> = false>
+    void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+#if !(FASTOR_NO_ALIAS)
+        if (_does_alias) {
+            _does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other;
+            // assign temporary to this
+            this->operator-=(tmp);
+            return;
+        }
+#endif
+        const Derived& other_src = other.self();
+#ifndef NDEBUG
+        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        T *_data = _expr.data();
+        std::array<int,DIMS> as = {};
+        int total = size();
+        int jt, counter = 0;
+
+        if (_is_vectorisable) {
+            using V=SIMDVector<T,DEFAULT_ABI>;
+            V _vec_out;
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                // V _vec = other_src.template eval<T>(counter);
+                V _vec = other_src.template teval<T>(as);
+                _vec_out.load(&_data[ind],false);
+                _vec_out -= _vec;
+                _vec_out.store(&_data[ind],false);
+
+                counter+=V::Size;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    if (jt == _dims.size()-1) as[jt]+=V::Size;
+                    else as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+        else
+        {
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                // _data[ind] -= other_src.template eval_s<T>(counter);
+                _data[ind] -= other_src.template teval_s<T>(as);
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+    }
+
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator*=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && !requires_evaluation_v<Derived>,bool> = false>
+    void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+#if !(FASTOR_NO_ALIAS)
+        if (_does_alias) {
+            _does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other;
+            // assign temporary to this
+            this->operator*=(tmp);
+            return;
+        }
+#endif
+        const Derived& other_src = other.self();
+#ifndef NDEBUG
+        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        T *_data = _expr.data();
+        std::array<int,DIMS> as = {};
+        int total = size();
+        int jt, counter = 0;
+
+        if (_is_vectorisable) {
+            using V=SIMDVector<T,DEFAULT_ABI>;
+            V _vec_out;
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                // V _vec = other_src.template eval<T>(counter);
+                V _vec = other_src.template teval<T>(as);
+                _vec_out.load(&_data[ind],false);
+                _vec_out *= _vec;
+                _vec_out.store(&_data[ind],false);
+
+                counter+=V::Size;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    if (jt == _dims.size()-1) as[jt]+=V::Size;
+                    else as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+        else
+        {
+             while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                // _data[ind] *= other_src.template eval_s<T>(counter);
+                _data[ind] *= other_src.template teval_s<T>(as);
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+    }
+
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator/=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && !requires_evaluation_v<Derived>,bool> = false>
+    void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+#if !(FASTOR_NO_ALIAS)
+        if (_does_alias) {
+            _does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other;
+            // assign temporary to this
+            this->operator/=(tmp);
+            return;
+        }
+#endif
+        const Derived& other_src = other.self();
+#ifndef NDEBUG
+        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        T *_data = _expr.data();
+        std::array<int,DIMS> as = {};
+        int total = size();
+        int jt, counter = 0;
+
+        if (_is_vectorisable) {
+            using V=SIMDVector<T,DEFAULT_ABI>;
+            V _vec_out;
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                // V _vec = other_src.template eval<T>(counter);
+                V _vec = other_src.template teval<T>(as);
+                _vec_out.load(&_data[ind],false);
+                _vec_out /= _vec;
+                _vec_out.store(&_data[ind],false);
+
+                counter+=V::Size;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    if (jt == _dims.size()-1) as[jt]+=V::Size;
+                    else as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+        else
+        {
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                // _data[ind] /= other_src.template eval_s<T>(counter);
+                _data[ind] /= other_src.template teval_s<T>(as);
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+    }
     //----------------------------------------------------------------------------------------------//
 
+
+   // AbstractTensor binders [non-equal orders]
+    //----------------------------------------------------------------------------------//
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && !requires_evaluation_v<Derived>,bool> = false>
+    void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+#if !(FASTOR_NO_ALIAS)
+        if (_does_alias) {
+            _does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other;
+            // assign temporary to this
+            this->operator=(tmp);
+            return;
+        }
+#endif
+        const Derived& other_src = other.self();
+#ifndef NDEBUG
+        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        T *_data = _expr.data();
+        std::array<int,DIMS> as = {};
+        int total = size();
+        int jt, counter = 0;
+
+        if (_is_vectorisable) {
+            using V=SIMDVector<T,DEFAULT_ABI>;
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                V _vec = other_src.template eval<T>(counter);
+                // V _vec = other_src.template teval<T>(as);
+                _vec.store(&_data[ind],false);
+
+                counter+=V::Size;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    if (jt == _dims.size()-1) as[jt]+=V::Size;
+                    else as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+        else
+        {
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                _data[ind] = other_src.template eval_s<T>(counter);
+                // _data[ind] = other_src.template teval_s<T>(as);
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+    }
+
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator+=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && !requires_evaluation_v<Derived>,bool> = false>
+    void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+#if !(FASTOR_NO_ALIAS)
+        if (_does_alias) {
+            _does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other;
+            // assign temporary to this
+            this->operator+=(tmp);
+            return;
+        }
+#endif
+        const Derived& other_src = other.self();
+#ifndef NDEBUG
+        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        T *_data = _expr.data();
+        std::array<int,DIMS> as = {};
+        int total = size();
+        int jt, counter = 0;
+
+        if (_is_vectorisable) {
+            using V=SIMDVector<T,DEFAULT_ABI>;
+            constexpr FASTOR_INDEX stride = V::Size;
+            V _vec_out;
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                V _vec = other_src.template eval<T>(counter);
+                // V _vec = other_src.template teval<T>(as);
+                _vec_out.load(&_data[ind],false);
+                _vec_out += _vec;
+                _vec_out.store(&_data[ind],false);
+
+                counter+=V::Size;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    if (jt == _dims.size()-1) as[jt]+=stride;
+                    else as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+        else {
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                _data[ind] += other_src.template eval_s<T>(counter);
+                // _data[ind] += other_src.template teval_s<T>(as);
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+    }
+
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator-=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && !requires_evaluation_v<Derived>,bool> = false>
+    void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+#if !(FASTOR_NO_ALIAS)
+        if (_does_alias) {
+            _does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other;
+            // assign temporary to this
+            this->operator-=(tmp);
+            return;
+        }
+#endif
+        const Derived& other_src = other.self();
+#ifndef NDEBUG
+        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        T *_data = _expr.data();
+        std::array<int,DIMS> as = {};
+        int total = size();
+        int jt, counter = 0;
+
+        if (_is_vectorisable) {
+            using V=SIMDVector<T,DEFAULT_ABI>;
+            V _vec_out;
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                V _vec = other_src.template eval<T>(counter);
+                // V _vec = other_src.template teval<T>(as);
+                _vec_out.load(&_data[ind],false);
+                _vec_out -= _vec;
+                _vec_out.store(&_data[ind],false);
+
+                counter+=V::Size;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    if (jt == _dims.size()-1) as[jt]+=V::Size;
+                    else as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+        else {
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                _data[ind] -= other_src.template eval_s<T>(counter);
+                // _data[ind] -= other_src.template teval_s<T>(as);
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+    }
+
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator*=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && !requires_evaluation_v<Derived>,bool> = false>
+    void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+#if !(FASTOR_NO_ALIAS)
+        if (_does_alias) {
+            _does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other;
+            // assign temporary to this
+            this->operator*=(tmp);
+            return;
+        }
+#endif
+        const Derived& other_src = other.self();
+#ifndef NDEBUG
+        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        T *_data = _expr.data();
+        std::array<int,DIMS> as = {};
+        int total = size();
+        int jt, counter = 0;
+
+        if (_is_vectorisable) {
+            using V=SIMDVector<T,DEFAULT_ABI>;
+            constexpr FASTOR_INDEX stride = V::Size;
+            V _vec_out;
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                V _vec = other_src.template eval<T>(counter);
+                // V _vec = other_src.template teval<T>(as);
+                _vec_out.load(&_data[ind],false);
+                _vec_out *= _vec;
+                _vec_out.store(&_data[ind],false);
+
+                counter+=V::Size;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    if (jt == _dims.size()-1) as[jt]+=stride;
+                    else as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+        else {
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                _data[ind] *= other_src.template eval_s<T>(counter);
+                // _data[ind] *= other_src.template teval_s<T>(as);
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+    }
+
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator/=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && !requires_evaluation_v<Derived>,bool> = false>
+    void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+#if !(FASTOR_NO_ALIAS)
+        if (_does_alias) {
+            _does_alias = false;
+            // Evaluate this into a temporary
+            auto tmp_this_tensor = get_tensor();
+            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            // Assign other to temporary
+            tmp = other;
+            // assign temporary to this
+            this->operator/=(tmp);
+            return;
+        }
+#endif
+        const Derived& other_src = other.self();
+#ifndef NDEBUG
+        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
+#endif
+        T *_data = _expr.data();
+        std::array<int,DIMS> as = {};
+        int total = size();
+        int jt, counter = 0;
+
+        if (_is_vectorisable) {
+            using V=SIMDVector<T,DEFAULT_ABI>;
+            constexpr FASTOR_INDEX stride = V::Size;
+            V _vec_out;
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                V _vec = other_src.template eval<T>(counter);
+                // V _vec = other_src.template teval<T>(as);
+                _vec_out.load(&_data[ind],false);
+                _vec_out /= _vec;
+                _vec_out.store(&_data[ind],false);
+
+                counter+=V::Size;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    if (jt == _dims.size()-1) as[jt]+=stride;
+                    else as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+        else {
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                _data[ind] /= other_src.template eval_s<T>(counter);
+                // _data[ind] /= other_src.template teval_s<T>(as);
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+    }
+
+    // scalar binders
+    //----------------------------------------------------------------------------------//
+    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    void operator=(U num) {
+
+        T *_data = _expr.data();
+        std::array<int,DIMS> as = {};
+        int total = size();
+        int jt, counter = 0;
+
+        if (_is_vectorisable) {
+            using V=SIMDVector<T,DEFAULT_ABI>;
+            constexpr FASTOR_INDEX stride = V::Size;
+            V _vec = (T)num;
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                _vec.store(&_data[ind],false);
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    if (jt == _dims.size()-1) as[jt]+=stride;
+                    else as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+        else {
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                _data[ind] = (T)num;
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+    }
+
+    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    void operator+=(U num) {
+
+        T *_data = _expr.data();
+        std::array<int,DIMS> as = {};
+        int total = size();
+        int jt, counter = 0;
+
+        if (_is_vectorisable) {
+            using V=SIMDVector<T,DEFAULT_ABI>;
+            constexpr FASTOR_INDEX stride = V::Size;
+            V _vec = (T)num;
+            V _vec_out;
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                _vec_out.load(&_data[ind],false);
+                _vec_out += _vec;
+                _vec_out.store(&_data[ind],false);
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    if (jt == _dims.size()-1) as[jt]+=stride;
+                    else as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+        else {
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                _data[ind] += (T)num;
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+    }
+
+    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    void operator-=(U num) {
+
+        T *_data = _expr.data();
+        std::array<int,DIMS> as = {};
+        int total = size();
+        int jt, counter = 0;
+
+        if (_is_vectorisable) {
+            using V=SIMDVector<T,DEFAULT_ABI>;
+            constexpr FASTOR_INDEX stride = V::Size;
+            V _vec = (T)num;
+            V _vec_out;
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                _vec_out.load(&_data[ind],false);
+                _vec_out -= _vec;
+                _vec_out.store(&_data[ind],false);
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    if (jt == _dims.size()-1) as[jt]+=stride;
+                    else as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+        else {
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                _data[ind] -= (T)num;
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+    }
+
+    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    void operator*=(U num) {
+
+        T *_data = _expr.data();
+        std::array<int,DIMS> as = {};
+        int total = size();
+        int jt, counter = 0;
+
+        if (_is_vectorisable) {
+            using V=SIMDVector<T,DEFAULT_ABI>;
+            constexpr FASTOR_INDEX stride = V::Size;
+            V _vec = (T)num;
+            V _vec_out;
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                _vec_out.load(&_data[ind],false);
+                _vec_out *= _vec;
+                _vec_out.store(&_data[ind],false);
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    if (jt == _dims.size()-1) as[jt]+=stride;
+                    else as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+        else {
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                _data[ind] *= (T)num;
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+    }
+
+    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    void operator/=(U num) {
+
+        T *_data = _expr.data();
+        std::array<int,DIMS> as = {};
+        int total = size();
+        int jt, counter = 0;
+
+        if (_is_vectorisable) {
+            using V=SIMDVector<T,DEFAULT_ABI>;
+            constexpr FASTOR_INDEX stride = V::Size;
+            V _vec = (T)num;
+            V _vec_out;
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                _vec_out.load(&_data[ind],false);
+                _vec_out /= _vec;
+                _vec_out.store(&_data[ind],false);
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    if (jt == _dims.size()-1) as[jt]+=stride;
+                    else as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+        else {
+            while(counter < total)
+            {
+                int ind = 0;
+                get_index_s<0,DIMS-1>::Do(ind, as);
+                _data[ind] /= (T)num;
+
+                counter++;
+                for(jt = DIMS-1; jt>=0; jt--)
+                {
+                    as[jt] +=1;
+                    if(as[jt]<_dims[jt])
+                        break;
+                    else
+                        as[jt]=0;
+                }
+                if(jt<0)
+                    break;
+            }
+        }
+    }
+    //----------------------------------------------------------------------------------//
 
     // Evals
     //----------------------------------------------------------------------------------------------//
@@ -560,12 +1560,10 @@ public:
         else {
 
             V _vec;
-            std::array<int,V::Size> inds;
+            std::array<int,V::Size> inds = {};
             std::array<int,DIMS> as_ = as;
             for (auto j=0; j<V::Size; ++j) {
-                int _sum = 0;
-                get_index_s<0,DIMS-1>::Do(sum, as);
-                inds[j] = _sum;
+                get_index_v<0,DIMS-1>::Do(j, inds, as);
 
                 for(int jt = (int)DIMS-1; jt>=0; jt--)
                 {
@@ -597,7 +1595,7 @@ private:
     template<size_t from, size_t to>
     struct get_index_v {
         template<size_t DIMS, size_t VSize>
-        static void Do(size_t j, std::array<int,VSize> &inds, const std::array<int,DIMS>& as) {
+        static FASTOR_INLINE void Do(size_t j, std::array<int,VSize> &inds, const std::array<int,DIMS>& as) {
             inds[j] += products_[from]*as[from]*get_nth_pt<from,Fseqs...>::_step + get_nth_pt<from,Fseqs...>::_first*products_[from];
             get_index_v<from+1,to>::Do(j, inds, as);
         }
@@ -605,7 +1603,7 @@ private:
     template<size_t from>
     struct get_index_v<from,from> {
         template<size_t DIMS, size_t VSize>
-        static void Do(size_t j, std::array<int,VSize> &inds, const std::array<int,DIMS>& as) {
+        static FASTOR_INLINE void Do(size_t j, std::array<int,VSize> &inds, const std::array<int,DIMS>& as) {
             inds[j] += products_[from]*as[from]*get_nth_pt<from,Fseqs...>::_step + get_nth_pt<from,Fseqs...>::_first*products_[from];
         }
     };
@@ -613,7 +1611,7 @@ private:
     template<size_t from, size_t to>
     struct get_index_s {
         template<size_t DIMS>
-        static void Do(int &ind, const std::array<int,DIMS>& as) {
+        static FASTOR_INLINE void Do(int &ind, const std::array<int,DIMS>& as) {
             ind += products_[from]*as[from]*get_nth_pt<from,Fseqs...>::_step + get_nth_pt<from,Fseqs...>::_first*products_[from];
             get_index_s<from+1,to>::Do(ind, as);
         }
@@ -621,7 +1619,7 @@ private:
     template<size_t from>
     struct get_index_s<from,from> {
         template<size_t DIMS>
-        static void Do(int &ind, const std::array<int,DIMS>& as) {
+        static FASTOR_INLINE void Do(int &ind, const std::array<int,DIMS>& as) {
             ind += products_[from]*as[from]*get_nth_pt<from,Fseqs...>::_step + get_nth_pt<from,Fseqs...>::_first*products_[from];
         }
     };

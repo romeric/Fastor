@@ -51,7 +51,6 @@ test_views:
 	$(CXX) test_views_2d.cpp -o test_views_2d_vec.exe $(CXX_FLAGS) $(INCLUDES) -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
 
 	$(CXX) test_views_nd.cpp -o test_views_nd.exe $(CXX_FLAGS) $(INCLUDES)
-	$(CXX) test_views_nd.cpp -o test_views_nd_vec.exe $(CXX_FLAGS) $(INCLUDES) -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
 	$(CXX) test_views_nd_2.cpp -o test_views_nd_2.exe $(CXX_FLAGS) $(INCLUDES)
 
 	$(CXX) test_fixed_views_1d.cpp -o test_fixed_views_1d.exe $(CXX_FLAGS) $(INCLUDES)
@@ -59,6 +58,9 @@ test_views:
 
 	$(CXX) test_fixed_views_2d.cpp -o test_fixed_views_2d.exe $(CXX_FLAGS) $(INCLUDES)
 	$(CXX) test_fixed_views_2d.cpp -o test_fixed_views_2d_vec.exe $(CXX_FLAGS) $(INCLUDES) -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
+
+	$(CXX) test_fixed_views_nd.cpp -o test_fixed_views_nd.exe $(CXX_FLAGS) $(INCLUDES)
+	$(CXX) test_fixed_views_nd_2.cpp -o test_fixed_views_nd_2.exe $(CXX_FLAGS) $(INCLUDES)
 
 	$(CXX) test_random_views_1d.cpp -o test_random_views_1d.exe $(CXX_FLAGS) $(INCLUDES)
 	$(CXX) test_random_views_1d.cpp -o test_random_views_1d_vec.exe $(CXX_FLAGS) $(INCLUDES) -DFASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -115,12 +117,13 @@ run_views:
 	./test_views_2d.exe
 	./test_views_2d_vec.exe
 	./test_views_nd.exe
-	./test_views_nd_vec.exe
 	./test_views_nd_2.exe
 	./test_fixed_views_1d.exe
 	./test_fixed_views_1d_vec.exe
 	./test_fixed_views_2d.exe
 	./test_fixed_views_2d_vec.exe
+	./test_fixed_views_nd.exe
+	./test_fixed_views_nd_2.exe
 	./test_random_views_1d.exe
 	./test_random_views_1d_vec.exe
 	./test_random_views_nd.exe
