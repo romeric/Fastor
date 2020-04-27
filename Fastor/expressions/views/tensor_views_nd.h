@@ -4,6 +4,7 @@
 
 #include "Fastor/tensor/Tensor.h"
 #include "Fastor/tensor/Ranges.h"
+#include "Fastor/expressions/linalg_ops/linalg_traits.h"
 
 namespace Fastor {
 
@@ -14,7 +15,7 @@ namespace Fastor {
 template<template<typename,size_t...> class TensorType, typename T, size_t DIMS, size_t ... Rest>
 struct TensorConstViewExpr<TensorType<T,Rest...>,DIMS>: public AbstractTensor<TensorConstViewExpr<TensorType<T,Rest...>,DIMS>,DIMS> {
 private:
-    const TensorType<T,Rest...> &expr;
+    const TensorType<T,Rest...> &_expr;
     std::array<seq,sizeof...(Rest)> _seqs;
     std::array<int,DIMS> _dims;
     bool _is_vectorisable;
@@ -35,27 +36,28 @@ public:
         return sizer;
     }
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return _seqs[i].size();}
+    constexpr const TensorType<T,Rest...>& expr() const {return _expr;};
 
-    FASTOR_INLINE TensorConstViewExpr(const TensorType<T,Rest...> &_ex, std::array<seq,sizeof...(Rest)> _s) : expr(_ex), _seqs(std::move(_s)) {
+    FASTOR_INLINE TensorConstViewExpr(const TensorType<T,Rest...> &_ex, std::array<seq,sizeof...(Rest)> _s) : _expr(_ex), _seqs(std::move(_s)) {
         static_assert(DIMS==sizeof...(Rest),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
         auto counter = 0;
         for (auto &_seq: _seqs) {
             if (_seq._last < 0 && _seq._first>=0) {
-                _seq._last += expr.dimension(counter) + 1;
+                _seq._last += _expr.dimension(counter) + 1;
             }
             // take care of scalar indexing with -1
             else if (_seq._last == 0 && _seq._first==-1) {
-                auto dim = expr.dimension(counter);
+                auto dim = _expr.dimension(counter);
                 _seq._first = dim-1;
                 _seq._last = dim;
             }
             else if (_seq._last < 0 && _seq._first < 0) {
-                auto dim = expr.dimension(counter);
+                auto dim = _expr.dimension(counter);
                 _seq._first += dim + 1;
                 _seq._last += dim + 1;
             }
 #ifndef NDEBUG
-            FASTOR_ASSERT(_seq._last <= expr.dimension(counter) && _seq._first<expr.dimension(counter),"INDEX OUT OF BOUNDS");
+            FASTOR_ASSERT(_seq._last <= _expr.dimension(counter) && _seq._first<_expr.dimension(counter),"INDEX OUT OF BOUNDS");
 #endif
             counter++;
         }
@@ -83,7 +85,7 @@ public:
                 inds[j] += products_[it]*as[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
             }
         }
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
@@ -102,7 +104,7 @@ public:
             ind += products_[it]*as[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
         }
 
-        return expr.data()[ind];
+        return _expr.data()[ind];
     }
 
 
@@ -125,7 +127,7 @@ public:
                 inds[j] += products_[it]*as[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
             }
         }
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
@@ -145,7 +147,7 @@ public:
             ind += products_[it]*as[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
         }
 
-        return expr.data()[ind];
+        return _expr.data()[ind];
     }
 
     template<typename U=T>
@@ -154,10 +156,10 @@ public:
         for(int it = 0; it< DIMS; it++) {
             ind += products_[it]*as[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
         }
-        if (_is_vectorisable) return SIMDVector<T,DEFAULT_ABI>(&expr.data()[ind],false);
+        if (_is_vectorisable) return SIMDVector<T,DEFAULT_ABI>(&_expr.data()[ind],false);
         else if (_is_strided_vectorisable) {
             SIMDVector<U,DEFAULT_ABI> _vec;
-            vector_setter(_vec,expr.data(),ind,_seqs[DIMS-1]._step);
+            vector_setter(_vec,_expr.data(),ind,_seqs[DIMS-1]._step);
             return _vec;
         }
         else {
@@ -183,7 +185,7 @@ public:
                 }
             }
 
-            vector_setter(_vec,expr.data(),inds);
+            vector_setter(_vec,_expr.data(),inds);
             return _vec;
         }
     }
@@ -194,7 +196,7 @@ public:
         for(int it = 0; it< DIMS; it++) {
             ind += products_[it]*as[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
         }
-        return expr.data()[ind];
+        return _expr.data()[ind];
     }
 };
 //----------------------------------------------------------------------------------------------//
@@ -206,14 +208,14 @@ public:
 template<template<typename,size_t...> class TensorType, typename T, size_t DIMS, size_t ... Rest>
 struct TensorViewExpr<TensorType<T,Rest...>,DIMS>: public AbstractTensor<TensorViewExpr<TensorType<T,Rest...>,DIMS>,DIMS> {
 private:
-    TensorType<T,Rest...> &expr;
+    TensorType<T,Rest...> &_expr;
     std::array<seq,sizeof...(Rest)> _seqs;
-    bool does_alias = false;
+    bool _does_alias = false;
     std::array<int,DIMS> _dims;
     bool _is_vectorisable;
     bool _is_strided_vectorisable;
 
-    constexpr FASTOR_INLINE Tensor<T,Rest...> get_tensor() const {return expr;};
+    constexpr FASTOR_INLINE Tensor<T,Rest...> get_tensor() const {return _expr;};
     constexpr FASTOR_INLINE std::array<seq,sizeof...(Rest)> get_sequences() const {return _seqs;}
 
 public:
@@ -232,32 +234,33 @@ public:
         return sizer;
     }
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return _seqs[i].size();}
+    constexpr const TensorType<T,Rest...>& expr() const {return _expr;};
 
     FASTOR_INLINE TensorViewExpr<TensorType<T,Rest...>,DIMS>& noalias() {
-        does_alias = true;
+        _does_alias = true;
         return *this;
     }
 
-    TensorViewExpr(TensorType<T,Rest...> &_ex, std::array<seq,sizeof...(Rest)> _s) : expr(_ex), _seqs(std::move(_s)) {
+    TensorViewExpr(TensorType<T,Rest...> &_ex, std::array<seq,sizeof...(Rest)> _s) : _expr(_ex), _seqs(std::move(_s)) {
         static_assert(DIMS==sizeof...(Rest),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
         auto counter = 0;
         for (auto &_seq: _seqs) {
             if (_seq._last < 0 && _seq._first>=0) {
-                _seq._last += expr.dimension(counter) + 1;
+                _seq._last += _expr.dimension(counter) + 1;
             }
             // take care of scalar indexing with -1
             else if (_seq._last == 0 && _seq._first==-1) {
-                auto dim = expr.dimension(counter);
+                auto dim = _expr.dimension(counter);
                 _seq._first = dim-1;
                 _seq._last = dim;
             }
             else if (_seq._last < 0 && _seq._first < 0) {
-                auto dim = expr.dimension(counter);
+                auto dim = _expr.dimension(counter);
                 _seq._first += dim + 1;
                 _seq._last += dim + 1;
             }
 #ifndef NDEBUG
-            FASTOR_ASSERT(_seq._last <= expr.dimension(counter) && _seq._first<expr.dimension(counter),"INDEX OUT OF BOUNDS");
+            FASTOR_ASSERT(_seq._last <= _expr.dimension(counter) && _seq._first<_expr.dimension(counter),"INDEX OUT OF BOUNDS");
 #endif
             counter++;
         }
@@ -272,8 +275,8 @@ public:
     //----------------------------------------------------------------------------------//
     void operator=(const TensorViewExpr<TensorType<T,Rest...>,DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
@@ -292,7 +295,7 @@ public:
         }
 #endif
 
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -348,336 +351,20 @@ public:
             }
         }
     }
-
-    void operator+=(const TensorViewExpr<TensorType<T,Rest...>,DIMS> &other) {
-#if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
-            // Evaluate this into a temporary
-            auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
-            // Assign other to temporary
-            tmp = other;
-            // assign temporary to this
-            this->operator+=(tmp);
-            return;
-        }
-#endif
-#ifndef NDEBUG
-        FASTOR_ASSERT(other.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
-#endif
-        T *_data = expr.data();
-        std::array<int,DIMS> as = {};
-        int total = size();
-        int jt, counter = 0;
-
-        if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
-            // constexpr FASTOR_INDEX stride = V::Size;
-            V _vec;
-            V _vec_out;
-            while(counter < total)
-            {
-                int ind = 0;
-                for(int it = 0; it< DIMS; it++) {
-                    ind += products_[it]*(as[it]*_seqs[it]._step + _seqs[it]._first);
-                }
-                _vec = other.template teval<T>(as);
-                _vec_out.load(&_data[ind],false);
-                _vec_out += _vec;
-                _vec_out.store(&_data[ind],false);
-
-                counter+=V::Size;
-                for(jt = DIMS-1; jt>=0; jt--)
-                {
-                    if (jt == _dims.size()-1) as[jt]+=V::Size;
-                    else as[jt] +=1;
-                    if(as[jt]<_dims[jt])
-                        break;
-                    else
-                        as[jt]=0;
-                }
-                if(jt<0)
-                    break;
-            }
-        }
-        else {
-            while(counter < total)
-            {
-                int ind = 0;
-                for(int it = 0; it< DIMS; it++) {
-                    ind += products_[it]*(as[it]*_seqs[it]._step + _seqs[it]._first);
-                }
-                _data[ind] += other.template teval_s<T>(as);
-
-                counter++;
-                for(jt = DIMS-1; jt>=0; jt--)
-                {
-                    as[jt] += 1;
-                    if(as[jt]<_dims[jt])
-                        break;
-                    else
-                        as[jt]=0;
-                }
-                if(jt<0)
-                    break;
-            }
-        }
-    }
-
-    void operator-=(const TensorViewExpr<TensorType<T,Rest...>,DIMS> &other) {
-#if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
-            // Evaluate this into a temporary
-            auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
-            // Assign other to temporary
-            tmp = other;
-            // assign temporary to this
-            this->operator-=(tmp);
-            return;
-        }
-#endif
-#ifndef NDEBUG
-        FASTOR_ASSERT(other.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
-#endif
-        T *_data = expr.data();
-        std::array<int,DIMS> as = {};
-        int total = size();
-        int jt, counter = 0;
-
-        if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
-            // constexpr FASTOR_INDEX stride = V::Size;
-            V _vec;
-            V _vec_out;
-            while(counter < total)
-            {
-                int ind = 0;
-                for(int it = 0; it< DIMS; it++) {
-                    ind += products_[it]*(as[it]*_seqs[it]._step + _seqs[it]._first);
-                }
-                _vec = other.template teval<T>(as);
-                _vec_out.load(&_data[ind],false);
-                _vec_out -= _vec;
-                _vec_out.store(&_data[ind],false);
-
-                counter+=V::Size;
-                for(jt = DIMS-1; jt>=0; jt--)
-                {
-                    if (jt == _dims.size()-1) as[jt]+=V::Size;
-                    else as[jt] +=1;
-                    if(as[jt]<_dims[jt])
-                        break;
-                    else
-                        as[jt]=0;
-                }
-                if(jt<0)
-                    break;
-            }
-        }
-        else {
-            while(counter < total)
-            {
-                int ind = 0;
-                for(int it = 0; it< DIMS; it++) {
-                    ind += products_[it]*(as[it]*_seqs[it]._step + _seqs[it]._first);
-                }
-                _data[ind] -= other.template teval_s<T>(as);
-
-                counter++;
-                for(jt = DIMS-1; jt>=0; jt--)
-                {
-                    as[jt] += 1;
-                    if(as[jt]<_dims[jt])
-                        break;
-                    else
-                        as[jt]=0;
-                }
-                if(jt<0)
-                    break;
-            }
-        }
-    }
-
-    void operator*=(const TensorViewExpr<TensorType<T,Rest...>,DIMS> &other) {
-#if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
-            // Evaluate this into a temporary
-            auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
-            // Assign other to temporary
-            tmp = other;
-            // assign temporary to this
-            this->operator*=(tmp);
-            return;
-        }
-#endif
-#ifndef NDEBUG
-        FASTOR_ASSERT(other.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
-#endif
-        T *_data = expr.data();
-        std::array<int,DIMS> as = {};
-        int total = size();
-        int jt, counter = 0;
-
-        if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
-            // constexpr FASTOR_INDEX stride = V::Size;
-            V _vec;
-            V _vec_out;
-            while(counter < total)
-            {
-                int ind = 0;
-                for(int it = 0; it< DIMS; it++) {
-                    ind += products_[it]*(as[it]*_seqs[it]._step + _seqs[it]._first);
-                }
-                _vec = other.template teval<T>(as);
-                _vec_out.load(&_data[ind],false);
-                _vec_out *= _vec;
-                _vec_out.store(&_data[ind],false);
-
-                counter+=V::Size;
-                for(jt = DIMS-1; jt>=0; jt--)
-                {
-                    if (jt == _dims.size()-1) as[jt]+=V::Size;
-                    else as[jt] +=1;
-                    if(as[jt]<_dims[jt])
-                        break;
-                    else
-                        as[jt]=0;
-                }
-                if(jt<0)
-                    break;
-            }
-        }
-        else {
-            while(counter < total)
-            {
-                int ind = 0;
-                for(int it = 0; it< DIMS; it++) {
-                    ind += products_[it]*(as[it]*_seqs[it]._step + _seqs[it]._first);
-                }
-                _data[ind] *= other.template teval_s<T>(as);
-
-                counter++;
-                for(jt = DIMS-1; jt>=0; jt--)
-                {
-                    as[jt] += 1;
-                    if(as[jt]<_dims[jt])
-                        break;
-                    else
-                        as[jt]=0;
-                }
-                if(jt<0)
-                    break;
-            }
-        }
-    }
-
-    void operator/=(const TensorViewExpr<TensorType<T,Rest...>,DIMS> &other) {
-#if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
-            // Evaluate this into a temporary
-            auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
-            // Assign other to temporary
-            tmp = other;
-            // assign temporary to this
-            this->operator/=(tmp);
-            return;
-        }
-#endif
-#ifndef NDEBUG
-        FASTOR_ASSERT(other.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
-#endif
-        T *_data = expr.data();
-        std::array<int,DIMS> as = {};
-        int total = size();
-        int jt, counter = 0;
-
-        if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
-            // constexpr FASTOR_INDEX stride = V::Size;
-            V _vec;
-            V _vec_out;
-            while(counter < total)
-            {
-                int ind = 0;
-                for(int it = 0; it< DIMS; it++) {
-                    ind += products_[it]*(as[it]*_seqs[it]._step + _seqs[it]._first);
-                }
-                _vec = other.template teval<T>(as);
-                _vec_out.load(&_data[ind],false);
-                _vec_out /= _vec;
-                _vec_out.store(&_data[ind],false);
-
-                counter+=V::Size;
-                for(jt = DIMS-1; jt>=0; jt--)
-                {
-                    if (jt == _dims.size()-1) as[jt]+=V::Size;
-                    else as[jt] +=1;
-                    // as[jt] += 1;
-                    if(as[jt]<_dims[jt])
-                        break;
-                    else
-                        as[jt]=0;
-                }
-                if(jt<0)
-                    break;
-            }
-        }
-        else {
-            while(counter < total)
-            {
-                int ind = 0;
-                for(int it = 0; it< DIMS; it++) {
-                    ind += products_[it]*(as[it]*_seqs[it]._step + _seqs[it]._first);
-                }
-                _data[ind] /= other.template teval_s<T>(as);
-
-                counter++;
-                for(jt = DIMS-1; jt>=0; jt--)
-                {
-                    as[jt] += 1;
-                    if(as[jt]<_dims[jt])
-                        break;
-                    else
-                        as[jt]=0;
-                }
-                if(jt<0)
-                    break;
-            }
-        }
-    }
     //----------------------------------------------------------------------------------//
 
     // AbstractTensor binders [equal order]
     //----------------------------------------------------------------------------------//
-    template<typename Derived, size_t OTHER_DIMS, typename std::enable_if<OTHER_DIMS==DIMS,bool>::type=0>
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && !requires_evaluation_v<Derived>,bool> = false>
     void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
@@ -692,7 +379,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -782,19 +469,23 @@ public:
         }
     }
 
-
-    template<typename Derived, size_t OTHER_DIMS, typename std::enable_if<OTHER_DIMS==DIMS,bool>::type=0>
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator+=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && !requires_evaluation_v<Derived>,bool> = false>
     void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
-            this->operator=(tmp);
+            this->operator+=(tmp);
             return;
         }
 #endif
@@ -802,7 +493,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -863,18 +554,23 @@ public:
     }
 
 
-    template<typename Derived, size_t OTHER_DIMS, typename std::enable_if<OTHER_DIMS==DIMS,bool>::type=0>
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator-=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && !requires_evaluation_v<Derived>,bool> = false>
     void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
-            this->operator=(tmp);
+            this->operator-=(tmp);
             return;
         }
 #endif
@@ -882,7 +578,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -942,18 +638,23 @@ public:
         }
     }
 
-    template<typename Derived, size_t OTHER_DIMS, typename std::enable_if<OTHER_DIMS==DIMS,bool>::type=0>
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator*=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && !requires_evaluation_v<Derived>,bool> = false>
     void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
-            this->operator=(tmp);
+            this->operator*=(tmp);
             return;
         }
 #endif
@@ -961,7 +662,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -1021,18 +722,23 @@ public:
         }
     }
 
-    template<typename Derived, size_t OTHER_DIMS, typename std::enable_if<OTHER_DIMS==DIMS,bool>::type=0>
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator/=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && !requires_evaluation_v<Derived>,bool> = false>
     void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
-            this->operator=(tmp);
+            this->operator/=(tmp);
             return;
         }
 #endif
@@ -1040,7 +746,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -1103,11 +809,16 @@ public:
 
     // AbstractTensor binders [non-equal orders]
     //----------------------------------------------------------------------------------//
-    template<typename Derived, size_t OTHER_DIMS, typename std::enable_if<OTHER_DIMS!=DIMS,bool>::type=0>
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && !requires_evaluation_v<Derived>,bool> = false>
     void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
@@ -1122,7 +833,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -1179,11 +890,16 @@ public:
         }
     }
 
-    template<typename Derived, size_t OTHER_DIMS, typename std::enable_if<OTHER_DIMS!=DIMS,bool>::type=0>
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator+=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && !requires_evaluation_v<Derived>,bool> = false>
     void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
@@ -1198,7 +914,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -1258,11 +974,16 @@ public:
         }
     }
 
-    template<typename Derived, size_t OTHER_DIMS, typename std::enable_if<OTHER_DIMS!=DIMS,bool>::type=0>
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator-=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && !requires_evaluation_v<Derived>,bool> = false>
     void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
@@ -1277,7 +998,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -1336,11 +1057,16 @@ public:
         }
     }
 
-    template<typename Derived, size_t OTHER_DIMS, typename std::enable_if<OTHER_DIMS!=DIMS,bool>::type=0>
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator*=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && !requires_evaluation_v<Derived>,bool> = false>
     void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
@@ -1355,7 +1081,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -1415,11 +1141,16 @@ public:
         }
     }
 
-    template<typename Derived, size_t OTHER_DIMS, typename std::enable_if<OTHER_DIMS!=DIMS,bool>::type=0>
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && requires_evaluation_v<Derived>,bool> = false>
+    void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator/=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && !requires_evaluation_v<Derived>,bool> = false>
     void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
@@ -1434,7 +1165,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -1499,7 +1230,7 @@ public:
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator=(U num) {
 
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -1557,7 +1288,7 @@ public:
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator+=(U num) {
 
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -1618,7 +1349,7 @@ public:
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator-=(U num) {
 
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -1679,7 +1410,7 @@ public:
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator*=(U num) {
 
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -1740,7 +1471,7 @@ public:
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator/=(U num) {
 
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -1816,7 +1547,7 @@ public:
                 inds[j] += products_[it]*as[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
             }
         }
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
@@ -1835,7 +1566,7 @@ public:
             ind += products_[it]*as[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
         }
 
-        return expr.data()[ind];
+        return _expr.data()[ind];
     }
 
 
@@ -1858,7 +1589,7 @@ public:
                 inds[j] += products_[it]*as[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
             }
         }
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
@@ -1878,7 +1609,7 @@ public:
             ind += products_[it]*as[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
         }
 
-        return expr.data()[ind];
+        return _expr.data()[ind];
     }
 
     template<typename U=T>
@@ -1887,10 +1618,10 @@ public:
         for(int it = 0; it< DIMS; it++) {
             ind += products_[it]*as[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
         }
-        if (_is_vectorisable) return SIMDVector<T,DEFAULT_ABI>(&expr.data()[ind],false);
+        if (_is_vectorisable) return SIMDVector<T,DEFAULT_ABI>(&_expr.data()[ind],false);
         else if (_is_strided_vectorisable) {
             SIMDVector<U,DEFAULT_ABI> _vec;
-            vector_setter(_vec,expr.data(),ind,_seqs[DIMS-1]._step);
+            vector_setter(_vec,_expr.data(),ind,_seqs[DIMS-1]._step);
             return _vec;
         }
         else {
@@ -1916,7 +1647,7 @@ public:
                 }
             }
 
-            vector_setter(_vec,expr.data(),inds);
+            vector_setter(_vec,_expr.data(),inds);
             return _vec;
         }
     }
@@ -1927,7 +1658,7 @@ public:
         for(int it = 0; it< DIMS; it++) {
             ind += products_[it]*as[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
         }
-        return expr.data()[ind];
+        return _expr.data()[ind];
     }
 };
 

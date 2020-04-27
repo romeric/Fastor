@@ -15,7 +15,28 @@ void test_basics() {
         Tensor<T,3> a0 = {1,2,3};
         Tensor<T,3,1> a1 = {{1},{2},{3}};
         Tensor<T,1,3> a2 = {{1,2,3}};
-        Tensor<T,1,2,3> a3 = {{{1,2,3},{1,2,3}}};
+        Tensor<T,1,2,3> a3 = {{{1,2,3},{4,5,6}}};
+
+        // Basic scalar ndexing
+        FASTOR_EXIT_ASSERT(std::abs(a0(0)-1)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a0(1)-2)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a0(2)-3)<Tol);
+
+        FASTOR_EXIT_ASSERT(std::abs(a1(0,0)-1)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a1(1,0)-2)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a1(2,0)-3)<Tol);
+
+        FASTOR_EXIT_ASSERT(std::abs(a2(0,0)-1)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a2(0,1)-2)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a2(0,2)-3)<Tol);
+
+        FASTOR_EXIT_ASSERT(std::abs(a3(0,0,0)-1)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a3(0,0,1)-2)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a3(0,0,2)-3)<Tol);
+
+        FASTOR_EXIT_ASSERT(std::abs(a3(0,1,0)-4)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a3(0,1,1)-5)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a3(0,1,2)-6)<Tol);
     }
 
     {

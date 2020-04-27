@@ -5,9 +5,10 @@
 #include "Fastor/simd_vector/SIMDVector.h"
 #include "Fastor/tensor/AbstractTensor.h"
 #include "Fastor/tensor/Aliasing.h"
+#include "Fastor/tensor/Tensor.h"
+#include "Fastor/tensor/Ranges.h"
 #include "Fastor/tensor/TensorTraits.h"
 #include "Fastor/expressions/expression_traits.h"
-#include "Fastor/expressions/views/tensor_fixed_views_2d.h"
 
 
 namespace Fastor {

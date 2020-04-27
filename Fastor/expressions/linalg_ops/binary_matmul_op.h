@@ -18,9 +18,11 @@ struct BinaryMatMulOp: public AbstractTensor<BinaryMatMulOp<TLhs, TRhs, DIM0>,DI
     using rhs_type = typename TRhs::result_type;
     static constexpr FASTOR_INDEX lhs_rank = lhs_type::Dimension_t::value;
     static constexpr FASTOR_INDEX rhs_rank = rhs_type::Dimension_t::value;
-    static constexpr FASTOR_INDEX M = lhs_rank == 2 ? get_tensor_dimensions<lhs_type>::dims[0] : 1;
+    // static constexpr FASTOR_INDEX M = lhs_rank == 2 ? get_tensor_dimensions<lhs_type>::dims[0] : 1;
+    static constexpr FASTOR_INDEX M = get_tensor_dimensions<lhs_type>::dims[0];
     static constexpr FASTOR_INDEX K = lhs_rank == 2 ? get_tensor_dimensions<lhs_type>::dims[1] : 1;
     static constexpr FASTOR_INDEX N = rhs_rank == 2 ? get_tensor_dimensions<rhs_type>::dims[1] : 1;
+    static constexpr FASTOR_INDEX K_other = get_tensor_dimensions<rhs_type>::dims[0];
     static constexpr FASTOR_INDEX flop_count = M*N*K;
     static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX rank() {return DIM0;}
@@ -33,8 +35,9 @@ struct BinaryMatMulOp: public AbstractTensor<BinaryMatMulOp<TLhs, TRhs, DIM0>,DI
                                         >
                                     >;
 
-    constexpr FASTOR_INLINE BinaryMatMulOp(lhs_expr_type inlhs, rhs_expr_type inrhs) : _lhs(inlhs), _rhs(inrhs) {
+    FASTOR_INLINE BinaryMatMulOp(lhs_expr_type inlhs, rhs_expr_type inrhs) : _lhs(inlhs), _rhs(inrhs) {
         static_assert(lhs_rank <=2 && rhs_rank <=2, "EXPRESSIONS FOR MATRIX MULTIPLICATION HAVE TO BE 2-DIMENSIONAL");
+        static_assert(K == K_other, "INVALID MATMUL OPERANDS. COLUMNS(A)!=ROWS(B)");
     }
 
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return M*N;}

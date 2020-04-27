@@ -182,6 +182,106 @@ FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> tanh(const SIMDVector<T,DEFAULT_ABI> &a)
 
 // Broadcasting vectorisation on general strides [gather operations]
 //----------------------------------------------------------------------------------------------------------------
+// 1 word scalar
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==1 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==8,bool>::type=0>
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int ) {
+    vec.set(data[idx]);
+}
+// 1 word in a 2 - for compatibility
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==1 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==16,bool>::type=0>
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
+    vec.set(data[idx+general_stride],data[idx]);
+}
+// 1 word in a 4 - for compatibility
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==1 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==32,bool>::type=0>
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
+    vec.set(data[idx+3*general_stride],data[idx+2*general_stride],
+            data[idx+general_stride],data[idx]);
+}
+// 1 word in a 8 - for compatibility
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==1 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==64,bool>::type=0>
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
+    vec.set(data[idx+7*general_stride],data[idx+6*general_stride],
+            data[idx+5*general_stride],data[idx+4*general_stride],
+            data[idx+3*general_stride],data[idx+2*general_stride],
+            data[idx+general_stride],data[idx]);
+}
+// 1 word - sse
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==1 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==128,bool>::type=0>
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
+    vec.set(data[idx+15*general_stride],data[idx+14*general_stride],
+            data[idx+13*general_stride],data[idx+12*general_stride],
+            data[idx+11*general_stride],data[idx+10*general_stride],
+            data[idx+9*general_stride],data[idx+8*general_stride],
+            data[idx+7*general_stride],data[idx+6*general_stride],
+            data[idx+5*general_stride],data[idx+4*general_stride],
+            data[idx+3*general_stride],data[idx+2*general_stride],
+            data[idx+general_stride],data[idx]);
+}
+// 1 word avx
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==1 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==256,bool>::type=0>
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
+    vec.set(data[idx+31*general_stride],data[idx+30*general_stride],
+            data[idx+29*general_stride],data[idx+28*general_stride],
+            data[idx+27*general_stride],data[idx+26*general_stride],
+            data[idx+25*general_stride],data[idx+24*general_stride],
+            data[idx+23*general_stride],data[idx+22*general_stride],
+            data[idx+21*general_stride],data[idx+20*general_stride],
+            data[idx+19*general_stride],data[idx+18*general_stride],
+            data[idx+17*general_stride],data[idx+16*general_stride],
+            data[idx+15*general_stride],data[idx+14*general_stride],
+            data[idx+13*general_stride],data[idx+12*general_stride],
+            data[idx+11*general_stride],data[idx+10*general_stride],
+            data[idx+9 *general_stride],data[idx+8 *general_stride],
+            data[idx+7 *general_stride],data[idx+6 *general_stride],
+            data[idx+5 *general_stride],data[idx+4 *general_stride],
+            data[idx+3 *general_stride],data[idx+2 *general_stride],
+            data[idx+general_stride]   ,data[idx]);
+}
+// 1 word avx512
+template<typename T, typename ABI,
+         typename std::enable_if<sizeof(T)==1 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==512,bool>::type=0>
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
+    vec.set(data[idx+63*general_stride],data[idx+62*general_stride],
+            data[idx+61*general_stride],data[idx+60*general_stride],
+            data[idx+59*general_stride],data[idx+58*general_stride],
+            data[idx+57*general_stride],data[idx+56*general_stride],
+            data[idx+55*general_stride],data[idx+54*general_stride],
+            data[idx+53*general_stride],data[idx+52*general_stride],
+            data[idx+51*general_stride],data[idx+50*general_stride],
+            data[idx+49*general_stride],data[idx+48*general_stride],
+            data[idx+47*general_stride],data[idx+46*general_stride],
+            data[idx+45*general_stride],data[idx+44*general_stride],
+            data[idx+43*general_stride],data[idx+42*general_stride],
+            data[idx+41*general_stride],data[idx+40*general_stride],
+            data[idx+39*general_stride],data[idx+38*general_stride],
+            data[idx+37*general_stride],data[idx+36*general_stride],
+            data[idx+35*general_stride],data[idx+34*general_stride],
+            data[idx+33*general_stride],data[idx+32*general_stride],
+            data[idx+31*general_stride],data[idx+30*general_stride],
+            data[idx+29*general_stride],data[idx+28*general_stride],
+            data[idx+27*general_stride],data[idx+26*general_stride],
+            data[idx+25*general_stride],data[idx+24*general_stride],
+            data[idx+23*general_stride],data[idx+22*general_stride],
+            data[idx+21*general_stride],data[idx+20*general_stride],
+            data[idx+19*general_stride],data[idx+18*general_stride],
+            data[idx+17*general_stride],data[idx+16*general_stride],
+            data[idx+15*general_stride],data[idx+14*general_stride],
+            data[idx+13*general_stride],data[idx+12*general_stride],
+            data[idx+11*general_stride],data[idx+10*general_stride],
+            data[idx+9 *general_stride],data[idx+8 *general_stride],
+            data[idx+7 *general_stride],data[idx+6 *general_stride],
+            data[idx+5 *general_stride],data[idx+4 *general_stride],
+            data[idx+3 *general_stride],data[idx+2 *general_stride],
+            data[idx+general_stride]   ,data[idx]);
+}
+
 // 4 word scalar
 template<typename T, typename ABI,
          typename std::enable_if<sizeof(T)==4 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==32,bool>::type=0>

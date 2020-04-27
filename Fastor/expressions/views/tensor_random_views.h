@@ -2,7 +2,7 @@
 #define TENSOR_RANDOM_VIEWS_H
 
 #include "Fastor/tensor/Tensor.h"
-#include "Fastor/tensor/Ranges.h"
+#include "Fastor/expressions/linalg_ops/linalg_traits.h"
 
 
 namespace Fastor {
@@ -14,7 +14,7 @@ template<typename T, size_t N, typename Int, size_t IterSize>
 struct TensorConstRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>:
     public AbstractTensor<TensorConstRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>,1> {
 private:
-    const Tensor<T,N> &expr;
+    const Tensor<T,N> &_expr;
     const Tensor<Int,IterSize> &it_expr;
 public:
     using scalar_type = T;
@@ -24,8 +24,9 @@ public:
     static constexpr FASTOR_INDEX rank() {return 1;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return IterSize;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX ) const {return IterSize;}
+    constexpr const Tensor<T,N>& expr() const {return _expr;};
 
-    constexpr FASTOR_INLINE TensorConstRandomViewExpr(const Tensor<T,N> &_ex, const Tensor<Int,IterSize> &_it) : expr(_ex), it_expr(_it) {}
+    constexpr FASTOR_INLINE TensorConstRandomViewExpr(const Tensor<T,N> &_ex, const Tensor<Int,IterSize> &_it) : _expr(_ex), it_expr(_it) {}
 
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
@@ -33,13 +34,13 @@ public:
         std::array<int,SIMDVector<T,DEFAULT_ABI>::Size> inds;
         for (FASTOR_INDEX j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j)
             inds[j] = it_expr.data()[i+j];
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
     template<typename U=T>
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i) const {
-        return expr.data()[it_expr.data()[i]];
+        return _expr.data()[it_expr.data()[i]];
     }
 
     template<typename U=T>
@@ -49,13 +50,13 @@ public:
         std::array<int,SIMDVector<T,DEFAULT_ABI>::Size> inds;
         for (FASTOR_INDEX j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j)
             inds[j] = it_expr.data()[i+j];
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
     template<typename U=T>
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        return expr(it_expr(i+j));
+        return _expr(it_expr(i+j));
     }
 
     template<typename U=T>
@@ -64,13 +65,13 @@ public:
         std::array<int,SIMDVector<T,DEFAULT_ABI>::Size> inds;
         for (FASTOR_INDEX j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j)
             inds[j] = it_expr.data()[as[0]+j];
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
     template<typename U=T>
     constexpr FASTOR_INLINE U teval_s(const std::array<int,1>& as) const {
-        return expr.data()[it_expr.data()[as[0]]];
+        return _expr.data()[it_expr.data()[as[0]]];
     }
 };
 
@@ -80,7 +81,7 @@ template<typename T, size_t ... Rest, typename Int, size_t ... IterSizes, size_t
 struct TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>:
     public AbstractTensor<TensorConstRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>,DIMS> {
 private:
-    const Tensor<T,Rest...> &expr;
+    const Tensor<T,Rest...> &_expr;
     // The index tensor needs to be copied for the purpose of indexing a
     // multidimensional tensor with multiple 1D or any other lower other
     // tensors. This issue could be solved by providing another type parameter/flag
@@ -97,9 +98,10 @@ public:
     static constexpr FASTOR_INDEX rank() {return DIMS;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return prod<IterSizes...>::value;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return it_expr.dimension(i);}
+    constexpr const Tensor<T,Rest...>& expr() const {return _expr;};
 
     constexpr FASTOR_INLINE TensorConstRandomViewExpr(const Tensor<T,Rest...> &_ex,
-        const Tensor<Int,IterSizes...> &_it) : expr(_ex), it_expr(_it) {
+        const Tensor<Int,IterSizes...> &_it) : _expr(_ex), it_expr(_it) {
         static_assert(sizeof...(Rest)==DIMS && sizeof...(IterSizes)==DIMS, "INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     }
 
@@ -109,13 +111,13 @@ public:
         std::array<int,SIMDVector<T,DEFAULT_ABI>::Size> inds;
         for (FASTOR_INDEX j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j)
             inds[j] = it_expr.data()[i+j];
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
     template<typename U=T>
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i) const {
-        return expr.data()[it_expr.data()[i]];
+        return _expr.data()[it_expr.data()[i]];
     }
 
     template<typename U=T>
@@ -125,13 +127,13 @@ public:
         std::array<int,SIMDVector<T,DEFAULT_ABI>::Size> inds;
         for (FASTOR_INDEX j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j)
             inds[j] = it_expr.data()[i+j];
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
     template<typename U=T>
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        return expr.data()[it_expr.data()[i+j]];
+        return _expr.data()[it_expr.data()[i+j]];
     }
 
     template<typename U=T>
@@ -141,14 +143,14 @@ public:
         std::array<int,SIMDVector<T,DEFAULT_ABI>::Size> inds;
         for (FASTOR_INDEX j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j)
             inds[j] = it_expr.data()[i+j];
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
     template<typename U=T>
     FASTOR_INLINE U teval_s(const std::array<int,DIMS>& as) const {
         int i = std::accumulate(as.begin(), as.end(), 0);
-        return expr.data()[it_expr.data()[i]];
+        return _expr.data()[it_expr.data()[i]];
     }
 
 };
@@ -163,11 +165,11 @@ template<typename T, size_t N, typename Int, size_t IterSize>
 struct TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>:
     public AbstractTensor<TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>,1> {
 private:
-    Tensor<T,N> &expr;
+    Tensor<T,N> &_expr;
     const Tensor<Int,IterSize> &it_expr;
-    bool does_alias = false;
+    bool _does_alias = false;
 
-    constexpr FASTOR_INLINE Tensor<T,N> get_tensor() const {return expr;};
+    constexpr FASTOR_INLINE Tensor<T,N> get_tensor() const {return _expr;};
 public:
     using scalar_type = T;
     using result_type = Tensor<T,IterSize>;
@@ -176,13 +178,14 @@ public:
     static constexpr FASTOR_INDEX rank() {return 1;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return IterSize;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX ) const {return IterSize;}
+    constexpr const Tensor<T,N>& expr() const {return _expr;};
 
     FASTOR_INLINE TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>& noalias() {
-        does_alias = true;
+        _does_alias = true;
         return *this;
     }
 
-    constexpr FASTOR_INLINE TensorRandomViewExpr(Tensor<T,N> &_ex, const Tensor<Int,IterSize> &_it) : expr(_ex), it_expr(_it) {}
+    constexpr FASTOR_INLINE TensorRandomViewExpr(Tensor<T,N> &_ex, const Tensor<Int,IterSize> &_it) : _expr(_ex), it_expr(_it) {}
 
 
     // View evalution operators
@@ -190,8 +193,8 @@ public:
     //----------------------------------------------------------------------------------//
     void operator=(const TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1> &other_src) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
@@ -214,182 +217,32 @@ public:
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
             auto _vec_other = other_src.template eval<T>(i);
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-                expr(it_expr(i+j)) = _vec_other[j];
+                _expr(it_expr(i+j)) = _vec_other[j];
             }
         }
         for (; i <size(); i++) {
-            expr(it_expr(i)) = other_src.template eval_s<T>(i);
+            _expr(it_expr(i)) = other_src.template eval_s<T>(i);
         }
 #else
         for (FASTOR_INDEX i = 0; i <size(); i++) {
-            expr(it_expr(i)) = other_src.template eval_s<T>(i);
+            _expr(it_expr(i)) = other_src.template eval_s<T>(i);
         }
 #endif
     }
 
-    void operator+=(const TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1> &other_src) {
-#if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
-            // Evaluate this into a temporary
-            auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
-            // Assign other to temporary
-            tmp = other_src;
-            // assign temporary to this
-            this->operator+=(tmp);
-            return;
-        }
-#endif
-#ifndef NDEBUG
-        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
-#endif
-#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-            auto _vec_other = other_src.template eval<T>(i);
-            for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-                expr(it_expr(i+j)) += _vec_other[j];
-            }
-        }
-        for (; i <size(); i++) {
-            expr(it_expr(i)) += other_src.template eval_s<T>(i);
-        }
-#else
-        for (FASTOR_INDEX i = 0; i <size(); i++) {
-            expr(it_expr(i)) += other_src.template eval_s<T>(i);
-        }
-#endif
-    }
-
-    void operator-=(const TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1> &other_src) {
-#if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
-            // Evaluate this into a temporary
-            auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
-            // Assign other to temporary
-            tmp = other_src;
-            // assign temporary to this
-            this->operator-=(tmp);
-            return;
-        }
-#endif
-#ifndef NDEBUG
-        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
-#endif
-#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-            auto _vec_other = other_src.template eval<T>(i);
-            for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-                expr(it_expr(i+j)) -= _vec_other[j];
-            }
-        }
-        for (; i <size(); i++) {
-            expr(it_expr(i)) -= other_src.template eval_s<T>(i);
-        }
-#else
-        for (FASTOR_INDEX i = 0; i <size(); i++) {
-            expr(it_expr(i)) -= other_src.template eval_s<T>(i);
-        }
-#endif
-    }
-
-    void operator*=(const TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1> &other_src) {
-#if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
-            // Evaluate this into a temporary
-            auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
-            // Assign other to temporary
-            tmp = other_src;
-            // assign temporary to this
-            this->operator*=(tmp);
-            return;
-        }
-#endif
-#ifndef NDEBUG
-        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
-#endif
-#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-            auto _vec_other = other_src.template eval<T>(i);
-            for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-                expr(it_expr(i+j)) *= _vec_other[j];
-            }
-        }
-        for (; i <size(); i++) {
-            expr(it_expr(i)) *= other_src.template eval_s<T>(i);
-        }
-#else
-        for (FASTOR_INDEX i = 0; i <size(); i++) {
-            expr(it_expr(i)) *= other_src.template eval_s<T>(i);
-        }
-#endif
-    }
-
-    void operator/=(const TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1> &other_src) {
-#if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
-            // Evaluate this into a temporary
-            auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
-            // Assign other to temporary
-            tmp = other_src;
-            // assign temporary to this
-            this->operator/=(tmp);
-            return;
-        }
-#endif
-#ifndef NDEBUG
-        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
-#endif
-#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-            auto _vec_other = other_src.template eval<T>(i);
-            for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-                expr(it_expr(i+j)) /= _vec_other[j];
-            }
-        }
-        for (; i <size(); i++) {
-            expr(it_expr(i)) /= other_src.template eval_s<T>(i);
-        }
-#else
-        for (FASTOR_INDEX i = 0; i <size(); i++) {
-            expr(it_expr(i)) /= other_src.template eval_s<T>(i);
-        }
-#endif
-    }
 
     // AbstractTensor binders
     //----------------------------------------------------------------------------------//
-    template<typename Derived, size_t DIMS>
+    template<typename Derived, size_t DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+    void operator=(const AbstractTensor<Derived,DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator=(tmp);
+    }
+    template<typename Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
     void operator=(const AbstractTensor<Derived,DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
@@ -409,24 +262,29 @@ public:
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
             auto _vec_other = other_src.template eval<T>(i);
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-                expr(it_expr(i+j)) = _vec_other[j];
+                _expr(it_expr(i+j)) = _vec_other[j];
             }
         }
         for (; i <size(); i++) {
-            expr(it_expr(i)) = other_src.template eval_s<T>(i);
+            _expr(it_expr(i)) = other_src.template eval_s<T>(i);
         }
 #else
         for (FASTOR_INDEX i = 0; i <size(); i++) {
-            expr(it_expr(i)) = other_src.template eval_s<T>(i);
+            _expr(it_expr(i)) = other_src.template eval_s<T>(i);
         }
 #endif
     }
 
-    template<typename Derived, size_t DIMS>
+    template<typename Derived, size_t DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+    void operator+=(const AbstractTensor<Derived,DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator+=(tmp);
+    }
+    template<typename Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
     void operator+=(const AbstractTensor<Derived,DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
@@ -446,24 +304,29 @@ public:
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
             auto _vec_other = other_src.template eval<T>(i);
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-                expr(it_expr(i+j)) += _vec_other[j];
+                _expr(it_expr(i+j)) += _vec_other[j];
             }
         }
         for (; i <size(); i++) {
-            expr(it_expr(i)) += other_src.template eval_s<T>(i);
+            _expr(it_expr(i)) += other_src.template eval_s<T>(i);
         }
 #else
         for (FASTOR_INDEX i = 0; i <size(); i++) {
-            expr(it_expr(i)) += other_src.template eval_s<T>(i);
+            _expr(it_expr(i)) += other_src.template eval_s<T>(i);
         }
 #endif
     }
 
-    template<typename Derived, size_t DIMS>
+    template<typename Derived, size_t DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+    void operator-=(const AbstractTensor<Derived,DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator-=(tmp);
+    }
+    template<typename Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
     void operator-=(const AbstractTensor<Derived,DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
@@ -483,24 +346,29 @@ public:
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
             auto _vec_other = other_src.template eval<T>(i);
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-                expr(it_expr(i+j)) -= _vec_other[j];
+                _expr(it_expr(i+j)) -= _vec_other[j];
             }
         }
         for (; i <size(); i++) {
-            expr(it_expr(i)) -= other_src.template eval_s<T>(i);
+            _expr(it_expr(i)) -= other_src.template eval_s<T>(i);
         }
 #else
         for (FASTOR_INDEX i = 0; i <size(); i++) {
-            expr(it_expr(i)) -= other_src.template eval_s<T>(i);
+            _expr(it_expr(i)) -= other_src.template eval_s<T>(i);
         }
 #endif
     }
 
-    template<typename Derived, size_t DIMS>
+    template<typename Derived, size_t DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+    void operator*=(const AbstractTensor<Derived,DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator*=(tmp);
+    }
+    template<typename Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
     void operator*=(const AbstractTensor<Derived,DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
@@ -515,30 +383,35 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
             auto _vec_other = other_src.template eval<T>(i);
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-                expr(it_expr(i+j)) *= _vec_other[j];
+                _expr(it_expr(i+j)) *= _vec_other[j];
             }
         }
         for (; i <size(); i++) {
-            expr(it_expr(i)) *= other_src.template eval_s<T>(i);
+            _expr(it_expr(i)) *= other_src.template eval_s<T>(i);
         }
 #else
         for (FASTOR_INDEX i = 0; i <size(); i++) {
-            expr(it_expr(i)) *= other_src.template eval_s<T>(i);
+            _expr(it_expr(i)) *= other_src.template eval_s<T>(i);
         }
 #endif
     }
 
-    template<typename Derived, size_t DIMS>
+    template<typename Derived, size_t DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+    void operator/=(const AbstractTensor<Derived,DIMS> &other) {
+        const typename Derived::result_type& tmp = evaluate(other.self());
+        this->operator/=(tmp);
+    }
+    template<typename Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
     void operator/=(const AbstractTensor<Derived,DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorRandomViewExpr<Tensor<T,N>,Tensor<Int,IterSize>,1>(tmp_this_tensor,it_expr);
@@ -558,15 +431,15 @@ public:
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
             auto _vec_other = other_src.template eval<T>(i);
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-                expr(it_expr(i+j)) /= _vec_other[j];
+                _expr(it_expr(i+j)) /= _vec_other[j];
             }
         }
         for (; i <size(); i++) {
-            expr(it_expr(i)) /= other_src.template eval_s<T>(i);
+            _expr(it_expr(i)) /= other_src.template eval_s<T>(i);
         }
 #else
         for (FASTOR_INDEX i = 0; i <size(); i++) {
-            expr(it_expr(i)) /= other_src.template eval_s<T>(i);
+            _expr(it_expr(i)) /= other_src.template eval_s<T>(i);
         }
 #endif
     }
@@ -583,15 +456,15 @@ public:
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-                expr(it_expr(i+j)) = _vec_other[j];
+                _expr(it_expr(i+j)) = _vec_other[j];
             }
         }
         for (; i <size(); i++) {
-            expr(it_expr(i)) = num;
+            _expr(it_expr(i)) = num;
         }
 #else
         for (FASTOR_INDEX i = 0; i <size(); i++) {
-            expr(it_expr(i)) = num;
+            _expr(it_expr(i)) = num;
         }
 #endif
     }
@@ -605,15 +478,15 @@ public:
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-                expr(it_expr(i+j)) += _vec_other[j];
+                _expr(it_expr(i+j)) += _vec_other[j];
             }
         }
         for (; i <size(); i++) {
-            expr(it_expr(i)) += num;
+            _expr(it_expr(i)) += num;
         }
 #else
         for (FASTOR_INDEX i = 0; i <size(); i++) {
-            expr(it_expr(i)) += num;
+            _expr(it_expr(i)) += num;
         }
 #endif
     }
@@ -625,15 +498,15 @@ public:
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-                expr(it_expr(i+j)) -= _vec_other[j];
+                _expr(it_expr(i+j)) -= _vec_other[j];
             }
         }
         for (; i <size(); i++) {
-            expr(it_expr(i)) -= num;
+            _expr(it_expr(i)) -= num;
         }
 #else
         for (FASTOR_INDEX i = 0; i <size(); i++) {
-            expr(it_expr(i)) -= num;
+            _expr(it_expr(i)) -= num;
         }
 #endif
     }
@@ -645,15 +518,15 @@ public:
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-                expr(it_expr(i+j)) *= _vec_other[j];
+                _expr(it_expr(i+j)) *= _vec_other[j];
             }
         }
         for (; i <size(); i++) {
-            expr(it_expr(i)) *= num;
+            _expr(it_expr(i)) *= num;
         }
 #else
         for (FASTOR_INDEX i = 0; i <size(); i++) {
-            expr(it_expr(i)) *= num;
+            _expr(it_expr(i)) *= num;
         }
 #endif
     }
@@ -666,16 +539,16 @@ public:
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
             for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
-                expr(it_expr(i+j)) *= _vec_other[j];
+                _expr(it_expr(i+j)) *= _vec_other[j];
             }
         }
         for (; i <size(); i++) {
-            expr(it_expr(i)) *= inum;
+            _expr(it_expr(i)) *= inum;
         }
 #else
         T inum = T(1.)/num;
         for (FASTOR_INDEX i = 0; i <size(); i++) {
-            expr(it_expr(i)) *= inum;
+            _expr(it_expr(i)) *= inum;
         }
 #endif
     }
@@ -687,13 +560,13 @@ public:
         std::array<int,SIMDVector<T,DEFAULT_ABI>::Size> inds;
         for (FASTOR_INDEX j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j)
             inds[j] = it_expr(i+j);
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
     template<typename U=T>
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i) const {
-        return expr(it_expr(i));
+        return _expr(it_expr(i));
     }
 
     template<typename U=T>
@@ -703,13 +576,13 @@ public:
         std::array<int,SIMDVector<T,DEFAULT_ABI>::Size> inds;
         for (FASTOR_INDEX j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j)
             inds[j] = it_expr(i+j);
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
     template<typename U=T>
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        return expr(it_expr(i+j));
+        return _expr(it_expr(i+j));
     }
 
     template<typename U=T>
@@ -718,13 +591,13 @@ public:
         std::array<int,SIMDVector<T,DEFAULT_ABI>::Size> inds;
         for (FASTOR_INDEX j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j)
             inds[j] = it_expr.data()[as[0]+j];
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
     template<typename U=T>
     constexpr FASTOR_INLINE U teval_s(const std::array<int,1>& as) const {
-        return expr.data()[it_expr.data()[as[0]]];
+        return _expr.data()[it_expr.data()[as[0]]];
     }
 
 };
@@ -791,16 +664,16 @@ template<typename T, size_t ... Rest, typename Int, size_t ... IterSizes, size_t
 struct TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>:
     public AbstractTensor<TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>,DIMS> {
 private:
-    Tensor<T,Rest...> &expr;
+    Tensor<T,Rest...> &_expr;
     // The index tensor needs to be copied for the purpose of indexing a
     // multidimensional tensor with multiple 1D or any other lower other
     // tensors.
 
     // const Tensor<Int,IterSizes...> &it_expr;
     Tensor<Int,IterSizes...> it_expr;
-    bool does_alias = false;
+    bool _does_alias = false;
 
-    constexpr FASTOR_INLINE Tensor<T,Rest...> get_tensor() const {return expr;}
+    constexpr FASTOR_INLINE Tensor<T,Rest...> get_tensor() const {return _expr;}
 public:
     using scalar_type = T;
     using result_type = Tensor<T,IterSizes...>;
@@ -809,13 +682,14 @@ public:
     static constexpr FASTOR_INDEX rank() {return DIMS;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return prod<IterSizes...>::value;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return it_expr.dimension(i);}
+    constexpr const Tensor<T,Rest...>& expr() const {return _expr;};
 
     FASTOR_INLINE TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>& noalias() {
-        does_alias = true;
+        _does_alias = true;
         return *this;
     }
 
-    constexpr FASTOR_INLINE TensorRandomViewExpr(Tensor<T,Rest...> &_ex, const Tensor<Int,IterSizes...> &_it) : expr(_ex), it_expr(_it) {
+    constexpr FASTOR_INLINE TensorRandomViewExpr(Tensor<T,Rest...> &_ex, const Tensor<Int,IterSizes...> &_it) : _expr(_ex), it_expr(_it) {
         static_assert(sizeof...(Rest)==DIMS && sizeof...(IterSizes)==DIMS, "INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     }
 
@@ -823,8 +697,8 @@ public:
     //------------------------------------------------------------------------------------//
     void operator=(const TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS> &other_src) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
@@ -842,7 +716,7 @@ public:
             FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
@@ -863,8 +737,8 @@ public:
 
     void operator+=(const TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS> &other_src) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
@@ -882,7 +756,7 @@ public:
             FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
@@ -903,8 +777,8 @@ public:
 
     void operator-=(const TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS> &other_src) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
@@ -922,7 +796,7 @@ public:
             FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
@@ -943,8 +817,8 @@ public:
 
     void operator*=(const TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS> &other_src) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
@@ -962,7 +836,7 @@ public:
             FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
@@ -983,8 +857,8 @@ public:
 
     void operator/=(const TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS> &other_src) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
@@ -1002,7 +876,7 @@ public:
             FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
@@ -1026,8 +900,8 @@ public:
     template<typename Derived, size_t OTHER_DIMS>
     void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
@@ -1042,7 +916,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
@@ -1064,8 +938,8 @@ public:
     template<typename Derived, size_t OTHER_DIMS>
     void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
@@ -1080,7 +954,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
@@ -1102,8 +976,8 @@ public:
     template<typename Derived, size_t OTHER_DIMS>
     void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
@@ -1118,7 +992,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
@@ -1140,8 +1014,8 @@ public:
     template<typename Derived, size_t OTHER_DIMS>
     void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
@@ -1156,7 +1030,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
@@ -1178,8 +1052,8 @@ public:
     template<typename Derived, size_t OTHER_DIMS>
     void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
-        if (does_alias) {
-            does_alias = false;
+        if (_does_alias) {
+            _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
             auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
@@ -1194,7 +1068,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
@@ -1217,7 +1091,7 @@ public:
     //------------------------------------------------------------------------------------//
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator=(U num) {
-        T *_data = expr.data();
+        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         SIMDVector<T,DEFAULT_ABI> _vec_other(num);
         FASTOR_INDEX i;
@@ -1238,7 +1112,7 @@ public:
 
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator+=(U num) {
-        T *_data = expr.data();
+        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         SIMDVector<T,DEFAULT_ABI> _vec_other(num);
         FASTOR_INDEX i;
@@ -1259,7 +1133,7 @@ public:
 
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator-=(U num) {
-        T *_data = expr.data();
+        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         SIMDVector<T,DEFAULT_ABI> _vec_other(num);
         FASTOR_INDEX i;
@@ -1280,7 +1154,7 @@ public:
 
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator*=(U num) {
-        T *_data = expr.data();
+        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         SIMDVector<T,DEFAULT_ABI> _vec_other(num);
         FASTOR_INDEX i;
@@ -1301,7 +1175,7 @@ public:
 
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator/=(U num) {
-        T *_data = expr.data();
+        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         T inum = T(1.)/(T)num;
         SIMDVector<T,DEFAULT_ABI> _vec_other(inum);
@@ -1329,13 +1203,13 @@ public:
         std::array<int,SIMDVector<T,DEFAULT_ABI>::Size> inds;
         for (FASTOR_INDEX j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j)
             inds[j] = it_expr.data()[i+j];
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
     template<typename U=T>
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i) const {
-        return expr.data()[it_expr.data()[i]];
+        return _expr.data()[it_expr.data()[i]];
     }
 
     template<typename U=T>
@@ -1345,13 +1219,13 @@ public:
         std::array<int,SIMDVector<T,DEFAULT_ABI>::Size> inds;
         for (FASTOR_INDEX j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j)
             inds[j] = it_expr.data()[i+j];
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
     template<typename U=T>
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        return expr.data()[it_expr.data()[i+j]];
+        return _expr.data()[it_expr.data()[i+j]];
     }
 
     template<typename U=T>
@@ -1361,14 +1235,14 @@ public:
         std::array<int,SIMDVector<T,DEFAULT_ABI>::Size> inds;
         for (FASTOR_INDEX j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j)
             inds[j] = it_expr.data()[i+j];
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
     template<typename U=T>
     FASTOR_INLINE U teval_s(const std::array<int,DIMS>& as) const {
         int i = std::accumulate(as.begin(), as.end(), 0);
-        return expr.data()[it_expr.data()[i]];
+        return _expr.data()[it_expr.data()[i]];
     }
 };
 

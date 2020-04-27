@@ -3,6 +3,7 @@
 
 
 #include "Fastor/tensor/Tensor.h"
+#include "Fastor/expressions/linalg_ops/linalg_traits.h"
 
 
 namespace Fastor {
@@ -11,11 +12,11 @@ template<typename T, size_t ... Rest, size_t DIMS>
 struct TensorFilterViewExpr<Tensor<T,Rest...>,Tensor<bool,Rest...>,DIMS>:
     public AbstractTensor<TensorFilterViewExpr<Tensor<T,Rest...>,Tensor<bool,Rest...>,DIMS>,DIMS> {
 private:
-    Tensor<T,Rest...> &expr;
+    Tensor<T,Rest...> &_expr;
     const Tensor<bool,Rest...> &fl_expr;
-    bool does_alias = false;
+    bool _does_alias = false;
 
-    constexpr FASTOR_INLINE Tensor<T,Rest...> get_tensor() const {return expr;}
+    constexpr FASTOR_INLINE Tensor<T,Rest...> get_tensor() const {return _expr;}
 public:
     using scalar_type = T;
     using result_type = Tensor<T,Rest...>;
@@ -24,13 +25,14 @@ public:
     static constexpr FASTOR_INDEX rank() {return DIMS;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return prod<Rest...>::value;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return fl_expr.dimension(i);}
+    constexpr const Tensor<T,Rest...>& expr() const {return _expr;};
 
     FASTOR_INLINE TensorFilterViewExpr<Tensor<T,Rest...>,Tensor<bool,Rest...>,DIMS>& noalias() {
-        does_alias = true;
+        _does_alias = true;
         return *this;
     }
 
-    constexpr FASTOR_INLINE TensorFilterViewExpr(Tensor<T,Rest...> &_ex, const Tensor<bool,Rest...> &_it) : expr(_ex), fl_expr(_it) {
+    constexpr FASTOR_INLINE TensorFilterViewExpr(Tensor<T,Rest...> &_ex, const Tensor<bool,Rest...> &_it) : _expr(_ex), fl_expr(_it) {
         static_assert(sizeof...(Rest)==DIMS, "INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     }
 
@@ -44,16 +46,20 @@ public:
             FASTOR_ASSERT(src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
-        T *_data = expr.data();
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             if (fl_expr.eval_s(i)) {
-                _data[i] = src.template eval_s<T>(i);
+                _expr.data()[i] = src.template eval_s<T>(i);
             }
         }
     }
 
 
-    template<typename Derived, size_t OTHER_DIMS>
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+    void operator=(const AbstractTensor<Derived,OTHER_DIMS> &src) {
+        const typename Derived::result_type& tmp = evaluate(src.self());
+        this->operator=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
     void operator=(const AbstractTensor<Derived,OTHER_DIMS> &src) {
 #ifndef NDEBUG
         FASTOR_ASSERT(src.self().size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -62,16 +68,20 @@ public:
             FASTOR_ASSERT(src.self().dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
-        T *_data = expr.data();
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             if (fl_expr.eval_s(i)) {
-                _data[i] = src.self().template eval_s<T>(i);
+                _expr.data()[i] = src.self().template eval_s<T>(i);
             }
         }
     }
 
-    template<typename Derived, size_t OTHER_DIMS>
-    void operator +=(const AbstractTensor<Derived,OTHER_DIMS> &src) {
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+    void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &src) {
+        const typename Derived::result_type& tmp = evaluate(src.self());
+        this->operator+=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
+    void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &src) {
 #ifndef NDEBUG
         FASTOR_ASSERT(src.self().size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -79,16 +89,20 @@ public:
             FASTOR_ASSERT(src.self().dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
-        T *_data = expr.data();
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             if (fl_expr.eval_s(i)) {
-                _data[i] += src.self().template eval_s<T>(i);
+                _expr.data()[i] += src.self().template eval_s<T>(i);
             }
         }
     }
 
-    template<typename Derived, size_t OTHER_DIMS>
-    void operator -=(const AbstractTensor<Derived,OTHER_DIMS> &src) {
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+    void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &src) {
+        const typename Derived::result_type& tmp = evaluate(src.self());
+        this->operator-=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
+    void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &src) {
 #ifndef NDEBUG
         FASTOR_ASSERT(src.self().size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -96,16 +110,20 @@ public:
             FASTOR_ASSERT(src.self().dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
-        T *_data = expr.data();
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             if (fl_expr.eval_s(i)) {
-                _data[i] -= src.self().template eval_s<T>(i);
+                _expr.data()[i] -= src.self().template eval_s<T>(i);
             }
         }
     }
 
-    template<typename Derived, size_t OTHER_DIMS>
-    void operator *=(const AbstractTensor<Derived,OTHER_DIMS> &src) {
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+    void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &src) {
+        const typename Derived::result_type& tmp = evaluate(src.self());
+        this->operator*=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
+    void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &src) {
 #ifndef NDEBUG
         FASTOR_ASSERT(src.self().size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -113,16 +131,20 @@ public:
             FASTOR_ASSERT(src.self().dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
-        T *_data = expr.data();
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             if (fl_expr.eval_s(i)) {
-                _data[i] *= src.self().template eval_s<T>(i);
+                _expr.data()[i] *= src.self().template eval_s<T>(i);
             }
         }
     }
 
-    template<typename Derived, size_t OTHER_DIMS>
-    void operator /=(const AbstractTensor<Derived,OTHER_DIMS> &src) {
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+    void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &src) {
+        const typename Derived::result_type& tmp = evaluate(src.self());
+        this->operator/=(tmp);
+    }
+    template<typename Derived, size_t OTHER_DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
+    void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &src) {
 #ifndef NDEBUG
         FASTOR_ASSERT(src.self().size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
@@ -130,10 +152,9 @@ public:
             FASTOR_ASSERT(src.self().dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
-        T *_data = expr.data();
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             if (fl_expr.eval_s(i)) {
-                _data[i] /= src.self().template eval_s<T>(i);
+                _expr.data()[i] /= src.self().template eval_s<T>(i);
             }
         }
     }
@@ -142,10 +163,9 @@ public:
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator=(U num) {
         T tnum = (T)num;
-        T *_data = expr.data();
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             if (fl_expr.eval_s(i)) {
-                _data[i] = tnum;
+                _expr.data()[i] = tnum;
             }
         }
     }
@@ -153,10 +173,9 @@ public:
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator+=(U num) {
         T tnum = (T)num;
-        T *_data = expr.data();
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             if (fl_expr.eval_s(i)) {
-                _data[i] += tnum;
+                _expr.data()[i] += tnum;
             }
         }
     }
@@ -164,10 +183,9 @@ public:
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator-=(U num) {
         T tnum = (T)num;
-        T *_data = expr.data();
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             if (fl_expr.eval_s(i)) {
-                _data[i] -= tnum;
+                _expr.data()[i] -= tnum;
             }
         }
     }
@@ -175,10 +193,9 @@ public:
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator*=(U num) {
         T tnum = (T)num;
-        T *_data = expr.data();
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             if (fl_expr.eval_s(i)) {
-                _data[i] *= tnum;
+                _expr.data()[i] *= tnum;
             }
         }
     }
@@ -186,10 +203,9 @@ public:
     template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
     void operator/=(U num) {
         T tnum = T(1)/(T)num;
-        T *_data = expr.data();
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             if (fl_expr.eval_s(i)) {
-                _data[i] *= tnum;
+                _expr.data()[i] *= tnum;
             }
         }
     }
@@ -203,14 +219,14 @@ public:
         SIMDVector<U,DEFAULT_ABI> _vec;
         U inds[_Stride];
         for (FASTOR_INDEX j=0; j<_Stride; ++j)
-            inds[j] = fl_expr.eval_s(i+j) ? expr.eval_s(i+j) : 0;
+            inds[j] = fl_expr.eval_s(i+j) ? _expr.eval_s(i+j) : 0;
         _vec.load(inds,false);
         return _vec;
     }
 
     template<typename U=T>
     FASTOR_INLINE U eval_s(FASTOR_INDEX i) const {
-        return fl_expr.eval_s(i) ? expr.eval_s(i) : 0;
+        return fl_expr.eval_s(i) ? _expr.eval_s(i) : 0;
     }
 
     template<typename U=T>
@@ -219,14 +235,14 @@ public:
         SIMDVector<U,DEFAULT_ABI> _vec;
         U inds[_Stride];
         for (FASTOR_INDEX j=0; j<_Stride; ++j)
-            inds[j] = fl_expr.eval_s(i,k+j) ? expr.eval_s(i,k+j) : 0;
+            inds[j] = fl_expr.eval_s(i,k+j) ? _expr.eval_s(i,k+j) : 0;
         _vec.load(inds,false);
         return _vec;
     }
 
     template<typename U=T>
     FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX k) const {
-        return fl_expr.eval_s(i,k) ? expr.eval_s(i,k) : 0;
+        return fl_expr.eval_s(i,k) ? _expr.eval_s(i,k) : 0;
     }
 
     template<typename U=T>
@@ -235,14 +251,14 @@ public:
         SIMDVector<U,DEFAULT_ABI> _vec;
         U inds[_Stride];
         for (FASTOR_INDEX j=0; j<_Stride; ++j)
-            inds[j] = fl_expr.teval_s(as) ? expr.teval_s(as) : 0;
+            inds[j] = fl_expr.teval_s(as) ? _expr.teval_s(as) : 0;
         _vec.load(inds,false);
         return _vec;
     }
 
     template<typename U=T>
     FASTOR_INLINE U teval_s(const std::array<int,DIMS>& as) const {
-        return fl_expr.teval_s(as) ? expr.teval_s(as) : 0;
+        return fl_expr.teval_s(as) ? _expr.teval_s(as) : 0;
     }
     //------------------------------------------------------------------------------------//
 

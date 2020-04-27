@@ -35,18 +35,34 @@ void run() {
         a4(seq(0,2,1),seq(first,2)) /= 3;
         FASTOR_EXIT_ASSERT(abs(norm(a4) - 1087.620165) < 1e-3);
 
+        // Check for both when right operand requires/does not require evaluation
         a4(all,all) = a4;
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 3049.5) < Tol);
+        // this is one of those quirkey IEEE cases where SP and DP differ
+        // just check [a4 % trans(a4) % a4] with current a4 values
+        // a4(all,all) = a4 + (a4 % trans(a4) % a4 - a4 % trans(a4) % a4);
+        // FASTOR_EXIT_ASSERT(abs(a4.sum() - 3049.5) < Tol);
+        a4(all,all) = a4 + trans(trans(a4)) - trans(trans(a4));
         FASTOR_EXIT_ASSERT(abs(a4.sum() - 3049.5) < Tol);
         a4(all,all) += 2*a4;
         FASTOR_EXIT_ASSERT(abs(a4.sum() - 9148.5) < Tol);
+        a4(all,all) += trans(trans(a4)) - trans(trans(a4));
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 9148.5) < Tol);
         a4(seq(first,last),seq(0,-1)) -= 2*a4;
         FASTOR_EXIT_ASSERT(abs(a4.sum() + 9148.5) < Tol);
+        a4(all,all) -= trans(trans(a4)) - trans(trans(a4));
+        FASTOR_EXIT_ASSERT(abs(a4.sum() + 9148.5) < Tol);
         a4(seq(0,2),seq(1,5,2)) *=10;
+        FASTOR_EXIT_ASSERT(abs(a4.sum() + 23107.5) < Tol);
+        a4(all,all) *= 1 + trans(trans(a4)) - trans(trans(a4));
         FASTOR_EXIT_ASSERT(abs(a4.sum() + 23107.5) < Tol);
         a4(seq(first,last),seq(first,last)) *=a4;
         FASTOR_EXIT_ASSERT(abs(a4.sum() - 139586878.125) < 20); // SP gives a large difference
         a4(all,all) /=a4;
         FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < Tol);
+        a4(all,all) /= 1 + trans(trans(a4)) - trans(trans(a4));
+        FASTOR_EXIT_ASSERT(abs(a4.sum() - 15.) < BigTol);
+
 
         a4(all,all) = a1(seq(3,last,4),seq(4,18,3));
         FASTOR_EXIT_ASSERT(abs(a4.sum() - 2205) < Tol);

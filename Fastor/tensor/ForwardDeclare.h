@@ -69,6 +69,10 @@ struct UnaryTanhOp;
 
 
 template<typename Expr, size_t DIMS>
+struct UnaryTransOp;
+
+
+template<typename Expr, size_t DIMS>
 struct TensorViewExpr;
 
 template<typename Expr, size_t DIMS>

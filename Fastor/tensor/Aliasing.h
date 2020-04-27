@@ -14,10 +14,41 @@ template<typename Derived, size_t DIM, typename T, size_t ... Rest>
 FASTOR_INLINE bool does_alias(const AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
     return dst.self().data() == src.data() ? true : false;
 }
-template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM>
-FASTOR_INLINE bool does_alias(const AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src) {
-    return does_alias(dst.self(),src.self());
-}
+// template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM>
+// FASTOR_INLINE bool does_alias(const AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src) {
+//     return does_alias(dst.self(),src.self());
+// }
+
+
+#define FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(NAME)\
+template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM>\
+FASTOR_INLINE bool does_alias(const AbstractTensor<Derived,DIM> &dst, const Unary ##NAME ## Op<OtherDerived,OtherDIM> &src) {\
+    return does_alias(dst.self(),src.expr().self());\
+}\
+
+FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Add )
+FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Sub )
+FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Abs )
+FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Sqrt)
+FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Exp )
+FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Log )
+FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Sin )
+FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Cos )
+FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Tan )
+FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Asin)
+FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Acos)
+FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Atan)
+FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Sinh)
+FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Cosh)
+FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Tanh)
+
+
+// FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Det  )
+// FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Norm)
+// FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Trace)
+FASTOR_MAKE_ALIAS_FUNC_UNARY_OPS(Trans)
+
+
 #define FASTOR_MAKE_ALIAS_FUNC_BINARY_OPS(NAME)\
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM>\
 FASTOR_INLINE bool does_alias(const AbstractTensor<Derived,DIM> &dst, const Binary ##NAME ## Op<TLhs,TRhs,OtherDIM> &src) {\

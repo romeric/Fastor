@@ -17,8 +17,8 @@ struct TensorConstFixedViewExprnD<TensorType<T,Rest...>,Fseqs...> :
     public AbstractTensor<TensorConstFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>,sizeof...(Fseqs)> {
 
 private:
-    const TensorType<T,Rest...> &expr;
-    constexpr FASTOR_INLINE Tensor<T,Rest...> get_tensor() const {return expr;};
+    const TensorType<T,Rest...> &_expr;
+    constexpr FASTOR_INLINE Tensor<T,Rest...> get_tensor() const {return _expr;};
     static constexpr std::array<size_t,sizeof...(Fseqs)> products_ = nprods_views<Index<Rest...>,
         typename std_ext::make_index_sequence<sizeof...(Fseqs)>::type>::values;
 public:
@@ -40,13 +40,14 @@ public:
     static constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) {
         return dimension_helper::dims[i];
     }
+    constexpr const TensorType<T,Rest...>& expr() const {return _expr;};
 private:
     static constexpr std::array<int,sizeof...(Fseqs)> _dims = dimension_helper::dims;
     static constexpr bool _is_vectorisable = _dims[DIMS-1] % V::Size == 0 && (get_nth_type<DIMS-1,Fseqs...>::_step==1) ? true : false;
     static constexpr bool _is_strided_vectorisable = _dims[DIMS-1] % V::Size == 0 && (get_nth_type<DIMS-1,Fseqs...>::_step!=1) ? true : false;
 public:
 
-    constexpr FASTOR_INLINE TensorConstFixedViewExprnD(const TensorType<T,Rest...> &_ex) : expr(_ex) {}
+    constexpr FASTOR_INLINE TensorConstFixedViewExprnD(const TensorType<T,Rest...> &_ex) : _expr(_ex) {}
     //----------------------------------------------------------------------------------------------//
 
     // Evals
@@ -66,7 +67,7 @@ public:
             inds[j] = 0;
             get_index_v<0,DIMS-1>::Do(j,inds, as);
         }
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
@@ -82,7 +83,7 @@ public:
         }
         int ind = 0;
         get_index_s<0,DIMS-1>::Do(ind, as);
-        return expr.eval_s(ind);
+        return _expr.eval_s(ind);
     }
 
 
@@ -103,7 +104,7 @@ public:
             inds[j] = 0;
             get_index_v<0,DIMS-1>::Do(j, inds, as);
         }
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
@@ -121,17 +122,17 @@ public:
         int ind = 0;
         get_index_s<0,DIMS-1>::Do(ind, as);
 
-        return expr.eval_s(ind);
+        return _expr.eval_s(ind);
     }
 
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIMS>& as) const {
         int ind = 0;
         get_index_s<0,DIMS-1>::Do(ind, as);
-        FASTOR_IF_CONSTEXPR (_is_vectorisable) return SIMDVector<T,DEFAULT_ABI>(&expr.data()[ind],false);
+        FASTOR_IF_CONSTEXPR (_is_vectorisable) return SIMDVector<T,DEFAULT_ABI>(&_expr.data()[ind],false);
         else FASTOR_IF_CONSTEXPR (_is_strided_vectorisable) {
             V _vec;
-            vector_setter(_vec,expr.data(),ind,get_nth_pt<DIMS-1,Fseqs...>::_step);
+            vector_setter(_vec,_expr.data(),ind,get_nth_pt<DIMS-1,Fseqs...>::_step);
             return _vec;
         }
         else {
@@ -154,7 +155,7 @@ public:
                 }
             }
 
-            vector_setter(_vec,expr.data(),inds);
+            vector_setter(_vec,_expr.data(),inds);
             return _vec;
         }
     }
@@ -163,7 +164,7 @@ public:
     FASTOR_INLINE U teval_s(const std::array<int,DIMS>& as) const {
         int ind = 0;
         get_index_s<0,DIMS-1>::Do(ind, as);
-        return expr.eval_s(ind);
+        return _expr.eval_s(ind);
     }
     //----------------------------------------------------------------------------------------------//
 
@@ -227,9 +228,9 @@ struct TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...> :
     public AbstractTensor<TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>,sizeof...(Fseqs)> {
 
 private:
-    TensorType<T,Rest...> &expr;
+    TensorType<T,Rest...> &_expr;
     bool does_alias = false;
-    constexpr FASTOR_INLINE Tensor<T,Rest...> get_tensor() const {return expr;};
+    constexpr FASTOR_INLINE Tensor<T,Rest...> get_tensor() const {return _expr;};
     static constexpr std::array<size_t,sizeof...(Fseqs)> products_ = nprods_views<Index<Rest...>,
         typename std_ext::make_index_sequence<sizeof...(Fseqs)>::type>::values;
 public:
@@ -251,6 +252,7 @@ public:
     static constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) {
         return dimension_helper::dims[i];
     }
+    constexpr const TensorType<T,Rest...>& expr() const {return _expr;};
 private:
     static constexpr std::array<int,sizeof...(Fseqs)> _dims = dimension_helper::dims;
     static constexpr bool _is_vectorisable = _dims[DIMS-1] % V::Size == 0 && (get_nth_type<DIMS-1,Fseqs...>::_step==1) ? true : false;
@@ -262,7 +264,7 @@ public:
         return *this;
     }
 
-    constexpr FASTOR_INLINE TensorFixedViewExprnD(TensorType<T,Rest...> &_ex) : expr(_ex) {}
+    constexpr FASTOR_INLINE TensorFixedViewExprnD(TensorType<T,Rest...> &_ex) : _expr(_ex) {}
     //----------------------------------------------------------------------------------------------//
 
     // View evalution operators
@@ -290,7 +292,7 @@ public:
         }
 #endif
 
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -375,7 +377,7 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = expr.data();
+        T *_data = _expr.data();
         std::array<int,DIMS> as = {};
         int total = size();
         int jt, counter = 0;
@@ -487,7 +489,7 @@ public:
             inds[j] = 0;
             get_index_v<0,DIMS-1>::Do(j,inds, as);
         }
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
@@ -503,7 +505,7 @@ public:
         }
         int ind = 0;
         get_index_s<0,DIMS-1>::Do(ind, as);
-        return expr.eval_s(ind);
+        return _expr.eval_s(ind);
     }
 
 
@@ -524,7 +526,7 @@ public:
             inds[j] = 0;
             get_index_v<0,DIMS-1>::Do(j, inds, as);
         }
-        vector_setter(_vec,expr.data(),inds);
+        vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
 
@@ -542,17 +544,17 @@ public:
         int ind = 0;
         get_index_s<0,DIMS-1>::Do(ind, as);
 
-        return expr.eval_s(ind);
+        return _expr.eval_s(ind);
     }
 
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIMS>& as) const {
         int ind = 0;
         get_index_s<0,DIMS-1>::Do(ind, as);
-        FASTOR_IF_CONSTEXPR (_is_vectorisable) return SIMDVector<T,DEFAULT_ABI>(&expr.data()[ind],false);
+        FASTOR_IF_CONSTEXPR (_is_vectorisable) return SIMDVector<T,DEFAULT_ABI>(&_expr.data()[ind],false);
         else FASTOR_IF_CONSTEXPR (_is_strided_vectorisable) {
             V _vec;
-            vector_setter(_vec,expr.data(),ind,get_nth_pt<DIMS-1,Fseqs...>::_step);
+            vector_setter(_vec,_expr.data(),ind,get_nth_pt<DIMS-1,Fseqs...>::_step);
             return _vec;
         }
         else {
@@ -575,7 +577,7 @@ public:
                 }
             }
 
-            vector_setter(_vec,expr.data(),inds);
+            vector_setter(_vec,_expr.data(),inds);
             return _vec;
         }
     }
@@ -584,7 +586,7 @@ public:
     FASTOR_INLINE U teval_s(const std::array<int,DIMS>& as) const {
         int ind = 0;
         get_index_s<0,DIMS-1>::Do(ind, as);
-        return expr.eval_s(ind);
+        return _expr.eval_s(ind);
     }
     //----------------------------------------------------------------------------------------------//
 
