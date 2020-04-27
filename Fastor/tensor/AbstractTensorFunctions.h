@@ -47,7 +47,6 @@ FASTOR_INLINE typename Derived::scalar_type sum(const AbstractTensor<Derived,DIM
     return out.sum();
 }
 
-
 template<class Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE typename Derived::scalar_type product(const AbstractTensor<Derived,DIMS> &_src) {
 

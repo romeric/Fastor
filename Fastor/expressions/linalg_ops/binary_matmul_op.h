@@ -166,6 +166,87 @@ FASTOR_INLINE void matmul_dispatcher_div(const Tensor<T,J> &a, const Tensor<T,J,
 
 
 
+// Generic matmul function for AbstractTensor types are provided here
+template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
+    enable_if_t_<is_less_equal_v_<DIM0,2> && is_less_equal_v_<DIM1,2>
+    && !is_tensor_v<Derived0> && !is_tensor_v<Derived1>,bool> = 0 >
+FASTOR_INLINE
+conditional_t_<Derived0::result_type::Dimension_t::value == 1,
+    Tensor<typename scalar_type_finder<Derived0>::type,
+        Derived1::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived1::result_type>::dims[1] : 1>,
+    conditional_t_<Derived1::result_type::Dimension_t::value == 1,
+        Tensor<typename scalar_type_finder<Derived0>::type,
+            Derived0::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived0::result_type>::dims[0] : 1>,
+        Tensor<typename scalar_type_finder<Derived0>::type,
+            Derived0::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived0::result_type>::dims[0] : 1,
+            Derived1::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived1::result_type>::dims[1] : 1>
+    >
+>
+// auto
+matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b) {
+    using lhs_type = typename Derived0::result_type;
+    using rhs_type = typename Derived1::result_type;
+    const lhs_type tmp_a(a);
+    const rhs_type tmp_b(b);
+    return matmul(tmp_a,tmp_b);
+}
+
+template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
+    enable_if_t_<is_less_equal_v_<DIM0,2> && is_less_equal_v_<DIM1,2>
+    && !is_tensor_v<Derived0> && is_tensor_v<Derived1>,bool> = 0 >
+FASTOR_INLINE
+conditional_t_<Derived0::result_type::Dimension_t::value == 1,
+    Tensor<typename scalar_type_finder<Derived0>::type,
+        Derived1::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived1::result_type>::dims[1] : 1>,
+    conditional_t_<Derived1::result_type::Dimension_t::value == 1,
+        Tensor<typename scalar_type_finder<Derived0>::type,
+            Derived0::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived0::result_type>::dims[0] : 1>,
+        Tensor<typename scalar_type_finder<Derived0>::type,
+            Derived0::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived0::result_type>::dims[0] : 1,
+            Derived1::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived1::result_type>::dims[1] : 1>
+    >
+>
+// auto
+matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b) {
+    using lhs_type = typename Derived0::result_type;
+    const lhs_type tmp_a(a);
+    return matmul(tmp_a,b);
+}
+
+template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
+    enable_if_t_<is_less_equal_v_<DIM0,2> && is_less_equal_v_<DIM1,2>
+    && is_tensor_v<Derived0> && !is_tensor_v<Derived1>,bool> = 0 >
+FASTOR_INLINE
+conditional_t_<Derived0::result_type::Dimension_t::value == 1,
+    Tensor<typename scalar_type_finder<Derived0>::type,
+        Derived1::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived1::result_type>::dims[1] : 1>,
+    conditional_t_<Derived1::result_type::Dimension_t::value == 1,
+        Tensor<typename scalar_type_finder<Derived0>::type,
+            Derived0::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived0::result_type>::dims[0] : 1>,
+        Tensor<typename scalar_type_finder<Derived0>::type,
+            Derived0::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived0::result_type>::dims[0] : 1,
+            Derived1::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived1::result_type>::dims[1] : 1>
+    >
+>
+// auto
+matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b) {
+    using rhs_type = typename Derived1::result_type;
+    const rhs_type tmp_b(b);
+    return matmul(a,tmp_b);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 // assignments
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
     typename std::enable_if<is_tensor_v<remove_all_t<typename BinaryMatMulOp<TLhs, TRhs, OtherDIM>::lhs_expr_type>> &&

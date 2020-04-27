@@ -21,6 +21,10 @@ template<typename T, size_t ... Rest0, size_t ... Rest1, size_t DIM>
 struct is_binary_matmul_op<BinaryMatMulOp<Tensor<T,Rest0...>,Tensor<T,Rest1...>,DIM>> {
     static constexpr bool value = true;
 };
+template<typename Derived0, typename Derived1, size_t DIM>
+struct is_binary_matmul_op<BinaryMatMulOp<Derived0,Derived1,DIM>> {
+    static constexpr bool value = true;
+};
 
 template<typename Derived>
 struct has_binary_matmul_op {
@@ -28,6 +32,10 @@ struct has_binary_matmul_op {
 };
 template<typename T, size_t ... Rest0, size_t ... Rest1, size_t DIM>
 struct has_binary_matmul_op<BinaryMatMulOp<Tensor<T,Rest0...>,Tensor<T,Rest1...>,DIM>> {
+    static constexpr bool value = true;
+};
+template<typename Derived0, typename Derived1, size_t DIM>
+struct has_binary_matmul_op<BinaryMatMulOp<Derived0,Derived1,DIM>> {
     static constexpr bool value = true;
 };
 template<template<typename,size_t> class UnaryExpr, typename Expr, size_t DIM>
@@ -53,8 +61,8 @@ template<typename Derived>
 struct is_unary_trans_op {
     static constexpr bool value = false;
 };
-template<typename T, size_t ... Rest, size_t DIM>
-struct is_unary_trans_op<UnaryTransOp<Tensor<T,Rest...>,DIM>> {
+template<typename Derived, size_t DIM>
+struct is_unary_trans_op<UnaryTransOp<Derived,DIM>> {
     static constexpr bool value = true;
 };
 
@@ -62,8 +70,8 @@ template<typename Derived>
 struct has_unary_trans_op {
     static constexpr bool value = is_unary_trans_op<Derived>::value ? true : false;
 };
-template<typename T, size_t ... Rest, size_t DIM>
-struct has_unary_trans_op<UnaryTransOp<Tensor<T,Rest...>,DIM>> {
+template<typename Derived, size_t DIM>
+struct has_unary_trans_op<UnaryTransOp<Derived,DIM>> {
     static constexpr bool value = true;
 };
 template<template<typename,size_t> class UnaryExpr, typename Expr, size_t DIM>
@@ -89,8 +97,8 @@ template<typename Derived>
 struct is_unary_inv_op {
     static constexpr bool value = false;
 };
-template<typename T, size_t ... Rest, size_t DIM>
-struct is_unary_inv_op<UnaryInvOp<Tensor<T,Rest...>,DIM>> {
+template<typename Derived, size_t DIM>
+struct is_unary_inv_op<UnaryInvOp<Derived,DIM>> {
     static constexpr bool value = true;
 };
 
@@ -98,8 +106,8 @@ template<typename Derived>
 struct has_unary_inv_op {
     static constexpr bool value = is_unary_inv_op<Derived>::value ? true : false;
 };
-template<typename T, size_t ... Rest, size_t DIM>
-struct has_unary_inv_op<UnaryInvOp<Tensor<T,Rest...>,DIM>> {
+template<typename Derived, size_t DIM>
+struct has_unary_inv_op<UnaryInvOp<Derived,DIM>> {
     static constexpr bool value = true;
 };
 template<template<typename,size_t> class UnaryExpr, typename Expr, size_t DIM>

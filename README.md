@@ -217,7 +217,7 @@ The x-axis shows the number FLOPS saved/reduced over single expression evaluatio
 
 
 ### Domain-aware numerical analysis
-Fastor tensors are not just multi-dimensional arrays like in other C++ libraries. Fastor tensors have a notion of index notation (which is why it is possible to perform different operatrion minimisations on them) and manifold transformation. For instance, in the field of computational mechanics it is customary to transform high order tensors to low rank tensors using a given transformation operator such as Voigt transformation. Fastor has domain-specific features for such tensorial operations. For example, consider the dyadic product `A_ik*B_jl`, that can be computed in Fastor like
+Fastor tensors are not just multi-dimensional arrays like in other C++ libraries. Fastor tensors have a notion of index notation (which is why it is possible to perform various operatrion minimisations on them) and manifold transformation. For instance, in the field of computational mechanics it is customary to transform high order tensors to low rank tensors using a given transformation operator such as the Voigt transformation. Fastor has domain-specific features for such tensorial operations. For example, consider the dyadic product `A_ik*B_jl`, that can be computed in Fastor like
 ~~~c++
 Tensor<double,3,3> A,B;
 A.random(); B.random();
@@ -280,7 +280,7 @@ is_symmetric(axis_1, axis_3); // is the tensor symmetric in the axis_1 x axis_3 
 ~~~
 
 ### Basic SIMD optimised linear algebra routines for small tensors
-All basic numerical linear algebra subroutines for small tensors (where the overhead of calling vendor/optimised `BLAS` is typically not worth it) are fully SIMD optimised and efficiently implemented. Note that Fastor exposes two functionally equivalent interfaces for linear algebra functions, the more verbose names (matmul, determinant, inverse etc) evaluate immediately and can only take tensors as arguments and the less verbose ones (%, det, inv) evaluate lazy
+All basic numerical linear algebra subroutines for small tensors (where the overhead of calling vendor/optimised `BLAS` is typically not worth it) are fully SIMD optimised and efficiently implemented. Note that Fastor exposes two functionally equivalent interfaces for linear algebra functions, the more verbose names (matmul, determinant, inverse etc) evaluate immediately and the less verbose ones (%, det, inv) evaluate lazy
 ~~~c++
 Tensor<double,3,3> A,B;
 // fill A and B

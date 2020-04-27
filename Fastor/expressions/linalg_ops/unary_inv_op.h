@@ -209,6 +209,22 @@ FASTOR_INLINE Tensor<T,M,M> inverse(const Tensor<T,M,M> &in) {
     return out;
 }
 
+// Inverse for generic expressions is provided here
+template<typename Derived, size_t DIM>
+FASTOR_INLINE
+typename Derived::result_type
+inverse(const AbstractTensor<Derived,DIM> &src) {
+    // If we are here Derived is already an expression
+    using result_type = typename Derived::result_type;
+    const result_type tmp(src.self());
+    return inverse(tmp);
+}
+
+
+
+
+
+
 // assignments
 template<typename Derived, size_t DIM, typename Expr, size_t OtherDIM>
 FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, const UnaryInvOp<Expr, OtherDIM> &src) {

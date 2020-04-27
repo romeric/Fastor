@@ -38,8 +38,26 @@ private:
 template<typename Expr, size_t DIM0>
 FASTOR_INLINE UnaryTransOp<Expr, DIM0>
 trans(const AbstractTensor<Expr,DIM0> &src) {
-  return UnaryTransOp<Expr, DIM0>(src.self());
+    return UnaryTransOp<Expr, DIM0>(src.self());
 }
+
+
+
+// Transpose for generic expressions is provided here
+template<typename Expr, size_t DIM0>
+FASTOR_INLINE
+Tensor<
+    typename scalar_type_finder<Expr>::type,
+    get_tensor_dimensions<typename Expr::result_type>::dims[1],
+    get_tensor_dimensions<typename Expr::result_type>::dims[0]>
+transpose(const AbstractTensor<Expr,DIM0> &src) {
+    // If we are here Expr is already an expression
+    using result_type = typename Expr::result_type;
+    const result_type tmp(src.self());
+    return transpose(tmp);
+}
+
+
 
 
 // assignments

@@ -46,7 +46,7 @@ void test_linalg() {
         FASTOR_EXIT_ASSERT(std::abs(determinant(t1)+2.0)< BigTol);
         FASTOR_EXIT_ASSERT(std::abs(trace(t1)-13)< Tol);
         FASTOR_EXIT_ASSERT(std::abs(norm(matmul(t1,t1)) - 173.4646938) < BigTol);
-        // FASTOR_EXIT_ASSERT(std::abs(norm(matmul(t1-0,t1+t1-t1)) - 173.4646938) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(matmul(t1-0,t1+t1-t1)) - 173.4646938) < BigTol);
         FASTOR_EXIT_ASSERT(std::abs(norm(cofactor(t1)) - 13.1909059) < BigTol);
         FASTOR_EXIT_ASSERT(std::abs(norm(transpose(adjoint(t1))) - 13.1909059) < BigTol);
 
@@ -67,7 +67,7 @@ void test_linalg() {
         FASTOR_EXIT_ASSERT(std::abs(determinant(t1))< Tol);
         FASTOR_EXIT_ASSERT(std::abs(trace(t1)-12)< Tol);
         FASTOR_EXIT_ASSERT(std::abs(norm(matmul(t1,t1)) - 187.637949) < BigTol);
-        // FASTOR_EXIT_ASSERT(std::abs(norm(matmul(2*t1-t1,t1/2*2)) - 187.637949) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(matmul(2*t1-t1,t1/2*2)) - 187.637949) < BigTol);
         FASTOR_EXIT_ASSERT(std::abs(norm(cofactor(t1)) - 18) < BigTol);
         FASTOR_EXIT_ASSERT(std::abs(norm(transpose(adjoint(t1))) - 18) < BigTol);
 
@@ -165,6 +165,16 @@ void test_linalg() {
         TEST_TRANSPOSE(t1);
     }
 
+    // transpose expressions
+    {
+        Tensor<T,2,3> t1; t1.iota(5);
+        FASTOR_EXIT_ASSERT(std::abs(sum(transpose(t1 + 0)) - sum(t1)) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(sum(trans(t1 + 0))     - sum(t1)) < BigTol);
+
+        FASTOR_EXIT_ASSERT(std::abs(sum(transpose(t1 + t1*2 - t1 - t1)) - sum(t1)) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(sum(trans(t1 + t1*2 - t1 - t1))     - sum(t1)) < BigTol);
+    }
+
     // Misc
     {
         Tensor<T,2,2> a0; a0.iota(3);
@@ -225,6 +235,19 @@ void test_linalg() {
         for (size_t i=0; i<15; ++i) a7(i,i) = 100;
         FASTOR_EXIT_ASSERT(std::abs(sum(inverse(a7)) - 0.009215486449015996) < BigTol);
         FASTOR_EXIT_ASSERT(std::abs(sum(inv(a7))     - 0.009215486449015996) < BigTol);
+    }
+
+
+
+    // inverse/inv of expressions
+    {
+        Tensor<T,2,2> a0; a0.iota(1);
+        for (size_t i=0; i<2; ++i) a0(i,i) = 100;
+        FASTOR_EXIT_ASSERT(std::abs(sum(inverse(a0 + 0)) - 0.01951170702421453) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(sum(inv(a0 + 0))     - 0.01951170702421453) < BigTol);
+
+        FASTOR_EXIT_ASSERT(std::abs(sum(inverse(a0 + a0 - a0)) - 0.01951170702421453) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(sum(inv(a0 + a0 - a0))     - 0.01951170702421453) < BigTol);
     }
 
     print(FGRN(BOLD("All tests passed successfully")));
