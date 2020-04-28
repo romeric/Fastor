@@ -198,6 +198,36 @@ FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& ou
     out(fseq<N,M>(),fseq<N,M>()) = block_bb;
 }
 
+template<typename T, size_t M, enable_if_t_<is_greater_v_<M,128> && is_less_equal_v_<M,256>,bool> = false>
+FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
+
+    constexpr size_t N = 128UL; // start size
+    Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
+    Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
+    Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
+    Tensor<T,M-N,M-N> d = in(fseq<N,M>(),fseq<N,M>());
+
+    Tensor<T,N,N> inv_a;
+    inverse_dispatcher(a, inv_a);
+
+    Tensor<T,M-N,N> c_inva = matmul(c, inv_a);
+
+    Tensor<T,M-N,M-N> block_bb;
+    inverse_dispatcher(static_cast<Tensor<T,M-N,M-N>>(d - matmul(c_inva, b)),block_bb);
+
+    Tensor<T,N,M-N> inva_b = matmul(inv_a, b);
+    Tensor<T,M-N,N> bb_c_inva = matmul(block_bb, c_inva);
+
+    Tensor<T,N  ,N  > block_aa = inv_a + matmul(inva_b, bb_c_inva);
+    Tensor<T,N  ,M-N> block_ab = -matmul(inva_b, block_bb);
+    Tensor<T,M-N,N  > block_ba = -bb_c_inva;
+
+    out(fseq<0,N>(),fseq<0,N>()) = block_aa;
+    out(fseq<0,N>(),fseq<N,M>()) = block_ab;
+    out(fseq<N,M>(),fseq<0,N>()) = block_ba;
+    out(fseq<N,M>(),fseq<N,M>()) = block_bb;
+}
+
 } // internal
 
 
