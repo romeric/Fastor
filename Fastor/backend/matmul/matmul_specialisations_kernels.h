@@ -587,7 +587,7 @@ void _matmul8k8_double(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b,
 
 template<>
 FASTOR_INLINE void _matmul<double,8,8,8>(const double * FASTOR_RESTRICT a, const double * FASTOR_RESTRICT b, double * FASTOR_RESTRICT out) {
-    internal::_matmul8k8_double<T,M,K,N>(a,b,out);
+    internal::_matmul8k8_double<double,M,K,N>(a,b,out);
     return;
 }
 #endif
