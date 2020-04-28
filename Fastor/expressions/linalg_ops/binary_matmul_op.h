@@ -19,11 +19,10 @@ struct BinaryMatMulOp: public AbstractTensor<BinaryMatMulOp<TLhs, TRhs, DIM0>,DI
     using rhs_type = typename TRhs::result_type;
     static constexpr FASTOR_INDEX lhs_rank = lhs_type::Dimension_t::value;
     static constexpr FASTOR_INDEX rhs_rank = rhs_type::Dimension_t::value;
-    // static constexpr FASTOR_INDEX M = lhs_rank == 2 ? get_tensor_dimensions<lhs_type>::dims[0] : 1;
-    static constexpr FASTOR_INDEX M = get_tensor_dimensions<lhs_type>::dims[0];
-    static constexpr FASTOR_INDEX K = lhs_rank == 2 ? get_tensor_dimensions<lhs_type>::dims[1] : 1;
-    static constexpr FASTOR_INDEX N = rhs_rank == 2 ? get_tensor_dimensions<rhs_type>::dims[1] : 1;
-    static constexpr FASTOR_INDEX K_other = get_tensor_dimensions<rhs_type>::dims[0];
+    static constexpr FASTOR_INDEX M = get_tensor_dimension_v<0,lhs_type>;
+    static constexpr FASTOR_INDEX K = get_tensor_dimension_v<1,lhs_type>;
+    static constexpr FASTOR_INDEX N = get_tensor_dimension_v<1,rhs_type>;
+    static constexpr FASTOR_INDEX K_other = get_tensor_dimension_v<0,rhs_type>;
     static constexpr FASTOR_INDEX flop_count = M*N*K;
     static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX rank() {return DIM0;}
@@ -174,13 +173,13 @@ template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
 FASTOR_INLINE
 conditional_t_<Derived0::result_type::Dimension_t::value == 1,
     Tensor<typename scalar_type_finder<Derived0>::type,
-        Derived1::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived1::result_type>::dims[1] : 1>,
+        get_tensor_dimension_v<1,typename Derived1::result_type> >,
     conditional_t_<Derived1::result_type::Dimension_t::value == 1,
         Tensor<typename scalar_type_finder<Derived0>::type,
-            Derived0::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived0::result_type>::dims[0] : 1>,
+            get_tensor_dimension_v<0,typename Derived0::result_type> >,
         Tensor<typename scalar_type_finder<Derived0>::type,
-            Derived0::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived0::result_type>::dims[0] : 1,
-            Derived1::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived1::result_type>::dims[1] : 1>
+            get_tensor_dimension_v<0,typename Derived0::result_type> ,
+            get_tensor_dimension_v<1,typename Derived1::result_type> >
     >
 >
 // auto
@@ -198,16 +197,15 @@ template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
 FASTOR_INLINE
 conditional_t_<Derived0::result_type::Dimension_t::value == 1,
     Tensor<typename scalar_type_finder<Derived0>::type,
-        Derived1::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived1::result_type>::dims[1] : 1>,
+        get_tensor_dimension_v<1,typename Derived1::result_type> >,
     conditional_t_<Derived1::result_type::Dimension_t::value == 1,
         Tensor<typename scalar_type_finder<Derived0>::type,
-            Derived0::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived0::result_type>::dims[0] : 1>,
+            get_tensor_dimension_v<0,typename Derived0::result_type> >,
         Tensor<typename scalar_type_finder<Derived0>::type,
-            Derived0::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived0::result_type>::dims[0] : 1,
-            Derived1::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived1::result_type>::dims[1] : 1>
+            get_tensor_dimension_v<0,typename Derived0::result_type> ,
+            get_tensor_dimension_v<1,typename Derived1::result_type> >
     >
 >
-// auto
 matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b) {
     using lhs_type = typename Derived0::result_type;
     const lhs_type tmp_a(a);
@@ -220,16 +218,15 @@ template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
 FASTOR_INLINE
 conditional_t_<Derived0::result_type::Dimension_t::value == 1,
     Tensor<typename scalar_type_finder<Derived0>::type,
-        Derived1::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived1::result_type>::dims[1] : 1>,
+        get_tensor_dimension_v<1,typename Derived1::result_type> >,
     conditional_t_<Derived1::result_type::Dimension_t::value == 1,
         Tensor<typename scalar_type_finder<Derived0>::type,
-            Derived0::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived0::result_type>::dims[0] : 1>,
+            get_tensor_dimension_v<0,typename Derived0::result_type> >,
         Tensor<typename scalar_type_finder<Derived0>::type,
-            Derived0::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived0::result_type>::dims[0] : 1,
-            Derived1::result_type::Dimension_t::value == 2 ? get_tensor_dimensions<typename Derived1::result_type>::dims[1] : 1>
+            get_tensor_dimension_v<0,typename Derived0::result_type> ,
+            get_tensor_dimension_v<1,typename Derived1::result_type> >
     >
 >
-// auto
 matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b) {
     using rhs_type = typename Derived1::result_type;
     const rhs_type tmp_b(b);

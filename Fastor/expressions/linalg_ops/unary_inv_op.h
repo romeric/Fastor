@@ -17,8 +17,8 @@ template<typename Expr, size_t DIM0>
 struct UnaryInvOp: public AbstractTensor<UnaryInvOp<Expr, DIM0>,DIM0> {
     using expr_type = expression_t<Expr>;
     using result_type = typename Expr::result_type;
-    static constexpr FASTOR_INDEX M = get_tensor_dimensions<result_type>::dims[0];
-    static constexpr FASTOR_INDEX N = get_tensor_dimensions<result_type>::dims[1];
+    static constexpr FASTOR_INDEX M = get_tensor_dimension_v<0,result_type>;
+    static constexpr FASTOR_INDEX N = get_tensor_dimension_v<1,result_type>;
     static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX rank() {return DIM0;}
     using scalar_type = typename scalar_type_finder<UnaryInvOp<Expr, DIM0>>::type;

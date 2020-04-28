@@ -30,15 +30,15 @@ SOFTWARE.
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------//
 
-// Error out for pre-C++11 compiler versions
+// Error out for pre-C++14 compiler versions
 //------------------------------------------------------------------------------------------------//
 #if defined(_MSC_VER)
-    #if _MSC_VER < 1800
-       #error FASTOR REQUIRES AN ISO C++11 COMPLIANT COMPILER
+    #if _MSC_VER < 1920
+       #error FASTOR REQUIRES AN ISO C++14 COMPLIANT COMPILER
     #endif
 #elif defined(__GNUC__) || defined(__GNUG__)
-    #if __cplusplus <= 199711L
-        #error FASTOR REQUIRES AN ISO C++11 COMPLIANT COMPILER
+    #if __cplusplus < 201402L
+        #error FASTOR REQUIRES AN ISO C++14 COMPLIANT COMPILER
     #endif
 #endif
 //------------------------------------------------------------------------------------------------//
@@ -94,7 +94,9 @@ SOFTWARE.
 // Determine CXX version
 //------------------------------------------------------------------------------------------------//
 #if defined(__cplusplus)
-    #if __cplusplus == 201103L
+    #if __cplusplus == 199711L
+        #define FASTOR_CXX_VERSION 1998
+    #elif __cplusplus == 201103L
         #define FASTOR_CXX_VERSION 2011
     #elif __cplusplus == 201402L
         #define FASTOR_CXX_VERSION 2014
@@ -351,6 +353,15 @@ SOFTWARE.
 
 
 // Fastor internal defines
+//------------------------------------------------------------------------------------------------//
+// Compiler version
+//------------------------------------------------------------------------------------------------//
+#define __FASTOR_MAJOR__ 0
+#define __FASTOR_MINOR__ 6
+#define __FASTOR_PATCHLEVEL__ 0
+#define __FASTOR__ (__FASTOR_MAJOR__ * 0x10000 + __FASTOR_MINOR__ * 0x100 + __FASTOR_PATCHLEVEL__)
+//------------------------------------------------------------------------------------------------//
+
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------//

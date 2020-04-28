@@ -188,6 +188,23 @@ template<typename T, size_t ... Rest>
 constexpr std::array<size_t,sizeof...(Rest)> get_tensor_dimensions<Tensor<T,Rest...>>::dims;
 template<typename T, size_t ... Rest>
 constexpr std::array<int,sizeof...(Rest)> get_tensor_dimensions<Tensor<T,Rest...>>::dims_int;
+
+// Conditional get tensor dimension
+// Return tensor dimension if Idx is within range else return Dim
+template<size_t Idx, size_t Dim, class X>
+struct if_get_tensor_dimension;
+
+template<size_t Idx, size_t Dim, typename T, size_t ... Rest>
+struct if_get_tensor_dimension<Idx,Dim,Tensor<T,Rest...>> {
+   static constexpr size_t value = (Idx < sizeof...(Rest)) ? get_value<Idx+1,Rest...>::value : 1;
+};
+
+template<size_t Idx, size_t Dim, class X>
+static constexpr size_t if_get_tensor_dimension_v = if_get_tensor_dimension<Idx,Dim,X>::value;
+
+// Gives one if Idx is outside range
+template<size_t Idx, class X>
+static constexpr size_t get_tensor_dimension_v = if_get_tensor_dimension<Idx,1,X>::value;
 //--------------------------------------------------------------------------------------------------------------------//
 
 

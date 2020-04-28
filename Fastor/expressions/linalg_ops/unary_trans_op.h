@@ -16,8 +16,8 @@ namespace Fastor {
 template<typename Expr, size_t DIM0>
 struct UnaryTransOp: public AbstractTensor<UnaryTransOp<Expr, DIM0>,DIM0> {
     using expr_type = expression_t<Expr>;
-    static constexpr FASTOR_INDEX M = get_tensor_dimensions<typename Expr::result_type>::dims[0];
-    static constexpr FASTOR_INDEX N = get_tensor_dimensions<typename Expr::result_type>::dims[1];
+    static constexpr FASTOR_INDEX M = get_tensor_dimension_v<0,typename Expr::result_type>;
+    static constexpr FASTOR_INDEX N = get_tensor_dimension_v<1,typename Expr::result_type>;
     static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX rank() {return DIM0;}
     using scalar_type = typename scalar_type_finder<UnaryTransOp<Expr, DIM0>>::type;
@@ -48,8 +48,8 @@ template<typename Expr, size_t DIM0>
 FASTOR_INLINE
 Tensor<
     typename scalar_type_finder<Expr>::type,
-    get_tensor_dimensions<typename Expr::result_type>::dims[1],
-    get_tensor_dimensions<typename Expr::result_type>::dims[0]>
+    get_tensor_dimension_v<1,typename Expr::result_type>,
+    get_tensor_dimension_v<0,typename Expr::result_type>>
 transpose(const AbstractTensor<Expr,DIM0> &src) {
     // If we are here Expr is already an expression
     using result_type = typename Expr::result_type;

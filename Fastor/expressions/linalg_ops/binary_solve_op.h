@@ -20,14 +20,14 @@ struct BinarySolveOp: public AbstractTensor<BinarySolveOp<TLhs, TRhs, DIM0>,DIM0
     using rhs_type = typename TRhs::result_type;
     static constexpr FASTOR_INDEX lhs_rank = lhs_type::Dimension_t::value;
     static constexpr FASTOR_INDEX rhs_rank = rhs_type::Dimension_t::value;
-    static constexpr FASTOR_INDEX M = get_tensor_dimensions<lhs_type>::dims[0];
-    static constexpr FASTOR_INDEX N = get_tensor_dimensions<lhs_type>::dims[1];
+    static constexpr FASTOR_INDEX M = get_tensor_dimension_v<0,lhs_type>;
+    static constexpr FASTOR_INDEX N = get_tensor_dimension_v<1,lhs_type>;
     /* Rows of RHS */
-    static constexpr FASTOR_INDEX M_other = get_tensor_dimensions<rhs_type>::dims[0];
+    static constexpr FASTOR_INDEX M_other = get_tensor_dimension_v<0,rhs_type>;
     /* Columns of RHS */
-    static constexpr FASTOR_INDEX N_other = rhs_rank == 2 ? get_tensor_dimensions<rhs_type>::dims[1] : 1;
+    static constexpr FASTOR_INDEX N_other = get_tensor_dimension_v<1,rhs_type>;
     /* This is not the actual flop cost, but an estimate used for expressions reordering */
-    static constexpr FASTOR_INDEX flop_count = M*M*M;
+    static constexpr FASTOR_INDEX flop_count = M*M*M*N_other;
     static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX rank() {return DIM0;}
     using scalar_type = typename scalar_type_finder<BinarySolveOp<TLhs, TRhs, DIM0>>::type;
@@ -42,7 +42,7 @@ struct BinarySolveOp: public AbstractTensor<BinarySolveOp<TLhs, TRhs, DIM0>,DIM0
     }
 
     /* It is possible to solve for multiple right hand sides */
-    constexpr FASTOR_INLINE FASTOR_INDEX size() const {return M * N_other                           ;}
+    constexpr FASTOR_INLINE FASTOR_INDEX size() const {return M * N_other;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return i==0 ? M : N_other ;}
 
     constexpr FASTOR_INLINE lhs_expr_type lhs() const {return _lhs;}
