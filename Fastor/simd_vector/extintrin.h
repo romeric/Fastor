@@ -36,48 +36,113 @@
 
 namespace Fastor {
 
-
-#ifdef FASTOR_SSE4_2_IMPL
-FASTOR_INLINE __m128 _mm_loadl3_ps(const float *value) {
-    //! Align load a vector into the first three elements of an xmm
-    __m128i xy = _mm_loadl_epi64((const __m128i*)value);
-    __m128 z = _mm_load_ss(&value[2]);
+// Mask load the 3 lower parts
+#ifdef FASTOR_SSE2_IMPL
+FASTOR_INLINE __m128 _mm_loadl3_ps(const float *arr) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+    return _mm_mask_load_ps(ZEROPS, (__mmask8)0x07, arr);
+#elif defined(FASTOR_AVX_IMPL)
+    __m128i mask = _mm_set_epi32(0,-1,-1,-1);
+    return _mm_maskload_ps(arr,(__m128i) mask);
+#else
+    __m128i xy = _mm_loadl_epi64((const __m128i*)arr);
+    __m128 z   = _mm_load_ss(&arr[2]);
     return _mm_movelh_ps(_mm_castsi128_ps(xy), z);
+#endif
 }
 
-FASTOR_INLINE __m128 _mm_loadul3_ps(const float *value) {
-    //! Unalign load a vector into the first three elements of an xmm
-    __m128 x = _mm_load_ss(value);
-    __m128 y = _mm_load_ss(&value[1]);
-    __m128 z = _mm_load_ss(&value[2]);
+FASTOR_INLINE __m128 _mm_loadul3_ps(const float *arr) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+    return _mm_mask_loadu_ps(ZEROPS, (__mmask8)0x07, arr);
+#elif defined(FASTOR_AVX_IMPL)
+    // AVX maskloads apparently have no alignment requirement
+    __m128i mask = _mm_set_epi32(0,-1,-1,-1);
+    return _mm_maskload_ps(arr,(__m128i) mask);
+#else
+    __m128 x = _mm_load_ss( arr  );
+    __m128 y = _mm_load_ss(&arr[1]);
+    __m128 z = _mm_load_ss(&arr[2]);
     __m128 xy = _mm_movelh_ps(x, y);
     return _mm_shuffle_ps(xy, z, _MM_SHUFFLE(2, 0, 2, 0));
+#endif
 }
 #endif
 
 #ifdef FASTOR_AVX_IMPL
-FASTOR_INLINE __m256d _mm256_loadl3_pd(const double *value) {
-    //! Align load a vector into the first three elements of an ymm
-    __m128d xy   = _mm_load_pd(value);
-    __m128d z    = _mm_load_sd(&value[2]);
-    __m256d vec  = _mm256_castpd128_pd256(xy);
-    return _mm256_insertf128_pd(vec, z,0x1);
-}
-
-FASTOR_INLINE __m256d _mm256_loadul3_pd(const double *value) {
-    //! Align load a vector into the first three elements of an ymm
-//    __m128d xy   = _mm_loadu_pd(value);
-//    __m128d z    = _mm_load_sd(&value[2]);
-//    __m256d vec  = _mm256_castpd128_pd256(xy);
-//    return _mm256_insertf128_pd(vec, z,0x1);
-    // Alternatively
-    // _mm256_maskload_pd has a pretty high latency on icelake (8).
-    // On skylake it is 1 cycle only though
+FASTOR_INLINE __m256d _mm256_loadl3_pd(const double *arr) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+    return _mm256_mask_load_pd(VZEROPD, (__mmask8)0x07, arr);
+#else
     __m256i mask = _mm256_set_epi64x(0,-1,-1,-1);
-    return _mm256_maskload_pd(value,(__m256i) mask);
+    return _mm256_maskload_pd(arr,(__m256i) mask);
+#endif
 }
 
+FASTOR_INLINE __m256d _mm256_loadul3_pd(const double *arr) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+    return _mm256_mask_loadu_pd(VZEROPD, (__mmask8)0x07, arr);
+#else
+    // AVX maskloads apparently have no alignment requirement
+    __m256i mask = _mm256_set_epi64x(0,-1,-1,-1);
+    return _mm256_maskload_pd(arr,(__m256i) mask);
+    // __m128d xy   = _mm_loadu_pd(arr);
+    // __m128d z    = _mm_load_sd(&arr[2]);
+    // __m256d vec  = _mm256_castpd128_pd256(xy);
+    // return _mm256_insertf128_pd(vec, z,0x1);
 #endif
+}
+#endif
+
+// Mask store the 3 lower parts
+#ifdef FASTOR_SSE2_IMPL
+FASTOR_INLINE void _mm_storel3_ps(float *arr, __m128 value) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+    _mm_mask_store_ps(arr, (__mmask8)0x07, value);
+#elif defined(FASTOR_AVX_IMPL)
+    __m128i mask = _mm_set_epi32(0,-1,-1,-1);
+    _mm_maskstore_ps(arr, (__m128i)mask, value);
+#else
+    _mm_storel_pi((__m64*)arr, value);
+    _mm_store_ss(&arr[2],_mm_shuffle_ps(value,value,0x2));
+#endif
+}
+
+FASTOR_INLINE void _mm_storeul3_ps(float *arr, __m128 value) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+    _mm_mask_storeu_ps(arr, (__mmask8)0x07, value);
+#elif defined(FASTOR_AVX_IMPL)
+    __m128i mask = _mm_set_epi32(0,-1,-1,-1);
+    _mm_maskstore_ps(arr, (__m128i)mask, value);
+#else
+    _mm_storel_pi((__m64*)arr, value);
+    _mm_store_ss(&arr[2],_mm_shuffle_ps(value,value,0x2));
+#endif
+}
+#endif
+
+#ifdef FASTOR_AVX_IMPL
+FASTOR_INLINE void _mm256_storel3_pd(double *arr, __m256d value) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+    _mm256_mask_store_pd(arr, (__mmask8)0x07, value);
+#else
+    __m256i mask = _mm256_set_epi64x(0,-1,-1,-1);
+    _mm256_maskstore_pd(arr, (__m256i)mask, value);
+#endif
+}
+
+FASTOR_INLINE void _mm256_storeul3_pd(double *arr, __m256d value) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+    _mm256_mask_storeu_pd(arr, (__mmask8)0x07, value);
+#else
+    // AVX maskloads apparently have no alignment requirement
+    __m256i mask = _mm256_set_epi64x(0,-1,-1,-1);
+    _mm256_maskstore_pd(arr, (__m256i)mask, value);
+    // _mm_storeu_pd(arr  , _mm256_castpd256_pd128(value)    );
+    // _mm_store_sd (arr+2, _mm256_extractf128_pd (value,0x1));
+#endif
+}
+#endif
+
 
 
 //! Horizontal summation of registers
@@ -680,7 +745,7 @@ FASTOR_INLINE __m256i _mm256_mul_epi64x(__m256i _a, __m256i _b) {
 
 //!-----------------------------------------------------------------
 //! Some further auxilary functions C++ only
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 static FASTOR_INLINE __m128d _add_pd(__m128d a) {
     // IVY 4 OPS
     __m128 shuftmp= _mm_movehl_ps(ZEROPS, _mm_castpd_ps(a));
@@ -708,7 +773,7 @@ static FASTOR_INLINE __m128d _add_pd(__m256d a) {
 }
 #endif
 #endif
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE3_IMPL
 FASTOR_INLINE __m128 _add_ps(__m128 a) {
     // 8 OPS
     __m128 shuf = _mm_movehdup_ps(a);        // line up elements 3,1 with 2,0
