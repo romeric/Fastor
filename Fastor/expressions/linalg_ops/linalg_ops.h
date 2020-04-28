@@ -2,6 +2,7 @@
 #define LINALG_OPS_H
 
 #include "Fastor/expressions/linalg_ops/binary_matmul_op.h"
+#include "Fastor/expressions/linalg_ops/binary_solve_op.h"
 #include "Fastor/expressions/linalg_ops/unary_trans_op.h"
 #include "Fastor/expressions/linalg_ops/unary_inv_op.h"
 #include "Fastor/expressions/linalg_ops/unary_trace_op.h"

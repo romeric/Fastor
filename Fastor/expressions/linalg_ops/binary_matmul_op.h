@@ -2,6 +2,7 @@
 #define BINARY_MATMUL_OP_H
 
 #include "Fastor/simd_vector/SIMDVector.h"
+#include "Fastor/backend/matmul/matmul.h"
 #include "Fastor/tensor/AbstractTensor.h"
 #include "Fastor/tensor/Aliasing.h"
 #include "Fastor/tensor/TensorTraits.h"

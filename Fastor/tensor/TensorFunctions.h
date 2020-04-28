@@ -94,8 +94,8 @@ FASTOR_INLINE Tensor<T,I> solve(const Tensor<T,I,I> &A, const Tensor<T,I> &b) {
     return matmul(inverse(A),b);
 }
 
-template<typename T, size_t I>
-FASTOR_INLINE Tensor<T,I,1> solve(const Tensor<T,I,I> &A, const Tensor<T,I,1> &b) {
+template<typename T, size_t I, size_t J>
+FASTOR_INLINE Tensor<T,I,J> solve(const Tensor<T,I,I> &A, const Tensor<T,I,J> &b) {
     return matmul(inverse(A),b);
 }
 
