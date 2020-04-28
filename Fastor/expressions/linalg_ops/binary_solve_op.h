@@ -10,7 +10,6 @@
 #include "Fastor/expressions/linalg_ops/unary_inv_op.h"
 #include "Fastor/expressions/expression_traits.h"
 
-
 namespace Fastor {
 
 template<typename TLhs, typename TRhs, size_t DIM0>
@@ -42,8 +41,9 @@ struct BinarySolveOp: public AbstractTensor<BinarySolveOp<TLhs, TRhs, DIM0>,DIM0
         static_assert(M == M_other, "INVALID SOLVE OPERANDS. IN Ax=b ROWS(A)!=ROWS(b)");
     }
 
-    constexpr FASTOR_INLINE FASTOR_INDEX size() const {return M * N_other                           /* The result is a vector */ ;}
-    constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return i==0 ? M : N_other /* The result is a vector */ ;}
+    /* It is possible to solve for multiple right hand sides */
+    constexpr FASTOR_INLINE FASTOR_INDEX size() const {return M * N_other                           ;}
+    constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return i==0 ? M : N_other ;}
 
     constexpr FASTOR_INLINE lhs_expr_type lhs() const {return _lhs;}
     constexpr FASTOR_INLINE rhs_expr_type rhs() const {return _rhs;}
@@ -76,7 +76,7 @@ FASTOR_INLINE void solve_dispatcher(const Tensor<T,I,I> &a, const Tensor<T,I,1> 
     internal::inverse_dispatcher(a,_inva);
     _matmul<T,I,I,1>(_inva.data(),b.data(),out.data());
 }
-// Multiple right hand side
+// Multiple right hand sides
 template<typename T, size_t I, size_t J>
 FASTOR_INLINE void solve_dispatcher(const Tensor<T,I,I> &a, const Tensor<T,I,J> &b, Tensor<T,I,J> &out) {
     Tensor<T,I,I> _inva;
@@ -97,7 +97,7 @@ FASTOR_INLINE void solve_dispatcher(const T alpha, const Tensor<T,I,I> &a, const
     internal::inverse_dispatcher(a,_inva);
     _gemm<T,I,I,1>(alpha,_inva.data(),b.data(),beta,out.data());
 }
-// Multiple right hand side
+// Multiple right hand sides
 template<typename T, size_t I, size_t J>
 FASTOR_INLINE void solve_dispatcher(const T alpha, const Tensor<T,I,I> &a, const Tensor<T,I,J> &b, const T beta, Tensor<T,I,J> &out) {
     Tensor<T,I,I> _inva;
@@ -118,7 +118,7 @@ FASTOR_INLINE void solve_dispatcher_mul(const Tensor<T,I,I> &a, const Tensor<T,I
     internal::inverse_dispatcher(a,_inva);
     _gemm_mul<T,I,I,1>(_inva.data(),b.data(),out.data());
 }
-// Multiple right hand side
+// Multiple right hand sides
 template<typename T, size_t I, size_t J>
 FASTOR_INLINE void solve_dispatcher_mul(const Tensor<T,I,I> &a, const Tensor<T,I,J> &b, Tensor<T,I,J> &out) {
     Tensor<T,I,I> _inva;
@@ -139,7 +139,7 @@ FASTOR_INLINE void solve_dispatcher_div(const Tensor<T,I,I> &a, const Tensor<T,I
     internal::inverse_dispatcher(a,_inva);
     _gemm_div<T,I,I,1>(_inva.data(),b.data(),out.data());
 }
-// Multiple right hand side
+// Multiple right hand sides
 template<typename T, size_t I, size_t J>
 FASTOR_INLINE void solve_dispatcher_div(const Tensor<T,I,I> &a, const Tensor<T,I,J> &b, Tensor<T,I,J> &out) {
     Tensor<T,I,I> _inva;
@@ -179,7 +179,6 @@ FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, const BinarySolveOp<
     const rhs_type b(src.rhs().self());
     internal::solve_dispatcher(A,b,dst.self());
 }
-
 
 // assign_add
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
@@ -249,7 +248,7 @@ FASTOR_INLINE void assign_sub(AbstractTensor<Derived,DIM> &dst, const BinarySolv
     internal::solve_dispatcher(T(-1),A,b,T(1),dst.self());
 }
 
-// assign mul
+// assign_mul
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
     typename std::enable_if<is_tensor_v<TLhs> && is_tensor_v<TRhs>, bool >::type = false>
 FASTOR_INLINE void assign_mul(AbstractTensor<Derived,DIM> &dst, const BinarySolveOp<TLhs, TRhs, OtherDIM> &src) {
@@ -279,7 +278,7 @@ FASTOR_INLINE void assign_mul(AbstractTensor<Derived,DIM> &dst, const BinarySolv
     internal::solve_dispatcher_mul(A,b,dst.self());
 }
 
-// assign div
+// assign_div
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,
     typename std::enable_if<is_tensor_v<TLhs> && is_tensor_v<TRhs>, bool >::type = false>
 FASTOR_INLINE void assign_div(AbstractTensor<Derived,DIM> &dst, const BinarySolveOp<TLhs, TRhs, OtherDIM> &src) {

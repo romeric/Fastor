@@ -444,7 +444,6 @@ FASTOR_INLINE void assign_div(AbstractTensor<Derived,DIM> &dst, const BinaryMatM
 // recursive greedy-like
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs0, typename TRhs1, size_t OtherDIM>
 FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<BinaryMatMulOp<TLhs, TRhs0, OtherDIM>, TRhs1, OtherDIM> &src) {
-    // using T = typename BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::scalar_type;
     FASTOR_IF_CONSTEXPR(BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::flop_count > BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::flop_count)
     {
         using result_t = typename BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::result_type;
@@ -463,7 +462,6 @@ FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp
 
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs0, typename TRhs1, size_t OtherDIM>
 FASTOR_INLINE void assign_add(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<BinaryMatMulOp<TLhs, TRhs0, OtherDIM>, TRhs1, OtherDIM> &src) {
-    // using T = typename BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::scalar_type;
     FASTOR_IF_CONSTEXPR(BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::flop_count > BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::flop_count)
     {
         using result_t = typename BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::result_type;
@@ -482,7 +480,6 @@ FASTOR_INLINE void assign_add(AbstractTensor<Derived,DIM> &dst, const BinaryMatM
 
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs0, typename TRhs1, size_t OtherDIM>
 FASTOR_INLINE void assign_sub(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<BinaryMatMulOp<TLhs, TRhs0, OtherDIM>, TRhs1, OtherDIM> &src) {
-    // using T = typename BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::scalar_type;
     FASTOR_IF_CONSTEXPR(BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::flop_count > BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::flop_count)
     {
         using result_t = typename BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::result_type;
@@ -501,7 +498,6 @@ FASTOR_INLINE void assign_sub(AbstractTensor<Derived,DIM> &dst, const BinaryMatM
 
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs0, typename TRhs1, size_t OtherDIM>
 FASTOR_INLINE void assign_mul(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<BinaryMatMulOp<TLhs, TRhs0, OtherDIM>, TRhs1, OtherDIM> &src) {
-    // using T = typename BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::scalar_type;
     FASTOR_IF_CONSTEXPR(BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::flop_count > BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::flop_count)
     {
         using result_t = typename BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::result_type;
@@ -520,7 +516,6 @@ FASTOR_INLINE void assign_mul(AbstractTensor<Derived,DIM> &dst, const BinaryMatM
 
 template<typename Derived, size_t DIM, typename TLhs, typename TRhs0, typename TRhs1, size_t OtherDIM>
 FASTOR_INLINE void assign_div(AbstractTensor<Derived,DIM> &dst, const BinaryMatMulOp<BinaryMatMulOp<TLhs, TRhs0, OtherDIM>, TRhs1, OtherDIM> &src) {
-    // using T = typename BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::scalar_type;
     FASTOR_IF_CONSTEXPR(BinaryMatMulOp<TLhs, TRhs0, OtherDIM>::flop_count > BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::flop_count)
     {
         using result_t = typename BinaryMatMulOp<TRhs0, TRhs1, OtherDIM>::result_type;
