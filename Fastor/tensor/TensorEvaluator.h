@@ -34,11 +34,6 @@ template<typename U=T>
 FASTOR_INLINE T teval_s(const std::array<int, Dimension> &as) const {
     return _data[get_flat_index(as)];
 }
-
-// This is purely for smart ops
-constexpr FASTOR_INLINE T eval(T i, T j) const {
-    return _data[get_flat_index((FASTOR_INDEX)i,(FASTOR_INDEX)j)];
-}
 //----------------------------------------------------------------------------------------------------------//
 
 #endif // end of TENSOR_EVALUATOR_H

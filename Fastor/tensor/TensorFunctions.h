@@ -28,14 +28,14 @@ FASTOR_INLINE T determinant(const Tensor<T,I,I> &a) {
 template<typename T, size_t I>
 FASTOR_INLINE Tensor<T,I,I> cofactor(const Tensor<T,I,I> &a) {
     Tensor<T,I,I> out;
-    _cofactor<T,I,I>(a.data(),out.data());
+    _cofactor<T,I>(a.data(),out.data());
     return out;
 }
 
 template<typename T, size_t I>
 FASTOR_INLINE Tensor<T,I,I> adjoint(const Tensor<T,I,I> &a) {
     Tensor<T,I,I> out;
-    _adjoint<T,I,I>(a.data(),out.data());
+    _adjoint<T,I>(a.data(),out.data());
     return out;
 }
 

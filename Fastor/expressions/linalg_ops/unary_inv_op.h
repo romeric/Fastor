@@ -28,7 +28,7 @@ struct UnaryInvOp: public AbstractTensor<UnaryInvOp<Expr, DIM0>,DIM0> {
     }
 
     FASTOR_INLINE FASTOR_INDEX size() const {return M*N;}
-    FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return M;}
+    FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX ) const {return M;}
 
     constexpr FASTOR_INLINE expr_type expr() const {return _expr;}
 
