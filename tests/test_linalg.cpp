@@ -228,16 +228,14 @@ void test_linalg() {
 
         Tensor<T,8,8> a6; a6.iota(1);
         for (size_t i=0; i<8; ++i) a6(i,i) = 100;
-        FASTOR_EXIT_ASSERT(std::abs(sum(inverse(a6)) - 0.02408691236995123) < BigTol);
-        FASTOR_EXIT_ASSERT(std::abs(sum(inv(a6))     - 0.02408691236995123) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(sum(inverse(a6)) - 0.02408691236995123) < HugeTol);
+        FASTOR_EXIT_ASSERT(std::abs(sum(inv(a6))     - 0.02408691236995123) < HugeTol);
 
         Tensor<T,15,15> a7; a7.iota(1);
         for (size_t i=0; i<15; ++i) a7(i,i) = 100;
-        FASTOR_EXIT_ASSERT(std::abs(sum(inverse(a7)) - 0.009215486449015996) < BigTol);
-        FASTOR_EXIT_ASSERT(std::abs(sum(inv(a7))     - 0.009215486449015996) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(sum(inverse(a7)) - 0.009215486449015996) < HugeTol);
+        FASTOR_EXIT_ASSERT(std::abs(sum(inv(a7))     - 0.009215486449015996) < HugeTol);
     }
-
-
 
     // inverse/inv of expressions
     {

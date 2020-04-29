@@ -17,7 +17,7 @@ void test_basics() {
         Tensor<T,1,3> a2 = {{1,2,3}};
         Tensor<T,1,2,3> a3 = {{{1,2,3},{4,5,6}}};
 
-        // Basic scalar ndexing
+        // Basic scalar indexing
         FASTOR_EXIT_ASSERT(std::abs(a0(0)-1)<Tol);
         FASTOR_EXIT_ASSERT(std::abs(a0(1)-2)<Tol);
         FASTOR_EXIT_ASSERT(std::abs(a0(2)-3)<Tol);
@@ -37,6 +37,24 @@ void test_basics() {
         FASTOR_EXIT_ASSERT(std::abs(a3(0,1,0)-4)<Tol);
         FASTOR_EXIT_ASSERT(std::abs(a3(0,1,1)-5)<Tol);
         FASTOR_EXIT_ASSERT(std::abs(a3(0,1,2)-6)<Tol);
+    }
+
+    // Scalar indexing
+    {
+        Tensor<T,2,3,4,5,6> a; a.iota(0);
+        size_t counter = 0;
+        for (size_t i=0; i<2; ++i) {
+            for (size_t j=0; j<3; ++j) {
+                for (size_t k=0; k<4; ++k) {
+                    for (size_t l=0; l<5; ++l) {
+                        for (size_t m=0; m<6; ++m) {
+                            FASTOR_EXIT_ASSERT(std::abs(a(i,j,k,l,m)-counter)<Tol);
+                            counter++;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     {
