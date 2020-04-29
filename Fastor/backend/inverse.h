@@ -157,130 +157,52 @@ template<typename T, size_t N, enable_if_t_<is_equal_v_<N,4> && !is_same_v_<T,fl
 #else
 template<typename T, size_t N, enable_if_t_<is_equal_v_<N,4>, bool> = false>
 #endif
-FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT m, T *FASTOR_RESTRICT dst)
+FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst)
 {
-    T inv[16], det;
-    int i;
+   T t1 = src[2*4+2]*src[3*4+3] - src[2*4+3]*src[3*4+2];
+   T t2 = src[2*4+1]*src[3*4+3] - src[2*4+3]*src[3*4+1];
+   T t3 = src[2*4+1]*src[3*4+2] - src[2*4+2]*src[3*4+1];
 
-    inv[0] = m[5]  * m[10] * m[15] -
-             m[5]  * m[11] * m[14] -
-             m[9]  * m[6]  * m[15] +
-             m[9]  * m[7]  * m[14] +
-             m[13] * m[6]  * m[11] -
-             m[13] * m[7]  * m[10];
+   dst[0]  = src[1*4+1]*t1 - src[1*4+2]*t2 + src[1*4+3]*t3;
+   dst[1]  = src[0*4+2]*t2 - src[0*4+1]*t1 - src[0*4+3]*t3;
 
-    inv[4] = -m[4]  * m[10] * m[15] +
-              m[4]  * m[11] * m[14] +
-              m[8]  * m[6]  * m[15] -
-              m[8]  * m[7]  * m[14] -
-              m[12] * m[6]  * m[11] +
-              m[12] * m[7]  * m[10];
+   T t4 = src[2*4+0]*src[3*4+3] - src[2*4+3]*src[3*4+0];
+   T t5 = src[2*4+0]*src[3*4+2] - src[2*4+2]*src[3*4+0];
 
-    inv[8] = m[4]  * m[9] * m[15] -
-             m[4]  * m[11] * m[13] -
-             m[8]  * m[5] * m[15] +
-             m[8]  * m[7] * m[13] +
-             m[12] * m[5] * m[11] -
-             m[12] * m[7] * m[9];
+   dst[4]  = src[1*4+2]*t4 - src[1*4+0]*t1 - src[1*4+3]*t5;
+   dst[5]  = src[0*4+0]*t1 - src[0*4+2]*t4 + src[0*4+3]*t5;
 
-    inv[12] = -m[4]  * m[9] * m[14] +
-               m[4]  * m[10] * m[13] +
-               m[8]  * m[5] * m[14] -
-               m[8]  * m[6] * m[13] -
-               m[12] * m[5] * m[10] +
-               m[12] * m[6] * m[9];
+   t1 = src[2*4+0]*src[3*4+1] - src[2*4+1]*src[3*4+0];
 
-    inv[1] = -m[1]  * m[10] * m[15] +
-              m[1]  * m[11] * m[14] +
-              m[9]  * m[2] * m[15] -
-              m[9]  * m[3] * m[14] -
-              m[13] * m[2] * m[11] +
-              m[13] * m[3] * m[10];
+   dst[8]  = src[1*4+0]*t2 - src[1*4+1]*t4 + src[1*4+3]*t1;
+   dst[9]  = src[0*4+1]*t4 - src[0*4+0]*t2 - src[0*4+3]*t1;
+   dst[12] = src[1*4+1]*t5 - src[1*4+0]*t3 - src[1*4+2]*t1;
+   dst[13] = src[0*4+0]*t3 - src[0*4+1]*t5 + src[0*4+2]*t1;
 
-    inv[5] = m[0]  * m[10] * m[15] -
-             m[0]  * m[11] * m[14] -
-             m[8]  * m[2] * m[15] +
-             m[8]  * m[3] * m[14] +
-             m[12] * m[2] * m[11] -
-             m[12] * m[3] * m[10];
+   t1 = src[0*4+2]*src[1*4+3] - src[0*4+3]*src[1*4+2];
+   t2 = src[0*4+1]*src[1*4+3] - src[0*4+3]*src[1*4+1];
+   t3 = src[0*4+1]*src[1*4+2] - src[0*4+2]*src[1*4+1];
 
-    inv[9] = -m[0]  * m[9] * m[15] +
-              m[0]  * m[11] * m[13] +
-              m[8]  * m[1] * m[15] -
-              m[8]  * m[3] * m[13] -
-              m[12] * m[1] * m[11] +
-              m[12] * m[3] * m[9];
+   dst[2]  = src[3*4+1]*t1 - src[3*4+2]*t2 + src[3*4+3]*t3;
+   dst[3]  = src[2*4+2]*t2 - src[2*4+1]*t1 - src[2*4+3]*t3;
 
-    inv[13] = m[0]  * m[9] * m[14] -
-              m[0]  * m[10] * m[13] -
-              m[8]  * m[1] * m[14] +
-              m[8]  * m[2] * m[13] +
-              m[12] * m[1] * m[10] -
-              m[12] * m[2] * m[9];
+   t4 = src[0*4+0]*src[1*4+3] - src[0*4+3]*src[1*4+0];
+   t5 = src[0*4+0]*src[1*4+2] - src[0*4+2]*src[1*4+0];
 
-    inv[2] = m[1]  * m[6] * m[15] -
-             m[1]  * m[7] * m[14] -
-             m[5]  * m[2] * m[15] +
-             m[5]  * m[3] * m[14] +
-             m[13] * m[2] * m[7] -
-             m[13] * m[3] * m[6];
+   dst[6]  = src[3*4+2]*t4 - src[3*4+0]*t1 - src[3*4+3]*t5;
+   dst[7]  = src[2*4+0]*t1 - src[2*4+2]*t4 + src[2*4+3]*t5;
 
-    inv[6] = -m[0]  * m[6] * m[15] +
-              m[0]  * m[7] * m[14] +
-              m[4]  * m[2] * m[15] -
-              m[4]  * m[3] * m[14] -
-              m[12] * m[2] * m[7] +
-              m[12] * m[3] * m[6];
+   t1 = src[0*4+0]*src[1*4+1] - src[0*4+1]*src[1*4+0];
 
-    inv[10] = m[0]  * m[5] * m[15] -
-              m[0]  * m[7] * m[13] -
-              m[4]  * m[1] * m[15] +
-              m[4]  * m[3] * m[13] +
-              m[12] * m[1] * m[7] -
-              m[12] * m[3] * m[5];
+   dst[10] = src[3*4+0]*t2 - src[3*4+1]*t4 + src[3*4+3]*t1;
+   dst[11] = src[2*4+1]*t4 - src[2*4+0]*t2 - src[2*4+3]*t1;
+   dst[14] = src[3*4+1]*t5 - src[3*4+0]*t3 - src[3*4+2]*t1;
+   dst[15] = src[2*4+0]*t3 - src[2*4+1]*t5 + src[2*4+2]*t1;
 
-    inv[14] = -m[0]  * m[5] * m[14] +
-               m[0]  * m[6] * m[13] +
-               m[4]  * m[1] * m[14] -
-               m[4]  * m[2] * m[13] -
-               m[12] * m[1] * m[6] +
-               m[12] * m[2] * m[5];
-
-    inv[3] = -m[1] * m[6] * m[11] +
-              m[1] * m[7] * m[10] +
-              m[5] * m[2] * m[11] -
-              m[5] * m[3] * m[10] -
-              m[9] * m[2] * m[7] +
-              m[9] * m[3] * m[6];
-
-    inv[7] = m[0] * m[6] * m[11] -
-             m[0] * m[7] * m[10] -
-             m[4] * m[2] * m[11] +
-             m[4] * m[3] * m[10] +
-             m[8] * m[2] * m[7] -
-             m[8] * m[3] * m[6];
-
-    inv[11] = -m[0] * m[5] * m[11] +
-               m[0] * m[7] * m[9] +
-               m[4] * m[1] * m[11] -
-               m[4] * m[3] * m[9] -
-               m[8] * m[1] * m[7] +
-               m[8] * m[3] * m[5];
-
-    inv[15] = m[0] * m[5] * m[10] -
-              m[0] * m[6] * m[9] -
-              m[4] * m[1] * m[10] +
-              m[4] * m[2] * m[9] +
-              m[8] * m[1] * m[6] -
-              m[8] * m[2] * m[5];
-
-    det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
-
-
-    det = T(1.0) / det;
-
-    for (i = 0; i < 16; i++)
-        dst[i] = inv[i] * det;
+   const T __det = src[0]*dst[0] + src[1]*dst[4] + src[2]*dst[8] + src[3]*dst[12];
+   const T __invdet =  T(1)/__det;
+   for (int i=0; i<16; ++i)
+        dst[i] *= __invdet;
 }
 
 
@@ -521,7 +443,6 @@ FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst
     _mm_storeu_pd(dst+3*4+2,_mm_mul_pd(_mm_shuffle_pd(iD2, iD1, 0), d2));
 }
 #endif
-
 
 
 } // end of namespace Fastor
