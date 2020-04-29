@@ -7,7 +7,7 @@
 
 namespace Fastor {
 
-template<typename T, size_t N, enable_if_t_<!is_equal_v_<N,1> && !is_equal_v_<N,2> && !is_equal_v_<N,3> && !is_equal_v_<N,4>, bool> = false>
+template<typename T, size_t N, enable_if_t_<is_greater_v_<N,4>, bool> = false>
 FASTOR_INLINE void _inverse(const T *FASTOR_RESTRICT src, T *FASTOR_RESTRICT dst);
 
 template<typename T, size_t N, enable_if_t_<is_equal_v_<N,1>, bool> = false>
