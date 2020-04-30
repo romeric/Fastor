@@ -54,7 +54,7 @@ FASTOR_INLINE typename Derived::scalar_type product(const AbstractTensor<Derived
     using T = typename Derived::scalar_type;
     using V = SIMDVector<T,DEFAULT_ABI>;
     FASTOR_INDEX i;
-    T _scal=0; V _vec(_scal);
+    T _scal=1; V _vec(_scal);
     for (i = 0; i < ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
         _vec *= src.template eval<T>(i);
     }

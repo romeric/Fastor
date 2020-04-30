@@ -151,18 +151,17 @@ struct tensor_type_finder;
 
 template<class Expr, size_t DIM>
 inline std::ostream& operator<<(std::ostream &os, const AbstractTensor<Expr,DIM> &src) {
-
-    using OutTensor = typename tensor_type_finder<Expr>::type;
-    OutTensor a = src;
-    print(a);
+    using result_type = typename Expr::result_type;
+    result_type tmp(src);
+    print(tmp);
     return os;
 }
 
 template<class Expr, size_t DIM>
 inline void print(const AbstractTensor<Expr,DIM> &src) {
-    using OutTensor = typename tensor_type_finder<Expr>::type;
-    OutTensor a = src;
-    print(a);
+    using result_type = typename Expr::result_type;
+    result_type tmp(src);
+    print(tmp);
 }
 // /*--------------------------------------*/
 
