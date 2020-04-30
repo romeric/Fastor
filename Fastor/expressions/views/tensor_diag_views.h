@@ -37,15 +37,11 @@ public:
     // Copy assignment
     //---------------------------------------------------------------------------------//
     FASTOR_INLINE void operator=(const TensorDiagViewExpr<TensorType<T,M,N>,DIM>& other_src) {
+        // Diagonal views don't alias
 #if !(FASTOR_NO_ALIAS)
         if (_does_alias) {
-            _does_alias = false;
-            // Evaluate this into a temporary
-            auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorDiagViewExpr<TensorType<T,M,N>,2>(tmp_this_tensor);
-            // Assign other to temporary
-            tmp = other_src;
-            // assign temporary to this
+            // Get around recursive inlining issue
+            const result_type tmp(other_src);
             this->operator=(tmp);
             return;
         }
