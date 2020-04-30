@@ -6,9 +6,7 @@
 
 namespace Fastor {
 
-//#define HAS_VDT
-
-#ifdef HAS_VDT
+#ifdef FASTOR_USE_VDT
 #include <vdt/vdtMath.h>
 
 #ifdef FASTOR_SSE4_2_IMPL
@@ -68,8 +66,6 @@ inline __m128 internal_atan(__m128 a) {
    }
    return out;
 }
-
-
 
 inline __m128d internal_exp(__m128d a) {
    __m128d out;
