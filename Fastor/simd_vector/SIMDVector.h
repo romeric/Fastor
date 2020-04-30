@@ -734,14 +734,17 @@ template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> fmadd(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b, const SIMDVector<T,ABI> &c) {
     return a*b+c;
 }
-// Note that fmsub alternatively adds and subtracts simd vectors
 template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> fmsub(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b, const SIMDVector<T,ABI> &c) {
     return a*b-c;
 }
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> fnmadd(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b, const SIMDVector<T,ABI> &c) {
+    return c-a*b;
+}
 
 #ifdef FASTOR_FMA_IMPL
-
+// fmadd
 template<>
 FASTOR_INLINE SIMDVector<float,simd_abi::sse> fmadd<float,simd_abi::sse>(
     const SIMDVector<float,simd_abi::sse> &a, const SIMDVector<float,simd_abi::sse> &b, const SIMDVector<float,simd_abi::sse> &c) {
@@ -756,6 +759,15 @@ FASTOR_INLINE SIMDVector<float,simd_abi::avx> fmadd<float,simd_abi::avx>(
     out.value = _mm256_fmadd_ps(a.value,b.value,c.value);
     return out;
 }
+#ifdef FASTOR_AVX512_IMPL
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::avx512> fmadd<float,simd_abi::avx512>(
+    const SIMDVector<float,simd_abi::avx512> &a, const SIMDVector<float,simd_abi::avx512> &b, const SIMDVector<float,simd_abi::avx512> &c) {
+    SIMDVector<float,simd_abi::avx512> out;
+    out.value = _mm512_fmadd_ps(a.value,b.value,c.value);
+    return out;
+}
+#endif
 template<>
 FASTOR_INLINE SIMDVector<double,simd_abi::sse> fmadd<double,simd_abi::sse>(
     const SIMDVector<double,simd_abi::sse> &a, const SIMDVector<double,simd_abi::sse> &b, const SIMDVector<double,simd_abi::sse> &c) {
@@ -770,7 +782,16 @@ FASTOR_INLINE SIMDVector<double,simd_abi::avx> fmadd<double,simd_abi::avx>(
     out.value = _mm256_fmadd_pd(a.value,b.value,c.value);
     return out;
 }
-
+#ifdef FASTOR_AVX512_IMPL
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::avx512> fmadd<double,simd_abi::avx512>(
+    const SIMDVector<double,simd_abi::avx512> &a, const SIMDVector<double,simd_abi::avx512> &b, const SIMDVector<double,simd_abi::avx512> &c) {
+    SIMDVector<double,simd_abi::avx512> out;
+    out.value = _mm512_fmadd_pd(a.value,b.value,c.value);
+    return out;
+}
+#endif
+// fmsub
 template<>
 FASTOR_INLINE SIMDVector<float,simd_abi::sse> fmsub<float,simd_abi::sse>(
     const SIMDVector<float,simd_abi::sse> &a, const SIMDVector<float,simd_abi::sse> &b, const SIMDVector<float,simd_abi::sse> &c) {
@@ -785,6 +806,15 @@ FASTOR_INLINE SIMDVector<float,simd_abi::avx> fmsub<float,simd_abi::avx>(
     out.value = _mm256_fmsub_ps(a.value,b.value,c.value);
     return out;
 }
+#ifdef FASTOR_AVX512_IMPL
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::avx512> fmsub<float,simd_abi::avx512>(
+    const SIMDVector<float,simd_abi::avx512> &a, const SIMDVector<float,simd_abi::avx512> &b, const SIMDVector<float,simd_abi::avx512> &c) {
+    SIMDVector<float,simd_abi::avx512> out;
+    out.value = _mm512_fmsub_ps(a.value,b.value,c.value);
+    return out;
+}
+#endif
 template<>
 FASTOR_INLINE SIMDVector<double,simd_abi::sse> fmsub<double,simd_abi::sse>(
     const SIMDVector<double,simd_abi::sse> &a, const SIMDVector<double,simd_abi::sse> &b, const SIMDVector<double,simd_abi::sse> &c) {
@@ -799,6 +829,62 @@ FASTOR_INLINE SIMDVector<double,simd_abi::avx> fmsub<double,simd_abi::avx>(
     out.value = _mm256_fmsub_pd(a.value,b.value,c.value);
     return out;
 }
+#ifdef FASTOR_AVX512_IMPL
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::avx512> fmsub<double,simd_abi::avx512>(
+    const SIMDVector<double,simd_abi::avx512> &a, const SIMDVector<double,simd_abi::avx512> &b, const SIMDVector<double,simd_abi::avx512> &c) {
+    SIMDVector<double,simd_abi::avx512> out;
+    out.value = _mm512_fmsub_pd(a.value,b.value,c.value);
+    return out;
+}
+#endif
+// fnmadd
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::sse> fnmadd<float,simd_abi::sse>(
+    const SIMDVector<float,simd_abi::sse> &a, const SIMDVector<float,simd_abi::sse> &b, const SIMDVector<float,simd_abi::sse> &c) {
+    SIMDVector<float,simd_abi::sse> out;
+    out.value = _mm_fnmadd_ps(a.value,b.value,c.value);
+    return out;
+}
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::avx> fnmadd<float,simd_abi::avx>(
+    const SIMDVector<float,simd_abi::avx> &a, const SIMDVector<float,simd_abi::avx> &b, const SIMDVector<float,simd_abi::avx> &c) {
+    SIMDVector<float,simd_abi::avx> out;
+    out.value = _mm256_fnmadd_ps(a.value,b.value,c.value);
+    return out;
+}
+#ifdef FASTOR_AVX512_IMPL
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::avx512> fnmadd<float,simd_abi::avx512>(
+    const SIMDVector<float,simd_abi::avx512> &a, const SIMDVector<float,simd_abi::avx512> &b, const SIMDVector<float,simd_abi::avx512> &c) {
+    SIMDVector<float,simd_abi::avx512> out;
+    out.value = _mm512_fnmadd_ps(a.value,b.value,c.value);
+    return out;
+}
+#endif
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::sse> fnmadd<double,simd_abi::sse>(
+    const SIMDVector<double,simd_abi::sse> &a, const SIMDVector<double,simd_abi::sse> &b, const SIMDVector<double,simd_abi::sse> &c) {
+    SIMDVector<double,simd_abi::sse> out;
+    out.value = _mm_fnmadd_pd(a.value,b.value,c.value);
+    return out;
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::avx> fnmadd<double,simd_abi::avx>(
+    const SIMDVector<double,simd_abi::avx> &a, const SIMDVector<double,simd_abi::avx> &b, const SIMDVector<double,simd_abi::avx> &c) {
+    SIMDVector<double,simd_abi::avx> out;
+    out.value = _mm256_fnmadd_pd(a.value,b.value,c.value);
+    return out;
+}
+#ifdef FASTOR_AVX512_IMPL
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::avx512> fnmadd<double,simd_abi::avx512>(
+    const SIMDVector<double,simd_abi::avx512> &a, const SIMDVector<double,simd_abi::avx512> &b, const SIMDVector<double,simd_abi::avx512> &c) {
+    SIMDVector<double,simd_abi::avx512> out;
+    out.value = _mm512_fnmadd_pd(a.value,b.value,c.value);
+    return out;
+}
+#endif
 
 #endif
 //----------------------------------------------------------------------------------------------------------------

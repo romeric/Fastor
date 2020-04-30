@@ -3,6 +3,7 @@
 
 
 #include <type_traits>
+#include <complex>
 
 
 namespace Fastor {
@@ -25,11 +26,27 @@ constexpr bool is_arithmetic_v_ = std::is_arithmetic<T>::value;
 
 template< class T >
 constexpr bool is_integral_v_ = std::is_integral<T>::value;
+
+template< class T >
+constexpr bool is_floating_v_ = std::is_floating_point<T>::value;
 //----------------------------------------------------------------------------------------------------------//
 
 
 //----------------------------------------------------------------------------------------------------------//
-template<typename T> struct remove_all { using type = T; };
+// If BLAS compatible type
+template< class T > struct is_numeric               { static constexpr bool value = false; };
+template<> struct is_numeric<float>                 { static constexpr bool value = true;  };
+template<> struct is_numeric<double>                { static constexpr bool value = true;  };
+template<> struct is_numeric<std::complex<float>>   { static constexpr bool value = true;  };
+template<> struct is_numeric<std::complex<double>>  { static constexpr bool value = true;  };
+
+template< class T >
+constexpr bool is_numeric_v_ = is_numeric<T>::value;
+//----------------------------------------------------------------------------------------------------------//
+
+
+//----------------------------------------------------------------------------------------------------------//
+template<typename T> struct remove_all            { using type = T; };
 template<typename T> struct remove_all<const T>   { using type = typename remove_all<T>::type; };
 template<typename T> struct remove_all<T const&>  { using type = typename remove_all<T>::type; };
 template<typename T> struct remove_all<T&>        { using type = typename remove_all<T>::type; };
