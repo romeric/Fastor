@@ -37,6 +37,11 @@ void test_basics() {
         FASTOR_EXIT_ASSERT(std::abs(a3(0,1,0)-4)<Tol);
         FASTOR_EXIT_ASSERT(std::abs(a3(0,1,1)-5)<Tol);
         FASTOR_EXIT_ASSERT(std::abs(a3(0,1,2)-6)<Tol);
+
+        FASTOR_EXIT_ASSERT(std::abs(a3.sum()     - 21  ) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a3.product() - 720 ) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(sum(a3)      - 21  ) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(product(a3)  - 720 ) < Tol);
     }
 
     // Scalar indexing
