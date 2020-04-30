@@ -10,18 +10,8 @@
 
 namespace Fastor {
 
-// namespace internal {
-// template<typename T, typename U, size_t N>
-// constexpr std::array<T,N>  _filll_one_value(std::array<T,N> seq, U val) {
-//     for (int i=0; i<N; ++i) seq[i]=val;
-//     return seq;
-// }
-// }
-
-
 template<typename T, size_t ...Rest>
 class SingleValueTensor : public AbstractTensor<SingleValueTensor<T,Rest...>,sizeof...(Rest)> {
-    // const FASTOR_ALIGN std::array<T,prod<Rest...>::value> _data;
     const FASTOR_ALIGN std::array<T,1> _data;
 public:
     typedef T scalar_type;
@@ -29,7 +19,6 @@ public:
     static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
     static constexpr FASTOR_INDEX Size = prod<Rest...>::value;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
-    static constexpr FASTOR_INDEX Remainder = prod<Rest...>::value % sizeof(T);
     static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return Dimension;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX dim) const {
@@ -40,12 +29,6 @@ public:
         return DimensionHolder[dim];
     }
 
-    // template<typename U=int>
-    // SingleValueTensor(U num) : _data{internal::_filll_one_value(_data,num)} {}
-    // SingleValueTensor(const SingleValueTensor<T,Rest...> &a) : _data{internal::_filll_one_value(_data,a.data()[0])} {}
-    // FASTOR_INLINE SingleValueTensor(const AbstractTensor<SingleValueTensor<T,Rest...>,sizeof...(Rest)>& src_)
-    // : _data{internal::_filll_one_value(_data,0)} {
-    // }
     template<typename U=int>
     SingleValueTensor(U num) : _data{(T)num} {}
     SingleValueTensor(const SingleValueTensor<T,Rest...> &a) : _data{(T)a.data()[0]} {}
@@ -53,8 +36,6 @@ public:
     }
 
     constexpr FASTOR_INLINE T* data() const { return const_cast<T*>(this->_data.data());}
-    // constexpr FASTOR_INLINE T* data() const { return const_cast<T*>(&this->_data);}
-
 
     // Index retriever
     //----------------------------------------------------------------------------------------------------------//
@@ -282,7 +263,7 @@ einsum(const SingleValueTensor<T,Rest0...> &a, const SingleValueTensor<T,Rest1..
     std::array<size_t,Index_J::NoIndices> idx1; std::copy_n(Index_J::_IndexHolder,Index_J::NoIndices,idx1.begin());
     std::array<size_t,Index_I::NoIndices> dims0 = {Rest0...};
 
-    // n^2 but is okay as this is a small loop with compile time spans
+    // n^2 but it is okay as this is a small loop with compile time spans
     size_t total = 1;
     for (int i=0; i<idx0.size(); ++i) {
         for (int j=0; j<idx1.size(); ++j) {
@@ -302,9 +283,7 @@ einsum(const SingleValueTensor<T,Rest0...> &a, const SingleValueTensor<T,Rest1..
 }
 
 
-}
+} // end of namespace Fastor
 
 
 #endif // SINGLEVALUE_TENSOR_H
-
-

@@ -292,6 +292,9 @@ template<class T>
 struct is_arithmetic_pack<T> {
     static constexpr bool value = std::is_arithmetic<T>::value;
 };
+
+template<class ... T>
+static constexpr bool is_arithmetic_pack_v = is_arithmetic_pack<T...>::value;
 //----------------------------------------------------------------------------------------------------------//
 
 

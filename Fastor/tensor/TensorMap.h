@@ -22,7 +22,6 @@ public:
     static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
     static constexpr FASTOR_INDEX Size = prod<Rest...>::value;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
-    static constexpr FASTOR_INDEX Remainder = prod<Rest...>::value % sizeof(T);
     static constexpr FASTOR_INDEX rank() {return sizeof...(Rest);}
     FASTOR_INLINE FASTOR_INDEX size() const {return prod<Rest...>::value;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX dim) const {
@@ -32,9 +31,7 @@ public:
         const FASTOR_INDEX DimensionHolder[sizeof...(Rest)] = {Rest...};
         return DimensionHolder[dim];
     }
-    FASTOR_INLINE Tensor<T,Rest...>& noalias() {
-        return *this;
-    }
+    FASTOR_INLINE Tensor<T,Rest...>& noalias() {return *this;}
 
     // Constructors
     //----------------------------------------------------------------------------------------------------------//
@@ -61,11 +58,27 @@ public:
 
     // Block indexing (all variants excluding iseq)
     //----------------------------------------------------------------------------------------------------------//
-    template<typename ... Seq, typename std::enable_if<!is_arithmetic_pack<Seq...>::value,bool>::type =0>
+    template<typename ... Seq, enable_if_t_<!is_arithmetic_pack_v<Seq...> && !is_fixed_sequence_pack_v<Seq...>,bool> = false>
     FASTOR_INLINE TensorViewExpr<TensorMap<T,Rest...>,sizeof...(Seq)> operator()(Seq ... _seqs) {
         static_assert(Dimension==sizeof...(Seq),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
         return TensorViewExpr<TensorMap<T,Rest...>,sizeof...(Seq)>(*this, {_seqs...});
     }
+
+    template<typename ...Fseq, enable_if_t_<is_fixed_sequence_pack_v<Fseq...>,bool> = false>
+    FASTOR_INLINE TensorFixedViewExprnD<TensorMap<T,Rest...>,Fseq...> operator()(Fseq... ) {
+        static_assert(Dimension==sizeof...(Fseq),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+        return TensorFixedViewExprnD<TensorMap<T,Rest...>,Fseq...>(*this);
+    }
+
+    FASTOR_INLINE TensorFilterViewExpr<TensorMap<T,Rest...>,Tensor<bool,Rest...>,sizeof...(Rest)>
+    operator()(const Tensor<bool,Rest...> &_fl) {
+        return TensorFilterViewExpr<TensorMap<T,Rest...>,Tensor<bool,Rest...>,sizeof...(Rest)>(*this,_fl);
+    }
+    FASTOR_INLINE TensorFilterViewExpr<TensorMap<T,Rest...>,TensorMap<bool,Rest...>,sizeof...(Rest)>
+    operator()(const TensorMap<bool,Rest...> &_fl) {
+        return TensorFilterViewExpr<TensorMap<T,Rest...>,TensorMap<bool,Rest...>,sizeof...(Rest)>(*this,_fl);
+    }
+
     //----------------------------------------------------------------------------------------------------------//
 
     // Expression templates evaluators

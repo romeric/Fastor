@@ -26,7 +26,6 @@ public:
     static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
     static constexpr FASTOR_INDEX Size = prod<Rest...>::value;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
-    static constexpr FASTOR_INDEX Remainder = prod<Rest...>::value % sizeof(T);
     static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return Dimension;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Size;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX dim) const {
@@ -36,10 +35,7 @@ public:
         const FASTOR_INDEX DimensionHolder[sizeof...(Rest)] = {Rest...};
         return DimensionHolder[dim];
     }
-    FASTOR_INLINE Tensor<T,Rest...>& noalias() {
-        return *this;
-    }
-
+    FASTOR_INLINE Tensor<T,Rest...>& noalias() {return *this;}
 
     // Classic constructors
     //----------------------------------------------------------------------------------------------------------//
@@ -59,19 +55,9 @@ public:
 
     FASTOR_INLINE Tensor(const Tensor<T,Rest...> &other) {
         // This constructor cannot be default
-        // Note that all other data members are static constexpr
         if (_data == other.data()) return;
-
+        // fast memcopy
         std::copy(other.data(),other.data()+Size,_data);
-        // using V = SIMDVector<T,DEFAULT_ABI>;
-        // const T* other_data = other.data();
-        // FASTOR_INDEX i=0;
-        // for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
-        //     V(&other_data[i]).store(&_data[i]);
-        // }
-        // for (; i<Size; ++i) {
-        //     _data[i] = other_data[i];
-        // }
     };
 
     // Initialiser list constructors
@@ -145,10 +131,6 @@ public:
     // Expression templates evaluators
     //----------------------------------------------------------------------------------------------------------//
     #include "Fastor/tensor/TensorEvaluator.h"
-    //----------------------------------------------------------------------------------------------------------//
-
-    //----------------------------------------------------------------------------------------------------------//
-    // #include "Fastor/tensor/SmartExpressionsPlugin.h"
     //----------------------------------------------------------------------------------------------------------//
 
     // Tensor methods
