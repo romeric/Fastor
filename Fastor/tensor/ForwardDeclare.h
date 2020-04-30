@@ -105,6 +105,9 @@ struct TensorConstFixedViewExprnD;
 template<class TensorType, typename ... Fseqs>
 struct TensorFixedViewExprnD;
 
+template<typename Expr, size_t DIM>
+struct TensorDiagViewExpr;
+
 
 template <FASTOR_INDEX ... All>
 struct Index;

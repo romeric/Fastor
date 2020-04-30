@@ -55,6 +55,10 @@ template<typename Derived, size_t DIM, typename TensorType, typename TensorIndex
 FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const TensorFilterViewExpr<TensorType,TensorIndexType,DIM>& src) {\
     trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
 }\
+template<typename Derived, size_t DIM, typename TensorType, size_t OtherDIM>\
+FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const TensorDiagViewExpr<TensorType,OtherDIM>& src) {\
+    trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
+}\
 
 FASTOR_MAKE_ALL_TENSOR_VIEWS_ASSIGNMENT(    )
 FASTOR_MAKE_ALL_TENSOR_VIEWS_ASSIGNMENT(_add)

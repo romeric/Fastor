@@ -22,6 +22,9 @@ constexpr bool is_same_v_ = std::is_same<T, U>::value;
 
 template< class T >
 constexpr bool is_arithmetic_v_ = std::is_arithmetic<T>::value;
+
+template< class T >
+constexpr bool is_integral_v_ = std::is_integral<T>::value;
 //----------------------------------------------------------------------------------------------------------//
 
 

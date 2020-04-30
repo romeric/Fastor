@@ -7,6 +7,8 @@ using namespace Fastor;
 template<typename T>
 void run_mixed_views() {
 
+    using std::abs;
+
     // Constructing other order tensors from 2D views
     // Row-wise operations
     {
@@ -214,6 +216,54 @@ void run_mixed_views() {
         FASTOR_EXIT_ASSERT(abs(aa.sum() - 4) < Tol);
         aa(baa) /= 1 + aa;
         FASTOR_EXIT_ASSERT(abs(aa.sum() - 4) < Tol);
+    }
+
+    // diag views
+    {
+        Tensor<T,4,4> A; A.arange();
+        Tensor<T,4> b = diag(A);
+        FASTOR_EXIT_ASSERT(abs(b.sum() - 30) < Tol);
+
+        diag(A) = diag(A);
+        FASTOR_EXIT_ASSERT(abs(A.sum() - 120) < Tol);
+
+        diag(A) = 2*b;
+        FASTOR_EXIT_ASSERT(abs(A.sum() - 150) < Tol);
+
+        A.arange();
+        diag(A) += 2*b;
+        FASTOR_EXIT_ASSERT(abs(A.sum() - 180) < Tol);
+
+        A.arange();
+        diag(A) -= 2*b;
+        FASTOR_EXIT_ASSERT(abs(A.sum() - 60) < Tol);
+
+        A.arange();
+        diag(A) *= 2*b;
+        FASTOR_EXIT_ASSERT(abs(A.sum() - 790) < Tol);
+
+        A.arange();
+        b(0) = 1;
+        diag(A) /= b;
+        FASTOR_EXIT_ASSERT(abs(A.sum() - 93) < Tol);
+
+        diag(A) = 2;
+        FASTOR_EXIT_ASSERT(abs(sum(diag(A)) - 8) < Tol);
+
+        diag(A) += 2;
+        FASTOR_EXIT_ASSERT(abs(sum(diag(A)) - 16) < Tol);
+
+        diag(A) -= 2;
+        FASTOR_EXIT_ASSERT(abs(sum(diag(A)) - 8) < Tol);
+
+        diag(A) *= 2;
+        FASTOR_EXIT_ASSERT(abs(sum(diag(A)) - 16) < Tol);
+
+        diag(A) /= 2;
+        FASTOR_EXIT_ASSERT(abs(sum(diag(A)) - 8) < Tol);
+
+        diag(A) = A % b - A % b;
+        FASTOR_EXIT_ASSERT(abs(sum(diag(A)) - 0) < Tol);
     }
 
     print(FGRN(BOLD("All tests passed successfully")));

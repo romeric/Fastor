@@ -16,7 +16,10 @@
 #include "Fastor/expressions/views/tensor_fixed_views_nd.h"
 #include "Fastor/expressions/views/tensor_random_views.h"
 #include "Fastor/expressions/views/tensor_filter_views.h"
+#include "Fastor/expressions/views/tensor_diag_views.h"
 #include "Fastor/expressions/views/tensor_views.h"
+
+#include "Fastor/expressions/views/tensor_views_assignment.h"
 
 #endif // EXPRESSIONS_H
 
