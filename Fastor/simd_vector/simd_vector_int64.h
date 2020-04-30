@@ -812,24 +812,24 @@ struct SIMDVector<int64_t,simd_abi::sse> {
     // In-place operators
     FASTOR_INLINE void operator+=(int64_t num) {
         auto numb = _mm_set_epi64x(num,num);
-        value = _mm_add_epi32(value,numb);
+        value = _mm_add_epi64(value,numb);
     }
     FASTOR_INLINE void operator+=(__m128i regi) {
-        value = _mm_add_epi32(value,regi);
+        value = _mm_add_epi64(value,regi);
     }
     FASTOR_INLINE void operator+=(const SIMDVector<int64_t,simd_abi::sse> &a) {
-        value = _mm_add_epi32(value,a.value);
+        value = _mm_add_epi64(value,a.value);
     }
 
     FASTOR_INLINE void operator-=(int64_t num) {
         auto numb = _mm_set_epi64x(num,num);
-        value = _mm_sub_epi32(value,numb);
+        value = _mm_sub_epi64(value,numb);
     }
     FASTOR_INLINE void operator-=(__m128i regi) {
-        value = _mm_sub_epi32(value,regi);
+        value = _mm_sub_epi64(value,regi);
     }
     FASTOR_INLINE void operator-=(const SIMDVector<int64_t,simd_abi::sse> &a) {
-        value = _mm_sub_epi32(value,a.value);
+        value = _mm_sub_epi64(value,a.value);
     }
 
     FASTOR_INLINE void operator*=(int64_t num) {
@@ -922,19 +922,19 @@ FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<int64_t
 
 FASTOR_INLINE SIMDVector<int64_t,simd_abi::sse> operator+(const SIMDVector<int64_t,simd_abi::sse> &a, const SIMDVector<int64_t,simd_abi::sse> &b) {
     SIMDVector<int64_t,simd_abi::sse> out;
-    out.value = _mm_add_epi32(a.value,b.value);
+    out.value = _mm_add_epi64(a.value,b.value);
     return out;
 }
 FASTOR_INLINE SIMDVector<int64_t,simd_abi::sse> operator+(const SIMDVector<int64_t,simd_abi::sse> &a, int64_t b) {
     SIMDVector<int64_t,simd_abi::sse> out;
     auto numb = _mm_set_epi64x(b,b);
-    out.value = _mm_add_epi32(a.value,numb);
+    out.value = _mm_add_epi64(a.value,numb);
     return out;
 }
 FASTOR_INLINE SIMDVector<int64_t,simd_abi::sse> operator+(int64_t a, const SIMDVector<int64_t,simd_abi::sse> &b) {
     SIMDVector<int64_t,simd_abi::sse> out;
     auto numb = _mm_set_epi64x(a,a);
-    out.value = _mm_add_epi32(numb,b.value);
+    out.value = _mm_add_epi64(numb,b.value);
     return out;
 }
 FASTOR_INLINE SIMDVector<int64_t,simd_abi::sse> operator+(const SIMDVector<int64_t,simd_abi::sse> &b) {
@@ -943,19 +943,19 @@ FASTOR_INLINE SIMDVector<int64_t,simd_abi::sse> operator+(const SIMDVector<int64
 
 FASTOR_INLINE SIMDVector<int64_t,simd_abi::sse> operator-(const SIMDVector<int64_t,simd_abi::sse> &a, const SIMDVector<int64_t,simd_abi::sse> &b) {
     SIMDVector<int64_t,simd_abi::sse> out;
-    out.value = _mm_sub_epi32(a.value,b.value);
+    out.value = _mm_sub_epi64(a.value,b.value);
     return out;
 }
 FASTOR_INLINE SIMDVector<int64_t,simd_abi::sse> operator-(const SIMDVector<int64_t,simd_abi::sse> &a, int64_t b) {
     SIMDVector<int64_t,simd_abi::sse> out;
     auto numb = _mm_set_epi64x(b,b);
-    out.value = _mm_sub_epi32(a.value,numb);
+    out.value = _mm_sub_epi64(a.value,numb);
     return out;
 }
 FASTOR_INLINE SIMDVector<int64_t,simd_abi::sse> operator-(int64_t a, const SIMDVector<int64_t,simd_abi::sse> &b) {
     SIMDVector<int64_t,simd_abi::sse> out;
     auto numb = _mm_set_epi64x(a,a);
-    out.value = _mm_sub_epi32(numb,b.value);
+    out.value = _mm_sub_epi64(numb,b.value);
     return out;
 }
 FASTOR_INLINE SIMDVector<int64_t,simd_abi::sse> operator-(const SIMDVector<int64_t,simd_abi::sse> &b) {

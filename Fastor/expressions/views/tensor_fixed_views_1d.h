@@ -25,7 +25,7 @@ public:
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() { return range_detector<F0,L0,S0>::value;}
     static constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX ) {return range_detector<F0,L0,S0>::value;}
-    constexpr const Tensor<T,N>& expr() const {return _expr;};
+    constexpr const Tensor<T,N>& expr() const {return _expr;}
 
     constexpr FASTOR_INLINE TensorConstFixedViewExpr1D(const Tensor<T,N> &_ex) : _expr(_ex) {}
 
@@ -87,7 +87,7 @@ public:
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return range_detector<F0,L0,S0>::value;}
     static constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) {return range_detector<F0,L0,S0>::value;}
-    constexpr const Tensor<T,N>& expr() const {return _expr;};
+    constexpr const Tensor<T,N>& expr() const {return _expr;}
 
     FASTOR_INLINE TensorFixedViewExpr1D<Tensor<T,N>,fseq<F0,L0,S0>,1>& noalias() {
         _does_alias = true;
@@ -431,7 +431,7 @@ public:
 
     // Scalar binders
     //----------------------------------------------------------------------------------//
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator=(U num) {
         V _vec_other(static_cast<T>(num));
         T *FASTOR_RESTRICT _data = _expr.data();
@@ -463,7 +463,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator+=(U num) {
         V _vec_other(static_cast<T>(num));
         T *FASTOR_RESTRICT _data = _expr.data();
@@ -496,7 +496,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator-=(U num) {
         V _vec_other(static_cast<T>(num));
         T *FASTOR_RESTRICT _data = _expr.data();
@@ -529,7 +529,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator*=(U num) {
         V _vec_other(static_cast<T>(num));
         T *FASTOR_RESTRICT _data = _expr.data();
@@ -562,7 +562,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && !is_integral_v_<U>,bool> = false>
     void operator/=(U num) {
         T inum = T(1) / static_cast<T>(num);
         V _vec_other(inum);
@@ -591,6 +591,38 @@ public:
 #else
             for (FASTOR_INDEX i = 0; i <size(); i++) {
                 _data[S0*i+F0] *= inum;
+            }
+#endif
+        }
+    }
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && is_integral_v_<U>,bool> = false>
+    void operator/=(U num) {
+        V _vec_other(static_cast<T>(num));
+        T *FASTOR_RESTRICT _data = _expr.data();
+        FASTOR_IF_CONSTEXPR (S0 == 1) {
+            FASTOR_INDEX i;
+            for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
+                auto _vec = this->template eval<T>(i) / _vec_other;
+                _vec.store(&_data[i+F0],false);
+            }
+            for (; i <size(); i++) {
+                _data[i+F0] /= num;
+            }
+        }
+        else {
+#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
+            FASTOR_INDEX i;
+            for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
+                for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
+                    _data[S0*(i+j) + F0] /= _vec_other[j];
+                }
+            }
+            for (; i <size(); i++) {
+                _data[S0*i+F0] /= num;
+            }
+#else
+            for (FASTOR_INDEX i = 0; i <size(); i++) {
+                _data[S0*i+F0] /= num;
             }
 #endif
         }

@@ -24,7 +24,7 @@ public:
     static constexpr FASTOR_INDEX rank() {return 1;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return IterSize;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX ) const {return IterSize;}
-    constexpr const Tensor<T,N>& expr() const {return _expr;};
+    constexpr const Tensor<T,N>& expr() const {return _expr;}
 
     constexpr FASTOR_INLINE TensorConstRandomViewExpr(const Tensor<T,N> &_ex, const Tensor<Int,IterSize> &_it) : _expr(_ex), it_expr(_it) {}
 
@@ -98,7 +98,7 @@ public:
     static constexpr FASTOR_INDEX rank() {return DIMS;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return prod<IterSizes...>::value;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return it_expr.dimension(i);}
-    constexpr const Tensor<T,Rest...>& expr() const {return _expr;};
+    constexpr const Tensor<T,Rest...>& expr() const {return _expr;}
 
     constexpr FASTOR_INLINE TensorConstRandomViewExpr(const Tensor<T,Rest...> &_ex,
         const Tensor<Int,IterSizes...> &_it) : _expr(_ex), it_expr(_it) {
@@ -1089,7 +1089,7 @@ public:
 
     // Scalar binders
     //------------------------------------------------------------------------------------//
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator=(U num) {
         T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1110,7 +1110,7 @@ public:
 #endif
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator+=(U num) {
         T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1131,7 +1131,7 @@ public:
 #endif
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator-=(U num) {
         T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1152,7 +1152,7 @@ public:
 #endif
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator*=(U num) {
         T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1173,7 +1173,7 @@ public:
 #endif
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && !is_integral_v_<U>,bool> = false>
     void operator/=(U num) {
         T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1192,6 +1192,26 @@ public:
         T inum = T(1.)/num;
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             _data[it_expr.data()[i]] *= inum;
+        }
+#endif
+    }
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && is_integral_v_<U>,bool> = false>
+    void operator/=(U num) {
+        T *_data = _expr.data();
+#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
+        SIMDVector<T,DEFAULT_ABI> _vec_other((T)num);
+        FASTOR_INDEX i;
+        for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
+            for (auto j=0; j<SIMDVector<T,DEFAULT_ABI>::Size; ++j) {
+                _data[it_expr.data()[i+j]] /= _vec_other[j];
+            }
+        }
+        for (; i <size(); i++) {
+            _data[it_expr.data()[i]] /= num;
+        }
+#else
+        for (FASTOR_INDEX i = 0; i <size(); i++) {
+            _data[it_expr.data()[i]] /= num;
         }
 #endif
     }

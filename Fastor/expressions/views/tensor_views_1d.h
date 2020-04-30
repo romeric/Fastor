@@ -26,7 +26,7 @@ public:
     static constexpr FASTOR_INDEX rank() {return 1;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return _seq.size();}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX ) const {return _seq.size();}
-    constexpr const Tensor<T,N>& expr() const {return _expr;};
+    constexpr const Tensor<T,N>& expr() const {return _expr;}
 
     FASTOR_INLINE TensorConstViewExpr(const Tensor<T,N> &_ex, const seq &_s) : _expr(_ex), _seq(_s) {
         if (_seq._last < 0) _seq._last += N + /*including the end point*/ 1;
@@ -102,7 +102,7 @@ public:
     static constexpr FASTOR_INDEX rank() {return 1;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return _seq.size();}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX ) const {return _seq.size();}
-    constexpr const Tensor<T,N>& expr() const {return _expr;};
+    constexpr const Tensor<T,N>& expr() const {return _expr;}
 
     FASTOR_INLINE TensorViewExpr<Tensor<T,N>,1>& noalias() {
         _does_alias = true;
@@ -468,7 +468,7 @@ public:
 
     // scalar binders
     //----------------------------------------------------------------------------------//
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator=(U num) {
         V _vec_other(static_cast<T>(num));
         T *FASTOR_RESTRICT _data = _expr.data();
@@ -503,7 +503,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator+=(U num) {
         V _vec_other(static_cast<T>(num));
         T *FASTOR_RESTRICT _data = _expr.data();
@@ -539,7 +539,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator-=(U num) {
         V _vec_other(static_cast<T>(num));
         T *FASTOR_RESTRICT _data = _expr.data();
@@ -575,7 +575,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator*=(U num) {
         V _vec_other(static_cast<T>(num));
         T *FASTOR_RESTRICT _data = _expr.data();
@@ -611,7 +611,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && !is_integral_v_<U>,bool> = false>
     void operator/=(U num) {
         T inum = T(1) / static_cast<T>(num);
         V _vec_other(inum);
@@ -643,6 +643,41 @@ public:
             for (FASTOR_INDEX i = 0; i <size(); i++) {
                 auto idx = i*_seq._step+_seq._first;
                 _data[idx] *= inum;
+            }
+#endif
+        }
+    }
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && is_integral_v_<U>,bool> = false>
+    void operator/=(U num) {
+        V _vec_other(static_cast<T>(num));
+        T *FASTOR_RESTRICT _data = _expr.data();
+        if (_seq._step == 1) {
+            FASTOR_INDEX i;
+            for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
+                auto _vec = this->template eval<T>(i) / _vec_other;
+                _vec.store(&_data[i+_seq._first],false);
+            }
+            for (; i <size(); i++) {
+                _data[i+_seq._first] /= num;
+            }
+        }
+        else {
+#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
+            FASTOR_INDEX i;
+            for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
+                for (auto j=0; j<V::Size; ++j) {
+                    auto idx = (i+j)*_seq._step+_seq._first;
+                    _data[idx] /= _vec_other[j];
+                }
+            }
+            for (; i <size(); i++) {
+                auto idx = i*_seq._step+_seq._first;
+                _data[idx] /= num;
+            }
+#else
+            for (FASTOR_INDEX i = 0; i <size(); i++) {
+                auto idx = i*_seq._step+_seq._first;
+                _data[idx] /= num;
             }
 #endif
         }

@@ -25,7 +25,7 @@ public:
     static constexpr FASTOR_INDEX rank() {return DIMS;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return prod<Rest...>::value;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return fl_expr.dimension(i);}
-    constexpr const Tensor<T,Rest...>& expr() const {return _expr;};
+    constexpr const Tensor<T,Rest...>& expr() const {return _expr;}
 
     FASTOR_INLINE TensorFilterViewExpr<Tensor<T,Rest...>,Tensor<bool,Rest...>,DIMS>& noalias() {
         _does_alias = true;
@@ -160,7 +160,7 @@ public:
     }
 
     //------------------------------------------------------------------------------------//
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator=(U num) {
         T tnum = (T)num;
         for (FASTOR_INDEX i = 0; i <size(); i++) {
@@ -170,7 +170,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator+=(U num) {
         T tnum = (T)num;
         for (FASTOR_INDEX i = 0; i <size(); i++) {
@@ -180,7 +180,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator-=(U num) {
         T tnum = (T)num;
         for (FASTOR_INDEX i = 0; i <size(); i++) {
@@ -190,7 +190,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator*=(U num) {
         T tnum = (T)num;
         for (FASTOR_INDEX i = 0; i <size(); i++) {
@@ -200,12 +200,21 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && !is_integral_v_<U>,bool> = false>
     void operator/=(U num) {
         T tnum = T(1)/(T)num;
         for (FASTOR_INDEX i = 0; i <size(); i++) {
             if (fl_expr.eval_s(i)) {
                 _expr.data()[i] *= tnum;
+            }
+        }
+    }
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && is_integral_v_<U>,bool> = false>
+    void operator/=(U num) {
+        T tnum = (T)num;
+        for (FASTOR_INDEX i = 0; i <size(); i++) {
+            if (fl_expr.eval_s(i)) {
+                _expr.data()[i] /= tnum;
             }
         }
     }

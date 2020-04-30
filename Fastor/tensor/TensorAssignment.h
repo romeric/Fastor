@@ -214,7 +214,7 @@ FASTOR_INLINE void trivial_assign_mul(AbstractTensor<Derived,DIM> &dst, U num) {
 }
 
 template<typename Derived, size_t DIM, typename U,
-    enable_if_t_<is_arithmetic_v_<U>, bool> = false>
+    enable_if_t_<is_arithmetic_v_<U> && !is_integral_v_<U>, bool> = false>
 FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
     using T = typename scalar_type_finder<Derived>::type;
     using V = SIMDVector<T,DEFAULT_ABI>;
@@ -230,6 +230,25 @@ FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
     }
     for (; i<dst.self().size(); ++i) {
         _data[i] *= cnum;
+    }
+}
+template<typename Derived, size_t DIM, typename U,
+    enable_if_t_<is_arithmetic_v_<U> && is_integral_v_<U>, bool> = false>
+FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
+    using T = typename scalar_type_finder<Derived>::type;
+    using V = SIMDVector<T,DEFAULT_ABI>;
+    constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
+    T* _data = dst.self().data();
+    T cnum = (T)num;
+    V _vec(cnum);
+    FASTOR_INDEX i = 0;
+    for (; i< ROUND_DOWN(dst.self().size(),Stride_); i+=Stride_) {
+        V _vec_out(&_data[i], FASTOR_ALIGNED);
+        _vec_out /= _vec;
+        _vec_out.store(&_data[i], FASTOR_ALIGNED);
+    }
+    for (; i<dst.self().size(); ++i) {
+        _data[i] /= cnum;
     }
 }
 

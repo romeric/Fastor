@@ -27,7 +27,7 @@ public:
     static constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) {
         return i==0 ? range_detector<F0,L0,S0>::value : range_detector<F1,L1,S1>::value;
     }
-    constexpr const Tensor<T,M,N>& expr() const {return _expr;};
+    constexpr const Tensor<T,M,N>& expr() const {return _expr;}
     static constexpr FASTOR_INDEX Padding = F0*N+F1;
 
     constexpr FASTOR_INLINE TensorConstFixedViewExpr2D(const Tensor<T,M,N> &_ex) : _expr(_ex) {}
@@ -103,11 +103,10 @@ public:
     static constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) {
         return i==0 ? range_detector<F0,L0,S0>::value : range_detector<F1,L1,S1>::value;
     }
-    constexpr const Tensor<T,M,N>& expr() const {return _expr;};
+    constexpr const Tensor<T,M,N>& expr() const {return _expr;}
     static constexpr FASTOR_INDEX Padding = F0*N+F1;
 
     FASTOR_INLINE TensorFixedViewExpr2D<Tensor<T,M,N>,fseq<F0,L0,S0>,fseq<F1,L1,S1>,2>& noalias() {
-        // FASTOR_ASSERT(false,"FIXED 2D VIEWS DO NOT SUPPORT OVERLAPPING ASSIGNMENTS");
         _does_alias = true;
         return *this;
     }
@@ -821,7 +820,7 @@ public:
 
     // Scalar binders
     //----------------------------------------------------------------------------------//
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator=(U num) {
         T *FASTOR_RESTRICT _data = _expr.data();
         SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
@@ -857,7 +856,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator+=(U num) {
         T *FASTOR_RESTRICT _data = _expr.data();
         SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
@@ -895,7 +894,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator-=(U num) {
         T *FASTOR_RESTRICT _data = _expr.data();
         SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
@@ -933,7 +932,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator*=(U num) {
         T *FASTOR_RESTRICT _data = _expr.data();
         SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
@@ -971,7 +970,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && !is_integral_v_<U>,bool> = false>
     void operator/=(U num) {
         T *FASTOR_RESTRICT _data = _expr.data();
         T inum = T(1)/num;
@@ -1004,6 +1003,43 @@ public:
             for (FASTOR_INDEX i = 0; i <range_detector<F0,L0,S0>::value; i++) {
                 for (FASTOR_INDEX j = 0; j <range_detector<F1,L1,S1>::value; j++) {
                     _expr(S0*i+F0,S1*j+F1) *= inum;
+                }
+            }
+#endif
+        }
+    }
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && is_integral_v_<U>,bool> = false>
+    void operator/=(U num) {
+        T *FASTOR_RESTRICT _data = _expr.data();
+        SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
+        FASTOR_IF_CONSTEXPR (S1==1) {
+            for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
+                FASTOR_INDEX j;
+                for (j = 0; j <ROUND_DOWN(dimension(1),Stride); j+=Stride) {
+                    auto _vec = this->template eval<T>(i,j) / _vec_other;
+                    _vec.store(&_data[S0*i*N+j+Padding],false);
+                }
+                for (; j <dimension(1); ++j) {
+                    _expr(S0*i+F0,j+F1) /= num;
+                }
+            }
+        }
+        else {
+#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
+            for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
+                FASTOR_INDEX j;
+                for (j = 0; j <ROUND_DOWN(dimension(1),Stride); j+=Stride) {
+                    auto _vec = this->template eval<T>(i,j) / _vec_other;
+                    data_setter(_data,_vec,S0*i*N+S1*j+Padding,S1);
+                }
+                for (; j <dimension(1); ++j) {
+                    _expr(S0*i+F0,S1*j+F1) /= num;
+                }
+            }
+#else
+            for (FASTOR_INDEX i = 0; i <range_detector<F0,L0,S0>::value; i++) {
+                for (FASTOR_INDEX j = 0; j <range_detector<F1,L1,S1>::value; j++) {
+                    _expr(S0*i+F0,S1*j+F1) /= num;
                 }
             }
 #endif

@@ -94,7 +94,6 @@ public:
     FASTOR_INLINE SIMDVector<FASTOR_BD_OP_EVAL_TYPE,DEFAULT_ABI> helper(FASTOR_INDEX i) const {
 #ifndef FASTOR_UNSAFE_MATH
         return _lhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i) / (FASTOR_BD_OP_EVAL_TYPE)_rhs;
-      // return _lhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i) *(1./(FASTOR_BD_OP_EVAL_TYPE)_rhs);
 #else
         return _lhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i) * rcp(SIMDVector<FASTOR_BD_OP_EVAL_TYPE,DEFAULT_ABI>(_rhs));
 #endif
@@ -157,7 +156,6 @@ public:
     FASTOR_INLINE SIMDVector<FASTOR_BD_OP_EVAL_TYPE,DEFAULT_ABI> helper(FASTOR_INDEX i, FASTOR_INDEX j) const {
 #ifndef FASTOR_UNSAFE_MATH
         return _lhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i,j) / (FASTOR_BD_OP_EVAL_TYPE)_rhs;
-        // return _lhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i,j) * (1./(FASTOR_BD_OP_EVAL_TYPE)_rhs);
 #else
         return _lhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i,j) * rcp(SIMDVector<FASTOR_BD_OP_EVAL_TYPE,DEFAULT_ABI>(_rhs));
 #endif
@@ -262,26 +260,39 @@ FASTOR_INLINE BinaryDivOp<TLhs, TRhs, DIM0> operator/(TLhs bb, const AbstractTen
 #else
 template<typename TLhs, typename TRhs, size_t DIM0,
          typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
-                                 std::is_arithmetic<TRhs>::value,bool>::type = 0 >
+                                 std::is_arithmetic<TRhs>::value && !std::is_integral<TRhs>::value,bool>::type = 0 >
 FASTOR_INLINE BinaryMulOp<TLhs, TRhs, DIM0> operator/(const AbstractTensor<TLhs,DIM0> &_lhs, TRhs bb) {
   return BinaryMulOp<TLhs, TRhs, DIM0>(
     _lhs.self(),
     static_cast<typename scalar_type_finder<TLhs>::type>(1)/static_cast<typename scalar_type_finder<TLhs>::type>(bb));
 }
 template<typename TLhs, typename TRhs, size_t DIM0,
-         typename std::enable_if<std::is_arithmetic<TLhs>::value &&
+         typename std::enable_if<std::is_arithmetic<TLhs>::value && !std::is_integral<TRhs>::value &&
                                  !std::is_arithmetic<TRhs>::value,bool>::type = 0 >
 FASTOR_INLINE BinaryMulOp<TLhs, TRhs, DIM0> operator/(TLhs bb, const AbstractTensor<TRhs,DIM0> &_rhs) {
   return BinaryMulOp<TLhs, TRhs, DIM0>(
     static_cast<typename scalar_type_finder<TLhs>::type>(1)/static_cast<typename scalar_type_finder<TLhs>::type>(bb),
     _rhs.self());
 }
+// Special case for integral types
+template<typename TLhs, typename TRhs, size_t DIM0,
+         typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
+                                 std::is_arithmetic<TRhs>::value  && std::is_integral<TRhs>::value,bool>::type = 0 >
+FASTOR_INLINE BinaryDivOp<TLhs, TRhs, DIM0> operator/(const AbstractTensor<TLhs,DIM0> &_lhs, TRhs bb) {
+  return BinaryDivOp<TLhs, TRhs, DIM0>(_lhs.self(), bb);
+}
+template<typename TLhs, typename TRhs, size_t DIM0,
+         typename std::enable_if<std::is_arithmetic<TLhs>::value && std::is_integral<TRhs>::value &&
+                                 !std::is_arithmetic<TRhs>::value,bool>::type = 0 >
+FASTOR_INLINE BinaryDivOp<TLhs, TRhs, DIM0> operator/(TLhs bb, const AbstractTensor<TRhs,DIM0> &_rhs) {
+  return BinaryDivOp<TLhs, TRhs, DIM0>(bb,_rhs.self());
+}
 #endif
 
 template<typename TLhs, typename TRhs, size_t DIM0, size_t DIM1,
-         typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
-                                 !std::is_arithmetic<TRhs>::value &&
-                                 DIM0!=DIM1,bool>::type = 0 >
+         enable_if_t_<!is_arithmetic_v_<TLhs> &&
+                      !is_arithmetic_v_<TRhs> &&
+                      DIM0!=DIM1,bool> = false >
 FASTOR_INLINE BinaryDivOp<TLhs, TRhs, meta_min<DIM0,DIM1>::value>
 operator/(const AbstractTensor<TLhs,DIM0> &_lhs, const AbstractTensor<TRhs,DIM1> &_rhs) {
   return BinaryDivOp<TLhs, TRhs, meta_min<DIM0,DIM1>::value>(_lhs.self(), _rhs.self());

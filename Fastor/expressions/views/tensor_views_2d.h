@@ -25,7 +25,7 @@ public:
     static constexpr FASTOR_INDEX rank() {return 2;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return _seq0.size()*_seq1.size();}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return i==0 ? _seq0.size() : _seq1.size();}
-    constexpr const Tensor<T,M,N>& expr() const {return _expr;};
+    constexpr const Tensor<T,M,N>& expr() const {return _expr;}
 
     FASTOR_INLINE TensorConstViewExpr(const Tensor<T,M,N> &_ex, seq _s0, seq _s1) : _expr(_ex), _seq0(std::move(_s0)), _seq1(std::move(_s1)) {
         if (_seq0._last < 0 && _seq0._first >= 0) {_seq0._last += M + 1;}
@@ -117,7 +117,7 @@ public:
     static constexpr FASTOR_INDEX rank() {return 2;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return _seq0.size()*_seq1.size();}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return i==0 ? _seq0.size() : _seq1.size();}
-    constexpr const Tensor<T,M,N>& expr() const {return _expr;};
+    constexpr const Tensor<T,M,N>& expr() const {return _expr;}
 
     FASTOR_INLINE TensorViewExpr<Tensor<T,M,N>,2>& noalias() {
         _does_alias = true;
@@ -860,7 +860,7 @@ public:
 
     // Scalar binders
     //----------------------------------------------------------------------------------//
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     FASTOR_INLINE void operator=(U num) {
         T *_data = _expr.data();
         SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
@@ -896,7 +896,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     FASTOR_INLINE void operator+=(U num) {
         T *_data = _expr.data();
         SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
@@ -934,7 +934,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     FASTOR_INLINE void operator-=(U num) {
         T *_data = _expr.data();
         SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
@@ -972,7 +972,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     FASTOR_INLINE void operator*=(U num) {
         T *_data = _expr.data();
         SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
@@ -1010,7 +1010,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && !is_integral_v_<U>,bool> = false>
     FASTOR_INLINE void operator/=(U num) {
         T *_data = _expr.data();
         T inum = T(1.0)/T(num);
@@ -1049,6 +1049,43 @@ public:
             }
         }
 #endif
+    }
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && is_integral_v_<U>,bool> = false>
+    FASTOR_INLINE void operator/=(U num) {
+        T *_data = _expr.data();
+        SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
+        if (_seq1._step == 1) {
+            for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
+                FASTOR_INDEX j;
+                for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
+                    auto _vec =  this->template eval<T>(i,j) / _vec_other;
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                }
+                for (; j <_seq1.size(); ++j) {
+                    _expr(_seq0._step*i+_seq0._first,j+_seq1._first) /= num;
+                }
+            }
+        }
+        else {
+#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
+            for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
+                FASTOR_INDEX j;
+                for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
+                    auto _vec = this->template eval<T>(i,j) / _vec_other;
+                    data_setter(_data,_vec,(_seq0._step*i+_seq0._first)*N+_seq1._step*j+_seq1._first,_seq1._step);
+                }
+                for (; j <_seq1.size(); ++j) {
+                    _expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) /= num;
+                }
+            }
+#else
+            for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
+                for (FASTOR_INDEX j = 0; j <_seq1.size(); j++) {
+                    _expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) /= num;
+                }
+            }
+#endif
+        }
     }
     //----------------------------------------------------------------------------------//
 
