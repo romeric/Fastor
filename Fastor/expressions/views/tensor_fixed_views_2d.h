@@ -54,25 +54,27 @@ public:
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
         SIMDVector<U,DEFAULT_ABI> _vec;
-        vector_setter(_vec,_expr.data(),S0*i*N+S1*j + Padding,S1);
+        FASTOR_IF_CONSTEXPR (S1==1) _vec.load(_expr.data()+S0*i*N+j + Padding, false);
+        else vector_setter(_vec,_expr.data(),S0*i*N+S1*j + Padding,S1);
         return _vec;
     }
 
     template<typename U=T>
-    FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        return _expr(S0*i+F0,S1*j+F1);
+    constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
+        return _expr.data()[S0*i*N+S1*j + Padding];
     }
 
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,2>& as) const {
         SIMDVector<U,DEFAULT_ABI> _vec;
-        vector_setter(_vec,_expr.data(),S0*as[0]*N+S1*as[1] + Padding,S1);
+        FASTOR_IF_CONSTEXPR (S1==1) _vec.load(_expr.data()+S0*as[0]*N+as[1] + Padding, false);
+        else vector_setter(_vec,_expr.data(),S0*as[0]*N+S1*as[1] + Padding,S1);
         return _vec;
     }
 
     template<typename U=T>
     constexpr FASTOR_INLINE U teval_s(const std::array<int,2>& as) const {
-        return _expr(S0*as[0]+F0,S1*as[1]+F1);
+        return _expr.data()[S0*as[0]*N+S1*as[1] + Padding];
     }
 };
 
@@ -1031,7 +1033,6 @@ public:
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
         SIMDVector<U,DEFAULT_ABI> _vec;
-        // if (S1==1) _vec.load(_expr.data()+S0*i*N+S1*j + Padding, false);
         FASTOR_IF_CONSTEXPR (S1==1) _vec.load(_expr.data()+S0*i*N+j + Padding, false);
         else vector_setter(_vec,_expr.data(),S0*i*N+S1*j + Padding,S1);
         return _vec;
@@ -1039,7 +1040,6 @@ public:
 
     template<typename U=T>
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        // return _expr(S0*i+F0,S1*j+F1);
         return _expr.data()[S0*i*N+S1*j + Padding];
     }
 

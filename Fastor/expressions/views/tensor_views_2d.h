@@ -48,7 +48,6 @@ public:
             auto it = (idx+j) / _seq1.size(), jt = (idx+j) % _seq1.size();
             inds[j] = _seq0._step*it*N+_seq1._step*jt + _seq0._first*N + _seq1._first;
         }
-
         vector_setter(_vec,_expr.data(),inds);
         return _vec;
     }
@@ -63,7 +62,8 @@ public:
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
         SIMDVector<U,DEFAULT_ABI> _vec;
-        vector_setter(_vec,_expr.data(),_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,_seq1._step);
+        if (_seq1._step==1) _vec.load(_expr.data()+_seq0._step*i*N+j + _seq0._first*N + _seq1._first,false);
+        else vector_setter(_vec,_expr.data(),_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,_seq1._step);
         return _vec;
     }
 
@@ -1058,19 +1058,9 @@ public:
         std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
         for (auto j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
             auto it = (idx+j) / _seq1.size(), jt = (idx+j) % _seq1.size();
-            // auto it = (idx+j) / _dims[1], jt = (idx+j) % _dims[0];
             inds[j] = _seq0._step*it*N+_seq1._step*jt + _seq0._first*N + _seq1._first;
         }
         vector_setter(_vec,_expr.data(),inds);
-        return _vec;
-    }
-
-    template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        SIMDVector<U,DEFAULT_ABI> _vec;
-        if (_seq1._step==1) _vec.load(_expr.data()+_seq0._step*i*N+j + _seq0._first*N + _seq1._first,false);
-        // if (_seq1._step==1) _vec.load(_expr.data()+_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,false);
-        else vector_setter(_vec,_expr.data(),_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,_seq1._step);
         return _vec;
     }
 
@@ -1082,6 +1072,14 @@ public:
     }
 
     template<typename U=T>
+    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
+        SIMDVector<U,DEFAULT_ABI> _vec;
+        if (_seq1._step==1) _vec.load(_expr.data()+_seq0._step*i*N+j + _seq0._first*N + _seq1._first,false);
+        else vector_setter(_vec,_expr.data(),_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,_seq1._step);
+        return _vec;
+    }
+
+    template<typename U=T>
     constexpr FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return _expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first);
     }
@@ -1089,17 +1087,15 @@ public:
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,2>& as) const {
         SIMDVector<U,DEFAULT_ABI> _vec;
-        if (_seq1._step==1) _vec.load(&(_expr.data()[_seq0._step*as[0]*N+as[1] + _seq0._first*N + _seq1._first]),false);
+        if (_seq1._step==1) _vec.load(_expr.data()+_seq0._step*as[0]*N+as[1] + _seq0._first*N + _seq1._first,false);
         else vector_setter(_vec,_expr.data(),_seq0._step*as[0]*N+_seq1._step*as[1] + _seq0._first*N + _seq1._first,_seq1._step);
         return _vec;
     }
 
     template<typename U=T>
     constexpr FASTOR_INLINE U teval_s(const std::array<int,2>& as) const {
-        // return _expr(_seq0._step*as[0]+_seq0._first,_seq1._step*as[1]+_seq1._first);
-        return _expr.data()[_seq0._step*as[0]*N+_seq1._step*as[1] + _seq0._first*N + _seq1._first];
+        return _expr(_seq0._step*as[0]+_seq0._first,_seq1._step*as[1]+_seq1._first);
     }
-
 };
 
 
