@@ -8,7 +8,7 @@ enum class QRCompType : int
 {
     MGSR = 0,       /* Modified Gram-Schmidt Row-wise            */
     MGSRPivot,      /* Modified Gram-Schmidt Row-wise with pivot */
-    HHReflections   /* House Holder Reflections                  */
+    HHR             /* House Holder Reflections                  */
 };
 
 // Determinant computation type

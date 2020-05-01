@@ -11,6 +11,20 @@
 
 namespace Fastor {
 
+// classic vector cross product
+template<typename T, size_t I, enable_if_t_<I==3,bool> = false>
+FASTOR_INLINE Tensor<T,I> cross(const Tensor<T,I> &a, const Tensor<T,I> &b) {
+    Tensor<T,I> out;
+    _vector_crossproduct<T,I>(a.data(),b.data(),out.data());
+    return out;
+}
+template<typename T, size_t I, enable_if_t_<I==2,bool> = false>
+FASTOR_INLINE Tensor<T,I+1> cross(const Tensor<T,I> &a, const Tensor<T,I> &b) {
+    Tensor<T,I+1> out;
+    _vector_crossproduct<T,I>(a.data(),b.data(),out.data());
+    return out;
+}
+
 // Tensor cross product of two 2nd order tensors
 template<typename T, size_t I, size_t J, typename std::enable_if<I==3 && J==3,bool>::type=0>
 FASTOR_INLINE Tensor<T,I,J> cross(const Tensor<T,I,J> &b, const Tensor<T,I,J> &a) {
@@ -134,6 +148,42 @@ FASTOR_INLINE Tensor<T,I,J,K> cross(const Tensor<T,L,M> &A, const Tensor<T,I,J,K
     _crossproduct23<T,I,J,K,L,M>(B.data(),A.data(),C.data());
     return C;
 }
+
+
+#if FASTOR_CXX_VERSION >= 2014
+// Tensor cross product for generic expressions
+template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
+    enable_if_t_<is_tensor_v<Derived0> && !is_tensor_v<Derived1>,bool> = 0 >
+FASTOR_INLINE
+auto
+cross(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b) {
+    using rhs_type = typename Derived1::result_type;
+    const rhs_type tmp_b(b);
+    return cross(a.self(),tmp_b);
+}
+
+template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
+    enable_if_t_<!is_tensor_v<Derived0> && is_tensor_v<Derived1>,bool> = 0 >
+FASTOR_INLINE
+auto
+cross(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b) {
+    using lhs_type = typename Derived0::result_type;
+    const lhs_type tmp_a(a);
+    return cross(tmp_a,b.self());
+}
+
+template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
+    enable_if_t_<!is_tensor_v<Derived0> && !is_tensor_v<Derived1>,bool> = 0 >
+FASTOR_INLINE
+auto
+cross(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b) {
+    using lhs_type = typename Derived0::result_type;
+    using rhs_type = typename Derived1::result_type;
+    const lhs_type tmp_a(a);
+    const rhs_type tmp_b(b);
+    return cross(tmp_a,tmp_b);
+}
+#endif
 
 } // end of namespace Fastor
 

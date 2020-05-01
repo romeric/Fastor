@@ -82,6 +82,21 @@ void test_linalg() {
         FASTOR_EXIT_ASSERT(std::abs(inner(t2,t2) - 31829.0) < Tol);
     }
 
+    // cross product
+    {
+        // classic cross product
+        Tensor<T,3> a = {1,2,3};
+        Tensor<T,3> b = {4,5,17};
+        Tensor<T,3> res = cross(a,b);
+        FASTOR_EXIT_ASSERT(std::abs(res(0) - 19) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(res(1) + 5 ) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(res(2) + 3 ) < Tol);
+
+        FASTOR_EXIT_ASSERT(std::abs(sum(cross(a  ,b+0)) - 11) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(sum(cross(a+0,b  )) - 11) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(sum(cross(a+0,b+0)) - 11) < Tol);
+    }
+
     // cofactor and adjoint
     {
         Tensor<T,2,2> a0; a0.random();

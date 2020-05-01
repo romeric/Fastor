@@ -24,7 +24,7 @@ FASTOR_INLINE T determinant(const Tensor<T,M,M> &a) {
 template<DetCompType DetType = DetCompType::Simple, typename T, size_t M,
     enable_if_t_<is_greater_v_<M,4UL>    && DetType == DetCompType::Simple,bool> = false>
 FASTOR_INLINE T determinant(const Tensor<T,M,M> &a) {
-    static_assert(DetType==DetCompType::RREF, "DETERMINANT COMPUTATION USING THIS METHOD NOT IMPLEMENETED YET");
+    static_assert(DetType==DetCompType::RREF, "DETERMINANT COMPUTATION USING THIS METHOD IS NOT IMPLEMENETED YET");
     return 0;
 }
 template<DetCompType DetType = DetCompType::Simple, typename T, size_t M,
@@ -37,7 +37,7 @@ FASTOR_INLINE T determinant(const Tensor<T,M,M> &a) {
 template<DetCompType DetType = DetCompType::Simple, typename T, size_t M,
     enable_if_t_<DetType != DetCompType::Simple && DetType != DetCompType::QR,bool> = false>
 FASTOR_INLINE T determinant(const Tensor<T,M,M> &a) {
-    static_assert(DetType==DetCompType::RREF, "DETERMINANT COMPUTATION USING THIS METHOD NOT IMPLEMENETED YET");
+    static_assert(DetType==DetCompType::RREF, "DETERMINANT COMPUTATION USING THIS METHOD IS NOT IMPLEMENETED YET");
     return 0;
 }
 

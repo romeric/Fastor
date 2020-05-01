@@ -238,7 +238,7 @@ conditional_t_<Derived0::result_type::Dimension_t::value == 1,
 matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b) {
     using lhs_type = typename Derived0::result_type;
     const lhs_type tmp_a(a);
-    return matmul(tmp_a,b);
+    return matmul(tmp_a,b.self());
 }
 
 template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
@@ -259,7 +259,7 @@ conditional_t_<Derived0::result_type::Dimension_t::value == 1,
 matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b) {
     using rhs_type = typename Derived1::result_type;
     const rhs_type tmp_b(b);
-    return matmul(a,tmp_b);
+    return matmul(a.self(),tmp_b);
 }
 
 

@@ -1,14 +1,35 @@
 #ifndef TENSOR_CROSS_H
 #define TENSOR_CROSS_H
 
+#include "Fastor/meta/meta.h"
 #include "Fastor/commons/commons.h"
 #include "Fastor/simd_vector/extintrin.h"
 
 namespace Fastor {
 
+// classic vector cross product
+//--------------------------------------------------------------------------------------------------------//
+template<typename T, size_t M, enable_if_t_<M==3,bool> = false>
+FASTOR_INLINE void _vector_crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
+    c[0] = a[1] * b[2] - a[2] * b[1];
+    c[1] = a[2] * b[0] - a[0] * b[2];
+    c[2] = a[0] * b[1] - a[1] * b[0];
+}
+
+template<typename T, size_t M, enable_if_t_<M==2,bool> = false>
+FASTOR_INLINE void _vector_crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
+    c[0] = 0;
+    c[1] = 0;
+    c[2] = a[0] * b[1] - a[1] * b[0];
+}
+//--------------------------------------------------------------------------------------------------------//
+
+
+// tensor cross products
+//--------------------------------------------------------------------------------------------------------//
 template<typename T, size_t M, size_t K, size_t N>
 inline void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
-    assert(false && "CROSS PRODUCT IS ONLY A 3D OPERATOR");
+    FASTOR_ASSERT(false,"CROSS PRODUCT IS ONLY A 3D OPERATOR");
 }
 
 #ifdef FASTOR_SSE4_2_IMPL

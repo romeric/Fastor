@@ -136,7 +136,7 @@ template<QRCompType QRType = QRCompType::MGSR, typename Expr, size_t DIM0,
 FASTOR_INLINE
 void
 qr(const AbstractTensor<Expr,DIM0> &src) {
-    static_assert(QRType==QRCompType::MGSR, "QR FACTORISATION USING HOUSEHOLDER REFLECTIONS NOT IMPLEMENETED YET");
+    static_assert(QRType==QRCompType::MGSR, "QR FACTORISATION USING HOUSEHOLDER REFLECTIONS IS NOT IMPLEMENETED YET");
 }
 
 
