@@ -1,6 +1,7 @@
 #ifndef UNARY_ADJ_OP_H
 #define UNARY_ADJ_OP_H
 
+#include "Fastor/meta/meta.h"
 #include "Fastor/backend/adjoint.h"
 #include "Fastor/simd_vector/SIMDVector.h"
 #include "Fastor/tensor/AbstractTensor.h"
@@ -49,6 +50,38 @@ FASTOR_INLINE void adjoint_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& ou
     _adjoint<T,M>(in.data(),out.data());
 }
 } // internal
+
+
+// For tensors
+template<typename T, size_t I>
+FASTOR_INLINE Tensor<T,I,I> adjoint(const Tensor<T,I,I> &a) {
+    Tensor<T,I,I> out;
+    _adjoint<T,I>(a.data(),out.data());
+    return out;
+}
+
+// For high order tensors
+template<typename T, size_t ... Rest, typename std::enable_if<sizeof...(Rest)>=3,bool>::type=0>
+FASTOR_INLINE Tensor<T,Rest...>
+adjoint(const Tensor<T,Rest...> &a) {
+
+    constexpr size_t remaining_product = LastMatrixExtracter<Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::remaining_product;
+
+    constexpr size_t I = get_value<sizeof...(Rest)-1,Rest...>::value;
+    constexpr size_t J = get_value<sizeof...(Rest),Rest...>::value;
+    static_assert(I==J,"THE LAST TWO DIMENSIONS OF TENSOR MUST BE THE SAME");
+
+    Tensor<T,Rest...> out;
+    T *a_data = a.data();
+    T *out_data = out.data();
+
+    for (size_t i=0; i<remaining_product; ++i) {
+        _adjoint<T,J,J>(a_data+i*J*J,out_data+i*J*J);
+    }
+
+    return out;
+}
 
 // Adjoint for generic expressions is provided here
 template<typename Derived, size_t DIM>

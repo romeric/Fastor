@@ -1,6 +1,7 @@
 #ifndef UNARY_NORM_OP_H
 #define UNARY_NORM_OP_H
 
+#include "Fastor/meta/meta.h"
 #include "Fastor/simd_vector/SIMDVector.h"
 #include "Fastor/backend/norm.h"
 #include "Fastor/tensor/AbstractTensor.h"
@@ -10,7 +11,19 @@
 
 namespace Fastor {
 
+// For tensors
+template<typename T, enable_if_t_<is_arithmetic_v_<T>,bool> = false>
+FASTOR_INLINE T norm(const T &a) {
+    return std::abs(a);
+}
+template<typename T, size_t ... Rest>
+FASTOR_INLINE T norm(const Tensor<T,Rest...> &a) {
+    if (sizeof...(Rest) == 0)
+        return *a.data();
+    return _norm<T,prod<Rest...>::value>(a.data());
+}
 
+// For generic expressions
 template<class Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE typename Derived::scalar_type norm(const AbstractTensor<Derived,DIMS> &_src) {
 
@@ -87,7 +100,6 @@ FASTOR_INLINE typename Derived::scalar_type norm(const AbstractTensor<Derived,DI
     const result_type out(src);
     return norm(out);
 }
-
 
 } // end of namespace Fastor
 

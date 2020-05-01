@@ -1,6 +1,7 @@
 #ifndef UNARY_TRANS_OP_H
 #define UNARY_TRANS_OP_H
 
+#include "Fastor/meta/meta.h"
 #include "Fastor/backend/transpose/transpose.h"
 #include "Fastor/simd_vector/SIMDVector.h"
 #include "Fastor/tensor/AbstractTensor.h"
@@ -42,6 +43,36 @@ trans(const AbstractTensor<Expr,DIM0> &src) {
 }
 
 
+// For tensors
+template<typename T, size_t I, size_t J>
+FASTOR_INLINE Tensor<T,J,I> transpose(const Tensor<T,I,J> &a) {
+    Tensor<T,J,I> out;
+    _transpose<T,I,J>(a.data(),out.data());
+    return out;
+}
+
+// For high order tensors
+template<typename T, size_t ... Rest, typename std::enable_if<sizeof...(Rest)>=3,bool>::type=0>
+FASTOR_INLINE Tensor<T,Rest...>
+transpose(const Tensor<T,Rest...> &a) {
+
+    constexpr size_t remaining_product = LastMatrixExtracter<Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::remaining_product;
+
+    constexpr size_t I = get_value<sizeof...(Rest)-1,Rest...>::value;
+    constexpr size_t J = get_value<sizeof...(Rest),Rest...>::value;
+    static_assert(I==J,"THE LAST TWO DIMENSIONS OF TENSOR MUST BE THE SAME");
+
+    Tensor<T,Rest...> out;
+    T *a_data = a.data();
+    T *out_data = out.data();
+
+    for (size_t i=0; i<remaining_product; ++i) {
+        _transpose<T,J,J>(a_data+i*J*J,out_data+i*J*J);
+    }
+
+    return out;
+}
 
 // Transpose for generic expressions is provided here
 template<typename Expr, size_t DIM0>

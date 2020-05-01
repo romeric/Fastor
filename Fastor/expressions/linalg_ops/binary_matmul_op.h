@@ -1,6 +1,7 @@
 #ifndef BINARY_MATMUL_OP_H
 #define BINARY_MATMUL_OP_H
 
+#include "Fastor/meta/meta.h"
 #include "Fastor/simd_vector/SIMDVector.h"
 #include "Fastor/backend/matmul/matmul.h"
 #include "Fastor/tensor/AbstractTensor.h"
@@ -164,6 +165,34 @@ FASTOR_INLINE void matmul_dispatcher_div(const Tensor<T,J> &a, const Tensor<T,J,
 
 } // internal
 
+
+// For tensors
+template<typename T, size_t I, size_t J, size_t K>
+FASTOR_INLINE Tensor<T,I,K> matmul(const Tensor<T,I,J> &a, const Tensor<T,J,K> &b) {
+    Tensor<T,I,K> out;
+    FASTOR_IF_CONSTEXPR(J==1) {
+        _dyadic<T,I,K>(a.data(),b.data(),out.data());
+    }
+    else FASTOR_IF_CONSTEXPR(I==1 && J!=1 && K==1) {
+        out = _doublecontract<T,J,1>(a.data(),b.data());
+    }
+    else {
+        _matmul<T,I,J,K>(a.data(),b.data(),out.data());
+    }
+    return out;
+}
+template<typename T, size_t I, size_t J>
+FASTOR_INLINE Tensor<T,I> matmul(const Tensor<T,I,J> &a, const Tensor<T,J> &b) {
+    Tensor<T,I> out;
+    _matmul<T,I,J,1>(a.data(),b.data(),out.data());
+    return out;
+}
+template<typename T, size_t J, size_t K>
+FASTOR_INLINE Tensor<T,K> matmul(const Tensor<T,J> &a, const Tensor<T,J,K> &b) {
+    Tensor<T,K> out;
+    _matmul<T,1,J,K>(a.data(),b.data(),out.data());
+    return out;
+}
 
 
 // Generic matmul function for AbstractTensor types are provided here

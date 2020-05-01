@@ -1,11 +1,12 @@
 #ifndef BINARY_SOLVE_OP_H
 #define BINARY_SOLVE_OP_H
 
+#include "Fastor/meta/meta.h"
 #include "Fastor/simd_vector/SIMDVector.h"
 #include "Fastor/tensor/AbstractTensor.h"
-#include "Fastor/tensor/TensorFunctions.h"
 #include "Fastor/tensor/TensorTraits.h"
 #include "Fastor/tensor/Aliasing.h"
+#include "Fastor/expressions/linalg_ops/linalg_computation_types.h"
 #include "Fastor/expressions/linalg_ops/binary_matmul_op.h"
 #include "Fastor/expressions/linalg_ops/unary_inv_op.h"
 #include "Fastor/expressions/expression_traits.h"
@@ -53,6 +54,18 @@ private:
     rhs_expr_type _rhs;
 };
 
+
+// For tensors
+template<typename T, size_t I>
+FASTOR_INLINE Tensor<T,I> solve(const Tensor<T,I,I> &A, const Tensor<T,I> &b) {
+    return matmul(inverse(A),b);
+}
+template<typename T, size_t I, size_t J>
+FASTOR_INLINE Tensor<T,I,J> solve(const Tensor<T,I,I> &A, const Tensor<T,I,J> &b) {
+    return matmul(inverse(A),b);
+}
+
+// For expressions
 template<typename TLhs, typename TRhs, size_t DIM0, size_t DIM1,
          enable_if_t_<!is_arithmetic_v_<TLhs> &&!is_arithmetic_v_<TRhs> && DIM0==2,bool> = 0 >
 constexpr FASTOR_INLINE BinarySolveOp<TLhs, TRhs, DIM0>

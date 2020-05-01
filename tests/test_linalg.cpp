@@ -477,6 +477,36 @@ void test_linalg() {
         FASTOR_EXIT_ASSERT(std::abs(sum(b1) - 123.02004364710513) < BigTol);
     }
 
+    // QR
+    {
+        Tensor<T,4,4> A; A.arange();
+        for (size_t i=0; i<4; ++i) A(i,i) = 10;
+
+        {
+            Tensor<T,4,4> Q, R;
+            std::tie(Q,R) = qr(A);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - Q%R)) < BigTol);
+        }
+        {
+            Tensor<T,4,4> Q, R;
+            std::tie(Q,R) = qr(A+0);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - Q%R)) < BigTol);
+        }
+        {
+            Tensor<T,4,4> Q, R;
+            std::tie(Q,R) = qr<QRCompType::MGSR>(A+0);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - Q%R)) < BigTol);
+        }
+        // absdet by QR
+        {
+            FASTOR_EXIT_ASSERT(std::abs(absdet<DetCompType::QR>(A) - std::abs(determinant(A))) < HugeTol);
+        }
+        // logdet by QR
+        {
+            FASTOR_EXIT_ASSERT(std::abs(logdet<DetCompType::QR>(A) - std::log(std::abs(determinant(A)))) < HugeTol);
+        }
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 
 }

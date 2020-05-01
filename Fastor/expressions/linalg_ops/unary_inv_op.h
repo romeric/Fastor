@@ -1,6 +1,7 @@
 #ifndef UNARY_INV_OP_H
 #define UNARY_INV_OP_H
 
+#include "Fastor/meta/meta.h"
 #include "Fastor/backend/inverse.h"
 #include "Fastor/simd_vector/SIMDVector.h"
 #include "Fastor/tensor/AbstractTensor.h"
@@ -27,8 +28,8 @@ struct UnaryInvOp: public AbstractTensor<UnaryInvOp<Expr, DIM0>,DIM0> {
         static_assert(M==N, "MATRIX MUST BE SQUARE");
     }
 
-    FASTOR_INLINE FASTOR_INDEX size() const {return M*N;}
-    FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX ) const {return M;}
+    constexpr FASTOR_INLINE FASTOR_INDEX size() const {return M*N;}
+    constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX ) const {return M;}
 
     constexpr FASTOR_INLINE expr_type expr() const {return _expr;}
 
@@ -231,11 +232,44 @@ FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& ou
 } // internal
 
 
-// The rest of inverse
+// For tensors
+template<typename T, size_t I, enable_if_t_<is_less_equal_v_<I,4UL>,bool> = false>
+FASTOR_INLINE Tensor<T,I,I> inverse(const Tensor<T,I,I> &a) {
+    Tensor<T,I,I> out;
+    _inverse<T,I>(a.data(),out.data());
+    return out;
+}
 template<typename T, size_t M, enable_if_t_<is_greater_v_<M,4UL>,bool> = false>
 FASTOR_INLINE Tensor<T,M,M> inverse(const Tensor<T,M,M> &in) {
     Tensor<T,M,M> out;
     internal::inverse_dispatcher(in,out);
+    return out;
+}
+// For high order tensors
+template<typename T, size_t ... Rest, typename std::enable_if<sizeof...(Rest)>=3,bool>::type=0>
+FASTOR_INLINE Tensor<T,Rest...>
+inverse(const Tensor<T,Rest...> &a) {
+
+    constexpr size_t remaining_product = LastMatrixExtracter<Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::remaining_product;
+
+    constexpr size_t I = get_value<sizeof...(Rest)-1,Rest...>::value;
+    constexpr size_t J = get_value<sizeof...(Rest),Rest...>::value;
+    static_assert(I==J,"THE LAST TWO DIMENSIONS OF TENSOR MUST BE THE SAME");
+
+    Tensor<T,Rest...> out;
+    T *a_data = a.data();
+    T *out_data = out.data();
+
+    for (size_t i=0; i<remaining_product; ++i) {
+        T det = _det<T,J,J>(static_cast<const T *>(a_data+i*J*J));
+        _adjoint<T,J,J>(a_data+i*J*J,out_data+i*J*J);
+
+        for (size_t j=i*J*J; j<(i+1)*J*J; ++j) {
+            out_data[j] /= det;
+        }
+    }
+
     return out;
 }
 
