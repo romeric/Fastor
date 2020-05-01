@@ -296,8 +296,8 @@ struct extractor_perm<Index<Idx...> > {
             // typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type;
         constexpr auto& maxes_idx = permute_impl<T,Index<Idx...>, tensor_type,
             typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type::_IndexHolder;
-        constexpr auto& maxes_out = permute_impl<T,Index<Idx...>, tensor_type,
-            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type::_IndexHolder;
+        // constexpr auto& maxes_out = permute_impl<T,Index<Idx...>, tensor_type,
+            // typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type::_IndexHolder;
 
         constexpr int a_dim = DIMS;
         constexpr int out_dim = a_dim;

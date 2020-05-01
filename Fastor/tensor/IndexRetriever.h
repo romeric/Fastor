@@ -87,7 +87,7 @@ FASTOR_INLINE size_t get_flat_index(Args ... args) const {
     constexpr size_t DimensionHolder[Dimension] = {Rest...};
 
     for (size_t i=0; i<Dimension; ++i) {
-        if (largs[i]==-1) largs[i] += DimensionHolder[i];
+        if ( largs[i] < 0 ) largs[i] += DimensionHolder[i];
 #if FASTOR_BOUNDS_CHECK
         FASTOR_ASSERT( (largs[i]>=0 && largs[i]<DimensionHolder[i]), "INDEX OUT OF BOUNDS");
 #endif
