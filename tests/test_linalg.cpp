@@ -97,6 +97,14 @@ void test_linalg() {
         FASTOR_EXIT_ASSERT(std::abs(sum(cross(a+0,b+0)) - 11) < Tol);
     }
 
+    // tensor cross product
+    {
+        Tensor<T,3,3> a; a.iota(5);
+        for (size_t i=0; i<3; ++i) a(i,i) = 10;
+
+        FASTOR_EXIT_ASSERT(std::abs(sum(0.5*cross(a,a) - cofactor(a))) < Tol);
+    }
+
     // cofactor and adjoint
     {
         Tensor<T,2,2> a0; a0.random();

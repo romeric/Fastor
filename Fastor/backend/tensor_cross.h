@@ -3,7 +3,6 @@
 
 #include "Fastor/meta/meta.h"
 #include "Fastor/commons/commons.h"
-#include "Fastor/simd_vector/extintrin.h"
 
 namespace Fastor {
 
@@ -27,413 +26,83 @@ FASTOR_INLINE void _vector_crossproduct(const T *FASTOR_RESTRICT a, const T *FAS
 
 // tensor cross products
 //--------------------------------------------------------------------------------------------------------//
-template<typename T, size_t M, size_t K, size_t N>
-inline void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
-    FASTOR_ASSERT(false,"CROSS PRODUCT IS ONLY A 3D OPERATOR");
+template<typename T, size_t M, size_t K, size_t N,
+    enable_if_t_<is_equal_v_<M,3> && is_equal_v_<K,3> && is_equal_v_<N,3>,bool> = false>
+FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
+    T A00        =  a[0];
+    T A01        =  a[1];
+    T A02        =  a[2];
+    T A10        =  a[3];
+    T A11        =  a[4];
+    T A12        =  a[5];
+    T A20        =  a[6];
+    T A21        =  a[7];
+    T A22        =  a[8];
+
+    T B00        =  b[0];
+    T B01        =  b[1];
+    T B02        =  b[2];
+    T B10        =  b[3];
+    T B11        =  b[4];
+    T B12        =  b[5];
+    T B20        =  b[6];
+    T B21        =  b[7];
+    T B22        =  b[8];
+
+    c[0]  =  A11*B22 - A12*B21 - A21*B12 + A22*B11;
+    c[1]  =  A12*B20 - A10*B22 + A20*B12 - A22*B10;
+    c[2]  =  A10*B21 - A11*B20 - A20*B11 + A21*B10;
+    c[3]  =  A02*B21 - A01*B22 + A21*B02 - A22*B01;
+    c[4]  =  A00*B22 - A02*B20 - A20*B02 + A22*B00;
+    c[5]  =  A01*B20 - A00*B21 + A20*B01 - A21*B00;
+    c[6]  =  A01*B12 - A02*B11 - A11*B02 + A12*B01;
+    c[7]  =  A02*B10 - A00*B12 + A10*B02 - A12*B00;
+    c[8]  =  A00*B11 - A01*B10 - A10*B01 + A11*B00;
 }
 
-#ifdef FASTOR_SSE4_2_IMPL
+template<typename T, size_t M, size_t K, size_t N,
+    enable_if_t_<is_equal_v_<M,2> && is_equal_v_<K,2> && is_equal_v_<N,2>,bool> = false>
+FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
+    T A00        =  a[0];
+    T A01        =  a[1];
+    T A10        =  a[3];
+    T A11        =  a[4];
 
-template<>
-FASTOR_INLINE void _crossproduct<double,2,2,2>(const double *FASTOR_RESTRICT a, const double *FASTOR_RESTRICT b, double *FASTOR_RESTRICT c) {
-    // 25 OPS without HADD / 27 OPS with HADD
-    // Load a data - c has to have 9 elements as
-    __m128d a_00 = _mm_load_sd(a);
-    __m128d a_01 = _mm_load_sd(a+1);
-    __m128d a_10 = _mm_load_sd(a+3);
-    __m128d a_11 = _mm_load_sd(a+4);
-    // Load b data
-    __m128d b_00 = _mm_load_sd(b);
-    __m128d b_01 = _mm_load_sd(b+1);
-    __m128d b_10 = _mm_load_sd(b+3);
-    __m128d b_11 = _mm_load_sd(b+4);
+    T B00        =  b[0];
+    T B01        =  b[1];
+    T B10        =  b[3];
+    T B11        =  b[4];
 
-    // compute element by element
-#ifdef FASTOR_USE_HADD
-    // c_22
-    __m128d tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_11,0x0),_mm_shuffle_pd(b_11,b_00,0x0));
-    tmp0 = _mm_hadd_pd(tmp0,tmp0);
-    __m128d tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_01,a_10,0x0),_mm_shuffle_pd(b_10,b_01,0x0));
-    tmp1 = _mm_hadd_pd(tmp1,tmp1);
-    __m128d c_22 = _mm_sub_pd(tmp0,tmp1);
-#else
-    // c_22
-    __m128d tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_11,0x0),_mm_shuffle_pd(b_11,b_00,0x0));
-    __m128d tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_01,a_10,0x0),_mm_shuffle_pd(b_10,b_01,0x0));
-    __m128d c_22 = _mm_sub_pd(_add_pd(tmp0),_add_pd(tmp1));
-#endif
-
-    _mm_store_sd(c+8,c_22);
-    // Zero out the rest
-#ifdef FASTOR_AVX_IMPL
-    _mm256_store_pd(c,VZEROPD);
-    _mm256_store_pd(c+4,VZEROPD);
-#else
-    _mm_store_pd(c,ZEROPD);
-    _mm_store_pd(c+2,ZEROPD);
-    _mm_store_pd(c+4,ZEROPD);
-    _mm_store_pd(c+6,ZEROPD);
-#endif
+    c[0]  =  0;
+    c[1]  =  0;
+    c[2]  =  0;
+    c[3]  =  0;
+    c[4]  =  0;
+    c[5]  =  0;
+    c[6]  =  0;
+    c[7]  =  0;
+    c[8]  =  A00*B11 - A01*B10 - A10*B01 + A11*B00;
 }
-
-template<>
-FASTOR_INLINE void _crossproduct<double,3,3,3>(const double *FASTOR_RESTRICT a, const double *FASTOR_RESTRICT b, double *FASTOR_RESTRICT c) {
-    // 225 OPS without HADD / 243 OPS with HADD
-    // Load a data
-    __m128d a_00 = _mm_load_sd(a);
-    __m128d a_01 = _mm_load_sd(a+1);
-    __m128d a_02 = _mm_load_sd(a+2);
-    __m128d a_10 = _mm_load_sd(a+3);
-    __m128d a_11 = _mm_load_sd(a+4);
-    __m128d a_12 = _mm_load_sd(a+5);
-    __m128d a_20 = _mm_load_sd(a+6);
-    __m128d a_21 = _mm_load_sd(a+7);
-    __m128d a_22 = _mm_load_sd(a+8);
-    // Load b data
-    __m128d b_00 = _mm_load_sd(b);
-    __m128d b_01 = _mm_load_sd(b+1);
-    __m128d b_02 = _mm_load_sd(b+2);
-    __m128d b_10 = _mm_load_sd(b+3);
-    __m128d b_11 = _mm_load_sd(b+4);
-    __m128d b_12 = _mm_load_sd(b+5);
-    __m128d b_20 = _mm_load_sd(b+6);
-    __m128d b_21 = _mm_load_sd(b+7);
-    __m128d b_22 = _mm_load_sd(b+8);
-
-#ifdef FASTOR_USE_HADD
-    // Using hadd
-    // compute element by element
-    // c_00
-    __m128d tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_11,a_22,0x0),_mm_shuffle_pd(b_22,b_11,0x0));
-    tmp0 = _mm_hadd_pd(tmp0,tmp0);
-    __m128d tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_12,a_21,0x0),_mm_shuffle_pd(b_21,b_12,0x0));
-    tmp1 = _mm_hadd_pd(tmp1,tmp1);
-    __m128d c_00 = _mm_sub_pd(tmp0,tmp1);
-    // c_01
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_12,a_20,0x0),_mm_shuffle_pd(b_20,b_12,0x0));
-    tmp0 = _mm_hadd_pd(tmp0,tmp0);
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_10,a_22,0x0),_mm_shuffle_pd(b_22,b_10,0x0));
-    tmp1 = _mm_hadd_pd(tmp1,tmp1);
-    __m128d c_01 = _mm_sub_pd(tmp0,tmp1);
-    // c_02
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_10,a_21,0x0),_mm_shuffle_pd(b_21,b_10,0x0));
-    tmp0 = _mm_hadd_pd(tmp0,tmp0);
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_11,a_20,0x0),_mm_shuffle_pd(b_20,b_11,0x0));
-    tmp1 = _mm_hadd_pd(tmp1,tmp1);
-    __m128d c_02 = _mm_sub_pd(tmp0,tmp1);
-    // c_10
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_02,a_21,0x0),_mm_shuffle_pd(b_21,b_02,0x0));
-    tmp0 = _mm_hadd_pd(tmp0,tmp0);
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_01,a_22,0x0),_mm_shuffle_pd(b_22,b_01,0x0));
-    tmp1 = _mm_hadd_pd(tmp1,tmp1);
-    __m128d c_10 = _mm_sub_pd(tmp0,tmp1);
-    // c_11
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_22,0x0),_mm_shuffle_pd(b_22,b_00,0x0));
-    tmp0 = _mm_hadd_pd(tmp0,tmp0);
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_02,a_20,0x0),_mm_shuffle_pd(b_20,b_02,0x0));
-    tmp1 = _mm_hadd_pd(tmp1,tmp1);
-    __m128d c_11 = _mm_sub_pd(tmp0,tmp1);
-    // c_12
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_01,a_20,0x0),_mm_shuffle_pd(b_20,b_01,0x0));
-    tmp0 = _mm_hadd_pd(tmp0,tmp0);
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_21,0x0),_mm_shuffle_pd(b_21,b_00,0x0));
-    tmp1 = _mm_hadd_pd(tmp1,tmp1);
-    __m128d c_12 = _mm_sub_pd(tmp0,tmp1);
-    // c_20
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_01,a_12,0x0),_mm_shuffle_pd(b_12,b_01,0x0));
-    tmp0 = _mm_hadd_pd(tmp0,tmp0);
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_02,a_11,0x0),_mm_shuffle_pd(b_11,b_02,0x0));
-    tmp1 = _mm_hadd_pd(tmp1,tmp1);
-    __m128d c_20 = _mm_sub_pd(tmp0,tmp1);
-    // c_21
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_02,a_10,0x0),_mm_shuffle_pd(b_10,b_02,0x0));
-    tmp0 = _mm_hadd_pd(tmp0,tmp0);
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_12,0x0),_mm_shuffle_pd(b_12,b_00,0x0));
-    tmp1 = _mm_hadd_pd(tmp1,tmp1);
-    __m128d c_21 = _mm_sub_pd(tmp0,tmp1);
-    // c_22
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_11,0x0),_mm_shuffle_pd(b_11,b_00,0x0));
-    tmp0 = _mm_hadd_pd(tmp0,tmp0);
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_01,a_10,0x0),_mm_shuffle_pd(b_10,b_01,0x0));
-    tmp1 = _mm_hadd_pd(tmp1,tmp1);
-    __m128d c_22 = _mm_sub_pd(tmp0,tmp1);
-#else
-    // compute element by element
-    // c_00
-    __m128d tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_11,a_22,0x0),_mm_shuffle_pd(b_22,b_11,0x0));
-    __m128d tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_12,a_21,0x0),_mm_shuffle_pd(b_21,b_12,0x0));
-    __m128d c_00 = _mm_sub_pd(_add_pd(tmp0),_add_pd(tmp1));
-    // c_01
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_12,a_20,0x0),_mm_shuffle_pd(b_20,b_12,0x0));
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_10,a_22,0x0),_mm_shuffle_pd(b_22,b_10,0x0));
-    __m128d c_01 = _mm_sub_pd(_add_pd(tmp0),_add_pd(tmp1));
-    // c_02
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_10,a_21,0x0),_mm_shuffle_pd(b_21,b_10,0x0));
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_11,a_20,0x0),_mm_shuffle_pd(b_20,b_11,0x0));
-    __m128d c_02 = _mm_sub_pd(_add_pd(tmp0),_add_pd(tmp1));;
-    // c_10
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_02,a_21,0x0),_mm_shuffle_pd(b_21,b_02,0x0));
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_01,a_22,0x0),_mm_shuffle_pd(b_22,b_01,0x0));
-    __m128d c_10 = _mm_sub_pd(_add_pd(tmp0),_add_pd(tmp1));
-    // c_11
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_22,0x0),_mm_shuffle_pd(b_22,b_00,0x0));
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_02,a_20,0x0),_mm_shuffle_pd(b_20,b_02,0x0));
-    __m128d c_11 = _mm_sub_pd(_add_pd(tmp0),_add_pd(tmp1));
-    // c_12
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_01,a_20,0x0),_mm_shuffle_pd(b_20,b_01,0x0));
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_21,0x0),_mm_shuffle_pd(b_21,b_00,0x0));
-    __m128d c_12 = _mm_sub_pd(_add_pd(tmp0),_add_pd(tmp1));
-    // c_20
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_01,a_12,0x0),_mm_shuffle_pd(b_12,b_01,0x0));
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_02,a_11,0x0),_mm_shuffle_pd(b_11,b_02,0x0));
-    __m128d c_20 = _mm_sub_pd(_add_pd(tmp0),_add_pd(tmp1));
-    // c_21
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_02,a_10,0x0),_mm_shuffle_pd(b_10,b_02,0x0));
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_12,0x0),_mm_shuffle_pd(b_12,b_00,0x0));
-    __m128d c_21 = _mm_sub_pd(_add_pd(tmp0),_add_pd(tmp1));
-    // c_22
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_11,0x0),_mm_shuffle_pd(b_11,b_00,0x0));
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_01,a_10,0x0),_mm_shuffle_pd(b_10,b_01,0x0));
-    __m128d c_22 = _mm_sub_pd(_add_pd(tmp0),_add_pd(tmp1));
-#endif
-    // store
-    _mm_store_sd(c,c_00);
-    _mm_store_sd(c+1,c_01);
-    _mm_store_sd(c+2,c_02);
-    _mm_store_sd(c+3,c_10);
-    _mm_store_sd(c+4,c_11);
-    _mm_store_sd(c+5,c_12);
-    _mm_store_sd(c+6,c_20);
-    _mm_store_sd(c+7,c_21);
-    _mm_store_sd(c+8,c_22);
-}
-
-
-template<>
-FASTOR_INLINE void _crossproduct<float,2,2,2>(const float *FASTOR_RESTRICT a, const float *FASTOR_RESTRICT b, float *FASTOR_RESTRICT c) {
-    // 15 OPS + 4 extra shuffle to make aligned loading = 19 OPS
-    __m128 a0 = _mm_load_ps(a);
-    __m128 tmp0 = _mm_load_ps(a+4);
-    __m128 a1 = _mm_shuffle_ps(tmp0,a0,_MM_SHUFFLE(0,3,1,0));
-    a1 = _mm_shuffle_ps(a1,a1,_MM_SHUFFLE(3,1,0,2));
-    // Load b data
-    __m128 b0 = _mm_load_ps(b);
-    __m128 tmp1 = _mm_load_ps(b+4);
-    __m128 b1 = _mm_shuffle_ps(tmp1,b0,_MM_SHUFFLE(0,3,1,0));
-    b1 = _mm_shuffle_ps(b1,b1,_MM_SHUFFLE(3,1,0,2));
-
-    // c_22
-    __m128 c_22 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a0,a1,_MM_SHUFFLE(1,0,0,1)),
-                                        _mm_shuffle_ps(b1,b0,_MM_SHUFFLE(0,1,1,0))));
-
-    _mm_store_ss(c+8,c_22);
-    // Zero the rest
-#ifdef FASTOR_AVX_IMPL
-    _mm256_store_ps(c,VZEROPS);
-#else
-    _mm_store_ps(c,ZEROPS);
-    _mm_store_ps(c+2,ZEROPS);
-#endif
-}
-
-template<>
-FASTOR_INLINE void _crossproduct<float,3,3,3>(const float *FASTOR_RESTRICT a, const float *FASTOR_RESTRICT b, float *FASTOR_RESTRICT c) {
-    // 135 OPS + 6 extra shuffle to make aligned loading = 141 OPS
-    // Don't unalign load - Bad performance on IVY
-
-    __m128 a0 = _mm_load_ps(a);
-    __m128 tmp0 = _mm_load_ps(a+4);
-    __m128 a_end = _mm_load_ss(a+8);
-    __m128 a1 = _mm_shuffle_ps(tmp0,a0,_MM_SHUFFLE(0,3,1,0));
-    a1 = _mm_shuffle_ps(a1,a1,_MM_SHUFFLE(3,1,0,2));
-    __m128 a2 = _mm_shuffle_ps(tmp0,a_end,_MM_SHUFFLE(1,0,3,2));
-    // Load b data
-    __m128 b0 = _mm_load_ps(b);
-    __m128 tmp1 = _mm_load_ps(b+4);
-    __m128 b_end = _mm_load_ss(b+8);
-    __m128 b1 = _mm_shuffle_ps(tmp1,b0,_MM_SHUFFLE(0,3,1,0));
-    b1 = _mm_shuffle_ps(b1,b1,_MM_SHUFFLE(3,1,0,2));
-    __m128 b2 = _mm_shuffle_ps(tmp1,b_end,_MM_SHUFFLE(1,0,3,2));
-
-    // c_00
-    __m128 c_00 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a1,a2,_MM_SHUFFLE(2,1,1,2)),
-                                        _mm_shuffle_ps(b2,b1,_MM_SHUFFLE(1,2,2,1))));
-    // c_01
-    __m128 c_01 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a1,a2,_MM_SHUFFLE(0,2,2,0)),
-                                        _mm_shuffle_ps(b2,b1,_MM_SHUFFLE(2,0,0,2))));
-    // c_01
-    __m128 c_02 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a1,a2,_MM_SHUFFLE(1,0,0,1)),
-                                        _mm_shuffle_ps(b2,b1,_MM_SHUFFLE(0,1,1,0))));
-    // c_10
-    __m128 c_10 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a0,a2,_MM_SHUFFLE(1,2,2,1)),
-                                        _mm_shuffle_ps(b2,b0,_MM_SHUFFLE(2,1,1,2))));
-    // c_11
-    __m128 c_11 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a0,a2,_MM_SHUFFLE(2,0,0,2)),
-                                        _mm_shuffle_ps(b2,b0,_MM_SHUFFLE(0,2,2,0))));
-    // c_12
-    __m128 c_12 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a0,a2,_MM_SHUFFLE(0,1,1,0)),
-                                        _mm_shuffle_ps(b2,b0,_MM_SHUFFLE(1,0,0,1))));
-    // c_20
-    __m128 c_20 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a0,a1,_MM_SHUFFLE(2,1,1,2)),
-                                        _mm_shuffle_ps(b1,b0,_MM_SHUFFLE(1,2,2,1))));
-    // c_21
-    __m128 c_21 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a0,a1,_MM_SHUFFLE(0,2,2,0)),
-                                        _mm_shuffle_ps(b1,b0,_MM_SHUFFLE(2,0,0,2))));
-    // c_22
-    __m128 c_22 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a0,a1,_MM_SHUFFLE(1,0,0,1)),
-                                        _mm_shuffle_ps(b1,b0,_MM_SHUFFLE(0,1,1,0))));
-
-    _mm_store_ss(c,c_00);
-    _mm_store_ss(c+1,c_01);
-    _mm_store_ss(c+2,c_02);
-    _mm_store_ss(c+3,c_10);
-    _mm_store_ss(c+4,c_11);
-    _mm_store_ss(c+5,c_12);
-    _mm_store_ss(c+6,c_20);
-    _mm_store_ss(c+7,c_21);
-    _mm_store_ss(c+8,c_22);
-}
-
-//-----------------------------------------------------------------------------------------------
-// for plane strain problems
-template<typename T, int ProblemType>
-void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c);
-
-template<>
-FASTOR_INLINE void _crossproduct<double,FASTOR_PlaneStrain>(const double *FASTOR_RESTRICT a,
-    const double *FASTOR_RESTRICT b, double *FASTOR_RESTRICT c) {
-    // For plane strain problems a and b need to be 3D with last element a[8]=b[8]=1
-    // This is a cross product implementation not a cofactor so the result needs to multiplied by 0.5 explicitly
-    // if the cofactor is desired
-    // Note that in ultimate case you might not need the last row/column of the output matrix hence computing c22
-    // and storing it is un-necessary, hence the (c) array should really be 2x2=4 in length
-    // Load a data
-    __m128d a_00 = _mm_load_sd(a);
-    __m128d a_01 = _mm_load_sd(a+1);
-    __m128d a_10 = _mm_load_sd(a+3);
-    __m128d a_11 = _mm_load_sd(a+4);
-    __m128d a_22 = _mm_load_sd(a+8);
-    // Load b data
-    __m128d b_00 = _mm_load_sd(b);
-    __m128d b_01 = _mm_load_sd(b+1);
-    __m128d b_10 = _mm_load_sd(b+3);
-    __m128d b_11 = _mm_load_sd(b+4);
-    __m128d b_22 = _mm_load_sd(b+8);
-
-    // c_00
-    __m128d tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_11,a_22,0x0),_mm_shuffle_pd(b_22,b_11,0x0));
-    __m128d c_00 = _add_pd(tmp0);
-    // c_01
-    __m128d tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_10,a_22,0x0),_mm_shuffle_pd(b_22,b_10,0x0));
-    __m128d c_01 = _mm_neg_pd(_add_pd(tmp1));
-    // c_10
-    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_01,a_22,0x0),_mm_shuffle_pd(b_22,b_01,0x0));
-    __m128d c_10 = _mm_neg_pd(_add_pd(tmp1));
-    // c_11
-    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_22,0x0),_mm_shuffle_pd(b_22,b_00,0x0));
-    __m128d c_11 = _add_pd(tmp0);
-//    // c_22
-//    tmp0 = _mm_mul_pd(_mm_shuffle_pd(a_00,a_11,0x0),_mm_shuffle_pd(b_11,b_00,0x0));
-//    tmp1 = _mm_mul_pd(_mm_shuffle_pd(a_01,a_10,0x0),_mm_shuffle_pd(b_10,b_01,0x0));
-//    __m128d c_22 = _mm_sub_pd(_add_pd(tmp0),_add_pd(tmp1));
-
-    // zero first
-#ifdef FASTOR_AVX_IMPL
-    _mm256_store_pd(c,VZEROPD);
-#else
-    _mm_store_pd(c,ZEROPD);
-    _mm_store_pd(c+2,ZEROPD);
-#endif
-//    _mm256_store_pd(c+4,VZEROPD);
-    // store
-    _mm_store_sd(c,c_00);
-    _mm_store_sd(c+1,c_01);
-    _mm_store_sd(c+3,c_10);
-    _mm_store_sd(c+4,c_11);
-
-    _mm_store_sd(c,c_00);
-    _mm_store_sd(c+1,c_01);
-    _mm_store_sd(c+2,c_10);
-    _mm_store_sd(c+3,c_11);
-//    _mm_store_sd(c+8,c_22);
-}
-
-
-template<>
-FASTOR_INLINE void _crossproduct<float,FASTOR_PlaneStrain>(const float *FASTOR_RESTRICT a,
-    const float *FASTOR_RESTRICT b, float *FASTOR_RESTRICT c) {
-    // For plane strain problems a and b need to be 3D with last element a[8]=b[8]=1
-    // This is a cross product implementation not a cofactor so the result needs to multiplied by 0.5 explicitly
-    // if the cofactor is desired
-    // Note that in ultimate case you might not need the last row/column of the output matrix hence computing c22
-    // and storing it is un-necessary, hence the (c) array should really be 2x2=4 in length
-
-    __m128 a0 = _mm_load_ps(a);
-    __m128 tmp0 = _mm_load_ps(a+4);
-    __m128 a_end = _mm_load_ss(a+8);
-    __m128 a1 = _mm_shuffle_ps(tmp0,a0,_MM_SHUFFLE(0,3,1,0));
-    a1 = _mm_shuffle_ps(a1,a1,_MM_SHUFFLE(3,1,0,2));
-    __m128 a2 = _mm_shuffle_ps(tmp0,a_end,_MM_SHUFFLE(1,0,3,2));
-    // Load b data
-    __m128 b0 = _mm_load_ps(b);
-    __m128 tmp1 = _mm_load_ps(b+4);
-    __m128 b_end = _mm_load_ss(b+8);
-    __m128 b1 = _mm_shuffle_ps(tmp1,b0,_MM_SHUFFLE(0,3,1,0));
-    b1 = _mm_shuffle_ps(b1,b1,_MM_SHUFFLE(3,1,0,2));
-    __m128 b2 = _mm_shuffle_ps(tmp1,b_end,_MM_SHUFFLE(1,0,3,2));
-
-    // c_00
-    __m128 c_00 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a1,a2,_MM_SHUFFLE(2,1,1,2)),
-                                        _mm_shuffle_ps(b2,b1,_MM_SHUFFLE(1,2,2,1))));
-    // c_01
-    __m128 c_01 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a1,a2,_MM_SHUFFLE(0,2,2,0)),
-                                        _mm_shuffle_ps(b2,b1,_MM_SHUFFLE(2,0,0,2))));
-    // c_10
-    __m128 c_10 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a0,a2,_MM_SHUFFLE(1,2,2,1)),
-                                        _mm_shuffle_ps(b2,b0,_MM_SHUFFLE(2,1,1,2))));
-    // c_11
-    __m128 c_11 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a0,a2,_MM_SHUFFLE(2,0,0,2)),
-                                        _mm_shuffle_ps(b2,b0,_MM_SHUFFLE(0,2,2,0))));
-    // c_22
-    __m128 c_22 = _addsub_ps(_mm_mul_ps(_mm_shuffle_ps(a0,a1,_MM_SHUFFLE(1,0,0,1)),
-                                        _mm_shuffle_ps(b1,b0,_MM_SHUFFLE(0,1,1,0))));
-
-    // zero first
-#ifdef FASTOR_AVX_IMPL
-    _mm256_store_ps(c,VZEROPS);
-#else
-    _mm_store_ps(c,ZEROPS);
-    _mm_store_ps(c+2,ZEROPS);
-#endif
-    // store
-    _mm_store_ss(c,c_00);
-    _mm_store_ss(c+1,c_01);
-    _mm_store_ss(c+3,c_10);
-    _mm_store_ss(c+4,c_11);
-    _mm_store_ss(c+8,c_22);
-}
-
-#endif
-//------------------------------------------------------------------------------------
-
 
 // vectors and 2nd order tensors
-template<>
-FASTOR_HINT_INLINE void _crossproduct<float,3,1,3>(const float *FASTOR_RESTRICT a, const float *FASTOR_RESTRICT b, float *FASTOR_RESTRICT c) {
+//--------------------------------------------------------------------------------------------------------//
+template<typename T, size_t M, size_t K, size_t N,
+    enable_if_t_<is_equal_v_<M,3> && is_equal_v_<K,1> && is_equal_v_<N,3>,bool> = false>
+FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
     // vector-tensor cross product - regitster based
-    float A1 = a[0];
-    float A2 = a[1];
-    float A3 = a[2];
+    T A1 = a[0];
+    T A2 = a[1];
+    T A3 = a[2];
 
-    float B1_1 = b[0];
-    float B1_2 = b[1];
-    float B1_3 = b[2];
-    float B2_1 = b[3];
-    float B2_2 = b[4];
-    float B2_3 = b[5];
-    float B3_1 = b[6];
-    float B3_2 = b[7];
-    float B3_3 = b[8];
+    T B1_1 = b[0];
+    T B1_2 = b[1];
+    T B1_3 = b[2];
+    T B2_1 = b[3];
+    T B2_2 = b[4];
+    T B2_3 = b[5];
+    T B3_1 = b[6];
+    T B3_2 = b[7];
+    T B3_3 = b[8];
 
     c[0] = A2*B3_1 - A3*B2_1;
     c[1] = A2*B3_2 - A3*B2_2;
@@ -450,16 +119,17 @@ FASTOR_HINT_INLINE void _crossproduct<float,3,1,3>(const float *FASTOR_RESTRICT 
 //    [ A1*B2_1 - A2*B1_1, A1*B2_2 - A2*B1_2, A1*B2_3 - A2*B1_3]
 }
 
-template<>
-FASTOR_HINT_INLINE void _crossproduct<float,2,1,2>(const float *FASTOR_RESTRICT a, const float *FASTOR_RESTRICT b, float *FASTOR_RESTRICT c) {
+template<typename T, size_t M, size_t K, size_t N,
+    enable_if_t_<is_equal_v_<M,2> && is_equal_v_<K,1> && is_equal_v_<N,2>,bool> = false>
+FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
     // vector-tensor cross product - regitster based
-    float A1 = a[0];
-    float A2 = a[1];
+    T A1 = a[0];
+    T A2 = a[1];
 
-    float B1_1 = b[0];
-    float B1_2 = b[1];
-    float B2_1 = b[3];
-    float B2_2 = b[4];
+    T B1_1 = b[0];
+    T B1_2 = b[1];
+    T B2_1 = b[3];
+    T B2_2 = b[4];
 
     c[0] = 0;
     c[1] = 0;
@@ -472,77 +142,23 @@ FASTOR_HINT_INLINE void _crossproduct<float,2,1,2>(const float *FASTOR_RESTRICT 
     c[8] = 0;
 }
 
-template<>
-FASTOR_HINT_INLINE void _crossproduct<double,3,1,3>(const double *FASTOR_RESTRICT a, const double *FASTOR_RESTRICT b, double *FASTOR_RESTRICT c) {
-    // vector-tensor cross product - regitster based
-    double A1 = a[0];
-    double A2 = a[1];
-    double A3 = a[2];
-
-    double B1_1 = b[0];
-    double B1_2 = b[1];
-    double B1_3 = b[2];
-    double B2_1 = b[3];
-    double B2_2 = b[4];
-    double B2_3 = b[5];
-    double B3_1 = b[6];
-    double B3_2 = b[7];
-    double B3_3 = b[8];
-
-    c[0] = A2*B3_1 - A3*B2_1;
-    c[1] = A2*B3_2 - A3*B2_2;
-    c[2] = A2*B3_3 - A3*B2_3;
-    c[3] = A3*B1_1 - A1*B3_1;
-    c[4] = A3*B1_2 - A1*B3_2;
-    c[5] = A3*B1_3 - A1*B3_3;
-    c[6] = A1*B2_1 - A2*B1_1;
-    c[7] = A1*B2_2 - A2*B1_2;
-    c[8] = A1*B2_3 - A2*B1_3;
-
-//    [ A2*B3_1 - A3*B2_1, A2*B3_2 - A3*B2_2, A2*B3_3 - A3*B2_3]
-//    [ A3*B1_1 - A1*B3_1, A3*B1_2 - A1*B3_2, A3*B1_3 - A1*B3_3]
-//    [ A1*B2_1 - A2*B1_1, A1*B2_2 - A2*B1_2, A1*B2_3 - A2*B1_3]
-}
-
-template<>
-FASTOR_HINT_INLINE void _crossproduct<double,2,1,2>(const double *FASTOR_RESTRICT a, const double *FASTOR_RESTRICT b, double *FASTOR_RESTRICT c) {
-    // vector-tensor cross product - regitster based
-    double A1 = a[0];
-    double A2 = a[1];
-
-    double B1_1 = b[0];
-    double B1_2 = b[1];
-    double B2_1 = b[3];
-    double B2_2 = b[4];
-
-    c[0] = 0;
-    c[1] = 0;
-    c[2] = 0;
-    c[3] = 0;
-    c[4] = 0;
-    c[5] = 0;
-    c[6] = A1*B2_1 - A2*B1_1;
-    c[7] = A1*B2_2 - A2*B1_2;
-    c[8] = 0;
-}
-
-//
-template<>
-FASTOR_HINT_INLINE void _crossproduct<float,3,3,1>(const float *FASTOR_RESTRICT a, const float *FASTOR_RESTRICT b, float *FASTOR_RESTRICT c) {
+template<typename T, size_t M, size_t K, size_t N,
+    enable_if_t_<is_equal_v_<M,3> && is_equal_v_<K,3> && is_equal_v_<N,1>,bool> = false>
+FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
     // tensor-vector cross product - regitster based
-    float B1 = b[0];
-    float B2 = b[1];
-    float B3 = b[2];
+    T B1 = b[0];
+    T B2 = b[1];
+    T B3 = b[2];
 
-    float A1_1 = a[0];
-    float A1_2 = a[1];
-    float A1_3 = a[2];
-    float A2_1 = a[3];
-    float A2_2 = a[4];
-    float A2_3 = a[5];
-    float A3_1 = a[6];
-    float A3_2 = a[7];
-    float A3_3 = a[8];
+    T A1_1 = a[0];
+    T A1_2 = a[1];
+    T A1_3 = a[2];
+    T A2_1 = a[3];
+    T A2_2 = a[4];
+    T A2_3 = a[5];
+    T A3_1 = a[6];
+    T A3_2 = a[7];
+    T A3_3 = a[8];
 
     c[0] = A1_2*B3 - A1_3*B2;
     c[1] = A1_3*B1 - A1_1*B3;
@@ -559,17 +175,17 @@ FASTOR_HINT_INLINE void _crossproduct<float,3,3,1>(const float *FASTOR_RESTRICT 
 //    [ A3_2*B3 - A3_3*B2, A3_3*B1 - A3_1*B3, A3_1*B2 - A3_2*B1]
 }
 
-
-template<>
-FASTOR_HINT_INLINE void _crossproduct<float,2,2,1>(const float *FASTOR_RESTRICT a, const float *FASTOR_RESTRICT b, float *FASTOR_RESTRICT c) {
+template<typename T, size_t M, size_t K, size_t N,
+    enable_if_t_<is_equal_v_<M,2> && is_equal_v_<K,2> && is_equal_v_<N,1>,bool> = false>
+FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
     // tensor-vector cross product - regitster based
-    float B1 = b[0];
-    float B2 = b[1];
+    T B1 = b[0];
+    T B2 = b[1];
 
-    float A1_1 = a[0];
-    float A1_2 = a[1];
-    float A2_1 = a[3];
-    float A2_2 = a[4];
+    T A1_1 = a[0];
+    T A1_2 = a[1];
+    T A2_1 = a[3];
+    T A2_2 = a[4];
 
     c[0] = 0;
     c[1] = 0;
@@ -581,68 +197,55 @@ FASTOR_HINT_INLINE void _crossproduct<float,2,2,1>(const float *FASTOR_RESTRICT 
     c[7] = 0;
     c[8] = 0;
 }
+//--------------------------------------------------------------------------------------------------------//
 
-template<>
-FASTOR_HINT_INLINE void _crossproduct<double,3,3,1>(const double *FASTOR_RESTRICT a, const double *FASTOR_RESTRICT b, double *FASTOR_RESTRICT c) {
-    // tensor-vector cross product - regitster based
-    double B1 = b[0];
-    double B2 = b[1];
-    double B3 = b[2];
 
-    double A1_1 = a[0];
-    double A1_2 = a[1];
-    double A1_3 = a[2];
-    double A2_1 = a[3];
-    double A2_2 = a[4];
-    double A2_3 = a[5];
-    double A3_1 = a[6];
-    double A3_2 = a[7];
-    double A3_3 = a[8];
 
-    c[0] = A1_2*B3 - A1_3*B2;
-    c[1] = A1_3*B1 - A1_1*B3;
-    c[2] = A1_1*B2 - A1_2*B1;
-    c[3] = A2_2*B3 - A2_3*B2;
-    c[4] = A2_3*B1 - A2_1*B3;
-    c[5] = A2_1*B2 - A2_2*B1;
-    c[6] = A3_2*B3 - A3_3*B2;
-    c[7] = A3_3*B1 - A3_1*B3;
-    c[8] = A3_1*B2 - A3_2*B1;
+//--------------------------------------------------------------------------------------------------------//
+// for plane strain problems
+template<typename T, int ProblemType>
+FASTOR_INLINE
+void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
+    // For plane strain problems a and b need to be 3D with last element a[8]=b[8]=1
+    // Note that in ultimate case you might not need the last row/column of the output matrix hence computing c22
+    // and storing it is un-necessary, hence the (c) array should really be 2x2=4 in length
+    // Load a data
+    T A00        =  a[0];
+    T A11        =  a[4];
+    T A22        =  a[8];
+    T A01        =  a[1];
+    T A02        =  a[2];
+    T A12        =  a[5];
+    T A10        =  a[3];
+    T A20        =  a[6];
+    T A21        =  a[7];
 
-//    [ A1_2*B3 - A1_3*B2, A1_3*B1 - A1_1*B3, A1_1*B2 - A1_2*B1]
-//    [ A2_2*B3 - A2_3*B2, A2_3*B1 - A2_1*B3, A2_1*B2 - A2_2*B1]
-//    [ A3_2*B3 - A3_3*B2, A3_3*B1 - A3_1*B3, A3_1*B2 - A3_2*B1]
+    T B00        =  b[0];
+    T B11        =  b[4];
+    T B22        =  b[8];
+    T B01        =  b[1];
+    T B02        =  b[2];
+    T B12        =  b[5];
+    T B10        =  b[3];
+    T B20        =  b[6];
+    T B21        =  b[7];
+
+    c[0]  =  A11*B22 - A12*B21 - A21*B12 + A22*B11;
+    c[1]  =  A12*B20 - A10*B22 + A20*B12 - A22*B10;
+    c[0]  =  0;
+    c[3]  =  A02*B21 - A01*B22 + A21*B02 - A22*B01;
+    c[4]  =  A00*B22 - A02*B20 - A20*B02 + A22*B00;
+    c[5]  =  0;
+    c[6]  =  0;
+    c[7]  =  0;
+    // c[8]  =  A00*B11 - A01*B10 - A10*B01 + A11*B00;
+    c[8]  =  0; // 1 ?
 }
-
-template<>
-FASTOR_HINT_INLINE void _crossproduct<double,2,2,1>(const double *FASTOR_RESTRICT a, const double *FASTOR_RESTRICT b, double *FASTOR_RESTRICT c) {
-    // tensor-vector cross product - regitster based
-    double B1 = b[0];
-    double B2 = b[1];
-
-    double A1_1 = a[0];
-    double A1_2 = a[1];
-    double A2_1 = a[3];
-    double A2_2 = a[4];
-
-    c[0] = 0;
-    c[1] = 0;
-    c[2] = A1_1*B2 - A1_2*B1;
-    c[3] = 0;
-    c[4] = 0;
-    c[5] = A2_1*B2 - A2_2*B1;
-    c[6] = 0;
-    c[7] = 0;
-    c[8] = 0;
-}
+//--------------------------------------------------------------------------------------------------------//
 
 
 
-
-
-
-
-////////
+//--------------------------------------------------------------------------------------------------------//
 //(AxB)_{PiIQ} = E_{ijk}E_{IJK}A_{PjJ}B_{kKQ}
 // tensor cross product of 3rd order tensors
 template<typename T, size_t I, size_t J, size_t K, size_t L, size_t M, size_t N>
@@ -787,12 +390,12 @@ T _A000 = A[0];
     C[78] = _A211*_B000 - _A210*_B010 - _A201*_B100 + _A200*_B110;
     C[79] = _A211*_B001 - _A210*_B011 - _A201*_B101 + _A200*_B111;
     C[80] = _A211*_B002 - _A210*_B012 - _A201*_B102 + _A200*_B112;
-
 }
+//--------------------------------------------------------------------------------------------------------//
 
 
 
-////////
+//--------------------------------------------------------------------------------------------------------//
 //(AxB)_{pPiIqQ} = E_{ijk}E_{IJK}A_{pPjJ}B_{kKqQ}
 // tensor cross product of 4th order tensors
 template<typename T, size_t I, size_t J, size_t K, size_t L, size_t M, size_t N, size_t O, size_t P>
@@ -1695,6 +1298,7 @@ FASTOR_HINT_INLINE void _crossproduct(const T *FASTOR_RESTRICT A, const T *FASTO
     C[728] = _A2211*_B0022 - _A2210*_B0122 - _A2201*_B1022 + _A2200*_B1122;
 
 }
+//--------------------------------------------------------------------------------------------------------//
 
 
 
@@ -1705,8 +1309,7 @@ FASTOR_HINT_INLINE void _crossproduct(const T *FASTOR_RESTRICT A, const T *FASTO
 
 
 
-
-////////
+//--------------------------------------------------------------------------------------------------------//
 //(AxB)_{IjJ} = E_{jpq}E_{JPQ}A_{IpP}B_{qQ}
 // tensor cross product of 3rd and 2nd order tensors
 template<typename T, size_t I, size_t J, size_t K, size_t L, size_t M>
@@ -1780,10 +1383,11 @@ FASTOR_HINT_INLINE void _crossproduct32(const T *FASTOR_RESTRICT A, const T *FAS
     C[25] = _A202*_B10 - _A200*_B12 + _A210*_B02 - _A212*_B00;
     C[26] = _A200*_B11 - _A201*_B10 - _A210*_B01 + _A211*_B00;
 }
+//--------------------------------------------------------------------------------------------------------//
 
 
 
-////////
+//--------------------------------------------------------------------------------------------------------//
 //(AxB)_{iIJ} = E_{ipq}E_{IPQ}A_{qQJ}B_{pP}
 // tensor cross product of 2nd and 3rd order tensors
 template<typename T, size_t I, size_t J, size_t K, size_t L, size_t M>
@@ -1856,16 +1460,13 @@ FASTOR_HINT_INLINE void _crossproduct23(const T *FASTOR_RESTRICT A, const T *FAS
     C[24] = _A000*_B11 - _A010*_B10 - _A100*_B01 + _A110*_B00;
     C[25] = _A001*_B11 - _A011*_B10 - _A101*_B01 + _A111*_B00;
     C[26] = _A002*_B11 - _A012*_B10 - _A102*_B01 + _A112*_B00;
-
 }
+//--------------------------------------------------------------------------------------------------------//
 
 
 
 
-
-
-
-////////
+//--------------------------------------------------------------------------------------------------------//
 //(AxB)_{iIjJ} = E_{jpq}E_{JPQ}A_{iIpP}B_{qQ}
 // tensor cross product of 4th and 2nd order tensors
 template<typename T, size_t I, size_t J, size_t K, size_t L, size_t M, size_t N>
@@ -2046,15 +1647,12 @@ FASTOR_HINT_INLINE void _crossproduct42(const T *FASTOR_RESTRICT A, const T *FAS
     C[78] = _A2201*_B12 - _A2202*_B11 - _A2211*_B02 + _A2212*_B01;
     C[79] = _A2202*_B10 - _A2200*_B12 + _A2210*_B02 - _A2212*_B00;
     C[80] = _A2200*_B11 - _A2201*_B10 - _A2210*_B01 + _A2211*_B00;
-
 }
+//--------------------------------------------------------------------------------------------------------//
 
 
 
-
-
-
-////////
+//--------------------------------------------------------------------------------------------------------//
 //(AxB)_{iIjJ} = E_{ipq}E_{IPQ}A_{qQjJ}B_{pP}
 // tensor cross product of 2nd and 4th order tensors
 template<typename T, size_t I, size_t J, size_t K, size_t L, size_t M, size_t N>
@@ -2235,12 +1833,10 @@ FASTOR_HINT_INLINE void _crossproduct24(const T *FASTOR_RESTRICT A, const T *FAS
     C[78] = _A0020*_B11 - _A0120*_B10 - _A1020*_B01 + _A1120*_B00;
     C[79] = _A0021*_B11 - _A0121*_B10 - _A1021*_B01 + _A1121*_B00;
     C[80] = _A0022*_B11 - _A0122*_B10 - _A1022*_B01 + _A1122*_B00;
-
 }
+//--------------------------------------------------------------------------------------------------------//
 
-
-
-}
+} // end of namespace Fastor
 
 
 #endif // TENSOR_CROSS_H
