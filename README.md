@@ -197,7 +197,7 @@ this mechanism helps chain the operations to avoid the need for intermediate mem
 
 ### Smart expression templates
 
-Aside from basic expression templates, by employing further template metaprogrommaing techniques Fastor can mathematically transform expressions and/or apply compile time graph optimisation to find optimal contraction indices of complex tensor networks, for instance. This gives Fastor the ability to re-structure or completely re-write an expression and simplify it rather symbolically. As an example, consider the expression `trace(matmul(transpose(A),B))` which is `O(n^3)` in computational complexity. Fastor can determine this to be inefficient and will statically dispatch the call to an equivalent but much more efficient routine, in this case `A_ij*B_ij` or `inner(A,B)` which is `O(n^2)`. Further examples of such mathemtical transformation include (but certainly not exclusive to)
+Aside from basic expression templates, by employing further template metaprogrommaing techniques Fastor can mathematically transform expressions and/or apply compile time graph optimisation to find optimal contraction indices of complex tensor networks, for instance. This gives Fastor the ability to re-structure or completely re-write an expression and simplify it rather symbolically. As an example, consider the expression `trace(matmul(transpose(A),B))` which is `O(n^3)` in computational complexity. Fastor can determine this to be inefficient and will statically dispatch the call to an equivalent but much more efficient routine, in this case `A_ij*B_ij` or `inner(A,B)` which is `O(n^2)`. Further examples of such mathematical transformation include (but certainly not exclusive to)
 ~~~c++
 det(inv(A));             // transformed to 1/det(A), O(n^3) reduction in computation
 trans(cof(A));           // transformed to adj(A), O(n^2) reduction in memory access
@@ -236,8 +236,8 @@ This is generalised to any n-dimensional tensor. As you notice, all indices are 
 
 The performance of Fastor comes from the fact, that when a Voigt transformation is requested, Fastor does not compute the elements which are not needed.
 
-### The tensor cross product and its associated algebra
-Building upon its domain specific features, Fastor implements the tensor cross product family of algebra by [Bonet et. al.](http://dx.doi.org/10.1016/j.ijsolstr.2015.12.030) in the context of numerical analysis of nonlinear classical mechanics which can significantly reduce the amount algebra involved in tensor derivatives of functionals which are forbiddingly complex to derive using a standard approach. The tensor cross product of two second order tensors is defined as `C_iI = e_ijk*e_IJK*A_jJ*b_kK` where `e` is the third order permutation tensor. As can be seen this product is O(n^6) in computational complexity. Using Fastor the equivalent code is only 81 SSE intrinsics
+### The tensor cross product and it's associated algebra
+Building upon its domain specific features, Fastor implements the tensor cross product family of algebra by [Bonet et. al.](http://dx.doi.org/10.1016/j.ijsolstr.2015.12.030) which can significantly reduce the amount algebra involved in tensor derivatives of functionals which are forbiddingly complex to derive using a standard approach. The tensor cross product is a generalising of the vector cross product to multi-dimensional manifolds. The tensor cross product of two second order tensors is defined as `C_iI = e_ijk*e_IJK*A_jJ*b_kK` where `e` is the third order permutation tensor. As can be seen this product is O(n^6) in computational complexity. Using Fastor the equivalent code is only 81 SSE intrinsics
 ~~~c++
 // A and B are second order tensors
 using Fastor::LeviCivita_pd;
