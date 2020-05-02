@@ -9,6 +9,7 @@
 #include "Fastor/backend/doublecontract.h"
 #include "Fastor/backend/dyadic.h"
 #include "Fastor/backend/inverse.h"
+#include "Fastor/backend/lufact.h"
 #include "Fastor/backend/matmul/matmul.h"
 #include "Fastor/backend/norm.h"
 #include "Fastor/backend/outer.h"
