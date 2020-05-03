@@ -267,6 +267,63 @@ void test_factorisation() {
             lu<LUCompType::SimpleLUPiv>(A, L, U, P);
             FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
         }
+
+        // LU 33x33
+        {
+            constexpr size_t M = 33;
+            Tensor<size_t,M> p;
+            Tensor<T,M,M> L, U, P;
+
+            Tensor<T,M,M> A; A.iota();
+            for (size_t i=0; i<M; ++i) {
+                A(i,i) = 100+i;
+            }
+
+            lu(A, L, U);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
+
+            lu<LUCompType::BlockLU>(A, L, U);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
+
+            lu<LUCompType::BlockLUPiv>(A, L, U, p);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
+
+            lu<LUCompType::BlockLUPiv>(A, L, U, P);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
+
+            lu<LUCompType::SimpleLU>(A, L, U);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
+
+            lu<LUCompType::SimpleLUPiv>(A, L, U, p);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
+
+            lu<LUCompType::SimpleLUPiv>(A, L, U, P);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
+        }
+
+       // LU 37x37
+        {
+            constexpr size_t M = 37;
+            Tensor<size_t,M> p;
+            Tensor<T,M,M> L, U, P;
+
+            Tensor<T,M,M> A; A.iota();
+            for (size_t i=0; i<M; ++i) {
+                A(i,i) = 100+i;
+            }
+
+            lu<LUCompType::BlockLUPiv>(A, L, U, p);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - reconstruct(L, U, p))) < BigTol);
+
+            lu<LUCompType::BlockLUPiv>(A, L, U, P);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - reconstruct(L, U, P))) < BigTol);
+
+            lu<LUCompType::SimpleLUPiv>(A, L, U, p);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - reconstruct(L, U, p))) < BigTol);
+
+            lu<LUCompType::SimpleLUPiv>(A, L, U, P);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - reconstruct(L, U, P))) < BigTol);
+        }
     }
 
     print(FGRN(BOLD("All tests passed successfully")));

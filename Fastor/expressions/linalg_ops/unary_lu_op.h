@@ -18,186 +18,6 @@ namespace Fastor {
 
 namespace internal {
 
-/* Block LU factorisation without pivoting */
-//-----------------------------------------------------------------------------------------------------------//
-//-----------------------------------------------------------------------------------------------------------//
-
-template <typename T, size_t M, enable_if_t_<is_greater_v_<M,0> && is_less_equal_v_<M,8>,bool> = false>
-FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
-    _lufact<T,M>(A.data(),L.data(),U.data());
-}
-
-template <typename T, size_t M, enable_if_t_<is_greater_v_<M,8> && is_less_equal_v_<M,16>,bool> = false>
-FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
-
-    // We will compute LU decomposition block assuming that A11 and A22 are invertible
-    //
-    // [A11 A12]   [L11    0] [U11 U12]
-    // [A21 A22]   [L21  L22] [0   U22]
-    //
-    // This results in
-    //
-    // A11 = L11 * U11
-    // A12 = L11 * U12
-    // A21 = L21 * U11
-    // A22 = L21 * U12 - L22 * U22
-    //
-    // Hence we need to LU factorisation one for A11 and one for A22
-
-    constexpr size_t N = 8UL; // start size
-    Tensor<T,N  ,N  > A11 = A(fseq<0,N>(),fseq<0,N>());
-    Tensor<T,N  ,M-N> A12 = A(fseq<0,N>(),fseq<N,M>());
-    Tensor<T,M-N,  N> A21 = A(fseq<N,M>(),fseq<0,N>());
-    Tensor<T,M-N,M-N> A22 = A(fseq<N,M>(),fseq<N,M>());
-
-    // Don't zero out in the first block recursion as this dipatches to _lufact
-    // which zeros out the tensors anyway
-    Tensor<T,N,N> L11, U11;
-    lu_block_dispatcher(A11, L11, U11);
-
-    Tensor<T,N  ,M-N> U12 = matmul(inverse(L11),A12);
-    Tensor<T,M-N,  N> L21 = matmul(A21,inverse(U11));
-
-    Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
-
-    Tensor<T,M-N,M-N> L22, U22;
-    lu_block_dispatcher(S, L22, U22);
-
-    L(fseq<0,N>(),fseq<0,N>()) = L11;
-    // L(fseq<0,N>(),fseq<N,M>()) = 0;
-    L(fseq<N,M>(),fseq<0,N>()) = L21;
-    L(fseq<N,M>(),fseq<N,M>()) = L22;
-
-    U(fseq<0,N>(),fseq<0,N>()) = U11;
-    U(fseq<0,N>(),fseq<N,M>()) = U12;
-    // U(fseq<N,M>(),fseq<0,N>()) = 0;
-    U(fseq<N,M>(),fseq<N,M>()) = U22;
-}
-
-template <typename T, size_t M, enable_if_t_<is_greater_v_<M,16> && is_less_equal_v_<M,32>,bool> = false>
-FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
-
-    constexpr size_t N = 16UL; // start size
-    Tensor<T,N  ,N  > A11 = A(fseq<0,N>(),fseq<0,N>());
-    Tensor<T,N  ,M-N> A12 = A(fseq<0,N>(),fseq<N,M>());
-    Tensor<T,M-N,  N> A21 = A(fseq<N,M>(),fseq<0,N>());
-    Tensor<T,M-N,M-N> A22 = A(fseq<N,M>(),fseq<N,M>());
-
-    Tensor<T,N,N> L11(0), U11(0);
-    lu_block_dispatcher(A11, L11, U11);
-
-    Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
-    Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
-
-    Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
-
-    Tensor<T,M-N,M-N> L22(0), U22(0);
-    lu_block_dispatcher(S, L22, U22);
-
-    L(fseq<0,N>(),fseq<0,N>()) = L11;
-    // L(fseq<0,N>(),fseq<N,M>()) = 0;
-    L(fseq<N,M>(),fseq<0,N>()) = L21;
-    L(fseq<N,M>(),fseq<N,M>()) = L22;
-
-    U(fseq<0,N>(),fseq<0,N>()) = U11;
-    U(fseq<0,N>(),fseq<N,M>()) = U12;
-    // U(fseq<N,M>(),fseq<0,N>()) = 0;
-    U(fseq<N,M>(),fseq<N,M>()) = U22;
-}
-
-template <typename T, size_t M, enable_if_t_<is_greater_v_<M,32> && is_less_equal_v_<M,64>,bool> = false>
-FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
-
-    constexpr size_t N = 32UL; // start size
-    Tensor<T,N  ,N  > A11 = A(fseq<0,N>(),fseq<0,N>());
-    Tensor<T,N  ,M-N> A12 = A(fseq<0,N>(),fseq<N,M>());
-    Tensor<T,M-N,  N> A21 = A(fseq<N,M>(),fseq<0,N>());
-    Tensor<T,M-N,M-N> A22 = A(fseq<N,M>(),fseq<N,M>());
-
-    Tensor<T,N,N> L11(0), U11(0);
-    lu_block_dispatcher(A11, L11, U11);
-
-    Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
-    Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
-
-    Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
-
-    Tensor<T,M-N,M-N> L22(0), U22(0);
-    lu_block_dispatcher(S, L22, U22);
-
-    L(fseq<0,N>(),fseq<0,N>()) = L11;
-    // L(fseq<0,N>(),fseq<N,M>()) = 0;
-    L(fseq<N,M>(),fseq<0,N>()) = L21;
-    L(fseq<N,M>(),fseq<N,M>()) = L22;
-
-    U(fseq<0,N>(),fseq<0,N>()) = U11;
-    U(fseq<0,N>(),fseq<N,M>()) = U12;
-    // U(fseq<N,M>(),fseq<0,N>()) = 0;
-    U(fseq<N,M>(),fseq<N,M>()) = U22;
-}
-
-template <typename T, size_t M, enable_if_t_<is_greater_v_<M,64> && is_less_equal_v_<M,128>,bool> = false>
-FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
-
-    constexpr size_t N = 64UL; // start size
-    Tensor<T,N  ,N  > A11 = A(fseq<0,N>(),fseq<0,N>());
-    Tensor<T,N  ,M-N> A12 = A(fseq<0,N>(),fseq<N,M>());
-    Tensor<T,M-N,  N> A21 = A(fseq<N,M>(),fseq<0,N>());
-    Tensor<T,M-N,M-N> A22 = A(fseq<N,M>(),fseq<N,M>());
-
-    Tensor<T,N,N> L11(0), U11(0);
-    lu_block_dispatcher(A11, L11, U11);
-
-    Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
-    Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
-
-    Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
-
-    Tensor<T,M-N,M-N> L22(0), U22(0);
-    lu_block_dispatcher(S, L22, U22);
-
-    L(fseq<0,N>(),fseq<0,N>()) = L11;
-    // L(fseq<0,N>(),fseq<N,M>()) = 0;
-    L(fseq<N,M>(),fseq<0,N>()) = L21;
-    L(fseq<N,M>(),fseq<N,M>()) = L22;
-
-    U(fseq<0,N>(),fseq<0,N>()) = U11;
-    U(fseq<0,N>(),fseq<N,M>()) = U12;
-    // U(fseq<N,M>(),fseq<0,N>()) = 0;
-    U(fseq<N,M>(),fseq<N,M>()) = U22;
-}
-
-// This tends not have a good performance for these sizes but the block LU decomposition can be quite heavy
-// on the compiler beyond a certain size
-template <typename T, size_t M, enable_if_t_<is_greater_v_<M,128> && is_less_equal_v_<M,512>,bool> = false>
-FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A1, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
-    L.fill(0);
-    U.fill(0);
-    for (size_t j = 0; j < M; ++j) {
-        L(j, j) = 1;
-        for (size_t i = 0; i <= j; ++i) {
-            T value = A1(i, j);
-            for (size_t k = 0; k < i; ++k) {
-                value -= L(i, k) * U(k, j);
-            }
-            U(i, j) = value;
-        }
-        for (size_t i = j; i < M; ++i) {
-            T value = A1(i, j);
-            for (size_t k = 0; k < j; ++k) {
-                value -= L(i, k) * U(k, j);
-            }
-            value /= U(j, j);
-            L(i, j) = value;
-        }
-    }
-}
-//-----------------------------------------------------------------------------------------------------------//
-//-----------------------------------------------------------------------------------------------------------//
-
-
-
-
 /* Simple LU factorisation without pivoting */
 //-----------------------------------------------------------------------------------------------------------//
 //-----------------------------------------------------------------------------------------------------------//
@@ -232,6 +52,309 @@ FASTOR_INLINE void lu_simple_dispatcher(const Tensor<T,M,M>& A1, Tensor<T,M,M>& 
 //-----------------------------------------------------------------------------------------------------------//
 //-----------------------------------------------------------------------------------------------------------//
 
+
+
+// Recursive LU using matmul
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+/* This in essence implements the following loop but with static views
+    as dynamic views cannot be dispatched to matmul or a tensor cannot be
+    constructed to be sent to matmul
+
+    for(size_t j=0; j<M-1; ++j) {
+        L(seq(j+1,M),j) /= L(j,j);
+        L(seq(j+1,M),seq(j+1,M)) -= L(seq(j+1,M),j) % L(j,seq(j+1,M));
+    }
+
+*/
+template<size_t from, size_t to>
+struct recursive_lu_impl {
+    template<typename T, size_t M, size_t N>
+    static FASTOR_INLINE void Do(Tensor<T,M,N> &LU) {
+        LU(fseq<from+1,M>(),fix<from>) /= LU.data()[from*N+from];
+        LU(fseq<from+1,M>(),fseq<from+1,M>()) -= LU(fseq<from+1,M>(),fix<from>) % LU(fix<from>,fseq<from+1,M>());
+        recursive_lu_impl<from+1,to>::Do(LU);
+    }
+};
+template<size_t from>
+struct recursive_lu_impl<from,from> {
+    template<typename T, size_t M, size_t N>
+    static FASTOR_INLINE void Do(Tensor<T,M,N> &LU) {
+        LU(fseq<from+1,M>(),fix<from>) /= LU.data()[from*N+from];
+        LU(fseq<from+1,M>(),fseq<from+1,M>()) -= LU(fseq<from+1,M>(),fix<from>) % LU(fix<from>,fseq<from+1,M>());
+    }
+};
+
+
+template <typename T, size_t M, enable_if_t_<is_equal_v_<M,1>,bool> = false>
+FASTOR_INLINE void recursive_lu_dispatcher(Tensor<T,M,M>& A) {
+    return;
+}
+template <typename T, size_t M, enable_if_t_<is_greater_v_<M,1>,bool> = false>
+FASTOR_INLINE void recursive_lu_dispatcher(Tensor<T,M,M>& A) {
+    // For this M >=2
+    recursive_lu_impl<0,M-2>::Do(A);
+}
+
+template <typename T, size_t M, enable_if_t_<is_equal_v_<M,1>,bool> = false>
+FASTOR_INLINE void recursive_lu_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& LU) {
+    LU(0,0) = A(0,0);
+}
+template <typename T, size_t M, enable_if_t_<is_greater_v_<M,1>,bool> = false>
+FASTOR_INLINE void recursive_lu_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& LU) {
+    // For this M >=2
+    LU(A);
+    recursive_lu_impl<0,M-2>::Do(LU);
+}
+
+template <typename T, size_t M, enable_if_t_<is_equal_v_<M,1>,bool> = false>
+FASTOR_INLINE void recursive_lu_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
+    L(0,0) = 1; U(0,0) = A(0,0);
+}
+template <typename T, size_t M, enable_if_t_<is_greater_v_<M,1>,bool> = false>
+FASTOR_INLINE void recursive_lu_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
+    // For this M >=2
+    Tensor<T,M,M> LU(A);
+    recursive_lu_impl<0,M-2>::Do(LU);
+
+    // Creating L & U impacts the performance for small sizes
+    for (size_t i=0; i<M; ++i) {
+        L(i,i) = 1;
+    }
+    for (size_t i=0; i<M; ++i) {
+        for (size_t j=0; j<i; ++j) {
+            L(i,j) = LU(i,j);
+        }
+    }
+
+    for (size_t i=0; i<M; ++i) {
+        for (size_t j=i; j<M; ++j) {
+            U(i,j) = LU(i,j);
+        }
+    }
+}
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+
+
+/* Block LU factorisation without pivoting */
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+template <typename T, size_t M, enable_if_t_<is_greater_v_<M,0> && is_less_equal_v_<M,32>,bool> = false>
+FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
+    recursive_lu_dispatcher(A, L, U);
+}
+
+// template <typename T, size_t M, enable_if_t_<is_greater_v_<M,0> && is_less_equal_v_<M,8>,bool> = false>
+// FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
+//     _lufact<T,M>(A.data(),L.data(),U.data());
+// }
+
+// template <typename T, size_t M, enable_if_t_<is_greater_v_<M,8> && is_less_equal_v_<M,16>,bool> = false>
+// FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
+
+//     // We will compute LU decomposition block-wise assuming that A11 and A22 are invertible
+//     //
+//     // [A11 A12]   [L11    0] [U11 U12]
+//     // [A21 A22]   [L21  L22] [0   U22]
+//     //
+//     // This results in
+//     //
+//     // A11 = L11 * U11
+//     // A12 = L11 * U12
+//     // A21 = L21 * U11
+//     // A22 = L21 * U12 - L22 * U22
+//     //
+//     // Hence we need to LU factorisation one for A11 and one for A22
+
+//     constexpr size_t N = 8UL; // start size
+//     Tensor<T,N  ,N  > A11 = A(fseq<0,N>(),fseq<0,N>());
+//     Tensor<T,N  ,M-N> A12 = A(fseq<0,N>(),fseq<N,M>());
+//     Tensor<T,M-N,  N> A21 = A(fseq<N,M>(),fseq<0,N>());
+//     Tensor<T,M-N,M-N> A22 = A(fseq<N,M>(),fseq<N,M>());
+
+//     // Don't zero out in the first block recursion as this dipatches to _lufact
+//     // which zeros out the tensors anyway
+//     Tensor<T,N,N> L11, U11;
+//     lu_block_dispatcher(A11, L11, U11);
+
+//     Tensor<T,N  ,M-N> U12 = matmul(inverse(L11),A12);
+//     Tensor<T,M-N,  N> L21 = matmul(A21,inverse(U11));
+
+//     Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
+
+//     Tensor<T,M-N,M-N> L22, U22;
+//     lu_block_dispatcher(S, L22, U22);
+
+//     L(fseq<0,N>(),fseq<0,N>()) = L11;
+//     // L(fseq<0,N>(),fseq<N,M>()) = 0;
+//     L(fseq<N,M>(),fseq<0,N>()) = L21;
+//     L(fseq<N,M>(),fseq<N,M>()) = L22;
+
+//     U(fseq<0,N>(),fseq<0,N>()) = U11;
+//     U(fseq<0,N>(),fseq<N,M>()) = U12;
+//     // U(fseq<N,M>(),fseq<0,N>()) = 0;
+//     U(fseq<N,M>(),fseq<N,M>()) = U22;
+// }
+
+// template <typename T, size_t M, enable_if_t_<is_greater_v_<M,16> && is_less_equal_v_<M,32>,bool> = false>
+// FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
+
+//     // We will compute LU decomposition block-wise assuming that A11 and A22 are invertible
+//     //
+//     // [A11 A12]   [L11    0] [U11 U12]
+//     // [A21 A22]   [L21  L22] [0   U22]
+//     //
+//     // This results in
+//     //
+//     // A11 = L11 * U11
+//     // A12 = L11 * U12
+//     // A21 = L21 * U11
+//     // A22 = L21 * U12 - L22 * U22
+//     //
+//     // Hence we need to LU factorisation one for A11 and one for A22
+
+//     constexpr size_t N = 16UL; // start size
+//     Tensor<T,N  ,N  > A11 = A(fseq<0,N>(),fseq<0,N>());
+//     Tensor<T,N  ,M-N> A12 = A(fseq<0,N>(),fseq<N,M>());
+//     Tensor<T,M-N,  N> A21 = A(fseq<N,M>(),fseq<0,N>());
+//     Tensor<T,M-N,M-N> A22 = A(fseq<N,M>(),fseq<N,M>());
+
+//     Tensor<T,N,N> L11(0), U11(0);
+//     lu_block_dispatcher(A11, L11, U11);
+
+//     Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
+//     Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
+
+//     Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
+
+//     Tensor<T,M-N,M-N> L22(0), U22(0);
+//     lu_block_dispatcher(S, L22, U22);
+
+//     L(fseq<0,N>(),fseq<0,N>()) = L11;
+//     // L(fseq<0,N>(),fseq<N,M>()) = 0;
+//     L(fseq<N,M>(),fseq<0,N>()) = L21;
+//     L(fseq<N,M>(),fseq<N,M>()) = L22;
+
+//     U(fseq<0,N>(),fseq<0,N>()) = U11;
+//     U(fseq<0,N>(),fseq<N,M>()) = U12;
+//     // U(fseq<N,M>(),fseq<0,N>()) = 0;
+//     U(fseq<N,M>(),fseq<N,M>()) = U22;
+// }
+
+template <typename T, size_t M, enable_if_t_<is_greater_v_<M,32> && is_less_equal_v_<M,64>,bool> = false>
+FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
+
+    // We will compute LU decomposition block-wise assuming that A11 and A22 are invertible
+    //
+    // [A11 A12]   [L11    0] [U11 U12]
+    // [A21 A22]   [L21  L22] [0   U22]
+    //
+    // This results in
+    //
+    // A11 = L11 * U11
+    // A12 = L11 * U12
+    // A21 = L21 * U11
+    // A22 = L21 * U12 - L22 * U22
+    //
+    // Hence we need to LU factorisation one for A11 and one for A22
+
+    // This is to avoid odd sizes for instance for size 35 we would
+    // want to do 35 = 16 + 19 rather than 35 = 32 + 3 if the start size was 32
+    constexpr size_t N = (M / 8UL * 8UL) / 2UL; // start size
+    Tensor<T,N  ,N  > A11 = A(fseq<0,N>(),fseq<0,N>());
+    Tensor<T,N  ,M-N> A12 = A(fseq<0,N>(),fseq<N,M>());
+    Tensor<T,M-N,  N> A21 = A(fseq<N,M>(),fseq<0,N>());
+    Tensor<T,M-N,M-N> A22 = A(fseq<N,M>(),fseq<N,M>());
+
+    Tensor<T,N,N> L11(0), U11(0);
+    lu_block_dispatcher(A11, L11, U11);
+
+    Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
+    Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
+
+    Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
+
+    Tensor<T,M-N,M-N> L22(0), U22(0);
+    lu_block_dispatcher(S, L22, U22);
+
+    L(fseq<0,N>(),fseq<0,N>()) = L11;
+    // L(fseq<0,N>(),fseq<N,M>()) = 0;
+    L(fseq<N,M>(),fseq<0,N>()) = L21;
+    L(fseq<N,M>(),fseq<N,M>()) = L22;
+
+    U(fseq<0,N>(),fseq<0,N>()) = U11;
+    U(fseq<0,N>(),fseq<N,M>()) = U12;
+    // U(fseq<N,M>(),fseq<0,N>()) = 0;
+    U(fseq<N,M>(),fseq<N,M>()) = U22;
+}
+
+// Conditional dispatch
+namespace useless {
+template <typename T, size_t M, enable_if_t_<is_greater_v_<M,0> && is_less_equal_v_<M,64>,bool> = false>
+FASTOR_INLINE void lu_block_simple_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
+    lu_block_dispatcher(A, L, U);
+    return;
+}
+template <typename T, size_t M, enable_if_t_<is_greater_v_<M,64>,bool> = false>
+FASTOR_INLINE void lu_block_simple_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
+    // lu_simple_dispatcher(A, L, U);
+    recursive_lu_dispatcher(A, L, U);
+    return;
+}
+} // useless
+
+/* For sizes greater than 64 we tile differently to avoid too many recursions
+    We tile based on half of the matrix size so for a 35x35 panel we will get
+*/
+template <typename T, size_t M, enable_if_t_<is_greater_v_<M,64>,bool> = false>
+FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
+
+    // We will compute LU decomposition block-wise assuming that A11 and A22 are invertible
+    //
+    // [A11 A12]   [L11    0] [U11 U12]
+    // [A21 A22]   [L21  L22] [0   U22]
+    //
+    // This results in
+    //
+    // A11 = L11 * U11
+    // A12 = L11 * U12
+    // A21 = L21 * U11
+    // A22 = L21 * U12 - L22 * U22
+    //
+    // Hence we need to LU factorisation one for A11 and one for A22
+
+    // This is to avoid odd sizes for instance for size 65 we would
+    // want to do 65 = 32 + 33 rather than 65 = 64 + 1 if the start size was 64
+    constexpr size_t N = (M / 16UL * 16UL) / 2UL; // start size
+    Tensor<T,N  ,N  > A11 = A(fseq<0,N>(),fseq<0,N>());
+    Tensor<T,N  ,M-N> A12 = A(fseq<0,N>(),fseq<N,M>());
+    Tensor<T,M-N,  N> A21 = A(fseq<N,M>(),fseq<0,N>());
+    Tensor<T,M-N,M-N> A22 = A(fseq<N,M>(),fseq<N,M>());
+
+    Tensor<T,N,N> L11(0), U11(0);
+    useless::lu_block_simple_dispatcher(A11, L11, U11);
+
+    Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
+    Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
+
+    Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
+
+    Tensor<T,M-N,M-N> L22(0), U22(0);
+    useless::lu_block_simple_dispatcher(S, L22, U22);
+
+    L(fseq<0,N>(),fseq<0,N>()) = L11;
+    // L(fseq<0,N>(),fseq<N,M>()) = 0;
+    L(fseq<N,M>(),fseq<0,N>()) = L21;
+    L(fseq<N,M>(),fseq<N,M>()) = L22;
+
+    U(fseq<0,N>(),fseq<0,N>()) = U11;
+    U(fseq<0,N>(),fseq<N,M>()) = U12;
+    // U(fseq<N,M>(),fseq<0,N>()) = 0;
+    U(fseq<N,M>(),fseq<N,M>()) = U22;
+}
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
 } // internal
 
 
