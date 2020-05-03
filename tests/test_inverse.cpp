@@ -8,7 +8,7 @@ using namespace Fastor;
 #define HugeTol 1e-2
 
 template<typename T>
-void test_linalg() {
+void test_inverse() {
 
 
     // inverse/inv
@@ -93,9 +93,9 @@ void test_linalg() {
 int main() {
 
     print(FBLU(BOLD("Testing tensor algebra routines: single precision")));
-    test_linalg<float>();
+    test_inverse<float>();
     print(FBLU(BOLD("Testing tensor algebra routines: double precision")));
-    test_linalg<double>();
+    test_inverse<double>();
 
     return 0;
 }
