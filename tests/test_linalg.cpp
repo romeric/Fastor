@@ -507,17 +507,28 @@ void test_linalg() {
 
         {
             Tensor<T,4,4> Q, R;
-            std::tie(Q,R) = qr(A);
+            qr(A, Q, R);
             FASTOR_EXIT_ASSERT(std::abs(sum(A - Q%R)) < BigTol);
         }
         {
             Tensor<T,4,4> Q, R;
-            std::tie(Q,R) = qr(A+0);
+            qr(A+0, Q, R);
             FASTOR_EXIT_ASSERT(std::abs(sum(A - Q%R)) < BigTol);
         }
         {
             Tensor<T,4,4> Q, R;
-            std::tie(Q,R) = qr<QRCompType::MGSR>(A+0);
+            qr<QRCompType::MGSR>(A+0, Q, R);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - Q%R)) < BigTol);
+        }
+        {
+            Tensor<T,4,4> Q, R;
+            Tensor<size_t,4> P;
+            qr<QRCompType::MGSRPiv>(A+0, Q, R, P);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - Q%R)) < BigTol);
+        }
+        {
+            Tensor<T,4,4> Q, R, P;
+            qr<QRCompType::MGSRPiv>(A+0, Q, R, P);
             FASTOR_EXIT_ASSERT(std::abs(sum(A - Q%R)) < BigTol);
         }
         // absdet by QR

@@ -31,7 +31,7 @@ template<DetCompType DetType = DetCompType::Simple, typename T, size_t M,
     enable_if_t_<DetType == DetCompType::QR,bool> = false>
 FASTOR_INLINE T determinant(const Tensor<T,M,M> &a) {
     Tensor<T,M,M> Q, R;
-    std::tie(Q,R) = qr(a);
+    qr(a, Q, R);
     return product(diag(R));
 }
 template<DetCompType DetType = DetCompType::Simple, typename T, size_t M,

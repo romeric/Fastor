@@ -14,7 +14,7 @@ endif
 
 
 all: tests
-tests: test_auxiliary test_simd_vectors test_basics test_matmul test_linalg test_einsum test_views test_mixed_views test_tensormap test_complex_expressions test_binary_cmp_ops
+tests: test_auxiliary test_simd_vectors test_basics test_matmul test_linalg test_lu test_einsum test_views test_mixed_views test_tensormap test_complex_expressions test_binary_cmp_ops
 
 test_auxiliary:
 	$(CXX) test_auxiliary.cpp -o test_auxiliary.exe $(CXX_FLAGS) $(INCLUDES)
@@ -33,6 +33,10 @@ test_matmul:
 
 test_linalg:
 	$(CXX) test_linalg.cpp -o test_linalg.exe $(CXX_FLAGS) $(INCLUDES)
+
+test_lu:
+	$(CXX) test_lu.cpp -o test_lu_1.exe $(INCLUDES) -std=c++14
+	$(CXX) test_lu.cpp -o test_lu_2.exe $(CXX_FLAGS) $(INCLUDES)
 
 test_einsum:
 	$(CXX) test_contraction.cpp -o test_contraction_0.exe $(CXX_FLAGS) $(INCLUDES)
@@ -102,6 +106,10 @@ run_matmul:
 
 run_linalg:
 	./test_linalg.exe
+
+run_lu:
+	./test_lu_1.exe
+	./test_lu_2.exe
 
 run_einsum:
 	./test_contraction_0.exe

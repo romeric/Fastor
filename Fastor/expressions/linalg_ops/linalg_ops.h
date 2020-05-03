@@ -4,6 +4,8 @@
 #include "Fastor/expressions/linalg_ops/linalg_computation_types.h"
 
 #include "Fastor/expressions/linalg_ops/binary_matmul_op.h"
+#include "Fastor/expressions/linalg_ops/unary_piv_op.h"
+#include "Fastor/expressions/linalg_ops/unary_lu_op.h"
 #include "Fastor/expressions/linalg_ops/binary_solve_op.h"
 #include "Fastor/expressions/linalg_ops/unary_trans_op.h"
 #include "Fastor/expressions/linalg_ops/unary_adj_op.h"

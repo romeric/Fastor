@@ -4,12 +4,12 @@
 template<typename U=T>
 FASTOR_INLINE void fill(U num0) {
     T num = static_cast<T>(num0);
-    FASTOR_INDEX i=0;
+    FASTOR_INDEX i = 0UL;
+    SIMDVector<T,DEFAULT_ABI> _vec(num);
     for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
-        SIMDVector<T,DEFAULT_ABI> _vec = num;
-        _vec.store(&_data[i]);
+        _vec.store(&_data[i],false);
     }
-    for (; i<Size; ++i) _data[i] = num0;
+    for (; i<Size; ++i) _data[i] = num;
 }
 
 template<typename U=T>
