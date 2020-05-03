@@ -346,6 +346,20 @@ FASTOR_INLINE Tensor<T,M,N> reconstruct(const Tensor<T,M,N>& L, Tensor<T,M,N>& U
 }
 
 
+/* Reconstructing the matrix back from a pivot only
+*/
+template <typename T, size_t M, size_t N>
+FASTOR_INLINE Tensor<T,M,N> reconstruct(const Tensor<T,M,N>& A, const Tensor<size_t,M>& P) {
+    Tensor<T,M,N> copyA(A);
+    for (size_t i=0; i< M; ++i) {
+        if (P(i) != i) {
+            std::copy_n(&A.data()[i*N],N,&copyA.data()[P(i)*N]);
+        }
+    }
+    return copyA;
+}
+
+
 
 } // end of namespace Fastor
 

@@ -67,7 +67,6 @@ void test_factorisation() {
                 for (size_t j=0; j<3; ++j)
                     FASTOR_EXIT_ASSERT(std::abs(A(i,j) - reconA(i,j)) < BigTol);
         }
-
     }
 
     {

@@ -86,8 +86,8 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
     Tensor<T,N,N> L11(0), U11(0);
     lu_block_dispatcher(A11, L11, U11);
 
-    Tensor<T,N  ,M-N> U12 = matmul(inverse(L11),A12);
-    Tensor<T,M-N,  N> L21 = matmul(A21,inverse(U11));
+    Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
+    Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
 
     Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
 
@@ -117,8 +117,8 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
     Tensor<T,N,N> L11(0), U11(0);
     lu_block_dispatcher(A11, L11, U11);
 
-    Tensor<T,N  ,M-N> U12 = matmul(inverse(L11),A12);
-    Tensor<T,M-N,  N> L21 = matmul(A21,inverse(U11));
+    Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
+    Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
 
     Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
 
@@ -148,8 +148,8 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
     Tensor<T,N,N> L11(0), U11(0);
     lu_block_dispatcher(A11, L11, U11);
 
-    Tensor<T,N  ,M-N> U12 = matmul(inverse(L11),A12);
-    Tensor<T,M-N,  N> L21 = matmul(A21,inverse(U11));
+    Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
+    Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
 
     Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
 
@@ -380,6 +380,125 @@ lu(const AbstractTensor<Expr,DIM0> &src, Tensor<T,M,M>& L, Tensor<T,M,M>& U, Ten
 }
 //-----------------------------------------------------------------------------------------------------------//
 //-----------------------------------------------------------------------------------------------------------//
+
+
+
+
+
+
+
+
+// Inversion using LU
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+namespace internal {
+
+template<typename T, size_t M>
+FASTOR_INLINE Tensor<T,M,M> get_lu_inverse(const Tensor<T,M,M> &L, const Tensor<T,M,M> &U) {
+
+    Tensor<T,M,M> out(0);
+    // We will solve for multiple RHS [B = I]
+    // Loop over columns of B = I
+    for (size_t j = 0; j<M; ++j) {
+        // Solve for L * y = b
+        Tensor<T,M> y(0); y(j) = 1;
+        for (size_t i=0; i< M; ++i) {
+            // if (i==j) y(i) = 1;
+            T value = 0;
+            for (size_t k=0; k<i; ++k) {
+                value += L(i,k)*y(k);
+            }
+            y(i) -= value;
+        }
+        // Solve for of U * x = y
+        // Each x is a column of out
+        for (int i = int(M) - 1; i>=0; --i) {
+            T value = 0;
+            for (int k=i; k<int(M); ++k) {
+                value += U(i,k)*out(k,j);
+            }
+            out(i,j) = (y(i) - value) / U(i, i);
+        }
+    }
+
+    return out;
+}
+
+template<typename T, size_t M>
+FASTOR_INLINE Tensor<T,M,M> get_lu_inverse(Tensor<T,M,M> &L, const Tensor<T,M,M> &U, const Tensor<size_t,M> &P) {
+
+    Tensor<T,M,M> out(0);
+    // We will solve for multiple RHS [B = I]
+    // Loop over columns of B = I
+    for (size_t j = 0; j<M; ++j) {
+        // Solve for L * y = P*b
+        Tensor<T,M> y(0);
+        for (size_t i=0; i< M; ++i) {
+            if (P(i)==j) y(i) = 1;
+            T value = 0;
+            for (size_t k=0; k<i; ++k) {
+                value += L(i,k)*y(k);
+            }
+            y(i) -= value;
+        }
+        // Solve for of U * x = y
+        // Each x is a column of out
+        for (int i = int(M) - 1; i>=0; --i) {
+            T value = 0;
+            for (int k=i; k<int(M); ++k) {
+                value += U(i,k)*out(k,j);
+            }
+            out(i,j) = (y(i) - value) / U(i, i);
+        }
+    }
+
+    return out;
+}
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+} // internal
+
+
+// SimpleLU
+template<InvCompType InvType = InvCompType::SimpleInv,
+    typename T, size_t M, enable_if_t_<InvType == InvCompType::SimpleLU,bool> = false>
+FASTOR_INLINE Tensor<T,M,M> inverse(const Tensor<T,M,M> &A) {
+    Tensor<T,M,M> L, U;
+    lu<LUCompType::SimpleLU>(A, L, U);
+    return internal::get_lu_inverse(L, U);
+}
+
+// BlockLU
+template<InvCompType InvType = InvCompType::SimpleInv,
+    typename T, size_t M, enable_if_t_<InvType == InvCompType::BlockLU,bool> = false>
+FASTOR_INLINE Tensor<T,M,M> inverse(const Tensor<T,M,M> &A) {
+    Tensor<T,M,M> L, U;
+    lu<LUCompType::BlockLU>(A, L, U);
+    return internal::get_lu_inverse(L, U);
+}
+
+// SimpleLUPiv
+template<InvCompType InvType = InvCompType::SimpleInv,
+    typename T, size_t M, enable_if_t_<InvType == InvCompType::SimpleLUPiv,bool> = false>
+FASTOR_INLINE Tensor<T,M,M> inverse(const Tensor<T,M,M> &A) {
+    Tensor<T,M,M> L, U;
+    Tensor<size_t,M> p;
+    lu<LUCompType::SimpleLUPiv>(A, L, U, p);
+    return internal::get_lu_inverse(L, U, p);
+}
+
+// BlockLUPiv
+template<InvCompType InvType = InvCompType::SimpleInv,
+    typename T, size_t M, enable_if_t_<InvType == InvCompType::BlockLUPiv,bool> = false>
+FASTOR_INLINE Tensor<T,M,M> inverse(const Tensor<T,M,M> &A) {
+    Tensor<T,M,M> L, U;
+    Tensor<size_t,M> p;
+    lu<LUCompType::BlockLUPiv>(A, L, U, p);
+    return internal::get_lu_inverse(L, U, p);
+}
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+
 
 
 } // end of namespace Fastor

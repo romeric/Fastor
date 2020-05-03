@@ -40,6 +40,17 @@ enum class DetCompType : int
     RREFPiv,      /* Using Reduced Row Echelon Form with pivot   */
 };
 
+// Inverse computation type
+enum class InvCompType : int
+{
+    SimpleInv = 0,/* Using simple hand-optimised calculations    */
+    SimpleInvPiv, /* Simple with pivot                           */
+    BlockLU,      /* Using block LU factorisation                */
+    BlockLUPiv,   /* Using block LU factorisation with pivot     */
+    SimpleLU,     /* Using simple LU factorisation               */
+    SimpleLUPiv,  /* Using simple LU factorisation with pivot    */
+};
+
 // Solve computation type
 enum class SolveCompType : int
 {
@@ -47,8 +58,8 @@ enum class SolveCompType : int
     InversePiv,  /* Using optimised inversion with pivot         */
     BlockLU,     /* Using block LU factorisation                 */
     BlockLUPiv,  /* Using block LU factorisation with pivot      */
-    SimpleLU,    /* Using block LU factorisation with pivot      */
-    SimpleLUPiv, /* Using block LU factorisation with pivot      */
+    SimpleLU,    /* Using simple LU factorisation                */
+    SimpleLUPiv, /* Using simple LU factorisation with pivot     */
     QR,          /* Using QR factorisation                       */
     Chol,        /* Using Cholesky factorisation                 */
 };

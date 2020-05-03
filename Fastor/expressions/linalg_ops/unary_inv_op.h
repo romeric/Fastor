@@ -10,6 +10,8 @@
 #include "Fastor/tensor/Ranges.h"
 #include "Fastor/tensor/TensorTraits.h"
 #include "Fastor/expressions/expression_traits.h"
+#include "Fastor/expressions/linalg_ops/linalg_computation_types.h"
+#include "Fastor/expressions/linalg_ops/unary_piv_op.h"
 
 
 namespace Fastor {
@@ -44,6 +46,8 @@ inv(const AbstractTensor<Expr,DIM0> &src) {
 }
 
 
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
 namespace internal {
 
 template<typename T, size_t M, enable_if_t_<is_greater_v_<M,0> && is_less_equal_v_<M,4>,bool> = false>
@@ -228,25 +232,44 @@ FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& ou
     out(fseq<N,M>(),fseq<0,N>()) = block_ba;
     out(fseq<N,M>(),fseq<N,M>()) = block_bb;
 }
-
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
 } // internal
 
 
+
+// Inversion using LU decomposition is in the LU module [unary_lu_op]
 // For tensors
-template<typename T, size_t I, enable_if_t_<is_less_equal_v_<I,4UL>,bool> = false>
-FASTOR_INLINE Tensor<T,I,I> inverse(const Tensor<T,I,I> &a) {
-    Tensor<T,I,I> out;
-    _inverse<T,I>(a.data(),out.data());
+// SimpleInv - no pivot
+template<InvCompType InvType = InvCompType::SimpleInv,
+    typename T, size_t M, enable_if_t_<is_less_equal_v_<M,4UL> && InvType == InvCompType::SimpleInv,bool> = false>
+FASTOR_INLINE Tensor<T,M,M> inverse(const Tensor<T,M,M> &a) {
+    Tensor<T,M,M> out;
+    _inverse<T,M>(a.data(),out.data());
     return out;
 }
-template<typename T, size_t M, enable_if_t_<is_greater_v_<M,4UL>,bool> = false>
+template<InvCompType InvType = InvCompType::SimpleInv,
+    typename T, size_t M, enable_if_t_<is_greater_v_<M,4UL> && InvType == InvCompType::SimpleInv,bool> = false>
 FASTOR_INLINE Tensor<T,M,M> inverse(const Tensor<T,M,M> &in) {
     Tensor<T,M,M> out;
     internal::inverse_dispatcher(in,out);
     return out;
 }
+// SimpleInv pivot
+template<InvCompType InvType = InvCompType::SimpleInv,
+    typename T, size_t M, enable_if_t_<InvType == InvCompType::SimpleInvPiv,bool> = false>
+FASTOR_INLINE Tensor<T,M,M> inverse(const Tensor<T,M,M> &in) {
+    Tensor<T,M,M> out;
+    Tensor<size_t,M> P;
+    pivot_inplace(in,P);
+    auto A(apply_pivot(in,P));
+    internal::inverse_dispatcher(A,out);
+    return reconstruct(out,P);
+}
+
 // For high order tensors
-template<typename T, size_t ... Rest, typename std::enable_if<sizeof...(Rest)>=3,bool>::type=0>
+template<InvCompType InvType = InvCompType::SimpleInv,
+    typename T, size_t ... Rest, enable_if_t_<sizeof...(Rest)>=3 && InvType == InvCompType::SimpleInv,bool> = false >
 FASTOR_INLINE Tensor<T,Rest...>
 inverse(const Tensor<T,Rest...> &a) {
 
@@ -263,25 +286,22 @@ inverse(const Tensor<T,Rest...> &a) {
 
     for (size_t i=0; i<remaining_product; ++i) {
         T det = _det<T,J,J>(static_cast<const T *>(a_data+i*J*J));
-        _adjoint<T,J,J>(a_data+i*J*J,out_data+i*J*J);
-
-        for (size_t j=i*J*J; j<(i+1)*J*J; ++j) {
-            out_data[j] /= det;
-        }
+        _inverse<T,J>(a_data+i*J*J,out_data+i*J*J);
     }
 
     return out;
 }
 
 // Inverse for generic expressions is provided here
-template<typename Derived, size_t DIM>
+template<InvCompType InvType = InvCompType::SimpleInv,
+    typename Derived, size_t DIM>
 FASTOR_INLINE
 typename Derived::result_type
 inverse(const AbstractTensor<Derived,DIM> &src) {
     // If we are here Derived is already an expression
     using result_type = typename Derived::result_type;
     const result_type tmp(src.self());
-    return inverse(tmp);
+    return inverse<InvType>(tmp);
 }
 
 
