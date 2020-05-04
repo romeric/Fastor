@@ -18,6 +18,73 @@ namespace Fastor {
 
 namespace internal {
 
+template<typename T, size_t M, size_t N>
+FASTOR_INLINE Tensor<T,M,N> forward_subs(const Tensor<T,M,M> &L, const Tensor<T,M,N> &B) {
+    Tensor<T,M,N> X(0);
+    for (size_t j=0; j < N; ++j) {
+        // Solve for L * y = b
+        for (size_t i=0; i< M; ++i) {
+            T value = 0;
+            for (size_t k=0; k<i; ++k) {
+                value += L(i,k)*X(k,j);
+            }
+            X(i,j) = B(i,j) - value;
+        }
+    }
+    return X;
+
+    // Tensor<T,M,N> X;
+    // for (size_t j=0; j < N; ++j) {
+    //     // Solve for L * y = b
+    //     Tensor<T,M> y(0); y(j) = 1;
+    //     X(all,j) = B(all,j) - matmul(L,y);
+    // }
+    // return X;
+}
+
+template<typename T, size_t M, size_t N>
+FASTOR_INLINE Tensor<T,M,N> backward_subs(const Tensor<T,M,M> &U, const Tensor<T,M,N> &B) {
+    Tensor<T,M,N> X(0);
+    for (size_t j=0; j < N; ++j) {
+        // Solve for of U * x = y
+        for (int i= int(M) - 1; i>=0; --i) {
+            T value = 0;
+            for (int k=i; k<int(M); ++k) {
+                value += U(i,k)*X(k,j);
+            }
+            X(i,j) = (B(i,j) - value) / U(i, i);
+        }
+    }
+    return X;
+
+    // Tensor<T,M,N> X;
+    // for (size_t j=0; j < N; ++j) {
+    //     // Solve for L * y = b
+    //     Tensor<T,M> y(0); y(j) = 1;
+    //     X(all,j) = ( B(all,j) - matmul(U,y) ) / U(j,j);
+    // }
+    // return X;
+}
+
+// template<typename T, size_t M, size_t N>
+// FASTOR_INLINE Tensor<T,M> forward_subs(const Tensor<T,M,M> &L, const Tensor<T,M> &b) {
+
+//     Tensor<T,M> X;
+//     // Solve for L * y = b
+//     Tensor<T,M> y(0); y(0) = 1;
+//     X = b - matmul(L,y);
+//     return X;
+// }
+
+// template<typename T, size_t M, size_t N>
+// FASTOR_INLINE Tensor<T,M> backward_subs(const Tensor<T,M,M> &U, const Tensor<T,M> &b) {
+
+//     Tensor<T,M> X;
+//     Tensor<T,M> y(0); y(0) = 1;
+//     X = ( b - matmul(U,y) ) / U(0,0);
+//     return X;
+// }
+
 /* Simple LU factorisation without pivoting */
 //-----------------------------------------------------------------------------------------------------------//
 //-----------------------------------------------------------------------------------------------------------//
@@ -140,15 +207,15 @@ FASTOR_INLINE void recursive_lu_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>
 /* Block LU factorisation without pivoting */
 //-----------------------------------------------------------------------------------------------------------//
 //-----------------------------------------------------------------------------------------------------------//
-template <typename T, size_t M, enable_if_t_<is_greater_v_<M,0> && is_less_equal_v_<M,32>,bool> = false>
+template <typename T, size_t M, enable_if_t_<is_greater_v_<M,0> && is_less_equal_v_<M,8>,bool> = false>
+FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
+    _lufact<T,M>(A.data(),L.data(),U.data());
+}
+
+template <typename T, size_t M, enable_if_t_<is_greater_v_<M,8> && is_less_equal_v_<M,32>,bool> = false>
 FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
     recursive_lu_dispatcher(A, L, U);
 }
-
-// template <typename T, size_t M, enable_if_t_<is_greater_v_<M,0> && is_less_equal_v_<M,8>,bool> = false>
-// FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
-//     _lufact<T,M>(A.data(),L.data(),U.data());
-// }
 
 // template <typename T, size_t M, enable_if_t_<is_greater_v_<M,8> && is_less_equal_v_<M,16>,bool> = false>
 // FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
@@ -178,8 +245,10 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
 //     Tensor<T,N,N> L11, U11;
 //     lu_block_dispatcher(A11, L11, U11);
 
-//     Tensor<T,N  ,M-N> U12 = matmul(inverse(L11),A12);
-//     Tensor<T,M-N,  N> L21 = matmul(A21,inverse(U11));
+//     // Solve for U12 = {L11}^(-1)*A12
+//     Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
+//     // Solve for L21 = A21*{U11}^(-1)
+//     Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
 
 //     Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
 
@@ -223,7 +292,9 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
 //     Tensor<T,N,N> L11(0), U11(0);
 //     lu_block_dispatcher(A11, L11, U11);
 
+//     // Solve for U12 = {L11}^(-1)*A12
 //     Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
+//     // Solve for L21 = A21*{U11}^(-1)
 //     Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
 
 //     Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
@@ -270,7 +341,9 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
     Tensor<T,N,N> L11(0), U11(0);
     lu_block_dispatcher(A11, L11, U11);
 
+    // Solve for U12 = {L11}^(-1)*A12
     Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
+    // Solve for L21 = A21*{U11}^(-1)
     Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
 
     Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
@@ -335,7 +408,9 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
     Tensor<T,N,N> L11(0), U11(0);
     useless::lu_block_simple_dispatcher(A11, L11, U11);
 
+    // Solve for U12 = {L11}^(-1)*A12
     Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
+    // Solve for L21 = A21*{U11}^(-1)
     Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
 
     Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
