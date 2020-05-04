@@ -214,25 +214,25 @@ void test_factorisation() {
             }
 
             lu(A, L, U);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - reconstruct(L, U))) < BigTol);
 
             lu<LUCompType::BlockLU>(A, L, U);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - reconstruct(L, U))) < BigTol);
 
             lu<LUCompType::BlockLUPiv>(A, L, U, p);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - reconstruct(L, U, p))) < BigTol);
 
             lu<LUCompType::BlockLUPiv>(A, L, U, P);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - reconstruct(L, U, P))) < BigTol);
 
             lu<LUCompType::SimpleLU>(A, L, U);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - reconstruct(L, U))) < BigTol);
 
             lu<LUCompType::SimpleLUPiv>(A, L, U, p);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - reconstruct(L, U, p))) < BigTol);
 
             lu<LUCompType::SimpleLUPiv>(A, L, U, P);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - reconstruct(L, U, P))) < BigTol);
         }
 
         // LU 18x18

@@ -53,8 +53,7 @@ FASTOR_INLINE void lu_simple_dispatcher(const Tensor<T,M,M>& A1, Tensor<T,M,M>& 
 //-----------------------------------------------------------------------------------------------------------//
 
 
-
-// Recursive LU using matmul
+// Recursive non-modifying LU using matmul/outer product
 //-----------------------------------------------------------------------------------------------------------//
 //-----------------------------------------------------------------------------------------------------------//
 /* This in essence implements the following loop but with static views
@@ -66,46 +65,31 @@ FASTOR_INLINE void lu_simple_dispatcher(const Tensor<T,M,M>& A1, Tensor<T,M,M>& 
         L(seq(j+1,M),seq(j+1,M)) -= L(seq(j+1,M),j) % L(j,seq(j+1,M));
     }
 
+    This is a non-modifying version that fills L and U directly and avoids
+    the need for extracting L and U later
+    The pre-requisite is that L should be Identity and U be a copy of A before
+    the recursive routine starts
+
 */
 template<size_t from, size_t to>
 struct recursive_lu_impl {
     template<typename T, size_t M, size_t N>
-    static FASTOR_INLINE void Do(Tensor<T,M,N> &LU) {
-        LU(fseq<from+1,M>(),fix<from>) /= LU.data()[from*N+from];
-        LU(fseq<from+1,M>(),fseq<from+1,M>()) -= LU(fseq<from+1,M>(),fix<from>) % LU(fix<from>,fseq<from+1,M>());
-        recursive_lu_impl<from+1,to>::Do(LU);
+    static FASTOR_INLINE void Do(Tensor<T,M,N> &L, Tensor<T,M,N> &U) {
+        L(fseq<from+1,M>(),fix<from>) = U(fseq<from+1,M>(),fix<from>) / U.data()[from*N+from];
+        U(fseq<from+1,M>(),fix<from>) = 0;
+        U(fseq<from+1,M>(),fseq<from+1,M>()) -= matmul(L(fseq<from+1,M>(),fix<from>), U(fix<from>,fseq<from+1,M>()));
+        recursive_lu_impl<from+1,to>::Do(L, U);
     }
 };
 template<size_t from>
 struct recursive_lu_impl<from,from> {
     template<typename T, size_t M, size_t N>
-    static FASTOR_INLINE void Do(Tensor<T,M,N> &LU) {
-        LU(fseq<from+1,M>(),fix<from>) /= LU.data()[from*N+from];
-        LU(fseq<from+1,M>(),fseq<from+1,M>()) -= LU(fseq<from+1,M>(),fix<from>) % LU(fix<from>,fseq<from+1,M>());
+    static FASTOR_INLINE void Do(Tensor<T,M,N> &L, Tensor<T,M,N> &U) {
+        L(fseq<from+1,M>(),fix<from>) = U(fseq<from+1,M>(),fix<from>) / U.data()[from*N+from];
+        U(fseq<from+1,M>(),fix<from>) = 0;
+        U(fseq<from+1,M>(),fseq<from+1,M>()) -= matmul(L(fseq<from+1,M>(),fix<from>), U(fix<from>,fseq<from+1,M>()));
     }
 };
-
-
-template <typename T, size_t M, enable_if_t_<is_equal_v_<M,1>,bool> = false>
-FASTOR_INLINE void recursive_lu_dispatcher(Tensor<T,M,M>& A) {
-    return;
-}
-template <typename T, size_t M, enable_if_t_<is_greater_v_<M,1>,bool> = false>
-FASTOR_INLINE void recursive_lu_dispatcher(Tensor<T,M,M>& A) {
-    // For this M >=2
-    recursive_lu_impl<0,M-2>::Do(A);
-}
-
-template <typename T, size_t M, enable_if_t_<is_equal_v_<M,1>,bool> = false>
-FASTOR_INLINE void recursive_lu_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& LU) {
-    LU(0,0) = A(0,0);
-}
-template <typename T, size_t M, enable_if_t_<is_greater_v_<M,1>,bool> = false>
-FASTOR_INLINE void recursive_lu_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& LU) {
-    // For this M >=2
-    LU(A);
-    recursive_lu_impl<0,M-2>::Do(LU);
-}
 
 template <typename T, size_t M, enable_if_t_<is_equal_v_<M,1>,bool> = false>
 FASTOR_INLINE void recursive_lu_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
@@ -113,11 +97,84 @@ FASTOR_INLINE void recursive_lu_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>
 }
 template <typename T, size_t M, enable_if_t_<is_greater_v_<M,1>,bool> = false>
 FASTOR_INLINE void recursive_lu_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
-    // For this M >=2
-    Tensor<T,M,M> LU(A);
-    recursive_lu_impl<0,M-2>::Do(LU);
+    // Requires M >=2
+    U = A;
+    L.eye2();
+    recursive_lu_impl<0,M-2>::Do(L, U);
+}
 
-    // Creating L & U impacts the performance for small sizes
+
+#if 0
+// Recursive in-place LU using matmul/outer product
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+/* This in essence implements the following loop but with static views
+    as dynamic views cannot be dispatched to matmul or a tensor cannot be
+    constructed to be sent to matmul
+
+    for(size_t j=0; j<M-1; ++j) {
+        L(seq(j+1,M),j) /= L(j,j);
+        L(seq(j+1,M),seq(j+1,M)) -= L(seq(j+1,M),j) % L(j,seq(j+1,M));
+    }
+
+    This is a self-modifying [in-place] version - if instead of a copy of
+    (LU in this case) we pass the matrix itself it will decompose it in to
+    an LU. Extracting L and U after this recursive decomposition is done
+    almost beats the purpose performance wise
+
+*/
+template<size_t from, size_t to>
+struct recursive_lu_impl_inplace {
+    template<typename T, size_t M, size_t N>
+    static FASTOR_INLINE void Do(Tensor<T,M,N> &LU) {
+        LU(fseq<from+1,M>(),fix<from>) /= LU.data()[from*N+from];
+        LU(fseq<from+1,M>(),fseq<from+1,M>()) -= matmul(LU(fseq<from+1,M>(),fix<from>), LU(fix<from>,fseq<from+1,M>()));
+        recursive_lu_impl_inplace<from+1,to>::Do(LU);
+    }
+};
+template<size_t from>
+struct recursive_lu_impl_inplace<from,from> {
+    template<typename T, size_t M, size_t N>
+    static FASTOR_INLINE void Do(Tensor<T,M,N> &LU) {
+        LU(fseq<from+1,M>(),fix<from>) /= LU.data()[from*N+from];
+        LU(fseq<from+1,M>(),fseq<from+1,M>()) -= matmul(LU(fseq<from+1,M>(),fix<from>), LU(fix<from>,fseq<from+1,M>()));
+    }
+};
+
+
+template <typename T, size_t M, enable_if_t_<is_equal_v_<M,1>,bool> = false>
+FASTOR_INLINE void recursive_inplace_lu_dispatcher(Tensor<T,M,M>& A) {
+    return;
+}
+template <typename T, size_t M, enable_if_t_<is_greater_v_<M,1>,bool> = false>
+FASTOR_INLINE void recursive_inplace_lu_dispatcher(Tensor<T,M,M>& A) {
+    // Requires M >=2
+    recursive_lu_impl_inplace<0,M-2>::Do(A);
+}
+
+template <typename T, size_t M, enable_if_t_<is_equal_v_<M,1>,bool> = false>
+FASTOR_INLINE void recursive_inplace_lu_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& LU) {
+    LU(0,0) = A(0,0);
+}
+template <typename T, size_t M, enable_if_t_<is_greater_v_<M,1>,bool> = false>
+FASTOR_INLINE void recursive_inplace_lu_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& LU) {
+    // Requires M >=2
+    LU =A;
+    recursive_lu_impl_inplace<0,M-2>::Do(LU);
+}
+
+template <typename T, size_t M, enable_if_t_<is_equal_v_<M,1>,bool> = false>
+FASTOR_INLINE void recursive_inplace_lu_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
+    L(0,0) = 1; U(0,0) = A(0,0);
+}
+template <typename T, size_t M, enable_if_t_<is_greater_v_<M,1>,bool> = false>
+FASTOR_INLINE void recursive_inplace_lu_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
+    // Requires M >=2
+    Tensor<T,M,M> LU(A);
+    recursive_lu_impl_inplace<0,M-2>::Do(LU);
+
+    // Extracting L and U after this recursive decomposition is done
+    // almost beats the purpose performance wise
     for (size_t i=0; i<M; ++i) {
         L(i,i) = 1;
     }
@@ -133,6 +190,7 @@ FASTOR_INLINE void recursive_lu_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>
         }
     }
 }
+#endif
 //-----------------------------------------------------------------------------------------------------------//
 //-----------------------------------------------------------------------------------------------------------//
 
