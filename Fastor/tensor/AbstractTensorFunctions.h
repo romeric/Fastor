@@ -17,11 +17,18 @@ FASTOR_INLINE typename Derived::result_type evaluate(const AbstractTensor<Derive
 }
 
 
-// These are the set of functions work on any expression without themselves being a
-// Fastor expression. Note that all the mathematical functions (sin, cos etc) are
-// Fastor expressions
+/* These are the set of functions that work on any expression that evaluate immediately
+*/
 
-
+/* Add all the elements of the tensor in a flattened sense
+*/
+template<class Derived, size_t DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+FASTOR_INLINE typename Derived::scalar_type sum(const AbstractTensor<Derived,DIMS> &_src) {
+    const Derived &src = _src.self();
+    using result_type = typename Derived::result_type;
+    const result_type out(src);
+    return out.sum();
+}
 template<class Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE typename Derived::scalar_type sum(const AbstractTensor<Derived,DIMS> &_src) {
 
@@ -39,14 +46,15 @@ FASTOR_INLINE typename Derived::scalar_type sum(const AbstractTensor<Derived,DIM
     return _vec.sum() + _scal;
 }
 
+/* Multiply all the elements of the tensor in a flattened sense
+*/
 template<class Derived, size_t DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
-FASTOR_INLINE typename Derived::scalar_type sum(const AbstractTensor<Derived,DIMS> &_src) {
+FASTOR_INLINE typename Derived::scalar_type product(const AbstractTensor<Derived,DIMS> &_src) {
     const Derived &src = _src.self();
     using result_type = typename Derived::result_type;
     const result_type out(src);
-    return out.sum();
+    return out.product();
 }
-
 template<class Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE typename Derived::scalar_type product(const AbstractTensor<Derived,DIMS> &_src) {
 
@@ -64,12 +72,60 @@ FASTOR_INLINE typename Derived::scalar_type product(const AbstractTensor<Derived
     return _vec.product() * _scal;
 }
 
+/* Get the lower triangular matrix from a 2D expression
+*/
 template<class Derived, size_t DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
-FASTOR_INLINE typename Derived::scalar_type product(const AbstractTensor<Derived,DIMS> &_src) {
+FASTOR_INLINE typename Derived::scalar_type tril(const AbstractTensor<Derived,DIMS> &_src, int k = 0) {
+    static_assert(DIMS==2,"TENSOR HAS TO BE 2D FOR TRIL");
     const Derived &src = _src.self();
     using result_type = typename Derived::result_type;
     const result_type out(src);
-    return out.product();
+    return tril(out);
+}
+template<class Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
+FASTOR_INLINE typename Derived::result_type tril(const AbstractTensor<Derived,DIMS> &_src, int k = 0) {
+    static_assert(DIMS==2,"TENSOR HAS TO BE 2D FOR TRIL");
+    const Derived &src = _src.self();
+    using T = typename Derived::scalar_type;
+    typename Derived::result_type out(0);
+
+    int M = int(src.dimension(0));
+    int N = int(src.dimension(1));
+    for (int i = 0; i < M; ++i) {
+        int jcount =  k + i < N ? k + i : N - 1;
+        for (int j = 0; j <= jcount; ++j) {
+            out(i,j) = src.template eval_s<T>(i,j);
+        }
+    }
+    return out;
+}
+
+/* Get the upper triangular matrix from a 2D expression
+*/
+template<class Derived, size_t DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+FASTOR_INLINE typename Derived::scalar_type triu(const AbstractTensor<Derived,DIMS> &_src, int k = 0) {
+    static_assert(DIMS==2,"TENSOR HAS TO BE 2D FOR TRIU");
+    const Derived &src = _src.self();
+    using result_type = typename Derived::result_type;
+    const result_type out(src);
+    return triu(out);
+}
+template<class Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
+FASTOR_INLINE typename Derived::result_type triu(const AbstractTensor<Derived,DIMS> &_src, int k = 0) {
+    static_assert(DIMS==2,"TENSOR HAS TO BE 2D FOR TRIU");
+    const Derived &src = _src.self();
+    using T = typename Derived::scalar_type;
+    typename Derived::result_type out(0);
+
+    int M = int(src.dimension(0));
+    int N = int(src.dimension(1));
+    for (int i = 0; i < M; ++i) {
+        int jcount =  k + i < 0 ? 0 : k + i;
+        for (int j = jcount; j < N; ++j) {
+            out(i,j) = src.template eval_s<T>(i,j);
+        }
+    }
+    return out;
 }
 
 
