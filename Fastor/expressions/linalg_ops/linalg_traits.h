@@ -201,49 +201,13 @@ static constexpr bool has_unary_inv_op_v = has_unary_inv_op<Derived>::value;
 //----------------------------------------------------------------------------------------------------------//
 
 
-// Is a binary matmul expression
-//----------------------------------------------------------------------------------------------------------//
-template<typename Derived>
-struct is_binary_solve_op {
-    static constexpr bool value = false;
-};
-template<typename Derived0, typename Derived1, size_t DIM>
-struct is_binary_solve_op<BinarySolveOp<Derived0,Derived1,DIM>> {
-    static constexpr bool value = true;
-};
-
-template<typename Derived>
-struct has_binary_solve_op {
-    static constexpr bool value = is_binary_solve_op<Derived>::value ? true : false;
-};
-template<typename Derived0, typename Derived1, size_t DIM>
-struct has_binary_solve_op<BinarySolveOp<Derived0,Derived1,DIM>> {
-    static constexpr bool value = true;
-};
-template<template<typename,size_t> class UnaryExpr, typename Expr, size_t DIM>
-struct has_binary_solve_op<UnaryExpr<Expr,DIM>> {
-    static constexpr bool value = has_binary_solve_op<Expr>::value;
-};
-template<template<class,class,size_t> class BinaryExpr, typename TLhs, typename TRhs, size_t DIMS>
-struct has_binary_solve_op<BinaryExpr<TLhs,TRhs,DIMS>> {
-    static constexpr bool value = has_binary_solve_op<TRhs>::value || has_binary_solve_op<TLhs>::value;
-};
-
-// helper
-template<typename Derived>
-static constexpr bool is_binary_solve_op_v = is_binary_solve_op<Derived>::value;
-template<typename Derived>
-static constexpr bool has_binary_solve_op_v = has_binary_solve_op<Derived>::value;
-//----------------------------------------------------------------------------------------------------------//
-
-
 // Is a linear algebra expression
 //----------------------------------------------------------------------------------------------------------//
 template<typename Derived>
 struct has_linalg_op {
     static constexpr bool value = has_binary_matmul_op<Derived>::value || has_unary_trans_op<Derived>::value  ||
                                   has_unary_adj_op<Derived>::value     || has_unary_cof_op<Derived>::value    ||
-                                  has_unary_inv_op<Derived>::value     || has_binary_solve_op<Derived>::value;
+                                  has_unary_inv_op<Derived>::value;
 };
 
 // helper

@@ -624,6 +624,206 @@ FASTOR_INLINE Tensor<T,M,M> inverse(const Tensor<T,M,M> &A) {
 
 
 
+
+
+
+
+
+
+// Solving linear system of equations using LU
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+namespace internal {
+
+template<typename T, size_t M>
+FASTOR_INLINE Tensor<T,M> get_lu_solve(const Tensor<T,M,M> &L, const Tensor<T,M,M> &U, const Tensor<T,M> &b) {
+
+    Tensor<T,M> x(0), y(0);
+    // Solve for L * y = b
+    for (size_t i=0; i< M; ++i) {
+        T value = 0;
+        for (size_t k=0; k<i; ++k) {
+            value += L(i,k)*y(k);
+        }
+        y(i) = b(i) - value;
+    }
+    // Solve for of U * x = y
+    for (int i= int(M) - 1; i>=0; --i) {
+        T value = 0;
+        for (int k=i; k<int(M); ++k) {
+            value += U(i,k)*x(k);
+        }
+        x(i) = (y(i) - value) / U(i, i);
+    }
+
+    return x;
+}
+
+template<typename T, size_t M>
+FASTOR_INLINE Tensor<T,M> get_lu_solve(Tensor<T,M,M> &L, const Tensor<T,M,M> &U, const Tensor<size_t,M> &P, const Tensor<T,M> &b) {
+
+    Tensor<T,M> x(0), y(0);
+    // Solve for L * y = b
+    for (size_t i=0; i< M; ++i) {
+        T value = 0;
+        for (size_t k=0; k<i; ++k) {
+            value += L(i,k)*y(k);
+        }
+        y(i) = b(P(i)) - value;
+    }
+    // Solve for of U * x = y
+    for (int i= int(M) - 1; i>=0; --i) {
+        T value = 0;
+        for (int k=i; k<int(M); ++k) {
+            value += U(i,k)*x(k);
+        }
+        x(i) = (y(i) - value) / U(i, i);
+    }
+
+    return x;
+}
+
+// Multiple RHS
+template<typename T, size_t M, size_t N>
+FASTOR_INLINE Tensor<T,M,N> get_lu_solve(const Tensor<T,M,M> &L, const Tensor<T,M,M> &U, const Tensor<T,M,N> &B) {
+
+    Tensor<T,M,N> X(0);
+
+    for (size_t j=0; j < N; ++j) {
+        Tensor<T,M> y(0);
+        // Solve for L * y = b
+        for (size_t i=0; i< M; ++i) {
+            T value = 0;
+            for (size_t k=0; k<i; ++k) {
+                value += L(i,k)*y(k);
+            }
+            y(i) = B(i,j) - value;
+        }
+        // Solve for of U * x = y
+        for (int i= int(M) - 1; i>=0; --i) {
+            T value = 0;
+            for (int k=i; k<int(M); ++k) {
+                value += U(i,k)*X(k,j);
+            }
+            X(i,j) = (y(i) - value) / U(i, i);
+        }
+    }
+
+    return X;
+}
+
+template<typename T, size_t M, size_t N>
+FASTOR_INLINE Tensor<T,M,N> get_lu_solve(const Tensor<T,M,M> &L, const Tensor<T,M,M> &U, const Tensor<size_t,M> &P, const Tensor<T,M,N> &B) {
+
+    Tensor<T,M,N> X(0);
+
+    for (size_t j=0; j < N; ++j) {
+        Tensor<T,M> y(0);
+        // Solve for L * y = b
+        for (size_t i=0; i< M; ++i) {
+            T value = 0;
+            for (size_t k=0; k<i; ++k) {
+                value += L(i,k)*y(k);
+            }
+            y(i) = B(P(i),j) - value;
+        }
+        // Solve for of U * x = y
+        for (int i= int(M) - 1; i>=0; --i) {
+            T value = 0;
+            for (int k=i; k<int(M); ++k) {
+                value += U(i,k)*X(k,j);
+            }
+            X(i,j) = (y(i) - value) / U(i, i);
+        }
+    }
+
+    return X;
+}
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+} // internal
+
+
+// Single RHS
+// SimpleLU - no pivot
+template<SolveCompType SType = SolveCompType::SimpleInv, typename T, size_t M,
+    enable_if_t_< SType == SolveCompType::SimpleLU, bool> = false>
+FASTOR_INLINE Tensor<T,M> solve(const Tensor<T,M,M> &A, const Tensor<T,M> &b) {
+    Tensor<T,M,M> L, U;
+    lu<LUCompType::SimpleLU>(A, L, U);
+    return internal::get_lu_solve(L, U, b);
+}
+
+// SimpleLU - pivot
+template<SolveCompType SType = SolveCompType::SimpleInv, typename T, size_t M,
+    enable_if_t_< SType == SolveCompType::SimpleLUPiv, bool> = false>
+FASTOR_INLINE Tensor<T,M> solve(const Tensor<T,M,M> &A, const Tensor<T,M> &b) {
+    Tensor<T,M,M> L, U;
+    Tensor<size_t,M> p;
+    lu<LUCompType::SimpleLUPiv>(A, L, U, p);
+    return internal::get_lu_solve(L, U, p, b);
+}
+
+// BlockLU - no pivot
+template<SolveCompType SType = SolveCompType::SimpleInv, typename T, size_t M,
+    enable_if_t_< SType == SolveCompType::BlockLU, bool> = false>
+FASTOR_INLINE Tensor<T,M> solve(const Tensor<T,M,M> &A, const Tensor<T,M> &b) {
+    Tensor<T,M,M> L, U;
+    lu<LUCompType::BlockLU>(A, L, U);
+    return internal::get_lu_solve(L, U, b);
+}
+
+// BlockLU - pivot
+template<SolveCompType SType = SolveCompType::SimpleInv, typename T, size_t M,
+    enable_if_t_< SType == SolveCompType::BlockLUPiv, bool> = false>
+FASTOR_INLINE Tensor<T,M> solve(const Tensor<T,M,M> &A, const Tensor<T,M> &b) {
+    Tensor<T,M,M> L, U;
+    Tensor<size_t,M> p;
+    lu<LUCompType::BlockLUPiv>(A, L, U, p);
+    return internal::get_lu_solve(L, U, p, b);
+}
+
+// Multiple RHS
+// SimpleLU - no pivot
+template<SolveCompType SType = SolveCompType::SimpleInv, typename T, size_t M, size_t N,
+    enable_if_t_< SType == SolveCompType::SimpleLU, bool> = false>
+FASTOR_INLINE Tensor<T,M,N> solve(const Tensor<T,M,M> &A, const Tensor<T,M,N> &B) {
+    Tensor<T,M,M> L, U;
+    lu<LUCompType::SimpleLU>(A, L, U);
+    return internal::get_lu_solve(L, U, B);
+}
+
+// SimpleLU - pivot
+template<SolveCompType SType = SolveCompType::SimpleInv, typename T, size_t M, size_t N,
+    enable_if_t_< SType == SolveCompType::SimpleLUPiv, bool> = false>
+FASTOR_INLINE Tensor<T,M,N> solve(const Tensor<T,M,M> &A, const Tensor<T,M,N> &B) {
+    Tensor<T,M,M> L, U;
+    Tensor<size_t,M> p;
+    lu<LUCompType::SimpleLUPiv>(A, L, U, p);
+    return internal::get_lu_solve(L, U, p, B);
+}
+
+// SimpleLU - no pivot
+template<SolveCompType SType = SolveCompType::SimpleInv, typename T, size_t M, size_t N,
+    enable_if_t_< SType == SolveCompType::BlockLU, bool> = false>
+FASTOR_INLINE Tensor<T,M,N> solve(const Tensor<T,M,M> &A, const Tensor<T,M,N> &B) {
+    Tensor<T,M,M> L, U;
+    lu<LUCompType::BlockLU>(A, L, U);
+    return internal::get_lu_solve(L, U, B);
+}
+
+// SimpleLU - pivot
+template<SolveCompType SType = SolveCompType::SimpleInv, typename T, size_t M, size_t N,
+    enable_if_t_< SType == SolveCompType::BlockLUPiv, bool> = false>
+FASTOR_INLINE Tensor<T,M,N> solve(const Tensor<T,M,M> &A, const Tensor<T,M,N> &B) {
+    Tensor<T,M,M> L, U;
+    Tensor<size_t,M> p;
+    lu<LUCompType::BlockLUPiv>(A, L, U, p);
+    return internal::get_lu_solve(L, U, p, B);
+}
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+
 } // end of namespace Fastor
 
 

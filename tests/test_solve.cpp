@@ -200,6 +200,74 @@ void test_solve() {
         FASTOR_EXIT_ASSERT(std::abs(sum(b1) - 123.02004364710513) < BigTol);
     }
 
+    // Solve by LU
+    {
+        constexpr size_t M = 4;
+        Tensor<T,M,M> a; a.iota(1);
+        for (size_t i=0; i<M; ++i) a(i,i) = 100;
+        Tensor<T,M> b; b.iota(100);
+        Tensor<T,M,1> c; c.iota(100);
+        Tensor<T,M,5> d; d.iota(100);
+
+        {
+            Tensor<T,M>   b1 = solve<SolveCompType::SimpleInvPiv>(a,b);
+            Tensor<T,M,1> c1 = solve<SolveCompType::SimpleInvPiv>(a,c);
+            Tensor<T,M,5> d1 = solve<SolveCompType::SimpleInvPiv>(a,d);
+            FASTOR_EXIT_ASSERT(std::abs(sum(b1) - 3.2316174170320178) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(c1) - 3.2316174170320178) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(d1) - 17.44017784877636 ) < BigTol);
+        }
+
+        {
+            Tensor<T,M>   b1 = solve<SolveCompType::SimpleLU>(a,b);
+            Tensor<T,M,1> c1 = solve<SolveCompType::SimpleLU>(a,c);
+            Tensor<T,M,5> d1 = solve<SolveCompType::SimpleLU>(a,d);
+            FASTOR_EXIT_ASSERT(std::abs(sum(b1) - 3.2316174170320178) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(c1) - 3.2316174170320178) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(d1) - 17.44017784877636 ) < BigTol);
+        }
+
+        {
+            Tensor<T,M>   b1 = solve<SolveCompType::SimpleLUPiv>(a,b);
+            Tensor<T,M,1> c1 = solve<SolveCompType::SimpleLUPiv>(a,c);
+            Tensor<T,M,5> d1 = solve<SolveCompType::SimpleLUPiv>(a,d);
+            FASTOR_EXIT_ASSERT(std::abs(sum(b1) - 3.2316174170320178) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(c1) - 3.2316174170320178) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(d1) - 17.44017784877636 ) < BigTol);
+        }
+
+        {
+            Tensor<T,M>   b1 = solve<SolveCompType::BlockLU>(a,b);
+            Tensor<T,M,1> c1 = solve<SolveCompType::BlockLU>(a,c);
+            Tensor<T,M,5> d1 = solve<SolveCompType::BlockLU>(a,d);
+            FASTOR_EXIT_ASSERT(std::abs(sum(b1) - 3.2316174170320178) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(c1) - 3.2316174170320178) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(d1) - 17.44017784877636 ) < BigTol);
+        }
+
+        {
+            Tensor<T,M>   b1 = solve<SolveCompType::BlockLUPiv>(a,b);
+            Tensor<T,M,1> c1 = solve<SolveCompType::BlockLUPiv>(a,c);
+            Tensor<T,M,5> d1 = solve<SolveCompType::BlockLUPiv>(a,d);
+            FASTOR_EXIT_ASSERT(std::abs(sum(b1) - 3.2316174170320178) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(c1) - 3.2316174170320178) < BigTol);
+            FASTOR_EXIT_ASSERT(std::abs(sum(d1) - 17.44017784877636 ) < BigTol);
+        }
+    }
+
+    // Big matrices
+    {
+        constexpr size_t M = 35;
+        constexpr size_t N = M;
+        Tensor<T,M,M> A; A.arange(0);
+        Tensor<T,M> b; b.iota(1);
+        for (size_t i=0; i<M; ++i) A(i,i) = 100 + i;
+
+        Tensor<T,M> sol = solve(A,b);
+        FASTOR_EXIT_ASSERT(std::abs(sum(solve<SolveCompType::BlockLUPiv> (A,b) - sol)) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(sum(solve<SolveCompType::SimpleLUPiv>(A,b) - sol)) < BigTol);
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 
 }

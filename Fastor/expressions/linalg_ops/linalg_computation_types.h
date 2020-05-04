@@ -54,14 +54,14 @@ enum class InvCompType : int
 // Solve computation type
 enum class SolveCompType : int
 {
-    Inverse = 0, /* Using optimised inversion                    */
-    InversePiv,  /* Using optimised inversion with pivot         */
-    BlockLU,     /* Using block LU factorisation                 */
-    BlockLUPiv,  /* Using block LU factorisation with pivot      */
-    SimpleLU,    /* Using simple LU factorisation                */
-    SimpleLUPiv, /* Using simple LU factorisation with pivot     */
-    QR,          /* Using QR factorisation                       */
-    Chol,        /* Using Cholesky factorisation                 */
+    SimpleInv = 0, /* Using optimised inversion                    */
+    SimpleInvPiv,  /* Using optimised inversion with pivot         */
+    BlockLU,       /* Using block LU factorisation                 */
+    BlockLUPiv,    /* Using block LU factorisation with pivot      */
+    SimpleLU,      /* Using simple LU factorisation                */
+    SimpleLUPiv,   /* Using simple LU factorisation with pivot     */
+    QR,            /* Using QR factorisation                       */
+    Chol,          /* Using Cholesky factorisation                 */
 };
 
 
