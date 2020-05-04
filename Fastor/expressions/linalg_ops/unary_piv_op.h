@@ -15,6 +15,25 @@
 
 namespace Fastor {
 
+namespace internal {
+
+template<typename T, size_t M, size_t N>
+FASTOR_INLINE size_t count_swaps(const Tensor<T,M,N>& A) {
+    size_t count = 0;
+    for (size_t j = 0; j < M; ++j) {
+        size_t max_index = j;
+        for (size_t i = j; i < M; ++i) {
+            if (A(i, j) > A(max_index, j))
+                max_index = i;
+        }
+        if (j != max_index)
+            count++;
+    }
+    return count;
+}
+
+}
+
 
 template<PivType PType = PivType::V, typename T, size_t M, size_t N,
     enable_if_t_<PType == PivType::M, bool> = false>

@@ -487,6 +487,14 @@ void test_linalg() {
         }
     }
 
+    // det by LU
+    {
+        Tensor<T,4,4> A; A.arange();
+        for (size_t i=0; i<4; ++i) A(i,i) = 10;
+        FASTOR_EXIT_ASSERT(std::abs(determinant<DetCompType::LU>(A) - determinant(A)) < HugeTol);
+        FASTOR_EXIT_ASSERT(std::abs(det<DetCompType::LU>(A)         - det(A)        ) < HugeTol);
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 
 }

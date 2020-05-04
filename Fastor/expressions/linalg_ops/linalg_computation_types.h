@@ -33,11 +33,7 @@ enum class DetCompType : int
 {
     Simple = 0,   /* Using simple hand-optimised calculations    */
     LU,           /* Using LU factorisation                      */
-    LUPiv,        /* Using LU factorisation with pivot           */
     QR,           /* Using QR factorisation                      */
-    QRPiv,        /* Using QR factorisation with pivot           */
-    RREF,         /* Using Reduced Row Echelon Form              */
-    RREFPiv,      /* Using Reduced Row Echelon Form with pivot   */
 };
 
 // Inverse computation type

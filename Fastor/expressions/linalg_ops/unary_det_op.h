@@ -9,12 +9,12 @@
 #include "Fastor/expressions/expression_traits.h"
 #include "Fastor/expressions/linalg_ops/linalg_computation_types.h"
 #include "Fastor/expressions/linalg_ops/linalg_traits.h"
-#include "Fastor/expressions/linalg_ops/unary_qr_op.h"
 
 #include <cmath>
 
 namespace Fastor {
 
+// Computing determinant using QR/LU decompositions are in those respective modules
 // For tensors
 template<DetCompType DetType = DetCompType::Simple, typename T, size_t M,
     enable_if_t_<is_less_equal_v_<M,4UL> && DetType==DetCompType::Simple,bool> = false>
@@ -24,21 +24,8 @@ FASTOR_INLINE T determinant(const Tensor<T,M,M> &a) {
 template<DetCompType DetType = DetCompType::Simple, typename T, size_t M,
     enable_if_t_<is_greater_v_<M,4UL>    && DetType == DetCompType::Simple,bool> = false>
 FASTOR_INLINE T determinant(const Tensor<T,M,M> &a) {
-    static_assert(DetType==DetCompType::RREF, "DETERMINANT COMPUTATION USING THIS METHOD IS NOT IMPLEMENETED YET");
-    return 0;
-}
-template<DetCompType DetType = DetCompType::Simple, typename T, size_t M,
-    enable_if_t_<DetType == DetCompType::QR,bool> = false>
-FASTOR_INLINE T determinant(const Tensor<T,M,M> &a) {
-    Tensor<T,M,M> Q, R;
-    qr(a, Q, R);
-    return product(diag(R));
-}
-template<DetCompType DetType = DetCompType::Simple, typename T, size_t M,
-    enable_if_t_<DetType != DetCompType::Simple && DetType != DetCompType::QR,bool> = false>
-FASTOR_INLINE T determinant(const Tensor<T,M,M> &a) {
-    static_assert(DetType==DetCompType::RREF, "DETERMINANT COMPUTATION USING THIS METHOD IS NOT IMPLEMENETED YET");
-    return 0;
+    // Dispatch to LU
+    determinant<DetCompType::LU>(a);
 }
 
 // For high order tensors
