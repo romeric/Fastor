@@ -659,9 +659,13 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
     useless::lu_block_simple_dispatcher(A11, L11, U11);
 
     // Solve for U12 = {L11}^(-1)*A12
-    Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
+    // Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
+    // At this level activate this as tensor is too big for matmul
+    Tensor<T,N  ,M-N> U12 = forward_subs(L11,A12);
     // Solve for L21 = A21*{U11}^(-1)
     Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
+    // Tensor<T,N  ,N  > I; I.eye2();
+    // Tensor<T,M-N,  N> L21 = matmul(A21, backward_subs(U11, I));
 
     Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
 

@@ -116,7 +116,8 @@ FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& ou
 template<typename T, size_t M, enable_if_t_<is_greater_v_<M,16> && is_less_equal_v_<M,32>,bool> = false>
 FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
 
-    constexpr size_t N = 16UL; // start size
+    // constexpr size_t N = 16UL; // start size
+    constexpr size_t N = (M / 8UL * 8UL) / 2UL; // start size
     Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
     Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
     Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
@@ -146,7 +147,8 @@ FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& ou
 template<typename T, size_t M, enable_if_t_<is_greater_v_<M,32> && is_less_equal_v_<M,64>,bool> = false>
 FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
 
-    constexpr size_t N = 32UL; // start size
+    // constexpr size_t N = 32UL; // start size
+    constexpr size_t N = (M / 16UL * 16UL) / 2UL; // start size
     Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
     Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
     Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
@@ -176,7 +178,8 @@ FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& ou
 template<typename T, size_t M, enable_if_t_<is_greater_v_<M,64> && is_less_equal_v_<M,128>,bool> = false>
 FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
 
-    constexpr size_t N = 64UL; // start size
+    // constexpr size_t N = 64UL; // start size
+    constexpr size_t N = (M / 32UL * 32UL) / 2UL; // start size
     Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
     Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
     Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
@@ -206,7 +209,8 @@ FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& ou
 template<typename T, size_t M, enable_if_t_<is_greater_v_<M,128> && is_less_equal_v_<M,256>,bool> = false>
 FASTOR_INLINE void inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
 
-    constexpr size_t N = 128UL; // start size
+    // constexpr size_t N = 128UL; // start size
+    constexpr size_t N = (M / 64UL * 64UL) / 2UL; // start size
     Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
     Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
     Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
