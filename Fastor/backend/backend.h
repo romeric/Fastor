@@ -11,6 +11,7 @@
 #include "Fastor/backend/inner.h"
 #include "Fastor/backend/inverse.h"
 #include "Fastor/backend/lufact.h"
+#include "Fastor/backend/lut_inverse.h"
 #include "Fastor/backend/matmul/matmul.h"
 #include "Fastor/backend/norm.h"
 #include "Fastor/backend/outer.h"

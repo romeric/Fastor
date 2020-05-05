@@ -3,6 +3,7 @@
 
 #include "Fastor/meta/meta.h"
 #include "Fastor/backend/inverse.h"
+#include "Fastor/backend/lut_inverse.h"
 #include "Fastor/simd_vector/SIMDVector.h"
 #include "Fastor/tensor/AbstractTensor.h"
 #include "Fastor/tensor/Aliasing.h"
@@ -46,6 +47,324 @@ inv(const AbstractTensor<Expr,DIM0> &src) {
 }
 
 
+// Upper triangular block matrix inversion
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+namespace internal {
+
+template<typename T, size_t M, enable_if_t_<is_greater_v_<M,0> && is_less_equal_v_<M,4>,bool> = false>
+FASTOR_INLINE void ut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
+    _inverse<T,M>(in.data(),out.data());
+}
+
+template<typename T, size_t M, enable_if_t_<is_greater_v_<M,4> && is_less_equal_v_<M,8>,bool> = false>
+FASTOR_INLINE void ut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
+
+    constexpr size_t N = 4UL; // start size
+    Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
+    Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
+    // Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
+    Tensor<T,M-N,M-N> d = in(fseq<N,M>(),fseq<N,M>());
+
+    Tensor<T,N,N> inv_a;
+    ut_inverse_dispatcher(a, inv_a);
+
+    Tensor<T,M-N,M-N> inv_d;
+    ut_inverse_dispatcher(d, inv_d);
+
+    Tensor<T,N,M-N> b_invd = matmul(b, inv_d);
+
+    out(fseq<0,N>(),fseq<0,N>()) = inv_a;
+    out(fseq<0,N>(),fseq<N,M>()) = -matmul(inv_a, b_invd);
+    out(fseq<N,M>(),fseq<0,N>()) = 0;
+    out(fseq<N,M>(),fseq<N,M>()) = inv_d;
+}
+
+template<typename T, size_t M, enable_if_t_<is_greater_v_<M,8> && is_less_equal_v_<M,16>,bool> = false>
+FASTOR_INLINE void ut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
+
+    constexpr size_t N = 8UL; // start size
+    Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
+    Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
+    // Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
+    Tensor<T,M-N,M-N> d = in(fseq<N,M>(),fseq<N,M>());
+
+    Tensor<T,N,N> inv_a;
+    ut_inverse_dispatcher(a, inv_a);
+
+    Tensor<T,M-N,M-N> inv_d;
+    ut_inverse_dispatcher(d, inv_d);
+
+    Tensor<T,N,M-N> b_invd = matmul(b, inv_d);
+
+    out(fseq<0,N>(),fseq<0,N>()) = inv_a;
+    out(fseq<0,N>(),fseq<N,M>()) = -matmul(inv_a, b_invd);
+    out(fseq<N,M>(),fseq<0,N>()) = 0;
+    out(fseq<N,M>(),fseq<N,M>()) = inv_d;
+}
+
+template<typename T, size_t M, enable_if_t_<is_greater_v_<M,16> && is_less_equal_v_<M,32>,bool> = false>
+FASTOR_INLINE void ut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
+
+    // constexpr size_t N = 16UL; // start size
+    constexpr size_t N = (M / 8UL * 8UL) / 2UL; // start size
+    Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
+    Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
+    // Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
+    Tensor<T,M-N,M-N> d = in(fseq<N,M>(),fseq<N,M>());
+
+    Tensor<T,N,N> inv_a;
+    ut_inverse_dispatcher(a, inv_a);
+
+    Tensor<T,M-N,M-N> inv_d;
+    ut_inverse_dispatcher(d, inv_d);
+
+    Tensor<T,N,M-N> b_invd = matmul(b, inv_d);
+
+    out(fseq<0,N>(),fseq<0,N>()) = inv_a;
+    out(fseq<0,N>(),fseq<N,M>()) = -matmul(inv_a, b_invd);
+    out(fseq<N,M>(),fseq<0,N>()) = 0;
+    out(fseq<N,M>(),fseq<N,M>()) = inv_d;
+}
+
+template<typename T, size_t M, enable_if_t_<is_greater_v_<M,32> && is_less_equal_v_<M,64>,bool> = false>
+FASTOR_INLINE void ut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
+
+    // constexpr size_t N = 32UL; // start size
+    constexpr size_t N = (M / 16UL * 16UL) / 2UL; // start size
+    Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
+    Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
+    // Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
+    Tensor<T,M-N,M-N> d = in(fseq<N,M>(),fseq<N,M>());
+
+    Tensor<T,N,N> inv_a;
+    ut_inverse_dispatcher(a, inv_a);
+
+    Tensor<T,M-N,M-N> inv_d;
+    ut_inverse_dispatcher(d, inv_d);
+
+    Tensor<T,N,M-N> b_invd = matmul(b, inv_d);
+
+    out(fseq<0,N>(),fseq<0,N>()) = inv_a;
+    out(fseq<0,N>(),fseq<N,M>()) = -matmul(inv_a, b_invd);
+    out(fseq<N,M>(),fseq<0,N>()) = 0;
+    out(fseq<N,M>(),fseq<N,M>()) = inv_d;
+}
+
+template<typename T, size_t M, enable_if_t_<is_greater_v_<M,64> && is_less_equal_v_<M,128>,bool> = false>
+FASTOR_INLINE void ut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
+
+    // constexpr size_t N = 64UL; // start size
+    constexpr size_t N = (M / 32UL * 32UL) / 2UL; // start size
+    Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
+    Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
+    // Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
+    Tensor<T,M-N,M-N> d = in(fseq<N,M>(),fseq<N,M>());
+
+    Tensor<T,N,N> inv_a;
+    ut_inverse_dispatcher(a, inv_a);
+
+    Tensor<T,M-N,M-N> inv_d;
+    ut_inverse_dispatcher(d, inv_d);
+
+    Tensor<T,N,M-N> b_invd = matmul(b, inv_d);
+
+    out(fseq<0,N>(),fseq<0,N>()) = inv_a;
+    out(fseq<0,N>(),fseq<N,M>()) = -matmul(inv_a, b_invd);
+    out(fseq<N,M>(),fseq<0,N>()) = 0;
+    out(fseq<N,M>(),fseq<N,M>()) = inv_d;
+}
+
+template<typename T, size_t M, enable_if_t_<is_greater_v_<M,128> && is_less_equal_v_<M,256>,bool> = false>
+FASTOR_INLINE void ut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
+
+    // constexpr size_t N = 128UL; // start size
+    constexpr size_t N = (M / 64UL * 64UL) / 2UL; // start size
+    Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
+    Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
+    // Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
+    Tensor<T,M-N,M-N> d = in(fseq<N,M>(),fseq<N,M>());
+
+    Tensor<T,N,N> inv_a;
+    ut_inverse_dispatcher(a, inv_a);
+
+    Tensor<T,M-N,M-N> inv_d;
+    ut_inverse_dispatcher(d, inv_d);
+
+    Tensor<T,N,M-N> b_invd = matmul(b, inv_d);
+
+    out(fseq<0,N>(),fseq<0,N>()) = inv_a;
+    out(fseq<0,N>(),fseq<N,M>()) = -matmul(inv_a, b_invd);
+    out(fseq<N,M>(),fseq<0,N>()) = 0;
+    out(fseq<N,M>(),fseq<N,M>()) = inv_d;
+}
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+} // internal
+
+
+
+
+// Lower uni-triangular block matrix inversion
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+namespace internal {
+
+template<typename T, size_t M, enable_if_t_<is_greater_v_<M,0> && is_less_equal_v_<M,4>,bool> = false>
+FASTOR_INLINE void lut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
+    // This restricts the recursive block to lower uni-triangualar matrices
+    _lowunitri_inverse<T,M>(in.data(),out.data());
+}
+
+template<typename T, size_t M, enable_if_t_<is_greater_v_<M,4> && is_less_equal_v_<M,8>,bool> = false>
+FASTOR_INLINE void lut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
+
+    constexpr size_t N = 4UL; // start size
+    Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
+    // Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
+    Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
+    Tensor<T,M-N,M-N> d = in(fseq<N,M>(),fseq<N,M>());
+
+    Tensor<T,N,N> inv_a;
+    lut_inverse_dispatcher(a, inv_a);
+
+    Tensor<T,M-N,N> c_inva = matmul(c, inv_a);
+
+    Tensor<T,M-N,M-N> inv_d;
+    lut_inverse_dispatcher(d, inv_d);
+
+    out(fseq<0,N>(),fseq<0,N>()) = inv_a;
+    out(fseq<0,N>(),fseq<N,M>()) = 0;
+    out(fseq<N,M>(),fseq<0,N>()) = -matmul(inv_d, c_inva);
+    out(fseq<N,M>(),fseq<N,M>()) = inv_d;
+}
+
+template<typename T, size_t M, enable_if_t_<is_greater_v_<M,8> && is_less_equal_v_<M,16>,bool> = false>
+FASTOR_INLINE void lut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
+
+    constexpr size_t N = 8UL; // start size
+    Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
+    // Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
+    Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
+    Tensor<T,M-N,M-N> d = in(fseq<N,M>(),fseq<N,M>());
+
+    Tensor<T,N,N> inv_a;
+    lut_inverse_dispatcher(a, inv_a);
+
+    Tensor<T,M-N,N> c_inva = matmul(c, inv_a);
+
+    Tensor<T,M-N,M-N> inv_d;
+    lut_inverse_dispatcher(d, inv_d);
+
+    out(fseq<0,N>(),fseq<0,N>()) = inv_a;
+    out(fseq<0,N>(),fseq<N,M>()) = 0;
+    out(fseq<N,M>(),fseq<0,N>()) = -matmul(inv_d, c_inva);
+    out(fseq<N,M>(),fseq<N,M>()) = inv_d;
+}
+
+template<typename T, size_t M, enable_if_t_<is_greater_v_<M,16> && is_less_equal_v_<M,32>,bool> = false>
+FASTOR_INLINE void lut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
+
+    // constexpr size_t N = 16UL; // start size
+    constexpr size_t N = (M / 8UL * 8UL) / 2UL; // start size
+    Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
+    // Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
+    Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
+    Tensor<T,M-N,M-N> d = in(fseq<N,M>(),fseq<N,M>());
+
+    Tensor<T,N,N> inv_a;
+    lut_inverse_dispatcher(a, inv_a);
+
+    Tensor<T,M-N,N> c_inva = matmul(c, inv_a);
+
+    Tensor<T,M-N,M-N> inv_d;
+    lut_inverse_dispatcher(d, inv_d);
+
+    out(fseq<0,N>(),fseq<0,N>()) = inv_a;
+    out(fseq<0,N>(),fseq<N,M>()) = 0;
+    out(fseq<N,M>(),fseq<0,N>()) = -matmul(inv_d, c_inva);
+    out(fseq<N,M>(),fseq<N,M>()) = inv_d;
+}
+
+template<typename T, size_t M, enable_if_t_<is_greater_v_<M,32> && is_less_equal_v_<M,64>,bool> = false>
+FASTOR_INLINE void lut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
+
+    // constexpr size_t N = 32UL; // start size
+    constexpr size_t N = (M / 16UL * 16UL) / 2UL; // start size
+    Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
+    // Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
+    Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
+    Tensor<T,M-N,M-N> d = in(fseq<N,M>(),fseq<N,M>());
+
+    Tensor<T,N,N> inv_a;
+    lut_inverse_dispatcher(a, inv_a);
+
+    Tensor<T,M-N,N> c_inva = matmul(c, inv_a);
+
+    Tensor<T,M-N,M-N> inv_d;
+    lut_inverse_dispatcher(d, inv_d);
+
+    out(fseq<0,N>(),fseq<0,N>()) = inv_a;
+    out(fseq<0,N>(),fseq<N,M>()) = 0;
+    out(fseq<N,M>(),fseq<0,N>()) = -matmul(inv_d, c_inva);
+    out(fseq<N,M>(),fseq<N,M>()) = inv_d;
+}
+
+template<typename T, size_t M, enable_if_t_<is_greater_v_<M,64> && is_less_equal_v_<M,128>,bool> = false>
+FASTOR_INLINE void lut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
+
+    // constexpr size_t N = 64UL; // start size
+    constexpr size_t N = (M / 32UL * 32UL) / 2UL; // start size
+    Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
+    // Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
+    Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
+    Tensor<T,M-N,M-N> d = in(fseq<N,M>(),fseq<N,M>());
+
+    Tensor<T,N,N> inv_a;
+    lut_inverse_dispatcher(a, inv_a);
+
+    Tensor<T,M-N,N> c_inva = matmul(c, inv_a);
+
+    Tensor<T,M-N,M-N> inv_d;
+    lut_inverse_dispatcher(d, inv_d);
+
+    out(fseq<0,N>(),fseq<0,N>()) = inv_a;
+    out(fseq<0,N>(),fseq<N,M>()) = 0;
+    out(fseq<N,M>(),fseq<0,N>()) = -matmul(inv_d, c_inva);
+    out(fseq<N,M>(),fseq<N,M>()) = inv_d;
+}
+
+template<typename T, size_t M, enable_if_t_<is_greater_v_<M,128> && is_less_equal_v_<M,256>,bool> = false>
+FASTOR_INLINE void lut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>& out) {
+
+    // constexpr size_t N = 128UL; // start size
+    constexpr size_t N = (M / 64UL * 64UL) / 2UL; // start size
+    Tensor<T,N  ,N  > a = in(fseq<0,N>(),fseq<0,N>());
+    // Tensor<T,N  ,M-N> b = in(fseq<0,N>(),fseq<N,M>());
+    Tensor<T,M-N,  N> c = in(fseq<N,M>(),fseq<0,N>());
+    Tensor<T,M-N,M-N> d = in(fseq<N,M>(),fseq<N,M>());
+
+    Tensor<T,N,N> inv_a;
+    lut_inverse_dispatcher(a, inv_a);
+
+    Tensor<T,M-N,N> c_inva = matmul(c, inv_a);
+
+    Tensor<T,M-N,M-N> inv_d;
+    lut_inverse_dispatcher(d, inv_d);
+
+    out(fseq<0,N>(),fseq<0,N>()) = inv_a;
+    out(fseq<0,N>(),fseq<N,M>()) = 0;
+    out(fseq<N,M>(),fseq<0,N>()) = -matmul(inv_d, c_inva);
+    out(fseq<N,M>(),fseq<N,M>()) = inv_d;
+}
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+} // internal
+
+
+
+
+// General recursive block matrix inversion
 //-----------------------------------------------------------------------------------------------------------//
 //-----------------------------------------------------------------------------------------------------------//
 namespace internal {
@@ -306,6 +625,48 @@ inverse(const AbstractTensor<Derived,DIM> &src) {
     using result_type = typename Derived::result_type;
     const result_type tmp(src.self());
     return inverse<InvType>(tmp);
+}
+
+
+// Inverse of lower uni-triangular matrices
+template<InvCompType InvType = InvCompType::SimpleInv,
+    typename T, size_t M, enable_if_t_<InvType == InvCompType::SimpleInv,bool> = false>
+FASTOR_INLINE Tensor<T,M,M> lut_inverse(const Tensor<T,M,M> &in) {
+    Tensor<T,M,M> out;
+    internal::lut_inverse_dispatcher(in,out);
+    return out;
+}
+// Inverse for generic expressions of lower uni-triangular matrices is provided here
+template<InvCompType InvType = InvCompType::SimpleInv,
+    typename Derived, size_t DIM>
+FASTOR_INLINE
+typename Derived::result_type
+lut_inverse(const AbstractTensor<Derived,DIM> &src) {
+    // If we are here Derived is already an expression
+    using result_type = typename Derived::result_type;
+    const result_type tmp(src.self());
+    return lut_inverse<InvType>(tmp);
+}
+
+
+// Inverse of lower uni-triangular matrices
+template<InvCompType InvType = InvCompType::SimpleInv,
+    typename T, size_t M, enable_if_t_<InvType == InvCompType::SimpleInv,bool> = false>
+FASTOR_INLINE Tensor<T,M,M> ut_inverse(const Tensor<T,M,M> &in) {
+    Tensor<T,M,M> out;
+    internal::ut_inverse_dispatcher(in,out);
+    return out;
+}
+// Inverse for generic expressions of lower uni-triangular matrices is provided here
+template<InvCompType InvType = InvCompType::SimpleInv,
+    typename Derived, size_t DIM>
+FASTOR_INLINE
+typename Derived::result_type
+ut_inverse(const AbstractTensor<Derived,DIM> &src) {
+    // If we are here Derived is already an expression
+    using result_type = typename Derived::result_type;
+    const result_type tmp(src.self());
+    return ut_inverse<InvType>(tmp);
 }
 
 

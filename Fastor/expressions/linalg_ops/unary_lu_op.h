@@ -467,102 +467,6 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
     recursive_lu_dispatcher(A, L, U);
 }
 
-// template <typename T, size_t M, enable_if_t_<is_greater_v_<M,8> && is_less_equal_v_<M,16>,bool> = false>
-// FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
-
-//     // We will compute LU decomposition block-wise assuming that A11 and A22 are invertible
-//     //
-//     // [A11 A12]   [L11    0] [U11 U12]
-//     // [A21 A22]   [L21  L22] [0   U22]
-//     //
-//     // This results in
-//     //
-//     // A11 = L11 * U11
-//     // A12 = L11 * U12
-//     // A21 = L21 * U11
-//     // A22 = L21 * U12 - L22 * U22
-//     //
-//     // Hence we need to LU factorisation one for A11 and one for A22
-
-//     constexpr size_t N = 8UL; // start size
-//     Tensor<T,N  ,N  > A11 = A(fseq<0,N>(),fseq<0,N>());
-//     Tensor<T,N  ,M-N> A12 = A(fseq<0,N>(),fseq<N,M>());
-//     Tensor<T,M-N,  N> A21 = A(fseq<N,M>(),fseq<0,N>());
-//     Tensor<T,M-N,M-N> A22 = A(fseq<N,M>(),fseq<N,M>());
-
-//     // Don't zero out in the first block recursion as this dipatches to _lufact
-//     // which zeros out the tensors anyway
-//     Tensor<T,N,N> L11, U11;
-//     lu_block_dispatcher(A11, L11, U11);
-
-//     // Solve for U12 = {L11}^(-1)*A12
-//     Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
-//     // Solve for L21 = A21*{U11}^(-1)
-//     Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
-
-//     Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
-
-//     Tensor<T,M-N,M-N> L22, U22;
-//     lu_block_dispatcher(S, L22, U22);
-
-//     L(fseq<0,N>(),fseq<0,N>()) = L11;
-//     // L(fseq<0,N>(),fseq<N,M>()) = 0;
-//     L(fseq<N,M>(),fseq<0,N>()) = L21;
-//     L(fseq<N,M>(),fseq<N,M>()) = L22;
-
-//     U(fseq<0,N>(),fseq<0,N>()) = U11;
-//     U(fseq<0,N>(),fseq<N,M>()) = U12;
-//     // U(fseq<N,M>(),fseq<0,N>()) = 0;
-//     U(fseq<N,M>(),fseq<N,M>()) = U22;
-// }
-
-// template <typename T, size_t M, enable_if_t_<is_greater_v_<M,16> && is_less_equal_v_<M,32>,bool> = false>
-// FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
-
-//     // We will compute LU decomposition block-wise assuming that A11 and A22 are invertible
-//     //
-//     // [A11 A12]   [L11    0] [U11 U12]
-//     // [A21 A22]   [L21  L22] [0   U22]
-//     //
-//     // This results in
-//     //
-//     // A11 = L11 * U11
-//     // A12 = L11 * U12
-//     // A21 = L21 * U11
-//     // A22 = L21 * U12 - L22 * U22
-//     //
-//     // Hence we need to LU factorisation one for A11 and one for A22
-
-//     constexpr size_t N = 16UL; // start size
-//     Tensor<T,N  ,N  > A11 = A(fseq<0,N>(),fseq<0,N>());
-//     Tensor<T,N  ,M-N> A12 = A(fseq<0,N>(),fseq<N,M>());
-//     Tensor<T,M-N,  N> A21 = A(fseq<N,M>(),fseq<0,N>());
-//     Tensor<T,M-N,M-N> A22 = A(fseq<N,M>(),fseq<N,M>());
-
-//     Tensor<T,N,N> L11(0), U11(0);
-//     lu_block_dispatcher(A11, L11, U11);
-
-//     // Solve for U12 = {L11}^(-1)*A12
-//     Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
-//     // Solve for L21 = A21*{U11}^(-1)
-//     Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
-
-//     Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
-
-//     Tensor<T,M-N,M-N> L22(0), U22(0);
-//     lu_block_dispatcher(S, L22, U22);
-
-//     L(fseq<0,N>(),fseq<0,N>()) = L11;
-//     // L(fseq<0,N>(),fseq<N,M>()) = 0;
-//     L(fseq<N,M>(),fseq<0,N>()) = L21;
-//     L(fseq<N,M>(),fseq<N,M>()) = L22;
-
-//     U(fseq<0,N>(),fseq<0,N>()) = U11;
-//     U(fseq<0,N>(),fseq<N,M>()) = U12;
-//     // U(fseq<N,M>(),fseq<0,N>()) = 0;
-//     U(fseq<N,M>(),fseq<N,M>()) = U22;
-// }
-
 template <typename T, size_t M, enable_if_t_<is_greater_v_<M,32> && is_less_equal_v_<M,64>,bool> = false>
 FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
 
@@ -592,9 +496,9 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
     lu_block_dispatcher(A11, L11, U11);
 
     // Solve for U12 = {L11}^(-1)*A12
-    Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
+    Tensor<T,N  ,M-N> U12 = matmul(lut_inverse<InvCompType::SimpleInv>(L11),A12);
     // Solve for L21 = A21*{U11}^(-1)
-    Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
+    Tensor<T,M-N,  N> L21 = matmul(A21,ut_inverse<InvCompType::SimpleInv>(U11));
 
     Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
 
@@ -659,11 +563,12 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
     useless::lu_block_simple_dispatcher(A11, L11, U11);
 
     // Solve for U12 = {L11}^(-1)*A12
-    // Tensor<T,N  ,M-N> U12 = matmul(inverse<InvCompType::SimpleInv>(L11),A12);
+    Tensor<T,N  ,M-N> U12 = matmul(lut_inverse<InvCompType::SimpleInv>(L11),A12);
     // At this level activate this as tensor is too big for matmul
-    Tensor<T,N  ,M-N> U12 = forward_subs(L11,A12);
+    // Tensor<T,N  ,M-N> U12 = forward_subs(L11,A12);
     // Solve for L21 = A21*{U11}^(-1)
-    Tensor<T,M-N,  N> L21 = matmul(A21,inverse<InvCompType::SimpleInv>(U11));
+    Tensor<T,M-N,  N> L21 = matmul(A21,ut_inverse<InvCompType::SimpleInv>(U11));
+    // Not quite performant as we can't avoid the matmul here
     // Tensor<T,N  ,N  > I; I.eye2();
     // Tensor<T,M-N,  N> L21 = matmul(A21, backward_subs(U11, I));
 
