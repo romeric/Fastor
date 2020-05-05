@@ -8,6 +8,7 @@
 #include "Fastor/backend/determinant.h"
 #include "Fastor/backend/doublecontract.h"
 #include "Fastor/backend/dyadic.h"
+#include "Fastor/backend/inner.h"
 #include "Fastor/backend/inverse.h"
 #include "Fastor/backend/lufact.h"
 #include "Fastor/backend/matmul/matmul.h"

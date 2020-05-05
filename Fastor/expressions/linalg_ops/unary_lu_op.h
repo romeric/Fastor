@@ -2,6 +2,7 @@
 #define UNARY_LU_OP_H
 
 #include "Fastor/meta/meta.h"
+#include "Fastor/backend/inner.h"
 #include "Fastor/backend/lufact.h"
 #include "Fastor/simd_vector/SIMDVector.h"
 #include "Fastor/tensor/AbstractTensor.h"
@@ -17,6 +18,264 @@
 namespace Fastor {
 
 namespace internal {
+
+/* Compile time recursive loop with inner for forward substitution of b/B given the lower unitriangular matrix L.
+    The following meta functions implements L * y = b for single or multiple right sides
+*/
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+template <size_t from, size_t to>
+struct forward_subs_impl {
+
+    template<typename T, size_t M>
+    static FASTOR_INLINE void do_single_rhs(const Tensor<T,M,M> &L, const Tensor<T,M> &b, Tensor<T,M> &y) {
+        y(from) = b(from) -  _inner<T,from>(&L.data()[from*M],y.data());
+        forward_subs_impl<from+1,to>::do_single_rhs(L, b, y);
+    }
+    template<typename T, size_t M>
+    static FASTOR_INLINE void do_single_rhs_pivot(const Tensor<T,M,M> &L, const Tensor<T,M> &b, const Tensor<size_t,M> &p, Tensor<T,M> &y) {
+        y(from) = b(p(from)) -  _inner<T,from>(&L.data()[from*M],y.data());
+        forward_subs_impl<from+1,to>::do_single_rhs_pivot(L, b, p, y);
+    }
+
+    template<typename T, size_t M, size_t N>
+    static FASTOR_INLINE void do_multi_rhs(const size_t j, const Tensor<T,M,M> &L, const Tensor<T,M,N> &B, Tensor<T,M> &y, Tensor<T,M,N> &X) {
+        y(from) = B(from,j) - _inner<T,from>(&L.data()[from*M],y.data());
+        X(from,j) = y(from);
+        forward_subs_impl<from+1,to>::do_multi_rhs(j, L, B, y, X);
+    }
+
+    template<typename T, size_t M, size_t N>
+    static FASTOR_INLINE void do_multi_rhs_pivot(const size_t j, const Tensor<T,M,M> &L, const Tensor<T,M,N> &B,
+            const Tensor<size_t,M> &p, Tensor<T,M> &y, Tensor<T,M,N> &X) {
+        y(from) = B(p(from),j) - _inner<T,from>(&L.data()[from*M],y.data());
+        X(from,j) = y(from);
+        forward_subs_impl<from+1,to>::do_multi_rhs_pivot(j, L, B, p, y, X);
+    }
+};
+template <size_t from>
+struct forward_subs_impl<from,from> {
+
+    template<typename T, size_t M>
+    static FASTOR_INLINE void do_single_rhs(const Tensor<T,M,M> &L, const Tensor<T,M> &b, Tensor<T,M> &y) {
+        y(from) = b(from) -  _inner<T,from>(&L.data()[from*M],y.data());
+    }
+    template<typename T, size_t M>
+    static FASTOR_INLINE void do_single_rhs_pivot(const Tensor<T,M,M> &L, const Tensor<T,M> &b, const Tensor<size_t,M> &p, Tensor<T,M> &y) {
+        y(from) = b(p(from)) -  _inner<T,from>(&L.data()[from*M],y.data());
+    }
+
+    template<typename T, size_t M, size_t N>
+    static FASTOR_INLINE void do_multi_rhs(const size_t j, const Tensor<T,M,M> &L, const Tensor<T,M,N> &B, Tensor<T,M> &y, Tensor<T,M,N> &X) {
+        y(from) = B(from,j) - _inner<T,from>(&L.data()[from*M],y.data());
+        X(from,j) = y(from);
+    }
+    template<typename T, size_t M, size_t N>
+    static FASTOR_INLINE void do_multi_rhs_pivot(const size_t j, const Tensor<T,M,M> &L, const Tensor<T,M,N> &B,
+            const Tensor<size_t,M> &p, Tensor<T,M> &y, Tensor<T,M,N> &X) {
+        y(from) = B(p(from),j) - _inner<T,from>(&L.data()[from*M],y.data());
+        X(from,j) = y(from);
+    }
+};
+
+template<typename T, size_t M>
+FASTOR_INLINE Tensor<T,M> forward_subs(const Tensor<T,M,M> &L, const Tensor<T,M> &b) {
+
+    Tensor<T,M> y(0);
+
+    forward_subs_impl<0,M-1>::do_single_rhs(L, b, y);
+#if 0
+    // The run-time loop version
+    // Solve for L * y = b
+    for (size_t i=0; i< M; ++i) {
+        T value = 0;
+        for (size_t k=0; k<i; ++k) {
+            value += L(i,k)*y(k);
+        }
+        y(i) = b(i) - value;
+    }
+#endif
+    return y;
+}
+template<typename T, size_t M, size_t N>
+FASTOR_INLINE Tensor<T,M,N> forward_subs(const Tensor<T,M,M> &L, const Tensor<T,M,N> &B) {
+
+    // We keep a separate output tensor X from y [y is columns of X]
+    // to avoid strided access in X for the inner product
+    Tensor<T,M,N> X;
+
+    for (size_t j=0; j < N; ++j) {
+        Tensor<T,M> y(0);
+        forward_subs_impl<0,M-1>::do_multi_rhs(j, L, B, y, X);
+    }
+#if 0
+    // The run-time loop version - X needs to be zeroed out for this version
+    for (size_t j=0; j < N; ++j) {
+        Tensor<T,M> y(0);
+        // Solve for L * y = b
+        for (size_t i=0; i< M; ++i) {
+            T value = 0;
+            for (size_t k=0; k<i; ++k) {
+                value += L(i,k)*y(k);
+            }
+            y(i) = B(i,j) - value;
+            X(i,j) = y(i);
+        }
+    }
+#endif
+    return X;
+}
+template<typename T, size_t M>
+FASTOR_INLINE Tensor<T,M> forward_subs(const Tensor<T,M,M> &L, const Tensor<size_t,M> &p, const Tensor<T,M> &b) {
+
+    Tensor<T,M> y(0);
+
+    forward_subs_impl<0,M-1>::do_single_rhs_pivot(L, b, p, y);
+#if 0
+    // The run-time loop version
+    // Solve for L * y = b
+    for (size_t i=0; i< M; ++i) {
+        T value = 0;
+        for (size_t k=0; k<i; ++k) {
+            value += L(i,k)*y(k);
+        }
+        y(i) = b(p(i)) - value;
+    }
+#endif
+    return y;
+}
+template<typename T, size_t M, size_t N>
+FASTOR_INLINE Tensor<T,M,N> forward_subs(const Tensor<T,M,M> &L, const Tensor<size_t,M> &p, const Tensor<T,M,N> &B) {
+
+    // We keep a separate output tensor X from y [y is columns of X]
+    // to avoid strided access in X for the inner product
+    Tensor<T,M,N> X;
+
+    for (size_t j=0; j < N; ++j) {
+        Tensor<T,M> y(0);
+        forward_subs_impl<0,M-1>::do_multi_rhs_pivot(j, L, B, p, y, X);
+    }
+#if 0
+    // The run-time loop version - X needs to be zeroed out for this version
+    for (size_t j=0; j < N; ++j) {
+        Tensor<T,M> y(0);
+        // Solve for L * y = b
+        for (size_t i=0; i< M; ++i) {
+            T value = 0;
+            for (size_t k=0; k<i; ++k) {
+                value += L(i,k)*y(k);
+            }
+            y(i) = B(p(i),j) - value;
+            X(i,j) = y(i);
+        }
+    }
+#endif
+    return X;
+}
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+
+
+
+
+/* Compile time recursive loop with inner for backward substitution of y/Y given the upper triangular matrix U.
+    The following meta functions implements U * x = y for single or multiple right sides
+*/
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+template <int from, int to>
+struct backward_subs_impl {
+
+    template<typename T, size_t M>
+    static FASTOR_INLINE void do_single_rhs(const Tensor<T,M,M> &U, const Tensor<T,M> &y, Tensor<T,M> &x) {
+        constexpr int idx = (int)M - from;
+        const T value = _inner<T,idx>(&U.data()[from*M+from],&x.data()[from]);
+        x(from) = ( y(from) - value) / U(from, from);
+        backward_subs_impl<from-1,to>::do_single_rhs(U, y, x);
+    }
+
+    template<typename T, size_t M, size_t N>
+    static FASTOR_INLINE void do_multi_rhs(const size_t j, const Tensor<T,M,M> &U, const Tensor<T,M,N> &Y, Tensor<T,M> &x, Tensor<T,M,N> &X) {
+        constexpr int idx = (int)M - from;
+        const T value = _inner<T,idx>(&U.data()[from*M+from],&x.data()[from]);
+        x(from) = ( Y(from,j) - value ) / U(from, from);
+        X(from,j) = x(from);
+        backward_subs_impl<from-1,to>::do_multi_rhs(j, U, Y, x, X);
+    }
+};
+
+template <>
+struct backward_subs_impl<0,0> {
+
+    template<typename T, size_t M>
+    static FASTOR_INLINE void do_single_rhs(const Tensor<T,M,M> &U, const Tensor<T,M> &y, Tensor<T,M> &x) {
+        constexpr int idx = (int)M;
+        const T value = _inner<T,idx>(&U.data()[0*M+0],&x.data()[0]);
+        x(0) = ( y(0) - value) / U(0, 0);
+    }
+
+    template<typename T, size_t M, size_t N>
+    static FASTOR_INLINE void do_multi_rhs(const size_t j, const Tensor<T,M,M> &U, const Tensor<T,M,N> &Y, Tensor<T,M> &x, Tensor<T,M,N> &X) {
+        constexpr int idx = (int)M;
+        const T value = _inner<T,idx>(&U.data()[0*M+0],&x.data()[0]);
+        x(0) = ( Y(0,j) - value ) / U(0, 0);
+        X(0,j) = x(0);
+    }
+};
+
+template<typename T, size_t M>
+FASTOR_INLINE Tensor<T,M> backward_subs(const Tensor<T,M,M> &U, const Tensor<T,M> &y) {
+
+    // We keep a separate output tensor X from x [x is columns of X]
+    // to avoid strided access in X for the inner product
+    Tensor<T,M> x(0);
+    backward_subs_impl<int(M)-1,0>::do_single_rhs(U, y, x);
+#if 0
+    // The run-time loop version
+    // Solve for of U * x = y
+    for (int i= int(M) - 1; i>=0; --i) {
+        T value = 0;
+        for (int k=i; k<int(M); ++k) {
+            value += U(i,k)*x(k);
+        }
+        x(i) = (y(i) - value) / U(i, i);
+    }
+#endif
+    return x;
+}
+
+template<typename T, size_t M, size_t N>
+FASTOR_INLINE Tensor<T,M,N> backward_subs(const Tensor<T,M,M> &U, const Tensor<T,M,N> &Y) {
+
+    // We keep a separate output tensor X from x [x is columns of X]
+    // to avoid strided access in X for the inner product
+    Tensor<T,M,N> X;
+
+    for (size_t j=0; j < N; ++j) {
+        Tensor<T,M> x(0);
+        backward_subs_impl<int(M)-1,0>::do_multi_rhs(j, U, Y, x, X);
+    }
+#if 0
+    // The run-time loop version - X needs to be zeroed out for this version
+    Tensor<T,M,N> X(0);
+    for (size_t j=0; j < 1; ++j) {
+        // Solve for of U * x = y
+        for (int i= int(M) - 1; i>=0; --i) {
+            T value = 0;
+            for (int k=i; k<int(M); ++k) {
+                value += U(i,k)*X(k,j);
+            }
+            X(i,j) = (Y(i,j) - value) / U(i, i);
+        }
+    }
+#endif
+    return X;
+}
+
+//-----------------------------------------------------------------------------------------------------------//
+//-----------------------------------------------------------------------------------------------------------//
+
+
 
 /* Simple LU factorisation without pivoting */
 //-----------------------------------------------------------------------------------------------------------//
@@ -584,64 +843,22 @@ namespace internal {
 
 template<typename T, size_t M>
 FASTOR_INLINE Tensor<T,M,M> get_lu_inverse(const Tensor<T,M,M> &L, const Tensor<T,M,M> &U) {
-
-    Tensor<T,M,M> out(0);
     // We will solve for multiple RHS [B = I]
     // Loop over columns of B = I
-    for (size_t j = 0; j<M; ++j) {
-        // Solve for L * y = b
-        Tensor<T,M> y(0); y(j) = 1;
-        for (size_t i=0; i< M; ++i) {
-            // if (i==j) y(i) = 1;
-            T value = 0;
-            for (size_t k=0; k<i; ++k) {
-                value += L(i,k)*y(k);
-            }
-            y(i) -= value;
-        }
-        // Solve for of U * x = y
-        // Each x is a column of out
-        for (int i = int(M) - 1; i>=0; --i) {
-            T value = 0;
-            for (int k=i; k<int(M); ++k) {
-                value += U(i,k)*out(k,j);
-            }
-            out(i,j) = (y(i) - value) / U(i, i);
-        }
-    }
-
-    return out;
+    Tensor<T,M,M> I; I.eye2();
+    Tensor<T,M,M> Y = forward_subs(L, I);
+    Tensor<T,M,M> X = backward_subs(U, Y);
+    return X;
 }
 
 template<typename T, size_t M>
-FASTOR_INLINE Tensor<T,M,M> get_lu_inverse(Tensor<T,M,M> &L, const Tensor<T,M,M> &U, const Tensor<size_t,M> &P) {
-
-    Tensor<T,M,M> out(0);
+FASTOR_INLINE Tensor<T,M,M> get_lu_inverse(Tensor<T,M,M> &L, const Tensor<T,M,M> &U, const Tensor<size_t,M> &p) {
     // We will solve for multiple RHS [B = I]
     // Loop over columns of B = I
-    for (size_t j = 0; j<M; ++j) {
-        // Solve for L * y = P*b
-        Tensor<T,M> y(0);
-        for (size_t i=0; i< M; ++i) {
-            if (P(i)==j) y(i) = 1;
-            T value = 0;
-            for (size_t k=0; k<i; ++k) {
-                value += L(i,k)*y(k);
-            }
-            y(i) -= value;
-        }
-        // Solve for of U * x = y
-        // Each x is a column of out
-        for (int i = int(M) - 1; i>=0; --i) {
-            T value = 0;
-            for (int k=i; k<int(M); ++k) {
-                value += U(i,k)*out(k,j);
-            }
-            out(i,j) = (y(i) - value) / U(i, i);
-        }
-    }
-
-    return out;
+    Tensor<T,M,M> I; I.eye2();
+    Tensor<T,M,M> Y = forward_subs(L, p, I);
+    Tensor<T,M,M> X = backward_subs(U, Y);
+    return X;
 }
 //-----------------------------------------------------------------------------------------------------------//
 //-----------------------------------------------------------------------------------------------------------//
@@ -703,106 +920,30 @@ namespace internal {
 
 template<typename T, size_t M>
 FASTOR_INLINE Tensor<T,M> get_lu_solve(const Tensor<T,M,M> &L, const Tensor<T,M,M> &U, const Tensor<T,M> &b) {
-
-    Tensor<T,M> x(0), y(0);
-    // Solve for L * y = b
-    for (size_t i=0; i< M; ++i) {
-        T value = 0;
-        for (size_t k=0; k<i; ++k) {
-            value += L(i,k)*y(k);
-        }
-        y(i) = b(i) - value;
-    }
-    // Solve for of U * x = y
-    for (int i= int(M) - 1; i>=0; --i) {
-        T value = 0;
-        for (int k=i; k<int(M); ++k) {
-            value += U(i,k)*x(k);
-        }
-        x(i) = (y(i) - value) / U(i, i);
-    }
-
+    Tensor<T,M> y = forward_subs(L, b);
+    Tensor<T,M> x = backward_subs(U, y);
     return x;
 }
 
 template<typename T, size_t M>
-FASTOR_INLINE Tensor<T,M> get_lu_solve(Tensor<T,M,M> &L, const Tensor<T,M,M> &U, const Tensor<size_t,M> &P, const Tensor<T,M> &b) {
-
-    Tensor<T,M> x(0), y(0);
-    // Solve for L * y = b
-    for (size_t i=0; i< M; ++i) {
-        T value = 0;
-        for (size_t k=0; k<i; ++k) {
-            value += L(i,k)*y(k);
-        }
-        y(i) = b(P(i)) - value;
-    }
-    // Solve for of U * x = y
-    for (int i= int(M) - 1; i>=0; --i) {
-        T value = 0;
-        for (int k=i; k<int(M); ++k) {
-            value += U(i,k)*x(k);
-        }
-        x(i) = (y(i) - value) / U(i, i);
-    }
-
+FASTOR_INLINE Tensor<T,M> get_lu_solve(Tensor<T,M,M> &L, const Tensor<T,M,M> &U, const Tensor<size_t,M> &p, const Tensor<T,M> &b) {
+    Tensor<T,M> y = forward_subs(L, p, b);
+    Tensor<T,M> x = backward_subs(U, y);
     return x;
 }
 
 // Multiple RHS
 template<typename T, size_t M, size_t N>
 FASTOR_INLINE Tensor<T,M,N> get_lu_solve(const Tensor<T,M,M> &L, const Tensor<T,M,M> &U, const Tensor<T,M,N> &B) {
-
-    Tensor<T,M,N> X(0);
-
-    for (size_t j=0; j < N; ++j) {
-        Tensor<T,M> y(0);
-        // Solve for L * y = b
-        for (size_t i=0; i< M; ++i) {
-            T value = 0;
-            for (size_t k=0; k<i; ++k) {
-                value += L(i,k)*y(k);
-            }
-            y(i) = B(i,j) - value;
-        }
-        // Solve for of U * x = y
-        for (int i= int(M) - 1; i>=0; --i) {
-            T value = 0;
-            for (int k=i; k<int(M); ++k) {
-                value += U(i,k)*X(k,j);
-            }
-            X(i,j) = (y(i) - value) / U(i, i);
-        }
-    }
-
+    Tensor<T,M,N> Y = forward_subs(L, B);
+    Tensor<T,M,N> X = backward_subs(U, Y);
     return X;
 }
 
 template<typename T, size_t M, size_t N>
-FASTOR_INLINE Tensor<T,M,N> get_lu_solve(const Tensor<T,M,M> &L, const Tensor<T,M,M> &U, const Tensor<size_t,M> &P, const Tensor<T,M,N> &B) {
-
-    Tensor<T,M,N> X(0);
-
-    for (size_t j=0; j < N; ++j) {
-        Tensor<T,M> y(0);
-        // Solve for L * y = b
-        for (size_t i=0; i< M; ++i) {
-            T value = 0;
-            for (size_t k=0; k<i; ++k) {
-                value += L(i,k)*y(k);
-            }
-            y(i) = B(P(i),j) - value;
-        }
-        // Solve for of U * x = y
-        for (int i= int(M) - 1; i>=0; --i) {
-            T value = 0;
-            for (int k=i; k<int(M); ++k) {
-                value += U(i,k)*X(k,j);
-            }
-            X(i,j) = (y(i) - value) / U(i, i);
-        }
-    }
-
+FASTOR_INLINE Tensor<T,M,N> get_lu_solve(const Tensor<T,M,M> &L, const Tensor<T,M,M> &U, const Tensor<size_t,M> &p, const Tensor<T,M,N> &B) {
+    Tensor<T,M,N> Y = forward_subs(L, p, B);
+    Tensor<T,M,N> X = backward_subs(U, Y);
     return X;
 }
 //-----------------------------------------------------------------------------------------------------------//
