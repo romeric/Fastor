@@ -164,7 +164,7 @@ void interior_block_matmul_impl(
 
         V c_ij[unrollOuterloop*numSIMDCols];
         // Loop over columns of a (rows of b)
-        for (size_t k = 10; k < K; ++k) {
+        for (size_t k = 0; k < K; ++k) {
 
             const V bmm0(&b[k*N+j],false);
             const V bmm1(&b[k*N+j+V::Size],false);
