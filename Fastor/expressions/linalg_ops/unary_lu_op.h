@@ -482,7 +482,7 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
     // A21 = L21 * U11
     // A22 = L21 * U12 - L22 * U22
     //
-    // Hence we need to LU factorisation one for A11 and one for A22
+    // Hence we need to do LU factorisation once for A11 and once for A22
 
     // This is to avoid odd sizes for instance for size 35 we would
     // want to do 35 = 16 + 19 rather than 35 = 32 + 3 if the start size was 32
@@ -496,9 +496,9 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
     lu_block_dispatcher(A11, L11, U11);
 
     // Solve for U12 = {L11}^(-1)*A12
-    Tensor<T,N  ,M-N> U12 = matmul(lut_inverse<InvCompType::SimpleInv>(L11),A12);
+    Tensor<T,N  ,M-N> U12 = tmatmul<matrix_type::lower_tri,matrix_type::general>(lut_inverse<InvCompType::SimpleInv>(L11),A12);
     // Solve for L21 = A21*{U11}^(-1)
-    Tensor<T,M-N,  N> L21 = matmul(A21,ut_inverse<InvCompType::SimpleInv>(U11));
+    Tensor<T,M-N,  N> L21 = tmatmul<matrix_type::general,matrix_type::upper_tri>(A21,ut_inverse<InvCompType::SimpleInv>(U11));
 
     Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
 
@@ -549,7 +549,7 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
     // A21 = L21 * U11
     // A22 = L21 * U12 - L22 * U22
     //
-    // Hence we need to LU factorisation one for A11 and one for A22
+    // Hence we need to do LU factorisation once for A11 and once for A22
 
     // This is to avoid odd sizes for instance for size 65 we would
     // want to do 65 = 32 + 33 rather than 65 = 64 + 1 if the start size was 64
@@ -563,11 +563,11 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
     useless::lu_block_simple_dispatcher(A11, L11, U11);
 
     // Solve for U12 = {L11}^(-1)*A12
-    Tensor<T,N  ,M-N> U12 = matmul(lut_inverse<InvCompType::SimpleInv>(L11),A12);
-    // At this level activate this as tensor is too big for matmul
+    Tensor<T,N  ,M-N> U12 = tmatmul<matrix_type::lower_tri,matrix_type::general>(lut_inverse<InvCompType::SimpleInv>(L11),A12);
+    // Ideally use forward_subs but its iterative nature makes it less efficient than tmatmul
     // Tensor<T,N  ,M-N> U12 = forward_subs(L11,A12);
     // Solve for L21 = A21*{U11}^(-1)
-    Tensor<T,M-N,  N> L21 = matmul(A21,ut_inverse<InvCompType::SimpleInv>(U11));
+    Tensor<T,M-N,  N> L21 = tmatmul<matrix_type::general,matrix_type::upper_tri>(A21,ut_inverse<InvCompType::SimpleInv>(U11));
     // Not quite performant as we can't avoid the matmul here
     // Tensor<T,N  ,N  > I; I.eye2();
     // Tensor<T,M-N,  N> L21 = matmul(A21, backward_subs(U11, I));

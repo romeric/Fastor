@@ -143,10 +143,10 @@ FASTOR_INLINE void ut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>&
     Tensor<T,M-N,M-N> inv_d;
     ut_inverse_dispatcher(d, inv_d);
 
-    Tensor<T,N,M-N> b_invd = matmul(b, inv_d);
+    Tensor<T,N,M-N> b_invd = tmatmul<matrix_type::general,matrix_type::upper_tri>(b, inv_d);
 
     out(fseq<0,N>(),fseq<0,N>()) = inv_a;
-    out(fseq<0,N>(),fseq<N,M>()) = -matmul(inv_a, b_invd);
+    out(fseq<0,N>(),fseq<N,M>()) = -tmatmul<matrix_type::upper_tri,matrix_type::general>(inv_a, b_invd);
     out(fseq<N,M>(),fseq<0,N>()) = 0;
     out(fseq<N,M>(),fseq<N,M>()) = inv_d;
 }
@@ -167,10 +167,10 @@ FASTOR_INLINE void ut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>&
     Tensor<T,M-N,M-N> inv_d;
     ut_inverse_dispatcher(d, inv_d);
 
-    Tensor<T,N,M-N> b_invd = matmul(b, inv_d);
+    Tensor<T,N,M-N> b_invd = tmatmul<matrix_type::general,matrix_type::upper_tri>(b, inv_d);
 
     out(fseq<0,N>(),fseq<0,N>()) = inv_a;
-    out(fseq<0,N>(),fseq<N,M>()) = -matmul(inv_a, b_invd);
+    out(fseq<0,N>(),fseq<N,M>()) = -tmatmul<matrix_type::upper_tri,matrix_type::general>(inv_a, b_invd);
     out(fseq<N,M>(),fseq<0,N>()) = 0;
     out(fseq<N,M>(),fseq<N,M>()) = inv_d;
 }
@@ -191,10 +191,10 @@ FASTOR_INLINE void ut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>&
     Tensor<T,M-N,M-N> inv_d;
     ut_inverse_dispatcher(d, inv_d);
 
-    Tensor<T,N,M-N> b_invd = matmul(b, inv_d);
+    Tensor<T,N,M-N> b_invd = tmatmul<matrix_type::general,matrix_type::upper_tri>(b, inv_d);
 
     out(fseq<0,N>(),fseq<0,N>()) = inv_a;
-    out(fseq<0,N>(),fseq<N,M>()) = -matmul(inv_a, b_invd);
+    out(fseq<0,N>(),fseq<N,M>()) = -tmatmul<matrix_type::upper_tri,matrix_type::general>(inv_a, b_invd);
     out(fseq<N,M>(),fseq<0,N>()) = 0;
     out(fseq<N,M>(),fseq<N,M>()) = inv_d;
 }
@@ -299,14 +299,14 @@ FASTOR_INLINE void lut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>
     Tensor<T,N,N> inv_a;
     lut_inverse_dispatcher(a, inv_a);
 
-    Tensor<T,M-N,N> c_inva = matmul(c, inv_a);
+    Tensor<T,M-N,N> c_inva = tmatmul<matrix_type::general,matrix_type::lower_tri>(c, inv_a);
 
     Tensor<T,M-N,M-N> inv_d;
     lut_inverse_dispatcher(d, inv_d);
 
     out(fseq<0,N>(),fseq<0,N>()) = inv_a;
     out(fseq<0,N>(),fseq<N,M>()) = 0;
-    out(fseq<N,M>(),fseq<0,N>()) = -matmul(inv_d, c_inva);
+    out(fseq<N,M>(),fseq<0,N>()) = -tmatmul<matrix_type::lower_tri,matrix_type::general>(inv_d, c_inva);
     out(fseq<N,M>(),fseq<N,M>()) = inv_d;
 }
 
@@ -323,14 +323,14 @@ FASTOR_INLINE void lut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>
     Tensor<T,N,N> inv_a;
     lut_inverse_dispatcher(a, inv_a);
 
-    Tensor<T,M-N,N> c_inva = matmul(c, inv_a);
+    Tensor<T,M-N,N> c_inva = tmatmul<matrix_type::general,matrix_type::lower_tri>(c, inv_a);
 
     Tensor<T,M-N,M-N> inv_d;
     lut_inverse_dispatcher(d, inv_d);
 
     out(fseq<0,N>(),fseq<0,N>()) = inv_a;
     out(fseq<0,N>(),fseq<N,M>()) = 0;
-    out(fseq<N,M>(),fseq<0,N>()) = -matmul(inv_d, c_inva);
+    out(fseq<N,M>(),fseq<0,N>()) = -tmatmul<matrix_type::lower_tri,matrix_type::general>(inv_d, c_inva);
     out(fseq<N,M>(),fseq<N,M>()) = inv_d;
 }
 
@@ -347,14 +347,14 @@ FASTOR_INLINE void lut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>
     Tensor<T,N,N> inv_a;
     lut_inverse_dispatcher(a, inv_a);
 
-    Tensor<T,M-N,N> c_inva = matmul(c, inv_a);
+    Tensor<T,M-N,N> c_inva = tmatmul<matrix_type::general,matrix_type::lower_tri>(c, inv_a);
 
     Tensor<T,M-N,M-N> inv_d;
     lut_inverse_dispatcher(d, inv_d);
 
     out(fseq<0,N>(),fseq<0,N>()) = inv_a;
     out(fseq<0,N>(),fseq<N,M>()) = 0;
-    out(fseq<N,M>(),fseq<0,N>()) = -matmul(inv_d, c_inva);
+    out(fseq<N,M>(),fseq<0,N>()) = -tmatmul<matrix_type::lower_tri,matrix_type::general>(inv_d, c_inva);
     out(fseq<N,M>(),fseq<N,M>()) = inv_d;
 }
 //-----------------------------------------------------------------------------------------------------------//
