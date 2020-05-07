@@ -268,7 +268,8 @@ void test_factorisation() {
             FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
         }
 
-        // LU 33x33
+        // LU 33x33 - this is just to check for compilation as size 33
+        // is when we switch over to block recursive algorithm
         {
             constexpr size_t M = 33;
             Tensor<size_t,M> p;
@@ -279,31 +280,16 @@ void test_factorisation() {
                 A(i,i) = 100+i;
             }
 
-            lu(A, L, U);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
-
-            lu<LUCompType::BlockLU>(A, L, U);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
-
             lu<LUCompType::BlockLUPiv>(A, L, U, p);
             FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
 
             lu<LUCompType::BlockLUPiv>(A, L, U, P);
             FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
-
-            lu<LUCompType::SimpleLU>(A, L, U);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
-
-            lu<LUCompType::SimpleLUPiv>(A, L, U, p);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
-
-            lu<LUCompType::SimpleLUPiv>(A, L, U, P);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
         }
 
-       // LU 37x37
+       // LU 34x34
         {
-            constexpr size_t M = 37;
+            constexpr size_t M = 34;
             Tensor<size_t,M> p;
             Tensor<T,M,M> L, U, P;
 
