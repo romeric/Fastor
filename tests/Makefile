@@ -18,6 +18,7 @@ tests: test_auxiliary \
 test_simd_vectors \
 test_basics \
 test_matmul \
+test_tmatmul \
 test_linalg \
 test_lu \
 test_inverse \
@@ -43,6 +44,10 @@ test_matmul:
 	$(CXX) test_matmul.cpp -o test_matmul_2.exe $(CXX_FLAGS) $(INCLUDES)
 	$(CXX) test_matmul_small.cpp -o test_matmul_small.exe $(CXX_FLAGS) $(INCLUDES)
 	$(CXX) test_lazy_matmul.cpp -o test_lazy_matmul.exe $(INCLUDES) -std=c++14
+
+test_tmatmul:
+	$(CXX) test_tmatmul_unmasked.cpp -o test_tmatmul_unmasked.exe $(INCLUDES) -std=c++14
+	$(CXX) test_tmatmul_masked.cpp -o test_tmatmul_masked.exe $(INCLUDES) -std=c++14
 
 test_linalg:
 	$(CXX) test_linalg.cpp -o test_linalg.exe $(CXX_FLAGS) $(INCLUDES)
@@ -105,7 +110,21 @@ test_binary_cmp_ops:
 
 
 
-run: run_auxiliary run_simd_vectors run_basics run_matmul run_linalg run_einsum run_views run_mixed_views run_complex_expressions run_tensormap run_binary_cmp_ops
+run: run_auxiliary \
+run_simd_vectors \
+run_basics \
+run_matmul \
+run_tmatmul \
+run_linalg \
+run_lu \
+run_inverse \
+run_solve \
+run_einsum \
+run_views \
+run_mixed_views \
+run_tensormap \
+run_complex_expressions \
+run_binary_cmp_ops
 
 run_auxiliary:
 	./test_auxiliary.exe
@@ -121,6 +140,10 @@ run_matmul:
 	./test_matmul_2.exe
 	./test_matmul_small.exe
 	./test_lazy_matmul.exe
+
+run_tmatmul:
+	./test_tmatmul_unmasked.exe
+	./test_tmatmul_masked.exe
 
 run_linalg:
 	./test_linalg.exe

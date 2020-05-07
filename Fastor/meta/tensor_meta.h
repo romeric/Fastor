@@ -12,10 +12,28 @@ namespace Fastor {
 template <typename T, typename ABI>
 struct SIMDVector;
 
-
 template<typename T> struct stride_finder {
     static constexpr size_t value = internal::get_simd_vector_size<SIMDVector<T,DEFAULT_ABI>>::value;
 };
+//----------------------------------------------------------------------------------------------------------//
+
+
+//----------------------------------------------------------------------------------------------------------//
+namespace matrix_type {
+struct general {};
+struct lower_tri {};
+struct lower_uni_tri {};
+struct strictly_lower_tri {};
+struct upper_tri {};
+struct upper_uni_tri {};
+struct strictly_upper_tri {};
+struct diagonal {};
+struct bidiagonal {};
+struct tridiagonal {};
+struct block_diagonal {};
+struct symmetric {};
+struct symmetric_positive_definite {};
+} // matrix_type
 //----------------------------------------------------------------------------------------------------------//
 
 

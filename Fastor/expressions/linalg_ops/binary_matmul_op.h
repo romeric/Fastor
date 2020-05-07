@@ -264,7 +264,66 @@ matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM
 
 
 
+// triangular matmul functions
+template<typename LhsType = matrix_type::general, typename RhsType = matrix_type::general, typename T, size_t M, size_t K, size_t N>
+Tensor<T,M,N> tmatmul(const Tensor<T,M,K> &a, const Tensor<T,K,N> &b) {
+    Tensor<T,M,N> out;
+    _tmatmul<T,M,K,N,LhsType,RhsType>(a.data(),b.data(),out.data());
+    return out;
+}
+template<typename LhsType = matrix_type::general, typename RhsType = matrix_type::general, typename T, size_t I, size_t J>
+FASTOR_INLINE Tensor<T,I> tmatmul(const Tensor<T,I,J> &a, const Tensor<T,J> &b) {
+    Tensor<T,I> out;
+    _tmatmul<T,I,J,1,LhsType,RhsType>(a.data(),b.data(),out.data());
+    return out;
+}
+template<typename LhsType = matrix_type::general, typename RhsType = matrix_type::general, typename T, size_t J, size_t K>
+FASTOR_INLINE Tensor<T,K> tmatmul(const Tensor<T,J> &a, const Tensor<T,J,K> &b) {
+    Tensor<T,K> out;
+    _tmatmul<T,1,J,K,LhsType,RhsType>(a.data(),b.data(),out.data());
+    return out;
+}
 
+#if FASTOR_CXX_VERSION >= 2014
+// tmatmul for generic expressions
+template<typename LhsType = matrix_type::general, typename RhsType = matrix_type::general,
+    typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
+    enable_if_t_<is_less_equal_v_<DIM0,2> && is_less_equal_v_<DIM1,2>
+    && !is_tensor_v<Derived0> && !is_tensor_v<Derived1>,bool> = 0 >
+FASTOR_INLINE
+decltype(auto)
+tmatmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b) {
+    using lhs_type = typename Derived0::result_type;
+    using rhs_type = typename Derived1::result_type;
+    const lhs_type tmp_a(a);
+    const rhs_type tmp_b(b);
+    return tmatmul<LhsType,RhsType>(tmp_a,tmp_b);
+}
+
+template<typename LhsType = matrix_type::general, typename RhsType = matrix_type::general,
+    typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
+    enable_if_t_<is_less_equal_v_<DIM0,2> && is_less_equal_v_<DIM1,2>
+    && !is_tensor_v<Derived0> && is_tensor_v<Derived1>,bool> = 0 >
+FASTOR_INLINE
+decltype(auto)
+tmatmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b) {
+    using lhs_type = typename Derived0::result_type;
+    const lhs_type tmp_a(a);
+    return tmatmul<LhsType,RhsType>(tmp_a,b.self());
+}
+
+template<typename LhsType = matrix_type::general, typename RhsType = matrix_type::general,
+    typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
+    enable_if_t_<is_less_equal_v_<DIM0,2> && is_less_equal_v_<DIM1,2>
+    && is_tensor_v<Derived0> && !is_tensor_v<Derived1>,bool> = 0 >
+FASTOR_INLINE
+decltype(auto)
+tmatmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b) {
+    using rhs_type = typename Derived1::result_type;
+    const rhs_type tmp_b(b);
+    return tmatmul<LhsType,RhsType>(a.self(),tmp_b);
+}
+#endif
 
 
 
