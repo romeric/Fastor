@@ -1,7 +1,7 @@
 #ifndef SIMD_VECTOR_T_SCALAR_H
 #define SIMD_VECTOR_T_SCALAR_H
 
-#include "simd_vector_base.h"
+#include "Fastor/simd_vector/simd_vector_base.h"
 
 namespace Fastor {
 

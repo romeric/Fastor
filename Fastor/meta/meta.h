@@ -29,6 +29,9 @@ constexpr bool is_integral_v_ = std::is_integral<T>::value;
 
 template< class T >
 constexpr bool is_floating_v_ = std::is_floating_point<T>::value;
+
+template< class T >
+constexpr bool is_array_v_ = std::is_array<T>::value;
 //----------------------------------------------------------------------------------------------------------//
 
 

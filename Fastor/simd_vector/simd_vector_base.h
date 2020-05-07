@@ -2,10 +2,8 @@
 #define SIMD_VECTOR_BASE_H
 
 #include "Fastor/commons/commons.h"
-#include "Fastor/simd_vector/simd_vector_abi.h"
 #include "Fastor/simd_vector/extintrin.h"
-#include "Fastor/math/internal_math.h"
-
+#include "Fastor/simd_vector/simd_vector_abi.h"
 
 
 namespace Fastor {

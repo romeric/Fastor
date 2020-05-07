@@ -16,13 +16,13 @@ namespace internal {
 // lower or upper triangular. The matrices do not need to be square and trapezoidal cases are also
 // covered. For big matrices the speed-up is 2X or even better over matmul for when one operand is
 // is triangular and nearly 4X for when both operands are triangular.
-// For small matrices due to aggressive unrolling for SIMD the matrices cannot be exactly traversed in
-// within their triangular part(s) and a bit the non-triangular part(s) need(s) to be loaded as well,
-// hence the performance may not be exactly 2X over the the general matmul case
+// For small matrices due to aggressive unrolling for SIMD the matrices cannot be exactly traversed
+// within their triangular part(s) and a bit of the non-triangular part(s) need(s) to be loaded as well
+// hence, the performance may not be exactly 2X/4X over the general matmul case
 
 
 // The functions here are exact replica of those in matmul_kernels.h and will be eventually
-// merged together as these variants have no associated overhead for the general case for matmul
+// merged together as these variants have no associated overhead for the general case of matmul
 //-----------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------

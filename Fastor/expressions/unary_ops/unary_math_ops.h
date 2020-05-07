@@ -2,6 +2,7 @@
 #define UNARY_MATH_OP_H
 
 
+#include "Fastor/simd_math/simd_math.h"
 #include "Fastor/tensor/Tensor.h"
 #include "Fastor/expressions/linalg_ops/linalg_traits.h"
 #include "Fastor/expressions/expression_traits.h"

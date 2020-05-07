@@ -3,20 +3,8 @@
 
 #include "Fastor/commons/commons.h"
 #include "Fastor/meta/meta.h"
-#include "Fastor/simd_vector/simd_vector_abi.h"
 
 namespace Fastor {
-
-//----------------------------------------------------------------------------------------------------------//
-// Forward declare
-template <typename T, typename ABI>
-struct SIMDVector;
-
-template<typename T> struct stride_finder {
-    static constexpr size_t value = internal::get_simd_vector_size<SIMDVector<T,DEFAULT_ABI>>::value;
-};
-//----------------------------------------------------------------------------------------------------------//
-
 
 //----------------------------------------------------------------------------------------------------------//
 namespace matrix_type {
