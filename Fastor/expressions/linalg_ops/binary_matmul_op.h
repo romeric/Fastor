@@ -3,6 +3,7 @@
 
 #include "Fastor/meta/meta.h"
 #include "Fastor/simd_vector/SIMDVector.h"
+#include "Fastor/backend/inner.h"
 #include "Fastor/backend/matmul/matmul.h"
 #include "Fastor/tensor/AbstractTensor.h"
 #include "Fastor/tensor/Aliasing.h"
@@ -112,7 +113,7 @@ FASTOR_INLINE void matmul_dispatcher(const Tensor<T,I,J> &a, const Tensor<T,J,K>
         _dyadic<T,I,K>(a.data(),b.data(),out.data());
     }
     else FASTOR_IF_CONSTEXPR(I==1 && J!=1 && K==1) {
-        out = _doublecontract<T,J,1>(a.data(),b.data());
+        out.data()[0] = _inner<T,J>(a.data(),b.data());
     }
     else {
         _matmul<T,I,J,K>(a.data(),b.data(),out.data());
@@ -177,7 +178,7 @@ FASTOR_INLINE Tensor<T,I,K> matmul(const Tensor<T,I,J> &a, const Tensor<T,J,K> &
         _dyadic<T,I,K>(a.data(),b.data(),out.data());
     }
     else FASTOR_IF_CONSTEXPR(I==1 && J!=1 && K==1) {
-        out = _doublecontract<T,J,1>(a.data(),b.data());
+        out.data()[0] = _inner<T,J>(a.data(),b.data());
     }
     else {
         _matmul<T,I,J,K>(a.data(),b.data(),out.data());
@@ -204,17 +205,16 @@ template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
     && !is_tensor_v<Derived0> && !is_tensor_v<Derived1>,bool> = 0 >
 FASTOR_INLINE
 conditional_t_<Derived0::result_type::Dimension_t::value == 1,
-    Tensor<typename scalar_type_finder<Derived0>::type,
+    Tensor<typename Derived0::scalar_type,
         get_tensor_dimension_v<1,typename Derived1::result_type> >,
     conditional_t_<Derived1::result_type::Dimension_t::value == 1,
-        Tensor<typename scalar_type_finder<Derived0>::type,
+        Tensor<typename Derived0::scalar_type,
             get_tensor_dimension_v<0,typename Derived0::result_type> >,
-        Tensor<typename scalar_type_finder<Derived0>::type,
+        Tensor<typename Derived0::scalar_type,
             get_tensor_dimension_v<0,typename Derived0::result_type> ,
             get_tensor_dimension_v<1,typename Derived1::result_type> >
     >
 >
-// auto
 matmul(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b) {
     using lhs_type = typename Derived0::result_type;
     using rhs_type = typename Derived1::result_type;
@@ -228,12 +228,12 @@ template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
     && !is_tensor_v<Derived0> && is_tensor_v<Derived1>,bool> = 0 >
 FASTOR_INLINE
 conditional_t_<Derived0::result_type::Dimension_t::value == 1,
-    Tensor<typename scalar_type_finder<Derived0>::type,
+    Tensor<typename Derived0::scalar_type,
         get_tensor_dimension_v<1,typename Derived1::result_type> >,
     conditional_t_<Derived1::result_type::Dimension_t::value == 1,
-        Tensor<typename scalar_type_finder<Derived0>::type,
+        Tensor<typename Derived0::scalar_type,
             get_tensor_dimension_v<0,typename Derived0::result_type> >,
-        Tensor<typename scalar_type_finder<Derived0>::type,
+        Tensor<typename Derived0::scalar_type,
             get_tensor_dimension_v<0,typename Derived0::result_type> ,
             get_tensor_dimension_v<1,typename Derived1::result_type> >
     >
@@ -249,12 +249,12 @@ template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
     && is_tensor_v<Derived0> && !is_tensor_v<Derived1>,bool> = 0 >
 FASTOR_INLINE
 conditional_t_<Derived0::result_type::Dimension_t::value == 1,
-    Tensor<typename scalar_type_finder<Derived0>::type,
+    Tensor<typename Derived0::scalar_type,
         get_tensor_dimension_v<1,typename Derived1::result_type> >,
     conditional_t_<Derived1::result_type::Dimension_t::value == 1,
-        Tensor<typename scalar_type_finder<Derived0>::type,
+        Tensor<typename Derived0::scalar_type,
             get_tensor_dimension_v<0,typename Derived0::result_type> >,
-        Tensor<typename scalar_type_finder<Derived0>::type,
+        Tensor<typename Derived0::scalar_type,
             get_tensor_dimension_v<0,typename Derived0::result_type> ,
             get_tensor_dimension_v<1,typename Derived1::result_type> >
     >

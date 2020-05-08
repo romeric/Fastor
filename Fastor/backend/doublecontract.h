@@ -9,11 +9,11 @@ namespace Fastor {
 
 
 template<typename T, size_t M, size_t N,
-    enable_if_t_<is_greater_equal_v_<4*internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,M*N>::type::Size, M*N >, bool> = false>
+    enable_if_t_<is_greater_equal_v_<4*choose_best_simd_t<SIMDVector<T,DEFAULT_ABI>,M*N>::Size, M*N >, bool> = false>
 FASTOR_INLINE T _doublecontract(const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b) {
 
     constexpr size_t Size = M*N;
-    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,Size>::type;
+    using V = choose_best_simd_t<SIMDVector<T,DEFAULT_ABI>,Size>;
 
     V omm0;
     size_t i = 0;
@@ -31,11 +31,11 @@ FASTOR_INLINE T _doublecontract(const T* FASTOR_RESTRICT a, const T* FASTOR_REST
 }
 
 template<typename T, size_t M, size_t N,
-    enable_if_t_<is_less_v_<4*internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,M*N>::type::Size, M*N >, bool> = false>
+    enable_if_t_<is_less_v_<4*choose_best_simd_t<SIMDVector<T,DEFAULT_ABI>,M*N>::Size, M*N >, bool> = false>
 FASTOR_INLINE T _doublecontract(const T* FASTOR_RESTRICT a, const T* FASTOR_RESTRICT b) {
 
     constexpr size_t Size = M*N;
-    using V = typename internal::choose_best_simd_type<SIMDVector<T,DEFAULT_ABI>,Size>::type;
+    using V = choose_best_simd_t<SIMDVector<T,DEFAULT_ABI>,Size>;
 
     V omm0, omm1, omm2, omm3;
     size_t i = 0;
