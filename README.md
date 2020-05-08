@@ -282,7 +282,7 @@ isdeviatoric(A);                // is the tensor expression deviatoric [trace fr
 isvolumetric(A);                // is the tensor expression volumetric [A = 1/3*trace(A) * I]
 all_of(A < B);                  // Are all elements in A less than B
 any_of(A >= B);                 // is any element in A greater than or equal to the corresponding element in B
-none_of(A == B);                // is any element in A and B equal
+none_of(A == B);                // is no element in A and B equal
 ~~~
 
 ### Basic SIMD optimised linear algebra routines for small tensors
