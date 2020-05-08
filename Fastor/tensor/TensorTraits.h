@@ -7,6 +7,20 @@
 namespace Fastor {
 
 
+/* Classify/specialise Tensor<primitive> as primitive if needed.
+  This specialisation hurts the performance of some specialised
+  kernels like matmul/norm/LU/inv that unroll aggressively unless
+  Tensor<T> is specialised to wrap T only
+*/
+//--------------------------------------------------------------------------------------------------------------------//
+// template<typename T>
+// struct is_primitive<Tensor<T>> {
+//     static constexpr bool value = is_primitive_v_<T> ? true : false;
+// };
+//--------------------------------------------------------------------------------------------------------------------//
+
+
+/* Find the underlying scalar type of an expression */
 //--------------------------------------------------------------------------------------------------------------------//
 template<class T>
 struct scalar_type_finder {
@@ -52,11 +66,7 @@ struct scalar_type_finder<TensorMap<T,Rest...>> {
 //--------------------------------------------------------------------------------------------------------------------//
 
 
-
-
-
-
-
+/* Find the underlying tensor type of an expression */
 //--------------------------------------------------------------------------------------------------------------------//
 template<class X>
 struct tensor_type_finder {
@@ -103,9 +113,7 @@ struct tensor_type_finder<TensorMap<T,Rest...>> {
 //--------------------------------------------------------------------------------------------------------------------//
 
 
-
-
-
+/* Is an expression a tensor */
 //--------------------------------------------------------------------------------------------------------------------//
 template<class T>
 struct is_tensor {
@@ -119,6 +127,8 @@ template<typename T>
 constexpr bool is_tensor_v = is_tensor<T>::value;
 //--------------------------------------------------------------------------------------------------------------------//
 
+
+/* Is an expression a abstract tensor */
 //--------------------------------------------------------------------------------------------------------------------//
 template<class T>
 struct is_abstracttensor {
@@ -133,12 +143,10 @@ constexpr bool is_abstracttensor_v = is_abstracttensor<T>::value;
 //--------------------------------------------------------------------------------------------------------------------//
 
 
-
-
-
+/* Concatenate two tensor and make a new tensor type */
 //--------------------------------------------------------------------------------------------------------------------//
 // Do not generalise this, as it leads to all kinds of problems
-// with binary operator expression involving std::arithmetics
+// with binary operator expression involving std::arithmetic
 template <class X, class Y, class ... Z>
 struct concat_tensor;
 
@@ -171,7 +179,7 @@ using concatenated_tensor_t = typename concat_tensor<X,Y,Z...>::type;
 //--------------------------------------------------------------------------------------------------------------------//
 
 
-
+/* Extract the tensor dimension(s) */
 //--------------------------------------------------------------------------------------------------------------------//
 // Return dimensions of tensor as a std::array and Index<Rest...>
 template<class X>
@@ -208,8 +216,8 @@ static constexpr size_t get_tensor_dimension_v = if_get_tensor_dimension<Idx,1,X
 //--------------------------------------------------------------------------------------------------------------------//
 
 
+/* Find if a tensor is uniform */
 //--------------------------------------------------------------------------------------------------------------------//
-// Find if a tensor is uniform
 template<class T>
 struct is_tensor_uniform;
 
@@ -224,28 +232,27 @@ static constexpr bool is_tensor_uniform_v = is_tensor_uniform<T>::value;
 //--------------------------------------------------------------------------------------------------------------------//
 
 
+/* Extract a matrix from a high order tensor */
 //--------------------------------------------------------------------------------------------------------------------//
-// Extract a matrix from a high order tensor
-// this is used in places like determinant/inverse of high order tensors
+// This is used in functions like determinant/inverse of high order tensors
 // where the last square matrix (last two dimensions) is needed. If Seq is
 // is the same size as dimensions of tensor, this could also be used as
 // generic tensor dimension extractor
 template<class Tens, class Seq>
-struct LastMatrixExtracter;
+struct last_matrix_extracter;
 
 template<typename T, size_t ... Rest, size_t ... ss>
-struct LastMatrixExtracter<Tensor<T,Rest...>,std_ext::index_sequence<ss...>>
+struct last_matrix_extracter<Tensor<T,Rest...>,std_ext::index_sequence<ss...>>
 {
     static constexpr std::array<size_t,sizeof...(Rest)> dims = {Rest...};
     static constexpr std::array<size_t,sizeof...(ss)> values = {dims[ss]...};
     static constexpr size_t remaining_product = prod<dims[ss]...>::value;
-    // static constexpr size_t last_value = dims[sizeof...(Rest)-1];
     using type = Tensor<T,dims[ss]...>;
 };
 
 template<typename T, size_t ... Rest, size_t ... ss>
 constexpr std::array<size_t,sizeof...(ss)>
-LastMatrixExtracter<Tensor<T,Rest...>,std_ext::index_sequence<ss...>>::values;
+last_matrix_extracter<Tensor<T,Rest...>,std_ext::index_sequence<ss...>>::values;
 //--------------------------------------------------------------------------------------------------------------------//
 
 }

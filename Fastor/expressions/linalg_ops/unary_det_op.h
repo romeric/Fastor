@@ -32,12 +32,12 @@ FASTOR_INLINE T determinant(const Tensor<T,M,M> &a) {
 template<DetCompType DetType = DetCompType::Simple,
     typename T, size_t ... Rest, enable_if_t_<sizeof...(Rest)>=3 && DetType == DetCompType::Simple,bool> = false>
 FASTOR_INLINE
-typename LastMatrixExtracter<Tensor<T,Rest...>, typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::type
+typename last_matrix_extracter<Tensor<T,Rest...>, typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::type
 determinant(const Tensor<T,Rest...> &a) {
 
-    using OutTensor = typename LastMatrixExtracter<Tensor<T,Rest...>,
+    using OutTensor = typename last_matrix_extracter<Tensor<T,Rest...>,
         typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::type;
-    constexpr size_t remaining_product = LastMatrixExtracter<Tensor<T,Rest...>,
+    constexpr size_t remaining_product = last_matrix_extracter<Tensor<T,Rest...>,
         typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::remaining_product;
 
     constexpr size_t I = get_value<sizeof...(Rest)-1,Rest...>::value;

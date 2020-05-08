@@ -540,9 +540,7 @@ void _tmatmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T *
         }
     }
 }
-
-
-
+//-----------------------------------------------------------------------------------------------------------
 
 
 
@@ -729,7 +727,37 @@ void _tmatmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT
         }
     }
 }
+//-----------------------------------------------------------------------------------------------------------
 
+
+
+
+//-----------------------------------------------------------------------------------------------------------
+// tmatmul kernel for non-fundamental types
+// The assumption here is that non-fundamental types are not SIMD vectorisable for instance
+// Tensor<std::vector<T>,3,3> or Tensor<Tensor<...>,...> plus they cannot fuse [do fused-add-multiply]
+// so operations like [c += a*b] or potentially [c = c + a*b] might introduce multiple copies in
+// the inner most loops of matmul
+template<typename T, size_t M, size_t K, size_t N, typename LhsType = matrix_type::general, typename RhsType = matrix_type::general>
+FASTOR_INLINE
+void _tmatmul_base_non_primitive(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
+    // There is no SIMD here as V::Size == 1 anyway
+    // No outer loop unrolling otherwise the innermost loop
+    // will create unnecessary temporaries
+    for (size_t i=0; i<M; ++i) {
+        // V::Size == 1 so this loop can't be unrolled
+        for (size_t j=0; j<N; ++j) {
+            const size_t kfirst = find_kfirst<size_t,K,1,1,LhsType,RhsType>(i,j);
+            const size_t klast  = find_klast <size_t,K,1,1,LhsType,RhsType>(i,j);
+            // This could potentially cost as opposed to directly writing in to c
+            T tmp {};
+            for (size_t k=kfirst; k<klast; ++k) {
+                tmp += a[i*K+k]*b[k*N+j];
+            }
+            c[i*N+j] = tmp;
+        }
+    }
+}
 //-----------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------
@@ -746,6 +774,12 @@ void _tmatmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FAST
 
     using nativeV = SIMDVector<T,DEFAULT_ABI>;
     using V = choose_best_simd_t<nativeV,N>;
+
+    // Non-primitive types
+    FASTOR_IF_CONSTEXPR (!is_primitive_v_<T>) {
+        internal::_tmatmul_base_non_primitive<T,M,K,N,LhsType,RhsType>(a,b,out);
+        return;
+    }
 
     // Use specialised kernels
 #if defined(FASTOR_AVX2_IMPL) || defined(FASTOR_HAS_AVX512_MASKS)

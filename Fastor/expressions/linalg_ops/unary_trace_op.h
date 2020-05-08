@@ -19,12 +19,12 @@ FASTOR_INLINE T trace(const Tensor<T,I,I> &a) {
 // For high order tensors
 template<typename T, size_t ... Rest, typename std::enable_if<sizeof...(Rest)>=3,bool>::type=0>
 FASTOR_INLINE
-typename LastMatrixExtracter<Tensor<T,Rest...>, typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::type
+typename last_matrix_extracter<Tensor<T,Rest...>, typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::type
 trace(const Tensor<T,Rest...> &a) {
 
-    using OutTensor = typename LastMatrixExtracter<Tensor<T,Rest...>,
+    using OutTensor = typename last_matrix_extracter<Tensor<T,Rest...>,
         typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::type;
-    constexpr size_t remaining_product = LastMatrixExtracter<Tensor<T,Rest...>,
+    constexpr size_t remaining_product = last_matrix_extracter<Tensor<T,Rest...>,
         typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::remaining_product;
 
     constexpr size_t I = get_value<sizeof...(Rest)-1,Rest...>::value;

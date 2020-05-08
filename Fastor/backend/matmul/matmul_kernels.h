@@ -426,10 +426,7 @@ void _matmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * 
         }
     }
 }
-
-
-
-
+//-----------------------------------------------------------------------------------------------------------
 
 
 
@@ -603,6 +600,35 @@ void _matmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT 
                 maskstore(&c[n*N+j],maska,c_ij[n-M1]);
 #endif
             }
+        }
+    }
+}
+//-----------------------------------------------------------------------------------------------------------
+
+
+
+
+//-----------------------------------------------------------------------------------------------------------
+// matmul kernel for non-fundamental types
+// The assumption here is that non-fundamental types are not SIMD vectorisable for instance
+// Tensor<std::vector<T>,3,3> or Tensor<Tensor<...>,...> plus they cannot fuse [do fused-add-multiply]
+// so operations like [c += a*b] or potentially [c = c + a*b] might introduce multiple copies in
+// the inner most loops of matmul
+template<typename T, size_t M, size_t K, size_t N>
+FASTOR_INLINE
+void _matmul_base_non_primitive(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
+    // There is no SIMD here as V::Size == 1 anyway
+    // No outer loop unrolling otherwise the innermost loop
+    // will create unnecessary temporaries
+    for (size_t i=0; i<M; ++i) {
+        // V::Size == 1 so this loop can't be unrolled
+        for (size_t j=0; j<N; ++j) {
+            // This could potentially cost as opposed to directly writing in to c
+            T tmp {};
+            for (size_t k=0; k<K; ++k) {
+                tmp += a[i*K+k]*b[k*N+j];
+            }
+            c[i*N+j] = tmp;
         }
     }
 }

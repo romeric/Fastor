@@ -22,6 +22,9 @@ template< class T, class U >
 constexpr bool is_same_v_ = std::is_same<T, U>::value;
 
 template< class T >
+constexpr bool is_fundamental_v_ = std::is_fundamental<T>::value;
+
+template< class T >
 constexpr bool is_arithmetic_v_ = std::is_arithmetic<T>::value;
 
 template< class T >
@@ -45,6 +48,19 @@ template<> struct is_numeric<std::complex<double>>  { static constexpr bool valu
 
 template< class T >
 constexpr bool is_numeric_v_ = is_numeric<T>::value;
+//----------------------------------------------------------------------------------------------------------//
+
+
+//----------------------------------------------------------------------------------------------------------//
+// If a type is std::is_fundamental + std::complex<float/double> + any type that specialises this trait class
+// This class is provided because the behaviour of any code that specialises std::is_fundamental/arithmetic/
+// integral/floating_point is undefined
+template< class T > struct is_primitive {
+    static constexpr bool value = std::is_fundamental<T>::value || is_numeric<T>::value;
+};
+
+template< class T >
+constexpr bool is_primitive_v_ = is_primitive<T>::value;
 //----------------------------------------------------------------------------------------------------------//
 
 

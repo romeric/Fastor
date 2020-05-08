@@ -598,7 +598,7 @@ template<InvCompType InvType = InvCompType::SimpleInv,
 FASTOR_INLINE Tensor<T,Rest...>
 inverse(const Tensor<T,Rest...> &a) {
 
-    constexpr size_t remaining_product = LastMatrixExtracter<Tensor<T,Rest...>,
+    constexpr size_t remaining_product = last_matrix_extracter<Tensor<T,Rest...>,
         typename std_ext::make_index_sequence<sizeof...(Rest)-2>::type>::remaining_product;
 
     constexpr size_t I = get_value<sizeof...(Rest)-1,Rest...>::value;
