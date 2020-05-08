@@ -25,7 +25,7 @@ public:
     static constexpr FASTOR_INDEX Dimension = DIMS;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX rank() {return DIMS;}
-    constexpr FASTOR_INLINE FASTOR_INDEX size() const {return prod<Rest...>::value;}
+    constexpr FASTOR_INLINE FASTOR_INDEX size() const {return pack_prod<Rest...>::value;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return fl_expr.dimension(i);}
     constexpr const Tensor<T,Rest...>& expr() const {return _expr;}
 

@@ -20,8 +20,8 @@ struct pair_flop_cost<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,
     static constexpr size_t ind0[sizeof...(Idx0)] = {Idx0... };
     static constexpr size_t ind1[sizeof...(Idx1)] = {Idx1... };
     static constexpr int nums1[sizeof...(Rest1)] = {Rest1... };
-    static constexpr size_t cost_tensor0 = prod<Rest0...>::value;
-    static constexpr size_t remaining_cost = prod<retrieve_value(ind0,ind1,nums1,ss)...>::value;
+    static constexpr size_t cost_tensor0 = pack_prod<Rest0...>::value;
+    static constexpr size_t remaining_cost = pack_prod<retrieve_value(ind0,ind1,nums1,ss)...>::value;
     static constexpr size_t value = cost_tensor0*remaining_cost;
 
     using resulting_tensor =  typename get_resuling_tensor<Index<Idx0...>,Index<Idx1...>,
@@ -33,12 +33,12 @@ struct pair_flop_cost<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,
 
 template<class T, size_t... Idx0, size_t ...Rest0, size_t... ss>
 struct pair_flop_cost<Index<Idx0...>,Index<>,Tensor<T,Rest0...>,Tensor<T>,std_ext::index_sequence<ss...>> {
-    static constexpr size_t value = prod<Rest0...>::value;
+    static constexpr size_t value = pack_prod<Rest0...>::value;
 };
 
 template<class T, size_t... Idx1, size_t ...Rest1, size_t... ss>
 struct pair_flop_cost<Index<>,Index<Idx1...>,Tensor<T>,Tensor<T,Rest1...>,std_ext::index_sequence<ss...>> {
-    static constexpr size_t value = prod<Rest1...>::value;
+    static constexpr size_t value = pack_prod<Rest1...>::value;
 };
 
 template<class T, size_t... ss>

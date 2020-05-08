@@ -14,7 +14,7 @@ template<typename T, size_t ...Rest0, size_t ...Rest1>
 FASTOR_INLINE Tensor<T,Rest0...,Rest1...>
 outer(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
      Tensor<T,Rest0...,Rest1...> out;
-     _dyadic<T,prod<Rest0...>::value,prod<Rest1...>::value>(a.data(),b.data(),out.data());
+     _dyadic<T,pack_prod<Rest0...>::value,pack_prod<Rest1...>::value>(a.data(),b.data(),out.data());
      return out;
 }
 

@@ -65,6 +65,22 @@ constexpr bool is_primitive_v_ = is_primitive<T>::value;
 
 
 //----------------------------------------------------------------------------------------------------------//
+// Checks if all parameters in a variadic parameter pack are arithmetic
+template<class ... T>
+struct is_arithmetic_pack;
+template<class T, class ... Ts>
+struct is_arithmetic_pack<T,Ts...> {
+    static constexpr bool value = std::is_arithmetic<T>::value && is_arithmetic_pack<Ts...>::value;
+};
+template<class T>
+struct is_arithmetic_pack<T>       { static constexpr bool value = std::is_arithmetic<T>::value; };
+
+template<class ... T>
+static constexpr bool is_arithmetic_pack_v = is_arithmetic_pack<T...>::value;
+//----------------------------------------------------------------------------------------------------------//
+
+
+//----------------------------------------------------------------------------------------------------------//
 template<typename T> struct remove_all            { using type = T; };
 template<typename T> struct remove_all<const T>   { using type = typename remove_all<T>::type; };
 template<typename T> struct remove_all<T const&>  { using type = typename remove_all<T>::type; };
@@ -77,37 +93,26 @@ using remove_all_t = typename remove_all<T>::type;
 //----------------------------------------------------------------------------------------------------------//
 
 
+// Sum/multiply reduce all elements of a variadic pack
 //----------------------------------------------------------------------------------------------------------//
-template<size_t...Rest> struct add;
+// Sum
+template<size_t...Rest> struct pack_add;
 template<size_t Head, size_t ...Rest>
-struct add<Head, Rest...> {
-    static const size_t value = Head+add<Rest...>::value;
-};
-template<>
-struct add<> {
-    static const size_t value = 0;
-};
+struct pack_add<Head, Rest...> { static const size_t value = Head+pack_add<Rest...>::value;};
+template<> struct pack_add<>   { static const size_t value = 0;};
 
-template<size_t...Rest> struct prod;
+// Multiply
+template<size_t...Rest> struct pack_prod;
 template<size_t Head, size_t ...Rest>
-struct prod<Head, Rest...> {
-    static const size_t value = Head*prod<Rest...>::value;
-};
-template<>
-struct prod<> {
-    static const size_t value = 1;
-};
+struct pack_prod<Head, Rest...> { static const size_t value = Head*pack_prod<Rest...>::value;};
+template<> struct pack_prod<>   { static const size_t value = 1;};
 
-template<size_t Idx, size_t ... Rest>
-struct prod_nel;
+// Multiply first n elements
+template<size_t Idx, size_t ... Rest> struct prod_nel;
 template<size_t Idx, size_t First, size_t ... Rest>
-struct prod_nel<Idx, First, Rest...> {
-    static const size_t value = prod_nel<Idx-1, Rest...>::value;
-};
+struct prod_nel<Idx, First, Rest...> { static const size_t value = prod_nel<Idx-1, Rest...>::value;};
 template<size_t First, size_t ... Rest>
-struct prod_nel<1, First, Rest...> {
-    static const size_t value = prod<Rest...>::value;
-};
+struct prod_nel<1, First, Rest...> { static const size_t value = pack_prod<Rest...>::value;};
 
 //! Partial product of a sequence up to an index up_to
 template<class T, T N>
@@ -124,18 +129,13 @@ inline T partial_prod_reverse(const T (&ind)[N], T up_to, T num=N-1) {
 }
 
 template<typename T>
-constexpr T size_proder_(T one){
-    return one.size();
-}
+constexpr T size_proder_(T one){return one.size();}
 template<typename T>
-constexpr T size_proder_(T one, T two){
-    return one.size()*two.size();
-}
+constexpr T size_proder_(T one, T two){return one.size()*two.size();}
 template<typename T, typename ... Ts>
-constexpr T size_proder_(T one, T two, Ts ... ts) {
-    return _proder_(_proder_(one,two),ts...);
-}
+constexpr T size_proder_(T one, T two, Ts ... ts) {return _proder_(_proder_(one,two),ts...);}
 //----------------------------------------------------------------------------------------------------------//
+
 
 //----------------------------------------------------------------------------------------------------------//
 template<size_t Idx, size_t ... Rest>
@@ -170,7 +170,7 @@ struct get_all {
 //----------------------------------------------------------------------------------------------------------//
 
 
-// comparisons
+// comparitors
 //----------------------------------------------------------------------------------------------------------//
 template<size_t I, size_t J>
 struct is_equal {
@@ -225,7 +225,6 @@ struct meta_min<m,n> {
     static const size_t value = (m<=n) ? m : n;
 };
 
-
 template<size_t ... rest>
 struct meta_max;
 template<size_t m, size_t n, size_t ... rest>
@@ -274,15 +273,8 @@ struct meta_argmax<m,n> {
 // square/cube
 //----------------------------------------------------------------------------------------------------------//
 namespace internal {
-template<size_t Val>
-struct meta_square {
-    static constexpr size_t value = Val*Val;
-};
-
-template<size_t Val>
-struct meta_cube {
-    static constexpr size_t value = Val*Val*Val;
-};
+template<size_t Val> struct meta_square { static constexpr size_t value = Val*Val;};
+template<size_t Val> struct meta_cube   { static constexpr size_t value = Val*Val*Val;};
 }
 //----------------------------------------------------------------------------------------------------------//
 
@@ -312,27 +304,6 @@ class meta_sqrt<Y, InfX, SupX, true>
     public:  enum { ret = (SupX*SupX <= Y) ? SupX : InfX };
 };
 //----------------------------------------------------------------------------------------------------------//
-
-
-// Checks if all parameters in a variadic parameter pack are arithmetic
-//----------------------------------------------------------------------------------------------------------//
-template<class ... T>
-struct is_arithmetic_pack;
-
-template<class T, class ... U>
-struct is_arithmetic_pack<T,U...> {
-    static constexpr bool value = std::is_arithmetic<T>::value && is_arithmetic_pack<U...>::value;
-};
-
-template<class T>
-struct is_arithmetic_pack<T> {
-    static constexpr bool value = std::is_arithmetic<T>::value;
-};
-
-template<class ... T>
-static constexpr bool is_arithmetic_pack_v = is_arithmetic_pack<T...>::value;
-//----------------------------------------------------------------------------------------------------------//
-
 
 
 } // end of namespace Fastor

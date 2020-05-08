@@ -15,9 +15,9 @@ template<typename T, size_t ... Rest>
 class Tensor: public AbstractTensor<Tensor<T,Rest...>,sizeof...(Rest)> {
 private:
 #ifdef FASTOR_ZERO_INITIALISE
-    T FASTOR_ALIGN _data[prod<Rest...>::value] = {};
+    T FASTOR_ALIGN _data[pack_prod<Rest...>::value] = {};
 #else
-    T FASTOR_ALIGN _data[prod<Rest...>::value];
+    T FASTOR_ALIGN _data[pack_prod<Rest...>::value];
 #endif
 public:
     using scalar_type = T;
@@ -26,7 +26,7 @@ public:
     using result_type = Tensor<T,Rest...>;
     using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
     static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
-    static constexpr FASTOR_INDEX Size = prod<Rest...>::value;
+    static constexpr FASTOR_INDEX Size = pack_prod<Rest...>::value;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return Dimension;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Size;}
@@ -73,7 +73,7 @@ public:
             *this = tocolumnmajor(*this);
     }
     FASTOR_INLINE Tensor(const std::array<T,sizeof...(Rest)> &arr, int layout=RowMajor) {
-        std::copy(arr,arr+prod<Rest...>::value,_data);
+        std::copy(arr,arr+pack_prod<Rest...>::value,_data);
         if (layout == RowMajor)
             return;
         else

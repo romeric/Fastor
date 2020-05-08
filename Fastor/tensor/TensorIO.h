@@ -15,7 +15,7 @@ using std_matrix = typename std::vector<std::vector<T>>::type;
 template<size_t M, size_t N, size_t ... Rest>
 FASTOR_INLINE std::vector<std::vector<int>> index_generator() {
     // Do NOT change int to size_t, comparison overflows
-    std::vector<std::vector<int>> idx; idx.resize(prod<M,N,Rest...>::value);
+    std::vector<std::vector<int>> idx; idx.resize(pack_prod<M,N,Rest...>::value);
     std::array<int,sizeof...(Rest)+2> maxes = {M,N,Rest...};
     std::array<int,sizeof...(Rest)+2> a;
     int i,j;
@@ -62,7 +62,7 @@ int get_row_width(const std::ostream &os, const T *a_data, size_t size) {
 template<template<typename,size_t...> class t_type, typename T, size_t ...Rest>
 int get_row_width(const std::ostream &os, const t_type<T,Rest...>& a) {
     int width = 0;
-    for(size_t j = 0; j < prod<Rest...>::value; ++j)
+    for(size_t j = 0; j < pack_prod<Rest...>::value; ++j)
     {
         std::stringstream sstr;
         sstr.copyfmt(os);
@@ -134,7 +134,7 @@ FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const t_type<T,Res
     constexpr int M = get_value<sizeof...(Rest)-1,Rest...>::value;\
     constexpr int N = get_value<sizeof...(Rest),Rest...>::value;\
     constexpr int lastrowcol = M*N;\
-    constexpr size_t prods = prod<Rest...>::value;\
+    constexpr size_t prods = pack_prod<Rest...>::value;\
     std::vector<std::vector<int>> combs = internal::index_generator<Rest...>();\
     os.precision(fmt._precision);\
     int width = internal::get_row_width(os, a);\

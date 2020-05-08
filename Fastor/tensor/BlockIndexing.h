@@ -176,11 +176,11 @@ template<int F0, int L0, int S0,
     get_value<1,Rest...>::value>::type>::value != get_value<1,Rest...>::value,
     bool>::type =0>
 FASTOR_INLINE TensorFixedViewExpr1D<Tensor<T,Rest...>,
-        typename to_positive<fseq<F0,L0,S0>,prod<Rest...>::value>::type,1>
+        typename to_positive<fseq<F0,L0,S0>,pack_prod<Rest...>::value>::type,1>
 operator()(fseq<F0,L0,S0>) {
     static_assert(Dimension==1,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     return TensorFixedViewExpr1D<Tensor<T,Rest...>,
-        typename to_positive<fseq<F0,L0,S0>,prod<Rest...>::value>::type,1>(*this);
+        typename to_positive<fseq<F0,L0,S0>,pack_prod<Rest...>::value>::type,1>(*this);
 }
 
 // if fseq == fall - then just return a reference to the tensor
@@ -385,10 +385,10 @@ FASTOR_INLINE TensorConstFixedViewExprnD<Tensor<T,Rest...>,Fseq...> operator()(F
 
 template<int F0, int L0, int S0>
 FASTOR_INLINE TensorConstFixedViewExpr1D<Tensor<T,Rest...>,
-        typename to_positive<fseq<F0,L0,S0>,prod<Rest...>::value>::type,1> operator()(fseq<F0,L0,S0>) const {
+        typename to_positive<fseq<F0,L0,S0>,pack_prod<Rest...>::value>::type,1> operator()(fseq<F0,L0,S0>) const {
     static_assert(Dimension==1,"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
     return TensorConstFixedViewExpr1D<Tensor<T,Rest...>,
-        typename to_positive<fseq<F0,L0,S0>,prod<Rest...>::value>::type,1>(*this);
+        typename to_positive<fseq<F0,L0,S0>,pack_prod<Rest...>::value>::type,1>(*this);
 }
 
 template<int F0, int L0, int S0, int F1, int L1, int S1>

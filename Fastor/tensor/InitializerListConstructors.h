@@ -7,7 +7,7 @@
     FASTOR_INLINE Tensor(const std::initializer_list<U> &lst) {
         static_assert(sizeof...(Rest)==1,"TENSOR RANK MISMATCH WITH LIST-INITIALISER");
 #if FASTOR_BOUNDS_CHECK
-        FASTOR_ASSERT(prod<Rest...>::value==lst.size(), "TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
+        FASTOR_ASSERT(pack_prod<Rest...>::value==lst.size(), "TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
 #endif
         auto counter = 0;
         for (auto &i: lst) {_data[counter] = i; counter++;}
@@ -26,7 +26,7 @@
             FASTOR_ASSERT(N==lst.size(),"TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
             size_ += curr_size;
         }
-        FASTOR_ASSERT(prod<Rest...>::value==size_, "TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
+        FASTOR_ASSERT(pack_prod<Rest...>::value==size_, "TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
 #endif
         auto counter = 0;
         for (auto &lst1d: lst2d) {for (auto &i: lst1d) {_data[counter] = i; counter++;}}
@@ -49,7 +49,7 @@
                 size_ += curr_size;
             }
         }
-        FASTOR_ASSERT(prod<Rest...>::value==size_, "TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
+        FASTOR_ASSERT(pack_prod<Rest...>::value==size_, "TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
 #endif
         auto counter = 0;
         for (auto &lst2d: lst3d) {for (auto &lst1d: lst2d) {for (auto &i: lst1d) {_data[counter] = i; counter++;}}}
@@ -76,7 +76,7 @@
                 }
             }
         }
-        FASTOR_ASSERT(prod<Rest...>::value==size_, "TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
+        FASTOR_ASSERT(pack_prod<Rest...>::value==size_, "TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
 #endif
         auto counter = 0;
         for (auto &lst3d: lst4d) {for (auto &lst2d: lst3d) {for (auto &lst1d: lst2d) {for (auto &i: lst1d) {_data[counter] = i; counter++;}}}}

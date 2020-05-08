@@ -28,7 +28,7 @@ FASTOR_INLINE Tensor<T,Rest...> tocolumnmajor(const TensorType<T,Rest...> &a) {
             }
         }
         else {
-            constexpr int Size = prod<Rest...>::value;
+            constexpr int Size = pack_prod<Rest...>::value;
             std::array<size_t,Dimension> products_ = nprods_views<Index<Rest...>,
                 typename std_ext::make_index_sequence<Dimension>::type>::values;
             FASTOR_INDEX DimensionHolder[Dimension] = {Rest...};
@@ -85,7 +85,7 @@ FASTOR_INLINE Tensor<T,Rest...> torowmajor(const TensorType<T,Rest...> &a) {
             }
         }
         else {
-            constexpr int Size = prod<Rest...>::value;
+            constexpr int Size = pack_prod<Rest...>::value;
             std::array<size_t,Dimension> products_ = nprods_views<Index<Rest...>,
                 typename std_ext::make_index_sequence<Dimension>::type>::values;
             FASTOR_INDEX DimensionHolder[Dimension] = {Rest...};

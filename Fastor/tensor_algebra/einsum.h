@@ -99,7 +99,7 @@ einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
     constexpr size_t rest0[sizeof...(Rest0)] = {Rest0...};
     constexpr size_t rest1[sizeof...(Rest1)] = {Rest1...};
     constexpr size_t product = which_one_is_vector == 1 ? partial_prod(rest0, matches_up_to) :  partial_prod(rest1, matches_up_to);
-    constexpr size_t vec_product = which_one_is_vector == 1 ? prod<Rest1...>::value : prod<Rest0...>::value;
+    constexpr size_t vec_product = which_one_is_vector == 1 ? pack_prod<Rest1...>::value : pack_prod<Rest0...>::value;
     decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) out;
     which_one_is_vector == 1 ? _matmul<T,product,vec_product,1>(a.data(),b.data(),out.data()) :\
       _matmul<T,product,vec_product,1>(b.data(),a.data(),out.data());
@@ -122,7 +122,7 @@ einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
     constexpr size_t rest0[sizeof...(Rest0)] = {Rest0...};
     constexpr size_t rest1[sizeof...(Rest1)] = {Rest1...};
     constexpr size_t product = which_one_is_vector == 1 ? partial_prod_reverse(rest0, matches_up_to) :  partial_prod_reverse(rest1, matches_up_to);
-    constexpr size_t vec_product = which_one_is_vector == 1 ? prod<Rest1...>::value : prod<Rest0...>::value;
+    constexpr size_t vec_product = which_one_is_vector == 1 ? pack_prod<Rest1...>::value : pack_prod<Rest0...>::value;
     decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) out;
     which_one_is_vector == 1 ? _matmul<T,1,vec_product,product>(b.data(),a.data(),out.data()) :\
       _matmul<T,1,vec_product,product>(a.data(),b.data(),out.data());

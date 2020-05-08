@@ -61,7 +61,7 @@ FASTOR_INLINE T inner(const Tensor<T,Rest...> &a, const Tensor<T,Rest...> &b) {
 
     constexpr size_t ndim = sizeof...(Rest);
     FASTOR_IF_CONSTEXPR (ndim>0) {
-        return _doublecontract<T,prod<Rest...>::value,1>(a_data,b_data);
+        return _doublecontract<T,pack_prod<Rest...>::value,1>(a_data,b_data);
     }
     else {
         return (*a_data)*(*b_data);

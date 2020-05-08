@@ -22,10 +22,10 @@ public:
     using result_type = TensorMap<T,Rest...>;
     using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
     static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
-    static constexpr FASTOR_INDEX Size = prod<Rest...>::value;
+    static constexpr FASTOR_INDEX Size = pack_prod<Rest...>::value;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX rank() {return sizeof...(Rest);}
-    FASTOR_INLINE FASTOR_INDEX size() const {return prod<Rest...>::value;}
+    FASTOR_INLINE FASTOR_INDEX size() const {return pack_prod<Rest...>::value;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX dim) const {
 #ifndef NDEBUG
         FASTOR_ASSERT(dim>=0 && dim < sizeof...(Rest), "TENSOR SHAPE MISMATCH");

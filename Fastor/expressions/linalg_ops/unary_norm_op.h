@@ -20,7 +20,7 @@ template<typename T, size_t ... Rest>
 FASTOR_INLINE T norm(const Tensor<T,Rest...> &a) {
     if (sizeof...(Rest) == 0)
         return *a.data();
-    return _norm<T,prod<Rest...>::value>(a.data());
+    return _norm<T,pack_prod<Rest...>::value>(a.data());
 }
 
 // For generic expressions

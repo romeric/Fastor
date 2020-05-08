@@ -341,7 +341,7 @@ struct no_of_loops_to_set<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tenso
     static constexpr size_t concat_nums[sizeof...(Idx0)+sizeof...(Idx1)] = {Rest0...,Rest1...};
     static constexpr std::array<size_t,sizeof...(ss)> idx_in_concat = {find_index(concat_idx,index_temp::_IndexHolder[ss])...};
     static constexpr std::array<size_t,sizeof...(ss)> dims = {concat_nums[idx_in_concat[ss]]...};
-    static constexpr int value = prod<dims[ss]...>::value;
+    static constexpr int value = pack_prod<dims[ss]...>::value;
 
     using type = Tensor<T,dims[ss]...>;
     using indices = Index<index_temp::_IndexHolder[ss]...>;
@@ -683,7 +683,7 @@ struct gen_single_cartesian_product;
 template<int I, size_t ... Rest, size_t ... ss, typename T>
 struct gen_single_cartesian_product<I,Tensor<T,Rest...>,std_ext::index_sequence<ss...>> {
     static constexpr int vals[sizeof...(Rest)] = {Rest...};
-    static constexpr std::array<int,sizeof...(ss)> values = {cartesian_product_single(vals,prod<Rest...>::value,I,ss)...};
+    static constexpr std::array<int,sizeof...(ss)> values = {cartesian_product_single(vals,pack_prod<Rest...>::value,I,ss)...};
 };
 
 template<int I, size_t ... Rest, size_t ... ss, typename T>
@@ -821,7 +821,7 @@ struct loop_setter<Index<Idx...>,Tensor<T,Rest...>,std_ext::index_sequence<ss...
     static constexpr size_t concat_nums[sizeof...(Rest)] = {Rest...};
     static constexpr std::array<size_t,sizeof...(ss)> idx_in_concat = {find_index(concat_idx,index_temp::_IndexHolder[ss])...};
     static constexpr std::array<size_t,sizeof...(ss)> dims = {concat_nums[idx_in_concat[ss]]...};
-    static constexpr int value = prod<dims[ss]...>::value;
+    static constexpr int value = pack_prod<dims[ss]...>::value;
 
     using type = Tensor<T,dims[ss]...>;
     using indices = Index<index_temp::_IndexHolder[ss]...>;

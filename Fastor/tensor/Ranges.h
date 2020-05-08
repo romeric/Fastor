@@ -180,7 +180,7 @@ struct get_fixed_sequence_pack_dimensions<Derived<T, Rest...>, std_ext::index_se
     static constexpr std::array<int,sizeof...(Fseqs)> dims = { internal::fseq_range_detector<to_positive_t<Fseqs,Rest>>::value... };
     // using type = Derived<T,internal::fseq_range_detector<Fseqs>::value...>;
     using type = Derived<T,internal::fseq_range_detector<to_positive_t<Fseqs,Rest>>::value...>;
-    static constexpr size_t Size = prod<dims[ss]...>::value;
+    static constexpr size_t Size = pack_prod<dims[ss]...>::value;
 };
 
 template<template<typename,size_t...> class Derived, typename T, size_t ...Rest, size_t... ss, typename ... Fseqs>

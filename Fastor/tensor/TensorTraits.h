@@ -246,7 +246,7 @@ struct last_matrix_extracter<Tensor<T,Rest...>,std_ext::index_sequence<ss...>>
 {
     static constexpr std::array<size_t,sizeof...(Rest)> dims = {Rest...};
     static constexpr std::array<size_t,sizeof...(ss)> values = {dims[ss]...};
-    static constexpr size_t remaining_product = prod<dims[ss]...>::value;
+    static constexpr size_t remaining_product = pack_prod<dims[ss]...>::value;
     using type = Tensor<T,dims[ss]...>;
 };
 

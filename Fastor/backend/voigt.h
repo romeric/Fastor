@@ -36,7 +36,7 @@ struct VoigtType<T,3,3> {
 
 
 template<typename T, size_t ... Rest,
-         typename std::enable_if<sizeof...(Rest)==4 && prod<Rest...>::value == 16
+         typename std::enable_if<sizeof...(Rest)==4 && pack_prod<Rest...>::value == 16
                                  ,bool>::type=0>
 FASTOR_INLINE void _voigt(const T * FASTOR_RESTRICT a_data, T * FASTOR_RESTRICT VoigtA) {
     VoigtA[0] = a_data[0];
@@ -52,7 +52,7 @@ FASTOR_INLINE void _voigt(const T * FASTOR_RESTRICT a_data, T * FASTOR_RESTRICT 
 
 
 template<typename T, size_t ... Rest,
-         typename std::enable_if<sizeof...(Rest)==4 && prod<Rest...>::value == 81
+         typename std::enable_if<sizeof...(Rest)==4 && pack_prod<Rest...>::value == 81
                                  ,bool>::type=0>
 FASTOR_INLINE void _voigt(const T * FASTOR_RESTRICT a_data, T * FASTOR_RESTRICT VoigtA) {
 
@@ -96,7 +96,7 @@ FASTOR_INLINE void _voigt(const T * FASTOR_RESTRICT a_data, T * FASTOR_RESTRICT 
 
 
 template<typename T, size_t ... Rest,
-         typename std::enable_if<sizeof...(Rest)==3 && prod<Rest...>::value == 8
+         typename std::enable_if<sizeof...(Rest)==3 && pack_prod<Rest...>::value == 8
                                  ,bool>::type=0>
 FASTOR_INLINE void _voigt(const T * FASTOR_RESTRICT e, T * FASTOR_RESTRICT VoigtA) {
 
@@ -112,7 +112,7 @@ FASTOR_INLINE void _voigt(const T * FASTOR_RESTRICT e, T * FASTOR_RESTRICT Voigt
 
 
 template<typename T, size_t ... Rest,
-         typename std::enable_if<sizeof...(Rest)==3 && prod<Rest...>::value == 27
+         typename std::enable_if<sizeof...(Rest)==3 && pack_prod<Rest...>::value == 27
                                  ,bool>::type=0>
 FASTOR_INLINE void _voigt(const T * FASTOR_RESTRICT e, T * FASTOR_RESTRICT VoigtA) {
 
@@ -140,7 +140,7 @@ FASTOR_INLINE void _voigt(const T * FASTOR_RESTRICT e, T * FASTOR_RESTRICT Voigt
 
 
 template<typename T, size_t ... Rest,
-         typename std::enable_if<sizeof...(Rest)==2 && prod<Rest...>::value == 4
+         typename std::enable_if<sizeof...(Rest)==2 && pack_prod<Rest...>::value == 4
                                  ,bool>::type=0>
 FASTOR_INLINE void _voigt(const T * FASTOR_RESTRICT e, T * FASTOR_RESTRICT VoigtA) {
 
@@ -151,7 +151,7 @@ FASTOR_INLINE void _voigt(const T * FASTOR_RESTRICT e, T * FASTOR_RESTRICT Voigt
 
 
 template<typename T, size_t ... Rest,
-         typename std::enable_if<sizeof...(Rest)==2 && prod<Rest...>::value == 9
+         typename std::enable_if<sizeof...(Rest)==2 && pack_prod<Rest...>::value == 9
                                  ,bool>::type=0>
 FASTOR_INLINE void _voigt(const T * FASTOR_RESTRICT e, T * FASTOR_RESTRICT VoigtA) {
 

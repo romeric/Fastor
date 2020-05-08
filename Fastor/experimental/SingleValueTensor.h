@@ -20,7 +20,7 @@ public:
     using result_type = SingleValueTensor<T,Rest...>;
     using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
     static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
-    static constexpr FASTOR_INDEX Size = prod<Rest...>::value;
+    static constexpr FASTOR_INDEX Size = pack_prod<Rest...>::value;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return Dimension;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Size;}
@@ -118,7 +118,7 @@ public:
 };
 
 // template<typename T, size_t ...Rest>
-// constexpr const T SingleValueTensor<T,Rest...>::_data[prod<Rest...>::value];
+// constexpr const T SingleValueTensor<T,Rest...>::_data[pack_prod<Rest...>::value];
 
 template<typename T, size_t ... Rest>
 struct tensor_type_finder<SingleValueTensor<T,Rest...>> {
