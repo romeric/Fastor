@@ -287,7 +287,8 @@ void test_factorisation() {
             FASTOR_EXIT_ASSERT(std::abs(sum(A - L % U)) < BigTol);
         }
 
-       // LU 34x34
+        // LU 34x34 - do not test higher sizes as it can be quite heavy
+        // for the compiler
         {
             constexpr size_t M = 34;
             Tensor<size_t,M> p;

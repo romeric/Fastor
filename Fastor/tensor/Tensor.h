@@ -39,26 +39,22 @@ public:
 
     // Classic constructors
     //----------------------------------------------------------------------------------------------------------//
+    // Default constructor
     constexpr FASTOR_INLINE Tensor(){}
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
-    FASTOR_INLINE Tensor(U num) {
-        SIMDVector<T,DEFAULT_ABI> reg(static_cast<T>(num));
-        FASTOR_INDEX i;
-        for (i = 0; i< ROUND_DOWN(Size,Stride); i+=Stride) {
-            reg.store(&_data[i]);
-        }
-        for (; i<Size; ++i) {
-            _data[i] = (T)num;
-        }
-    }
-
+    // Copy constructor
     FASTOR_INLINE Tensor(const Tensor<T,Rest...> &other) {
         // This constructor cannot be default
         if (_data == other.data()) return;
         // fast memcopy
         std::copy(other.data(),other.data()+Size,_data);
     };
+
+    // Constructor from a scalar
+    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    FASTOR_INLINE Tensor(U num) {
+        assign(*this, num);
+    }
 
     // Initialiser list constructors
     //----------------------------------------------------------------------------------------------------------//
@@ -156,104 +152,8 @@ public:
     }
     //----------------------------------------------------------------------------------------------------------//
 
-    // Boolean functions
+
     //----------------------------------------------------------------------------------------------------------//
-    constexpr FASTOR_INLINE bool is_uniform() const {
-        //! A tensor is uniform if it spans equally in all dimensions,
-        //! i.e. generalisation of square matrix to n dimension
-        return no_of_unique<Rest...>::value==1 ? true : false;
-    }
-
-    template<typename U, size_t ... RestOther>
-    FASTOR_INLINE bool is_equal(const Tensor<U,RestOther...> &other, const double Tol=PRECI_TOL) const {
-        //! Two tensors are equal if they have the same type, rank, size and elements
-        if(!std::is_same<T,U>::value) return false;
-        if(sizeof...(Rest)!=sizeof...(RestOther)) return false;
-        if(prod<Rest...>::value!=prod<RestOther...>::value) return false;
-        else {
-            bool out = true;
-            const T *other_data = other.data();
-            for (size_t i=0; i<Size; ++i) {
-                if (std::fabs(_data[i]-other_data[i])>Tol) {
-                    out = false;
-                    break;
-                }
-            }
-            return out;
-        }
-    }
-
-    FASTOR_INLINE bool is_orthogonal() const {
-        //! A second order tensor A is orthogonal if A*A'= I
-        if (!is_uniform())
-            return false;
-        else {
-            static_assert(sizeof...(Rest)==2,"ORTHOGONALITY OF MATRIX WITH RANK!=2 CANNOT BE DETERMINED");
-            Tensor<T,Rest...> out;
-            out = matmul(transpose(*this),*this);
-            Tensor<T,Rest...> ey; ey.eye();
-            return is_equal(ey);
-        }
-    }
-
-    FASTOR_INLINE bool does_belong_to_so3(const double Tol=PRECI_TOL) const {
-        //! A second order tensor belongs to special orthogonal 3D group if
-        //! it is orthogonal and its determinant is +1
-        if (is_orthogonal()) {
-            // Check if we are in 3D space
-            if (prod<Rest...>::value!=9) {
-                return false;
-            }
-            T out = _det<T,Rest...>(_data);
-            if (std::fabs(out-1)>Tol) {
-                return false;
-            }
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-    FASTOR_INLINE bool does_belong_to_sl3(const double Tol=PRECI_TOL) const {
-        //! A second order tensor belongs to special linear 3D group if
-        //! its determinant is +1
-        T out = _det<T,Rest...>(_data);
-        if (std::fabs(out-1.)>Tol) {
-            return false;
-        }
-        return true;
-    }
-
-    FASTOR_INLINE bool is_symmetric(const double Tol=PRECI_TOL) const {
-        if (is_uniform()) {
-            bool bb = true;
-            size_t M = dimension(0);
-            size_t N = dimension(1);
-            for (size_t i=0; i<M; ++i)
-                for (size_t j=0; j<N; ++j)
-                    if (std::fabs(_data[i*N+j] - _data[j*N+i])>Tol) {
-                        bb = false;
-                    }
-            return bb;
-        }
-        else {
-            return false;
-        }
-    }
-    template<typename ... Args, typename std::enable_if<sizeof...(Args)==2,bool>::type=0>
-    FASTOR_INLINE bool is_symmetric(Args ...) const {
-        return true;
-    }
-
-    FASTOR_INLINE bool is_deviatoric(const double Tol=PRECI_TOL) const {
-        if (std::fabs(trace(*this))<Tol)
-            return true;
-        else
-            return false;
-    }
-    //----------------------------------------------------------------------------------------------------------//
-
 protected:
     template<typename Derived, size_t DIMS>
     FASTOR_INLINE void verify_dimensions(const AbstractTensor<Derived,DIMS>& src_) const {

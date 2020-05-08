@@ -270,13 +270,19 @@ This will incur almost no runtime cost. As where if the tensors were of type `Te
 
 
 ### Boolean tensor algebra
-A set of boolean tensor routines are available in Fastor. Note that, whenever possible most of these operations are performed at compile time
+A set of boolean tensor routines are available. Note that, whenever possible most of these operations are performed at compile time
 ~~~c++
-is_uniform();             // does the tensor span equally in all spatial dimensions, generalisation of square matrices
-is_orthogonal();          // is the tensor orthogonal
-does_belong_to_sl3();     // does the tensor belong to special linear 3D group
-does_belong_to_so3();     // does the tensor belong to special orthogonal 3D group
-is_symmetric(axis_1, axis_3); // is the tensor symmetric in the axis_1 x axis_3 plane
+isuniform(A);                   // does the tensor expression span equally in all dimensions - generalisation of square matrices
+isorthogonal(A);                // is the tensor expression orthogonal
+isequal(A,B,tol);               // Are two tensor expressions equal within a tolerance
+doesbelongtoSL3(A);             // does the tensor expression belong to the special linear 3D group
+doesbelongtoSO3(A);             // does the tensor expression belong to the special orthogonal 3D group
+issymmetric<axis_1, axis_3>(A); // is the tensor expression symmetric in the axis_1 x axis_3 plane
+isdeviatoric(A);                // is the tensor expression deviatoric [trace free]
+isvolumetric(A);                // is the tensor expression volumetric [A = 1/3*trace(A) * I]
+all_of(A < B);                  // Are all elements in A less than B
+any_of(A >= B);                 // is any element in A greater than or equal to the corresponding element in B
+none_of(A == B);                // is any element in A and B equal
 ~~~
 
 ### Basic SIMD optimised linear algebra routines for small tensors

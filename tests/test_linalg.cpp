@@ -237,25 +237,6 @@ void test_linalg() {
         FASTOR_EXIT_ASSERT(std::abs(sum(trans(t1 + t1*2 - t1 - t1))     - sum(t1)) < BigTol);
     }
 
-    // Misc
-    {
-        Tensor<T,2,2> a0; a0.iota(3);
-        a0 = a0 + transpose(a0);
-        FASTOR_EXIT_ASSERT(a0.is_symmetric(Tol));
-
-        Tensor<T,3,3> a1; a1.iota(5);
-        a1 = a1 + transpose(a1);
-        FASTOR_EXIT_ASSERT(a1.is_symmetric(Tol));
-
-        Tensor<T,4,4> a2; a2.iota(55);
-        a2 = 0.5*(a2 + transpose(a2))+1;
-        FASTOR_EXIT_ASSERT(a2.is_symmetric(Tol));
-
-        FASTOR_EXIT_ASSERT(a0.is_equal(a0));
-        FASTOR_EXIT_ASSERT(a1.is_equal(a1,Tol));
-        FASTOR_EXIT_ASSERT(a2.is_equal(a2,BigTol));
-    }
-
     // solve
     {
         constexpr size_t M = 2;

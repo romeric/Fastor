@@ -208,7 +208,20 @@ static constexpr size_t get_tensor_dimension_v = if_get_tensor_dimension<Idx,1,X
 //--------------------------------------------------------------------------------------------------------------------//
 
 
+//--------------------------------------------------------------------------------------------------------------------//
+// Find if a tensor is uniform
+template<class T>
+struct is_tensor_uniform;
 
+template<typename T, size_t ... Rest>
+struct is_tensor_uniform<Tensor<T,Rest...>> {
+    static constexpr bool value = no_of_unique<Rest...>::value == 1 ? true : false;
+};
+
+// helper function
+template<class T>
+static constexpr bool is_tensor_uniform_v = is_tensor_uniform<T>::value;
+//--------------------------------------------------------------------------------------------------------------------//
 
 
 //--------------------------------------------------------------------------------------------------------------------//
