@@ -38,7 +38,7 @@ FASTOR_INLINE typename Derived::scalar_type sum(const AbstractTensor<Derived,DIM
 
     const Derived &src = _src.self();
     using T = typename Derived::scalar_type;
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using V = typename Derived::simd_vector_type;
     FASTOR_INDEX i;
     T _scal=0; V _vec(_scal);
     for (i = 0; i < ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
@@ -64,7 +64,7 @@ FASTOR_INLINE typename Derived::scalar_type product(const AbstractTensor<Derived
 
     const Derived &src = _src.self();
     using T = typename Derived::scalar_type;
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using V = typename Derived::simd_vector_type;
     FASTOR_INDEX i;
     T _scal=1; V _vec(_scal);
     for (i = 0; i < ROUND_DOWN(src.size(),V::Size); i+=V::Size) {

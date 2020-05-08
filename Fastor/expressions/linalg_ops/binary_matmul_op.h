@@ -28,6 +28,9 @@ struct BinaryMatMulOp: public AbstractTensor<BinaryMatMulOp<TLhs, TRhs, DIM0>,DI
     static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX rank() {return DIM0;}
     using scalar_type = typename scalar_type_finder<BinaryMatMulOp<TLhs, TRhs, DIM0>>::type;
+    // does not matter which one as matmul bypasses this
+    using simd_vector_type = typename TLhs::simd_vector_type;
+    using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = conditional_t_<lhs_rank == 1,   // vector-matrix
                                         Tensor<scalar_type,N> ,
                                         conditional_t_<rhs_rank == 1, // matrix-vector

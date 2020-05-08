@@ -237,6 +237,32 @@ using binary_arithmetic_result_t = typename binary_arithmetic_result_type<Derive
 
 
 
+//------------------------------------------------------------------------------------------------//
+template<typename T, typename T2 = void>
+struct get_binary_op_simd_vector_type;
+template<typename T>
+struct get_binary_op_simd_vector_type<T, enable_if_t_<is_arithmetic_v_<T> > > {
+    using type = T;
+};
+template<typename T>
+struct get_binary_op_simd_vector_type<T, enable_if_t_<!is_arithmetic_v_<T> > > {
+    using type = typename T::simd_vector_type;
+};
+
+template<class Derived>
+struct binary_op_simd_vector_type;
+template<template<typename,typename,size_t> class BinaryExpr, typename TLhs, typename TRhs, size_t DIM0>
+struct binary_op_simd_vector_type< BinaryExpr<TLhs,TRhs,DIM0> > {
+    using type = conditional_t_<!is_arithmetic_v_<TLhs>,
+        typename get_binary_op_simd_vector_type<TLhs>::type,
+        typename get_binary_op_simd_vector_type<TRhs>::type >;
+};
+template<class Derived>
+using binary_op_simd_vector_t = typename binary_op_simd_vector_type<Derived>::type;
+//------------------------------------------------------------------------------------------------//
+
+
+
 
 template<class T>
 struct scalar_type_finder;

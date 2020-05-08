@@ -5,7 +5,7 @@ template<typename U=T>
 FASTOR_INLINE void fill(U num0) {
     T num = static_cast<T>(num0);
     FASTOR_INDEX i = 0UL;
-    SIMDVector<T,DEFAULT_ABI> _vec(num);
+    SIMDVector<T,simd_abi_type> _vec(num);
     for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
         _vec.store(&_data[i],false);
     }
@@ -21,7 +21,7 @@ template<typename U=T>
 FASTOR_INLINE void arange(U num0=0) {
     std::iota(_data, &_data[Size], num0);
     // T num = static_cast<T>(num0);
-    // SIMDVector<T,DEFAULT_ABI> _vec;
+    // SIMDVector<T,simd_abi_type> _vec;
     // FASTOR_INDEX i=0;
     // for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
     //     _vec.set_sequential(T(i)+num);
@@ -31,7 +31,7 @@ FASTOR_INLINE void arange(U num0=0) {
 }
 
 FASTOR_INLINE void zeros() {
-    SIMDVector<T,DEFAULT_ABI> _zeros;
+    SIMDVector<T,simd_abi_type> _zeros;
     FASTOR_INDEX i=0;
     for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
         _zeros.store(&_data[i]);
@@ -110,7 +110,7 @@ FASTOR_INLINE void reverse() {
 
     // Although SSE register reversing is faster
     // The AVX one outperforms it
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using V = SIMDVector<T,simd_abi_type>;
     constexpr int unroll_upto = V::unroll_size(Size);
     constexpr int stride = V::Size;
     int i = 0;
@@ -134,7 +134,7 @@ FASTOR_INLINE void reverse() {
 FASTOR_INLINE T sum() const {
 
     if ((Size==0) || (Size==1)) return _data[0];
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using V = SIMDVector<T,simd_abi_type>;
 
     V vec =static_cast<T>(0);
     V _vec_in;
@@ -154,7 +154,7 @@ FASTOR_INLINE T product() const {
 
     if ((Size==0) || (Size==1)) return _data[0];
 
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using V = SIMDVector<T,simd_abi_type>;
     FASTOR_INDEX i = 0;
 
     V vec = static_cast<T>(1);

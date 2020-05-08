@@ -19,8 +19,10 @@ private:
     seq _seq;
 public:
     using scalar_type = T;
+    using simd_vector_type = typename Tensor<T,N>::simd_vector_type;
+    using simd_abi_type = typename simd_vector_type::abi_type;
+    using V = simd_vector_type;
     using result_type = Tensor<T,N>;
-    using V = SIMDVector<T,DEFAULT_ABI>;
     static constexpr FASTOR_INDEX Dimension = 1;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX rank() {return 1;}
@@ -34,8 +36,8 @@ public:
     }
 
     template<typename U>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
-        SIMDVector<U,DEFAULT_ABI> _vec;
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX i) const {
+        SIMDVector<U,simd_abi_type> _vec;
         vector_setter(_vec,_expr.data(),i*_seq._step+_seq._first,_seq._step);
         return _vec;
     }
@@ -46,8 +48,8 @@ public:
     }
 
     template<typename U>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        SIMDVector<U,DEFAULT_ABI> _vec;
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
+        SIMDVector<U,simd_abi_type> _vec;
         vector_setter(_vec,_expr.data(),(i+j)*_seq._step+_seq._first,_seq._step);
         return _vec;
     }
@@ -58,8 +60,8 @@ public:
     }
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,1>& as) const {
-        SIMDVector<U,DEFAULT_ABI> _vec;
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> teval(const std::array<int,1>& as) const {
+        SIMDVector<U,simd_abi_type> _vec;
         vector_setter(_vec,_expr.data(),as[0]*_seq._step+_seq._first,_seq._step);
         return _vec;
     }
@@ -95,8 +97,10 @@ private:
     constexpr FASTOR_INLINE Tensor<T,N> get_tensor() const {return _expr;}
 public:
     using scalar_type = T;
+    using simd_vector_type = typename Tensor<T,N>::simd_vector_type;
+    using simd_abi_type = typename simd_vector_type::abi_type;
+    using V = simd_vector_type;
     using result_type = Tensor<T,N>;
-    using V = SIMDVector<T,DEFAULT_ABI>;
     static constexpr FASTOR_INDEX Dimension = 1;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX rank() {return 1;}
@@ -154,7 +158,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec_other = other.template eval<T>(i);
-                for (auto j=0; j<V::Size; ++j) {
+                for (auto j=0; j<simd_vector_type::Size; ++j) {
                     auto idx = (i+j)*_seq._step+_seq._first;
                     _data[idx] = _vec_other[j];
                 }
@@ -215,7 +219,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec_other = other_src.template eval<T>(i);
-                for (auto j=0; j<V::Size; ++j) {
+                for (auto j=0; j<simd_vector_type::Size; ++j) {
                     auto idx = (i+j)*_seq._step+_seq._first;
                     _data[idx] = _vec_other[j];
                 }
@@ -273,7 +277,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec_other = other_src.template eval<T>(i);
-                for (auto j=0; j<V::Size; ++j) {
+                for (auto j=0; j<simd_vector_type::Size; ++j) {
                     auto idx = (i+j)*_seq._step+_seq._first;
                     _data[idx] += _vec_other[j];
                 }
@@ -331,7 +335,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec_other = other_src.template eval<T>(i);
-                for (auto j=0; j<V::Size; ++j) {
+                for (auto j=0; j<simd_vector_type::Size; ++j) {
                     auto idx = (i+j)*_seq._step+_seq._first;
                     _data[idx] -= _vec_other[j];
                 }
@@ -389,7 +393,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec_other = other_src.template eval<T>(i);
-                for (auto j=0; j<V::Size; ++j) {
+                for (auto j=0; j<simd_vector_type::Size; ++j) {
                     auto idx = (i+j)*_seq._step+_seq._first;
                     _data[idx] *= _vec_other[j];
                 }
@@ -447,7 +451,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec_other = other_src.template eval<T>(i);
-                for (auto j=0; j<V::Size; ++j) {
+                for (auto j=0; j<simd_vector_type::Size; ++j) {
                     auto idx = (i+j)*_seq._step+_seq._first;
                     _data[idx] /= _vec_other[j];
                 }
@@ -470,7 +474,7 @@ public:
     //----------------------------------------------------------------------------------//
     template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator=(U num) {
-        V _vec_other(static_cast<T>(num));
+        simd_vector_type _vec_other(static_cast<T>(num));
         T *FASTOR_RESTRICT _data = _expr.data();
         if (_seq._step == 1) {
             FASTOR_INDEX i;
@@ -485,7 +489,7 @@ public:
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-                for (auto j=0; j<V::Size; ++j) {
+                for (auto j=0; j<simd_vector_type::Size; ++j) {
                     auto idx = (i+j)*_seq._step+_seq._first;
                     _data[idx] = _vec_other[j];
                 }
@@ -505,7 +509,7 @@ public:
 
     template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator+=(U num) {
-        V _vec_other(static_cast<T>(num));
+        simd_vector_type _vec_other(static_cast<T>(num));
         T *FASTOR_RESTRICT _data = _expr.data();
         if (_seq._step == 1) {
             FASTOR_INDEX i;
@@ -521,7 +525,7 @@ public:
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-                for (auto j=0; j<V::Size; ++j) {
+                for (auto j=0; j<simd_vector_type::Size; ++j) {
                     auto idx = (i+j)*_seq._step+_seq._first;
                     _data[idx] += _vec_other[j];
                 }
@@ -541,7 +545,7 @@ public:
 
     template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator-=(U num) {
-        V _vec_other(static_cast<T>(num));
+        simd_vector_type _vec_other(static_cast<T>(num));
         T *FASTOR_RESTRICT _data = _expr.data();
         if (_seq._step == 1) {
             FASTOR_INDEX i;
@@ -557,7 +561,7 @@ public:
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-                for (auto j=0; j<V::Size; ++j) {
+                for (auto j=0; j<simd_vector_type::Size; ++j) {
                     auto idx = (i+j)*_seq._step+_seq._first;
                     _data[idx] -= _vec_other[j];
                 }
@@ -577,7 +581,7 @@ public:
 
     template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator*=(U num) {
-        V _vec_other(static_cast<T>(num));
+        simd_vector_type _vec_other(static_cast<T>(num));
         T *FASTOR_RESTRICT _data = _expr.data();
         if (_seq._step == 1) {
             FASTOR_INDEX i;
@@ -593,7 +597,7 @@ public:
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-                for (auto j=0; j<V::Size; ++j) {
+                for (auto j=0; j<simd_vector_type::Size; ++j) {
                     auto idx = (i+j)*_seq._step+_seq._first;
                     _data[idx] *= _vec_other[j];
                 }
@@ -614,7 +618,7 @@ public:
     template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && !is_integral_v_<U>,bool> = false>
     void operator/=(U num) {
         T inum = T(1) / static_cast<T>(num);
-        V _vec_other(inum);
+        simd_vector_type _vec_other(inum);
         T *FASTOR_RESTRICT _data = _expr.data();
         if (_seq._step == 1) {
             FASTOR_INDEX i;
@@ -630,7 +634,7 @@ public:
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-                for (auto j=0; j<V::Size; ++j) {
+                for (auto j=0; j<simd_vector_type::Size; ++j) {
                     auto idx = (i+j)*_seq._step+_seq._first;
                     _data[idx] *= _vec_other[j];
                 }
@@ -649,7 +653,7 @@ public:
     }
     template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && is_integral_v_<U>,bool> = false>
     void operator/=(U num) {
-        V _vec_other(static_cast<T>(num));
+        simd_vector_type _vec_other(static_cast<T>(num));
         T *FASTOR_RESTRICT _data = _expr.data();
         if (_seq._step == 1) {
             FASTOR_INDEX i;
@@ -665,7 +669,7 @@ public:
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-                for (auto j=0; j<V::Size; ++j) {
+                for (auto j=0; j<simd_vector_type::Size; ++j) {
                     auto idx = (i+j)*_seq._step+_seq._first;
                     _data[idx] /= _vec_other[j];
                 }
@@ -685,8 +689,8 @@ public:
     //----------------------------------------------------------------------------------//
 
     template<typename U>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
-        SIMDVector<U,DEFAULT_ABI> _vec;
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX i) const {
+        SIMDVector<U,simd_abi_type> _vec;
         vector_setter(_vec,_expr.data(),i*_seq._step+_seq._first,_seq._step);
         return _vec;
     }
@@ -697,8 +701,8 @@ public:
     }
 
     template<typename U>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        SIMDVector<U,DEFAULT_ABI> _vec;
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
+        SIMDVector<U,simd_abi_type> _vec;
         vector_setter(_vec,_expr.data(),(i+j)*_seq._step+_seq._first,_seq._step);
         return _vec;
     }
@@ -709,8 +713,8 @@ public:
     }
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,1>& as) const {
-        SIMDVector<U,DEFAULT_ABI> _vec;
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> teval(const std::array<int,1>& as) const {
+        SIMDVector<U,simd_abi_type> _vec;
         vector_setter(_vec,_expr.data(),as[0]*_seq._step+_seq._first,_seq._step);
         return _vec;
     }

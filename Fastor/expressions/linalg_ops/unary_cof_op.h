@@ -23,6 +23,8 @@ struct UnaryCofOp: public AbstractTensor<UnaryCofOp<Expr, DIM0>,DIM0> {
     static constexpr FASTOR_INDEX Dimension = DIM0;
     static constexpr FASTOR_INDEX rank() {return DIM0;}
     using scalar_type = typename scalar_type_finder<UnaryCofOp<Expr, DIM0>>::type;
+    using simd_vector_type = typename Expr::simd_vector_type;
+    using simd_abi_type = typename simd_vector_type::abi_type;
 
     FASTOR_INLINE UnaryCofOp(expr_type inexpr) : _expr(inexpr) {
         static_assert(M==N, "MATRIX MUST BE SQUARE");

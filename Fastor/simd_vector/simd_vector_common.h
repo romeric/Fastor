@@ -22,6 +22,25 @@ template<typename T> struct stride_finder {
 //----------------------------------------------------------------------------------------------------------//
 
 
+// This is for generic use in tensor expressions that need a uniform simd type
+// between all of them
+//----------------------------------------------------------------------------------------------------------//
+template<typename T>
+struct choose_best_simd_vector {
+    using type = typename std::conditional< std::is_same<T,float>::value      ||
+                                            std::is_same<T,double>::value     ||
+                                            std::is_same<T,int32_t>::value    ||
+                                            std::is_same<T,int64_t>::value,
+                                            SIMDVector<T,DEFAULT_ABI>,
+                                            SIMDVector<T,simd_abi::scalar>
+                >::type;
+};
+
+// helper function
+template<typename T>
+using choose_best_simd_vector_t = typename choose_best_simd_vector<T>::type;
+//----------------------------------------------------------------------------------------------------------//
+
 
 // Broadcasting vectorisation on general strides [gather operations]
 //----------------------------------------------------------------------------------------------------------------

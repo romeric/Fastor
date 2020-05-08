@@ -3,8 +3,7 @@
 
 #include "Fastor/tensor/AbstractTensor.h"
 #include "Fastor/tensor/TensorTraits.h"
-
-
+#include "Fastor/expressions/expression_traits.h"
 
 namespace Fastor {
 
@@ -16,7 +15,9 @@ struct BinaryCmpOp##NAME: public AbstractTensor<BinaryCmpOp##NAME<TLhs, TRhs, DI
     static constexpr FASTOR_INDEX Dimension = DIM0;\
     static constexpr FASTOR_INDEX rank() {return DIM0;}\
     using scalar_type = typename scalar_type_finder<BinaryCmpOp##NAME<TLhs, TRhs, DIM0>>::type;\
-    using ABI = simd_abi::fixed_size<SIMDVector<scalar_type,DEFAULT_ABI>::Size>;\
+    using simd_vector_type = binary_op_simd_vector_t<BinaryCmpOp##NAME<TLhs, TRhs, DIM0> >;\
+    using simd_abi_type = typename simd_vector_type::abi_type;\
+    using ABI = simd_abi::fixed_size<SIMDVector<scalar_type,simd_abi_type>::Size>;\
     FASTOR_INLINE BinaryCmpOp##NAME(expression_t<TLhs> inlhs, expression_t<TRhs> inrhs) : _lhs(inlhs), _rhs(inrhs) {}\
     FASTOR_INLINE FASTOR_INDEX size() const {return helper_size<TLhs,TRhs>();}\
     template<class LExpr, class RExpr,\
@@ -135,25 +136,25 @@ struct BinaryCmpOp##NAME: public AbstractTensor<BinaryCmpOp##NAME<TLhs, TRhs, DI
         return _lhs.template eval_s<EVAL_TYPE>(i,j) OP (EVAL_TYPE)_rhs;\
     }\
     template<typename U>\
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIM0> &as) const {\
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> teval(const std::array<int,DIM0> &as) const {\
         return thelper<TLhs,TRhs,U>(as);\
     }\
     template<typename LExpr, typename RExpr, typename U,\
            typename std::enable_if<!std::is_arithmetic<LExpr>::value &&\
                                    !std::is_arithmetic<RExpr>::value,bool>::type = 0>\
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> thelper(const std::array<int,DIM0> &as) const {\
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> thelper(const std::array<int,DIM0> &as) const {\
         return _lhs.template teval<EVAL_TYPE>(as) OP _rhs.template teval<EVAL_TYPE>(as);\
     }\
     template<typename LExpr, typename RExpr, typename U,\
            typename std::enable_if<std::is_arithmetic<LExpr>::value &&\
                                    !std::is_arithmetic<RExpr>::value,bool>::type = 0>\
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> thelper(const std::array<int,DIM0> &as) const {\
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> thelper(const std::array<int,DIM0> &as) const {\
         return (EVAL_TYPE)_lhs OP _rhs.template teval<EVAL_TYPE>(as);\
     }\
     template<typename LExpr, typename RExpr, typename U,\
            typename std::enable_if<!std::is_arithmetic<LExpr>::value &&\
                                    std::is_arithmetic<RExpr>::value,bool>::type = 0>\
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> thelper(const std::array<int,DIM0> &as) const {\
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> thelper(const std::array<int,DIM0> &as) const {\
         return _lhs.template teval<EVAL_TYPE>(as) OP (EVAL_TYPE)_rhs;\
     }\
     template<typename U>\

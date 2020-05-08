@@ -16,8 +16,10 @@ private:
     constexpr FASTOR_INLINE Tensor<T,M,N> get_tensor() const {return _expr;};
 public:
     using scalar_type = T;
+    using simd_vector_type = typename Tensor<T,M,N>::simd_vector_type;
+    using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = Tensor<T,M>;
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using V = SIMDVector<T,simd_abi_type>;
     static constexpr FASTOR_INDEX Dimension = 1;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX rank() {return 1;}
@@ -253,7 +255,7 @@ public:
     // Evaluators
     //---------------------------------------------------------------------------------//
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX idx) const {
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX idx) const {
         V _vec;
         std::array<int,V::Size> inds;
         for (auto j=0; j<V::Size; ++j) {
@@ -270,7 +272,7 @@ public:
     }
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
         V _vec;
         vector_setter(_vec,_expr.data(),i*N+j);
         return _vec;
@@ -282,7 +284,7 @@ public:
     }
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,2>& as) const {
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> teval(const std::array<int,2>& as) const {
         V _vec;
         vector_setter(_vec,_expr.data(),as[0]*N+as[1]);
         return _vec;

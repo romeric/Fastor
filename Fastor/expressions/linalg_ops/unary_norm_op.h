@@ -29,7 +29,7 @@ FASTOR_INLINE typename Derived::scalar_type norm(const AbstractTensor<Derived,DI
 
     const Derived &src = _src.self();
     using T = typename Derived::scalar_type;
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using V = choose_best_simd_vector_t<T>;
     T _scal=0;
 #ifdef FASTOR_AVX512_IMPL
     V omm0, omm1, omm2, omm3, omm4, omm5, omm6, omm7;

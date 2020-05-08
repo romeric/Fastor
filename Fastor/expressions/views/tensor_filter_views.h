@@ -19,6 +19,8 @@ private:
     constexpr FASTOR_INLINE Tensor<T,Rest...> get_tensor() const {return _expr;}
 public:
     using scalar_type = T;
+    using simd_vector_type = typename Tensor<T,Rest...>::simd_vector_type;
+    using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = Tensor<T,Rest...>;
     static constexpr FASTOR_INDEX Dimension = DIMS;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
@@ -223,9 +225,9 @@ public:
 
     //------------------------------------------------------------------------------------//
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i) const {
-        constexpr size_t _Stride = SIMDVector<T,DEFAULT_ABI>::Size;
-        SIMDVector<U,DEFAULT_ABI> _vec;
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX i) const {
+        constexpr size_t _Stride = SIMDVector<T,simd_abi_type>::Size;
+        SIMDVector<U,simd_abi_type> _vec;
         U inds[_Stride];
         for (FASTOR_INDEX j=0; j<_Stride; ++j)
             inds[j] = fl_expr.eval_s(i+j) ? _expr.eval_s(i+j) : 0;
@@ -239,9 +241,9 @@ public:
     }
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX k) const {
-        constexpr size_t _Stride = SIMDVector<T,DEFAULT_ABI>::Size;
-        SIMDVector<U,DEFAULT_ABI> _vec;
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX i, FASTOR_INDEX k) const {
+        constexpr size_t _Stride = SIMDVector<T,simd_abi_type>::Size;
+        SIMDVector<U,simd_abi_type> _vec;
         U inds[_Stride];
         for (FASTOR_INDEX j=0; j<_Stride; ++j)
             inds[j] = fl_expr.eval_s(i,k+j) ? _expr.eval_s(i,k+j) : 0;
@@ -255,9 +257,9 @@ public:
     }
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIMS>& as) const {
-        constexpr size_t _Stride = SIMDVector<T,DEFAULT_ABI>::Size;
-        SIMDVector<U,DEFAULT_ABI> _vec;
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> teval(const std::array<int,DIMS>& as) const {
+        constexpr size_t _Stride = SIMDVector<T,simd_abi_type>::Size;
+        SIMDVector<U,simd_abi_type> _vec;
         U inds[_Stride];
         for (FASTOR_INDEX j=0; j<_Stride; ++j)
             inds[j] = fl_expr.teval_s(as) ? _expr.teval_s(as) : 0;

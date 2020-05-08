@@ -39,7 +39,7 @@ FASTOR_INLINE Tensor(const TensorFixedViewExprnD<Tensor<T,Rest1...>,Fseqs...>& s
 
     if (src.is_vectorisable() || src.is_strided_vectorisable())
     {
-        using V = SIMDVector<T,DEFAULT_ABI>;
+        using V = SIMDVector<T,simd_abi_type>;
         V _vec;
         while(counter < Size)
         {
@@ -213,7 +213,7 @@ FASTOR_INLINE Tensor(const TensorViewExpr<Tensor<T,Rest1...>,sizeof...(Rest)>& s
 
     if (src.is_vectorisable() || src.is_strided_vectorisable())
     {
-        using V = SIMDVector<T,DEFAULT_ABI>;
+        using V = SIMDVector<T,simd_abi_type>;
         V _vec;
         while(counter < Size)
         {
@@ -337,7 +337,7 @@ FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
     }
 
     // // Generic vectorised version that takes care of the remainder scalar ops
-    // using V=SIMDVector<T,DEFAULT_ABI>;
+    // using V=SIMDVector<T,simd_abi_type>;
     // while(counter < Size)
     // {
     //     const FASTOR_INDEX remainder = DimensionHolder[Dimension-1] - as[Dimension-1];

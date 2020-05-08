@@ -18,6 +18,8 @@ private:
     const Tensor<T,M,N> &_expr;
 public:
     using scalar_type = T;
+    using simd_vector_type = typename Tensor<T,M,N>::simd_vector_type;
+    using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = Tensor<T, range_detector<F0,L0,S0>::value, range_detector<F1,L1,S1>::value>;
     static constexpr FASTOR_INDEX Dimension = 2;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
@@ -33,10 +35,10 @@ public:
     constexpr FASTOR_INLINE TensorConstFixedViewExpr2D(const Tensor<T,M,N> &_ex) : _expr(_ex) {}
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX idx) const {
-        SIMDVector<U,DEFAULT_ABI> _vec;
-        std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
-        for (FASTOR_INDEX j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX idx) const {
+        SIMDVector<U,simd_abi_type> _vec;
+        std::array<int,SIMDVector<U,simd_abi_type>::Size> inds;
+        for (FASTOR_INDEX j=0; j<SIMDVector<U,simd_abi_type>::Size; ++j) {
             auto it = (idx+j) / range_detector<F1,L1,S1>::value, jt = (idx+j) % range_detector<F1,L1,S1>::value;
             inds[j] = S0*it*N+S1*jt + Padding;
         }
@@ -52,8 +54,8 @@ public:
     }
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        SIMDVector<U,DEFAULT_ABI> _vec;
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
+        SIMDVector<U,simd_abi_type> _vec;
         FASTOR_IF_CONSTEXPR (S1==1) _vec.load(_expr.data()+S0*i*N+j + Padding, false);
         else vector_setter(_vec,_expr.data(),S0*i*N+S1*j + Padding,S1);
         return _vec;
@@ -65,8 +67,8 @@ public:
     }
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,2>& as) const {
-        SIMDVector<U,DEFAULT_ABI> _vec;
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> teval(const std::array<int,2>& as) const {
+        SIMDVector<U,simd_abi_type> _vec;
         FASTOR_IF_CONSTEXPR (S1==1) _vec.load(_expr.data()+S0*as[0]*N+as[1] + Padding, false);
         else vector_setter(_vec,_expr.data(),S0*as[0]*N+S1*as[1] + Padding,S1);
         return _vec;
@@ -94,6 +96,8 @@ private:
     constexpr FASTOR_INLINE Tensor<T,M,N> get_tensor() const {return _expr;};
 public:
     using scalar_type = T;
+    using simd_vector_type = typename Tensor<T,M,N>::simd_vector_type;
+    using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = Tensor<T, range_detector<F0,L0,S0>::value, range_detector<F1,L1,S1>::value>;
     static constexpr FASTOR_INDEX Dimension = 2;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
@@ -823,7 +827,7 @@ public:
     template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator=(U num) {
         T *FASTOR_RESTRICT _data = _expr.data();
-        SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
+        SIMDVector<T,simd_abi_type> _vec_other(static_cast<T>(num));
         FASTOR_IF_CONSTEXPR (S1==1) {
             for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
                 FASTOR_INDEX j;
@@ -859,7 +863,7 @@ public:
     template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator+=(U num) {
         T *FASTOR_RESTRICT _data = _expr.data();
-        SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
+        SIMDVector<T,simd_abi_type> _vec_other(static_cast<T>(num));
         FASTOR_IF_CONSTEXPR (S1==1) {
             for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
                 FASTOR_INDEX j;
@@ -897,7 +901,7 @@ public:
     template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator-=(U num) {
         T *FASTOR_RESTRICT _data = _expr.data();
-        SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
+        SIMDVector<T,simd_abi_type> _vec_other(static_cast<T>(num));
         FASTOR_IF_CONSTEXPR (S1==1) {
             for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
                 FASTOR_INDEX j;
@@ -935,7 +939,7 @@ public:
     template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
     void operator*=(U num) {
         T *FASTOR_RESTRICT _data = _expr.data();
-        SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
+        SIMDVector<T,simd_abi_type> _vec_other(static_cast<T>(num));
         FASTOR_IF_CONSTEXPR (S1==1) {
             for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
                 FASTOR_INDEX j;
@@ -974,7 +978,7 @@ public:
     void operator/=(U num) {
         T *FASTOR_RESTRICT _data = _expr.data();
         T inum = T(1)/num;
-        SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(inum));
+        SIMDVector<T,simd_abi_type> _vec_other(static_cast<T>(inum));
         FASTOR_IF_CONSTEXPR (S1==1) {
             for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
                 FASTOR_INDEX j;
@@ -1011,7 +1015,7 @@ public:
     template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && is_integral_v_<U>,bool> = false>
     void operator/=(U num) {
         T *FASTOR_RESTRICT _data = _expr.data();
-        SIMDVector<T,DEFAULT_ABI> _vec_other(static_cast<T>(num));
+        SIMDVector<T,simd_abi_type> _vec_other(static_cast<T>(num));
         FASTOR_IF_CONSTEXPR (S1==1) {
             for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
                 FASTOR_INDEX j;
@@ -1048,10 +1052,10 @@ public:
     //----------------------------------------------------------------------------------//
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX idx) const {
-        SIMDVector<U,DEFAULT_ABI> _vec;
-        std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
-        for (FASTOR_INDEX j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX idx) const {
+        SIMDVector<U,simd_abi_type> _vec;
+        std::array<int,SIMDVector<U,simd_abi_type>::Size> inds;
+        for (FASTOR_INDEX j=0; j<SIMDVector<U,simd_abi_type>::Size; ++j) {
             auto it = (idx+j) / range_detector<F1,L1,S1>::value, jt = (idx+j) % range_detector<F1,L1,S1>::value;
             inds[j] = S0*it*N+S1*jt + Padding;
         }
@@ -1067,8 +1071,8 @@ public:
     }
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-        SIMDVector<U,DEFAULT_ABI> _vec;
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
+        SIMDVector<U,simd_abi_type> _vec;
         FASTOR_IF_CONSTEXPR (S1==1) _vec.load(_expr.data()+S0*i*N+j + Padding, false);
         else vector_setter(_vec,_expr.data(),S0*i*N+S1*j + Padding,S1);
         return _vec;
@@ -1080,8 +1084,8 @@ public:
     }
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,2>& as) const {
-        SIMDVector<U,DEFAULT_ABI> _vec;
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> teval(const std::array<int,2>& as) const {
+        SIMDVector<U,simd_abi_type> _vec;
         FASTOR_IF_CONSTEXPR (S1==1) _vec.load(_expr.data()+S0*as[0]*N+as[1] + Padding, false);
         else vector_setter(_vec,_expr.data(),S0*as[0]*N+S1*as[1] + Padding,S1);
         return _vec;

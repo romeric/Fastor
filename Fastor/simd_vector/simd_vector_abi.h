@@ -58,7 +58,8 @@ struct get_simd_vector_size<__svec<T,ABI>> {
                                                     ? FASTOR_AVX_BITSIZE : (std::is_same<ABI,simd_abi::sse>::value
                                                         ? FASTOR_SSE_BITSIZE : sizeof(T)*8));
 
-    static constexpr size_t value = bitsize / sizeof(T) / 8UL;
+    // Size should be at least 1UL
+    static constexpr size_t value = (bitsize / sizeof(T) / 8UL) != 0 ? (bitsize / sizeof(T) / 8UL) : 1UL;
 };
 template<template<typename, typename> class __svec, typename T, size_t N>
 struct get_simd_vector_size<__svec<T,simd_abi::fixed_size<N> > > {
@@ -155,10 +156,10 @@ struct choose_best_simd_type<__svec<T,ABI>,N> {
     //                 >::type
     //              >::type;
 
-    using type = typename std::conditional< std::is_same<T,float>::value  ||
-                                            std::is_same<T,double>::value ||
-                                            std::is_same<T,int>::value    ||
-                                            std::is_same<T,Int64>::value,
+    using type = typename std::conditional< std::is_same<T,float>::value      ||
+                                            std::is_same<T,double>::value     ||
+                                            std::is_same<T,int32_t>::value    ||
+                                            std::is_same<T,int64_t>::value,
                                             size_based_type,
                                             __svec<T,simd_abi::scalar>
                 >::type;
@@ -166,6 +167,9 @@ struct choose_best_simd_type<__svec<T,ABI>,N> {
 
 } // end of namesapce internal
 
+
+// This is specifically for matmul and other backend tensor kernels that need
+// to choose/switch between best simd types for utmost performance
 template<class __svec, size_t N>
 using choose_best_simd_t = typename internal::choose_best_simd_type<__svec,N>::type;
 

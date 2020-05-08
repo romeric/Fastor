@@ -22,6 +22,8 @@ private:
     bool _is_strided_vectorisable;
 public:
     using scalar_type = T;
+    using simd_vector_type = typename TensorType<T,Rest...>::simd_vector_type;
+    using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = TensorType<T,Rest...>;
     static constexpr FASTOR_INDEX Dimension = DIMS;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
@@ -63,18 +65,18 @@ public:
         }
 
         for (FASTOR_INDEX i=0; i<DIMS; ++i) _dims[i] = dimension(i);
-        _is_vectorisable = _seqs[DIMS-1].size() % SIMDVector<T,DEFAULT_ABI>::Size == 0 && (_seqs[DIMS-1]._step==1) ? true : false;
-        _is_strided_vectorisable = _seqs[DIMS-1].size() % SIMDVector<T,DEFAULT_ABI>::Size == 0 && (_seqs[DIMS-1]._step!=1) ? true : false;
+        _is_vectorisable = _seqs[DIMS-1].size() % SIMDVector<T,simd_abi_type>::Size == 0 && (_seqs[DIMS-1]._step==1) ? true : false;
+        _is_strided_vectorisable = _seqs[DIMS-1].size() % SIMDVector<T,simd_abi_type>::Size == 0 && (_seqs[DIMS-1]._step!=1) ? true : false;
     }
 
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX idx) const {
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX idx) const {
 
-        SIMDVector<U,DEFAULT_ABI> _vec;
+        SIMDVector<U,simd_abi_type> _vec;
         std::array<int,DIMS> as = {};
-        std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
-        for (auto j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
+        std::array<int,SIMDVector<U,simd_abi_type>::Size> inds;
+        for (auto j=0; j<SIMDVector<U,simd_abi_type>::Size; ++j) {
             int remaining = size();
             for (int n = 0; n < DIMS; ++n) {
                 remaining /= _dims[n];
@@ -109,14 +111,14 @@ public:
 
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX idx, FASTOR_INDEX j) const {
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX idx, FASTOR_INDEX j) const {
 
         idx += j;
-        SIMDVector<U,DEFAULT_ABI> _vec;
+        SIMDVector<U,simd_abi_type> _vec;
         std::array<int,DIMS> as = {};
 
-        std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
-        for (auto j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
+        std::array<int,SIMDVector<U,simd_abi_type>::Size> inds;
+        for (auto j=0; j<SIMDVector<U,simd_abi_type>::Size; ++j) {
             int remaining = size();
             for (int n = 0; n < DIMS; ++n) {
                 remaining /= _dims[n];
@@ -151,24 +153,24 @@ public:
     }
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIMS>& as) const {
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> teval(const std::array<int,DIMS>& as) const {
         int ind = 0;
         for(int it = 0; it< DIMS; it++) {
             ind += products_[it]*as[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
         }
-        if (_is_vectorisable) return SIMDVector<T,DEFAULT_ABI>(&_expr.data()[ind],false);
+        if (_is_vectorisable) return SIMDVector<T,simd_abi_type>(&_expr.data()[ind],false);
         else if (_is_strided_vectorisable) {
-            SIMDVector<U,DEFAULT_ABI> _vec;
+            SIMDVector<U,simd_abi_type> _vec;
             vector_setter(_vec,_expr.data(),ind,_seqs[DIMS-1]._step);
             return _vec;
         }
         else {
             // return eval(ind);
 
-            SIMDVector<U,DEFAULT_ABI> _vec;
-            std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
+            SIMDVector<U,simd_abi_type> _vec;
+            std::array<int,SIMDVector<U,simd_abi_type>::Size> inds;
             std::array<int,DIMS> as_ = as;
-            for (auto j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
+            for (auto j=0; j<SIMDVector<U,simd_abi_type>::Size; ++j) {
                 int _sum = 0;
                 for(int it = 0; it< DIMS; it++) {
                     _sum += products_[it]*as_[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
@@ -203,6 +205,9 @@ public:
 
 
 
+
+
+
 // Generic non-const tensor views based on sequences/slices
 //----------------------------------------------------------------------------------------------//
 template<template<typename,size_t...> class TensorType, typename T, size_t DIMS, size_t ... Rest>
@@ -220,6 +225,8 @@ private:
 
 public:
     using scalar_type = T;
+    using simd_vector_type = typename TensorType<T,Rest...>::simd_vector_type;
+    using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = TensorType<T,Rest...>;
     static constexpr FASTOR_INDEX Dimension = DIMS;
     static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
@@ -266,8 +273,8 @@ public:
         }
 
         for (FASTOR_INDEX i=0; i<DIMS; ++i) _dims[i] = dimension(i);
-        _is_vectorisable = _seqs[DIMS-1].size() % SIMDVector<T,DEFAULT_ABI>::Size == 0 && (_seqs[DIMS-1]._step==1) ? true : false;
-        _is_strided_vectorisable = _seqs[DIMS-1].size() % SIMDVector<T,DEFAULT_ABI>::Size == 0 && (_seqs[DIMS-1]._step!=1) ? true : false;
+        _is_vectorisable = _seqs[DIMS-1].size() % SIMDVector<T,simd_abi_type>::Size == 0 && (_seqs[DIMS-1]._step==1) ? true : false;
+        _is_strided_vectorisable = _seqs[DIMS-1].size() % SIMDVector<T,simd_abi_type>::Size == 0 && (_seqs[DIMS-1]._step!=1) ? true : false;
     }
 
     // View evalution operators
@@ -301,7 +308,7 @@ public:
         int jt, counter = 0;
 
         if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
+            using V=SIMDVector<T,simd_abi_type>;
             // constexpr FASTOR_INDEX stride = V::Size;
             V _vec;
             while(counter < total)
@@ -385,7 +392,7 @@ public:
         int jt, counter = 0;
 
         if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
+            using V=SIMDVector<T,simd_abi_type>;
             while(counter < total)
             {
                 int ind = 0;
@@ -435,7 +442,7 @@ public:
             }
 
             // // Generic vectorised version that takes care of the remainder scalar ops
-            // using V=SIMDVector<T,DEFAULT_ABI>;
+            // using V=SIMDVector<T,simd_abi_type>;
             // while(counter < total)
             // {
             //     int ind = 0;
@@ -499,7 +506,7 @@ public:
         int jt, counter = 0;
 
         if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
+            using V=SIMDVector<T,simd_abi_type>;
             V _vec_out;
             while(counter < total)
             {
@@ -584,7 +591,7 @@ public:
         int jt, counter = 0;
 
         if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
+            using V=SIMDVector<T,simd_abi_type>;
             V _vec_out;
             while(counter < total)
             {
@@ -668,7 +675,7 @@ public:
         int jt, counter = 0;
 
         if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
+            using V=SIMDVector<T,simd_abi_type>;
             V _vec_out;
             while(counter < total)
             {
@@ -752,7 +759,7 @@ public:
         int jt, counter = 0;
 
         if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
+            using V=SIMDVector<T,simd_abi_type>;
             V _vec_out;
             while(counter < total)
             {
@@ -839,7 +846,7 @@ public:
         int jt, counter = 0;
 
         if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
+            using V=SIMDVector<T,simd_abi_type>;
             while(counter < total)
             {
                 int ind = 0;
@@ -920,7 +927,7 @@ public:
         int jt, counter = 0;
 
         if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
+            using V=SIMDVector<T,simd_abi_type>;
             constexpr FASTOR_INDEX stride = V::Size;
             V _vec_out;
             while(counter < total)
@@ -1004,7 +1011,7 @@ public:
         int jt, counter = 0;
 
         if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
+            using V=SIMDVector<T,simd_abi_type>;
             V _vec_out;
             while(counter < total)
             {
@@ -1087,7 +1094,7 @@ public:
         int jt, counter = 0;
 
         if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
+            using V=SIMDVector<T,simd_abi_type>;
             constexpr FASTOR_INDEX stride = V::Size;
             V _vec_out;
             while(counter < total)
@@ -1171,7 +1178,7 @@ public:
         int jt, counter = 0;
 
         if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
+            using V=SIMDVector<T,simd_abi_type>;
             constexpr FASTOR_INDEX stride = V::Size;
             V _vec_out;
             while(counter < total)
@@ -1236,7 +1243,7 @@ public:
         int jt, counter = 0;
 
         if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
+            using V=SIMDVector<T,simd_abi_type>;
             constexpr FASTOR_INDEX stride = V::Size;
             V _vec = (T)num;
             while(counter < total)
@@ -1294,7 +1301,7 @@ public:
         int jt, counter = 0;
 
         if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
+            using V=SIMDVector<T,simd_abi_type>;
             constexpr FASTOR_INDEX stride = V::Size;
             V _vec = (T)num;
             V _vec_out;
@@ -1355,7 +1362,7 @@ public:
         int jt, counter = 0;
 
         if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
+            using V=SIMDVector<T,simd_abi_type>;
             constexpr FASTOR_INDEX stride = V::Size;
             V _vec = (T)num;
             V _vec_out;
@@ -1416,7 +1423,7 @@ public:
         int jt, counter = 0;
 
         if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
+            using V=SIMDVector<T,simd_abi_type>;
             constexpr FASTOR_INDEX stride = V::Size;
             V _vec = (T)num;
             V _vec_out;
@@ -1477,7 +1484,7 @@ public:
         int jt, counter = 0;
 
         if (_is_vectorisable) {
-            using V=SIMDVector<T,DEFAULT_ABI>;
+            using V=SIMDVector<T,simd_abi_type>;
             constexpr FASTOR_INDEX stride = V::Size;
             V _vec = (T)num;
             V _vec_out;
@@ -1531,12 +1538,12 @@ public:
     //----------------------------------------------------------------------------------//
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX idx) const {
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX idx) const {
 
-        SIMDVector<U,DEFAULT_ABI> _vec;
+        SIMDVector<U,simd_abi_type> _vec;
         std::array<int,DIMS> as = {};
-        std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
-        for (auto j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
+        std::array<int,SIMDVector<U,simd_abi_type>::Size> inds;
+        for (auto j=0; j<SIMDVector<U,simd_abi_type>::Size; ++j) {
             int remaining = size();
             for (int n = 0; n < DIMS; ++n) {
                 remaining /= _dims[n];
@@ -1571,14 +1578,14 @@ public:
 
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> eval(FASTOR_INDEX idx, FASTOR_INDEX j) const {
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX idx, FASTOR_INDEX j) const {
 
         idx += j;
-        SIMDVector<U,DEFAULT_ABI> _vec;
+        SIMDVector<U,simd_abi_type> _vec;
         std::array<int,DIMS> as = {};
 
-        std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
-        for (auto j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
+        std::array<int,SIMDVector<U,simd_abi_type>::Size> inds;
+        for (auto j=0; j<SIMDVector<U,simd_abi_type>::Size; ++j) {
             int remaining = size();
             for (int n = 0; n < DIMS; ++n) {
                 remaining /= _dims[n];
@@ -1613,24 +1620,24 @@ public:
     }
 
     template<typename U=T>
-    FASTOR_INLINE SIMDVector<U,DEFAULT_ABI> teval(const std::array<int,DIMS>& as) const {
+    FASTOR_INLINE SIMDVector<U,simd_abi_type> teval(const std::array<int,DIMS>& as) const {
         int ind = 0;
         for(int it = 0; it< DIMS; it++) {
             ind += products_[it]*as[it]*_seqs[it]._step + _seqs[it]._first*products_[it];
         }
-        if (_is_vectorisable) return SIMDVector<T,DEFAULT_ABI>(&_expr.data()[ind],false);
+        if (_is_vectorisable) return SIMDVector<T,simd_abi_type>(&_expr.data()[ind],false);
         else if (_is_strided_vectorisable) {
-            SIMDVector<U,DEFAULT_ABI> _vec;
+            SIMDVector<U,simd_abi_type> _vec;
             vector_setter(_vec,_expr.data(),ind,_seqs[DIMS-1]._step);
             return _vec;
         }
         else {
             // return eval(ind);
 
-            SIMDVector<U,DEFAULT_ABI> _vec;
-            std::array<int,SIMDVector<U,DEFAULT_ABI>::Size> inds;
+            SIMDVector<U,simd_abi_type> _vec;
+            std::array<int,SIMDVector<U,simd_abi_type>::Size> inds;
             std::array<int,DIMS> as_ = as;
-            for (auto j=0; j<SIMDVector<U,DEFAULT_ABI>::Size; ++j) {
+            for (auto j=0; j<SIMDVector<U,simd_abi_type>::Size; ++j) {
                 int _sum = 0;
                 for(int it = 0; it< DIMS; it++) {
                     _sum += products_[it]*as_[it]*_seqs[it]._step + _seqs[it]._first*products_[it];

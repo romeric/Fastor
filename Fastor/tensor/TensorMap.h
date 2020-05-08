@@ -17,6 +17,8 @@ template<typename T, size_t ... Rest>
 class TensorMap: public AbstractTensor<TensorMap<T, Rest...>,sizeof...(Rest)> {
 public:
     using scalar_type = T;
+    using simd_vector_type = choose_best_simd_vector_t<T>;
+    using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = TensorMap<T,Rest...>;
     using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
     static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);

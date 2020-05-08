@@ -14,7 +14,10 @@ template<typename T, size_t ...Rest>
 class SingleValueTensor : public AbstractTensor<SingleValueTensor<T,Rest...>,sizeof...(Rest)> {
     const FASTOR_ALIGN std::array<T,1> _data;
 public:
-    typedef T scalar_type;
+    using scalar_type = T;
+    using simd_vector_type = choose_best_simd_vector_t<T>;
+    using simd_abi_type = typename simd_vector_type::abi_type;
+    using result_type = SingleValueTensor<T,Rest...>;
     using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
     static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
     static constexpr FASTOR_INDEX Size = prod<Rest...>::value;
@@ -112,25 +115,6 @@ public:
         return out;
     }
     //----------------------------------------------------------------------------------------------------------//
-
-    // Boolean functions
-    //----------------------------------------------------------------------------------------------------------//
-    constexpr FASTOR_INLINE bool is_uniform() const {
-        //! A tensor is uniform if it spans equally in all dimensions,
-        //! i.e. generalisation of square matrix to n dimension
-        return no_of_unique<Rest...>::value==1 ? true : false;
-    }
-
-    template<typename U, size_t ... RestOther>
-    FASTOR_INLINE bool is_equal(const SingleValueTensor<U,RestOther...> &other, const double Tol=PRECI_TOL) const {
-        //! Two tensors are equal if they have the same type, rank, size and elements
-        if(!std::is_same<T,U>::value) return false;
-        if(sizeof...(Rest)!=sizeof...(RestOther)) return false;
-        if(prod<Rest...>::value!=prod<RestOther...>::value) return false;
-        const T *other_data = other.data();
-        if (std::fabs(_data[0]-other_data[0])>Tol) return false;
-        return true;
-    }
 };
 
 // template<typename T, size_t ...Rest>

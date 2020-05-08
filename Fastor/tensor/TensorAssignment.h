@@ -7,7 +7,7 @@ namespace Fastor {
 //----------------------------------------------------------------------------------------------------------//
 template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM>
 FASTOR_INLINE void trivial_assign(AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src_) {
-    using T = typename scalar_type_finder<Derived>::type;
+    using T = typename Derived::scalar_type;
     const OtherDerived &src = src_.self();
     FASTOR_ASSERT(src.size()==dst.self().size(), "TENSOR SIZE MISMATCH");
     T* _data = dst.self().data();
@@ -31,11 +31,11 @@ FASTOR_INLINE void trivial_assign(AbstractTensor<Derived,DIM> &dst, const Abstra
 
 template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM>
 FASTOR_INLINE void trivial_assign_add(AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src_) {
-    using T = typename scalar_type_finder<Derived>::type;
+    using T = typename Derived::scalar_type;
+    using V = typename Derived::simd_vector_type;
     const OtherDerived &src = src_.self();
     FASTOR_ASSERT(src.size()==dst.self().size(), "TENSOR SIZE MISMATCH");
     T* _data = dst.self().data();
-    using V = SIMDVector<T,DEFAULT_ABI>;
 
     FASTOR_IF_CONSTEXPR(!is_binary_cmp_op_v<OtherDerived>) {
         constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
@@ -57,11 +57,11 @@ FASTOR_INLINE void trivial_assign_add(AbstractTensor<Derived,DIM> &dst, const Ab
 
 template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM>
 FASTOR_INLINE void trivial_assign_sub(AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src_) {
-    using T = typename scalar_type_finder<Derived>::type;
+    using T = typename Derived::scalar_type;
+    using V = typename Derived::simd_vector_type;
     const OtherDerived &src = src_.self();
     FASTOR_ASSERT(src.size()==dst.self().size(), "TENSOR SIZE MISMATCH");
     T* _data = dst.self().data();
-    using V = SIMDVector<T,DEFAULT_ABI>;
 
     FASTOR_IF_CONSTEXPR(!is_binary_cmp_op_v<OtherDerived>) {
         constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
@@ -83,11 +83,11 @@ FASTOR_INLINE void trivial_assign_sub(AbstractTensor<Derived,DIM> &dst, const Ab
 
 template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM>
 FASTOR_INLINE void trivial_assign_mul(AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src_) {
-    using T = typename scalar_type_finder<Derived>::type;
+    using T = typename Derived::scalar_type;
+    using V = typename Derived::simd_vector_type;
     const OtherDerived &src = src_.self();
     FASTOR_ASSERT(src.size()==dst.self().size(), "TENSOR SIZE MISMATCH");
     T* _data = dst.self().data();
-    using V = SIMDVector<T,DEFAULT_ABI>;
 
     FASTOR_IF_CONSTEXPR(!is_binary_cmp_op_v<OtherDerived>) {
         constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
@@ -109,11 +109,11 @@ FASTOR_INLINE void trivial_assign_mul(AbstractTensor<Derived,DIM> &dst, const Ab
 
 template<typename Derived, size_t DIM, typename OtherDerived, size_t OtherDIM>
 FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, const AbstractTensor<OtherDerived,OtherDIM> &src_) {
-    using T = typename scalar_type_finder<Derived>::type;
+    using T = typename Derived::scalar_type;
+    using V = typename Derived::simd_vector_type;
     const OtherDerived &src = src_.self();
     FASTOR_ASSERT(src.size()==dst.self().size(), "TENSOR SIZE MISMATCH");
     T* _data = dst.self().data();
-    using V = SIMDVector<T,DEFAULT_ABI>;
 
     FASTOR_IF_CONSTEXPR(!is_binary_cmp_op_v<OtherDerived>) {
         constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
@@ -138,8 +138,8 @@ FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, const Ab
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_arithmetic_v_<U>, bool> = false>
 FASTOR_INLINE void trivial_assign(AbstractTensor<Derived,DIM> &dst, U num) {
-    using T = typename scalar_type_finder<Derived>::type;
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using T = typename Derived::scalar_type;
+    using V = typename Derived::simd_vector_type;
     constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
     T* _data = dst.self().data();
     T cnum = (T)num;
@@ -156,8 +156,8 @@ FASTOR_INLINE void trivial_assign(AbstractTensor<Derived,DIM> &dst, U num) {
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_arithmetic_v_<U>, bool> = false>
 FASTOR_INLINE void trivial_assign_add(AbstractTensor<Derived,DIM> &dst, U num) {
-    using T = typename scalar_type_finder<Derived>::type;
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using T = typename Derived::scalar_type;
+    using V = typename Derived::simd_vector_type;
     constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
     T* _data = dst.self().data();
     T cnum = (T)num;
@@ -176,8 +176,8 @@ FASTOR_INLINE void trivial_assign_add(AbstractTensor<Derived,DIM> &dst, U num) {
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_arithmetic_v_<U>, bool> = false>
 FASTOR_INLINE void trivial_assign_sub(AbstractTensor<Derived,DIM> &dst, U num) {
-    using T = typename scalar_type_finder<Derived>::type;
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using T = typename Derived::scalar_type;
+    using V = typename Derived::simd_vector_type;
     constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
     T* _data = dst.self().data();
     T cnum = (T)num;
@@ -196,8 +196,8 @@ FASTOR_INLINE void trivial_assign_sub(AbstractTensor<Derived,DIM> &dst, U num) {
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_arithmetic_v_<U>, bool> = false>
 FASTOR_INLINE void trivial_assign_mul(AbstractTensor<Derived,DIM> &dst, U num) {
-    using T = typename scalar_type_finder<Derived>::type;
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using T = typename Derived::scalar_type;
+    using V = typename Derived::simd_vector_type;
     constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
     T* _data = dst.self().data();
     T cnum = (T)num;
@@ -216,8 +216,8 @@ FASTOR_INLINE void trivial_assign_mul(AbstractTensor<Derived,DIM> &dst, U num) {
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_arithmetic_v_<U> && !is_integral_v_<U>, bool> = false>
 FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
-    using T = typename scalar_type_finder<Derived>::type;
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using T = typename Derived::scalar_type;
+    using V = typename Derived::simd_vector_type;
     constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
     T* _data = dst.self().data();
     T cnum = T(1) / (T)num;
@@ -235,8 +235,8 @@ FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_arithmetic_v_<U> && is_integral_v_<U>, bool> = false>
 FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
-    using T = typename scalar_type_finder<Derived>::type;
-    using V = SIMDVector<T,DEFAULT_ABI>;
+    using T = typename Derived::scalar_type;
+    using V = typename Derived::simd_vector_type;
     constexpr FASTOR_INDEX Stride_ = stride_finder<T>::value;
     T* _data = dst.self().data();
     T cnum = (T)num;
