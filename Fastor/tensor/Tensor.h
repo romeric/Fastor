@@ -13,27 +13,19 @@ namespace Fastor {
 
 template<typename T, size_t ... Rest>
 class Tensor: public AbstractTensor<Tensor<T,Rest...>,sizeof...(Rest)> {
-private:
-#ifdef FASTOR_ZERO_INITIALISE
-    T FASTOR_ALIGN _data[pack_prod<Rest...>::value] = {};
-#else
-    T FASTOR_ALIGN _data[pack_prod<Rest...>::value];
-#endif
 public:
-    using scalar_type = T;
+    using scalar_type      = T;
     using simd_vector_type = choose_best_simd_vector_t<T>;
-    using simd_abi_type = typename simd_vector_type::abi_type;
-    using result_type = Tensor<T,Rest...>;
-    using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
-    static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
-    static constexpr FASTOR_INDEX Size = pack_prod<Rest...>::value;;
-    static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return Dimension;}
-    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Size;}
+    using simd_abi_type    = typename simd_vector_type::abi_type;
+    using result_type      = Tensor<T,Rest...>;
+    using dimension_t      = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
+    static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return sizeof...(Rest);}
+    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return pack_prod<Rest...>::value;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX dim) const {
 #ifndef NDEBUG
         FASTOR_ASSERT(dim>=0 && dim < sizeof...(Rest), "TENSOR SHAPE MISMATCH");
 #endif
-        const FASTOR_INDEX DimensionHolder[sizeof...(Rest)] = {Rest...};
+        constexpr FASTOR_INDEX DimensionHolder[sizeof...(Rest)] = {Rest...};
         return DimensionHolder[dim];
     }
     FASTOR_INLINE Tensor<T,Rest...>& noalias() {return *this;}
@@ -41,14 +33,14 @@ public:
     // Classic constructors
     //----------------------------------------------------------------------------------------------------------//
     // Default constructor
-    constexpr FASTOR_INLINE Tensor(){}
+    constexpr FASTOR_INLINE Tensor() = default;
 
     // Copy constructor
     FASTOR_INLINE Tensor(const Tensor<T,Rest...> &other) {
         // This constructor cannot be default
         if (_data == other.data()) return;
         // fast memcopy
-        std::copy(other.data(),other.data()+Size,_data);
+        std::copy(other.data(),other.data()+size(),_data);
     };
 
     // Constructor from a scalar
@@ -65,7 +57,7 @@ public:
     // Classic array wrappers
     //----------------------------------------------------------------------------------------------------------//
     FASTOR_INLINE Tensor(const T *arr, int layout=RowMajor) {
-        std::copy(arr,arr+Size,_data);
+        std::copy(arr,arr+size(),_data);
         if (layout == RowMajor)
             return;
         else
@@ -146,7 +138,7 @@ public:
     FASTOR_INLINE Tensor<U,Rest...> cast() const {
         Tensor<U,Rest...> out;
         U *out_data = out.data();
-        for (FASTOR_INDEX i=0; i<Size; ++i) {
+        for (FASTOR_INDEX i=0; i<size(); ++i) {
             out_data[get_mem_index(i)] = static_cast<U>(_data[i]);
         }
         return out;
@@ -158,18 +150,26 @@ public:
 protected:
     template<typename Derived, size_t DIMS>
     FASTOR_INLINE void verify_dimensions(const AbstractTensor<Derived,DIMS>& src_) const {
-        static_assert(DIMS==Dimension, "TENSOR RANK MISMATCH");
+        static_assert(DIMS==dimension_t::value, "TENSOR RANK MISMATCH");
 #ifndef NDEBUG
         const Derived &src = src_.self();
         FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
         // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
+        for (FASTOR_INDEX i=0; i<dimension_t::value; ++i) {
             FASTOR_ASSERT(src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
         }
 #endif
     }
     //----------------------------------------------------------------------------------------------------------//
 
+    //----------------------------------------------------------------------------------------------------------//
+private:
+#ifdef FASTOR_ZERO_INITIALISE
+    T FASTOR_ALIGN _data[pack_prod<Rest...>::value] = {};
+#else
+    T FASTOR_ALIGN _data[pack_prod<Rest...>::value];
+#endif
+    //----------------------------------------------------------------------------------------------------------//
 };
 
 

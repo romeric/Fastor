@@ -3,21 +3,21 @@
 
 FASTOR_INLINE T toscalar() const {
     //! Returns a scalar
-    static_assert(Size==1,"ONLY TENSORS OF SIZE 1 CAN BE CONVERTED TO SCALAR");
-    return _data[0];
+    static_assert(size()==1,"ONLY TENSORS OF SIZE 1 CAN BE CONVERTED TO A SCALAR");
+    return (*_data);
 }
 
-FASTOR_INLINE std::array<T,Size> toarray() const {
+FASTOR_INLINE std::array<T,size()> toarray() const {
     //! Returns std::array
-    std::array<T,Size> out;
-    std::copy(_data,_data+Size,out.begin());
+    std::array<T,size()> out;
+    std::copy(_data,_data+size(),out.begin());
     return out;
 }
 
 FASTOR_INLINE std::vector<T> tovector() const {
     //! Returns std::vector
-    std::vector<T> out(Size);
-    std::copy(_data,_data+Size,out.begin());
+    std::vector<T> out(size());
+    std::copy(_data,_data+size(),out.begin());
     return out;
 }
 

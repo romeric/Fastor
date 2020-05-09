@@ -60,7 +60,7 @@ template<SolveCompType SType = SolveCompType::SimpleInv,
     typename TLhs, typename TRhs, size_t DIM0, size_t DIM1,
         enable_if_t_< is_tensor_v<TLhs> && is_tensor_v<TRhs> && DIM0==2,bool> = false>
 FASTOR_INLINE
-conditional_t_<TRhs::result_type::Dimension_t::value == 1,
+conditional_t_<TRhs::result_type::dimension_t::value == 1,
     Tensor<
         typename TLhs::scalar_type,
         get_tensor_dimension_v<0,typename TLhs::result_type>
@@ -75,8 +75,8 @@ solve(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1> &rhs
 
     using lhs_type = typename TLhs::result_type;
     using rhs_type = typename TRhs::result_type;
-    constexpr FASTOR_INDEX lhs_rank = lhs_type::Dimension_t::value;
-    constexpr FASTOR_INDEX rhs_rank = rhs_type::Dimension_t::value;
+    constexpr FASTOR_INDEX lhs_rank = lhs_type::dimension_t::value;
+    constexpr FASTOR_INDEX rhs_rank = rhs_type::dimension_t::value;
     constexpr FASTOR_INDEX M = get_tensor_dimension_v<0,lhs_type>;
     constexpr FASTOR_INDEX N = get_tensor_dimension_v<1,lhs_type>;
     constexpr FASTOR_INDEX M_other = get_tensor_dimension_v<0,rhs_type>;
@@ -92,7 +92,7 @@ template<SolveCompType SType = SolveCompType::SimpleInv,
     typename TLhs, typename TRhs, size_t DIM0, size_t DIM1,
         enable_if_t_< !is_tensor_v<TLhs> && is_tensor_v<TRhs> && DIM0==2,bool> = false>
 FASTOR_INLINE
-conditional_t_<TRhs::result_type::Dimension_t::value == 1,
+conditional_t_<TRhs::result_type::dimension_t::value == 1,
     Tensor<
         typename TLhs::scalar_type,
         get_tensor_dimension_v<0,typename TLhs::result_type>
@@ -107,8 +107,8 @@ solve(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1> &rhs
 
     using lhs_type = typename TLhs::result_type;
     using rhs_type = typename TRhs::result_type;
-    constexpr FASTOR_INDEX lhs_rank = lhs_type::Dimension_t::value;
-    constexpr FASTOR_INDEX rhs_rank = rhs_type::Dimension_t::value;
+    constexpr FASTOR_INDEX lhs_rank = lhs_type::dimension_t::value;
+    constexpr FASTOR_INDEX rhs_rank = rhs_type::dimension_t::value;
     constexpr FASTOR_INDEX M = get_tensor_dimension_v<0,lhs_type>;
     constexpr FASTOR_INDEX N = get_tensor_dimension_v<1,lhs_type>;
     constexpr FASTOR_INDEX M_other = get_tensor_dimension_v<0,rhs_type>;
@@ -126,7 +126,7 @@ template<SolveCompType SType = SolveCompType::SimpleInv,
     typename TLhs, typename TRhs, size_t DIM0, size_t DIM1,
         enable_if_t_< is_tensor_v<TLhs> && !is_tensor_v<TRhs> && DIM0==2,bool> = false>
 FASTOR_INLINE
-conditional_t_<TRhs::result_type::Dimension_t::value == 1,
+conditional_t_<TRhs::result_type::dimension_t::value == 1,
     Tensor<
         typename TLhs::scalar_type,
         get_tensor_dimension_v<0,typename TLhs::result_type>
@@ -141,8 +141,8 @@ solve(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1> &rhs
 
     using lhs_type = typename TLhs::result_type;
     using rhs_type = typename TRhs::result_type;
-    constexpr FASTOR_INDEX lhs_rank = lhs_type::Dimension_t::value;
-    constexpr FASTOR_INDEX rhs_rank = rhs_type::Dimension_t::value;
+    constexpr FASTOR_INDEX lhs_rank = lhs_type::dimension_t::value;
+    constexpr FASTOR_INDEX rhs_rank = rhs_type::dimension_t::value;
     constexpr FASTOR_INDEX M = get_tensor_dimension_v<0,lhs_type>;
     constexpr FASTOR_INDEX N = get_tensor_dimension_v<1,lhs_type>;
     constexpr FASTOR_INDEX M_other = get_tensor_dimension_v<0,rhs_type>;
@@ -160,7 +160,7 @@ template<SolveCompType SType = SolveCompType::SimpleInv,
     typename TLhs, typename TRhs, size_t DIM0, size_t DIM1,
         enable_if_t_< !is_tensor_v<TLhs> && !is_tensor_v<TRhs> && DIM0==2,bool> = false>
 FASTOR_INLINE
-conditional_t_<TRhs::result_type::Dimension_t::value == 1,
+conditional_t_<TRhs::result_type::dimension_t::value == 1,
     Tensor<
         typename TLhs::scalar_type,
         get_tensor_dimension_v<0,typename TLhs::result_type>
@@ -175,8 +175,8 @@ solve(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1> &rhs
 
     using lhs_type = typename TLhs::result_type;
     using rhs_type = typename TRhs::result_type;
-    constexpr FASTOR_INDEX lhs_rank = lhs_type::Dimension_t::value;
-    constexpr FASTOR_INDEX rhs_rank = rhs_type::Dimension_t::value;
+    constexpr FASTOR_INDEX lhs_rank = lhs_type::dimension_t::value;
+    constexpr FASTOR_INDEX rhs_rank = rhs_type::dimension_t::value;
     constexpr FASTOR_INDEX M = get_tensor_dimension_v<0,lhs_type>;
     constexpr FASTOR_INDEX N = get_tensor_dimension_v<1,lhs_type>;
     constexpr FASTOR_INDEX M_other = get_tensor_dimension_v<0,rhs_type>;

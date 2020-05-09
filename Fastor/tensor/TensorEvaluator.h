@@ -25,13 +25,13 @@ FASTOR_INLINE T eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
 }
 
 template<typename U=T>
-FASTOR_INLINE SIMDVector<T,simd_abi_type> teval(const std::array<int, Dimension> &as) const {
+FASTOR_INLINE SIMDVector<T,simd_abi_type> teval(const std::array<int, dimension_t::value> &as) const {
     SIMDVector<T,simd_abi_type> _vec;
     _vec.load(&_data[get_flat_index(as)],false);
     return _vec;
 }
 template<typename U=T>
-FASTOR_INLINE T teval_s(const std::array<int, Dimension> &as) const {
+FASTOR_INLINE T teval_s(const std::array<int, dimension_t::value> &as) const {
     return _data[get_flat_index(as)];
 }
 //----------------------------------------------------------------------------------------------------------//

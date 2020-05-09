@@ -16,15 +16,13 @@ namespace Fastor {
 template<typename T, size_t ... Rest>
 class TensorMap: public AbstractTensor<TensorMap<T, Rest...>,sizeof...(Rest)> {
 public:
-    using scalar_type = T;
+    using scalar_type      = T;
     using simd_vector_type = choose_best_simd_vector_t<T>;
-    using simd_abi_type = typename simd_vector_type::abi_type;
-    using result_type = TensorMap<T,Rest...>;
-    using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
-    static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
-    static constexpr FASTOR_INDEX Size = pack_prod<Rest...>::value;
-    static constexpr FASTOR_INDEX rank() {return sizeof...(Rest);}
-    FASTOR_INLINE FASTOR_INDEX size() const {return pack_prod<Rest...>::value;}
+    using simd_abi_type    = typename simd_vector_type::abi_type;
+    using result_type      = Tensor<T,Rest...>;
+    using dimension_t      = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
+    static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return sizeof...(Rest);}
+    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return pack_prod<Rest...>::value;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX dim) const {
 #ifndef NDEBUG
         FASTOR_ASSERT(dim>=0 && dim < sizeof...(Rest), "TENSOR SHAPE MISMATCH");
@@ -61,13 +59,13 @@ public:
     //----------------------------------------------------------------------------------------------------------//
     template<typename ... Seq, enable_if_t_<!is_arithmetic_pack_v<Seq...> && !is_fixed_sequence_pack_v<Seq...>,bool> = false>
     FASTOR_INLINE TensorViewExpr<TensorMap<T,Rest...>,sizeof...(Seq)> operator()(Seq ... _seqs) {
-        static_assert(Dimension==sizeof...(Seq),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+        static_assert(dimension_t::value==sizeof...(Seq),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
         return TensorViewExpr<TensorMap<T,Rest...>,sizeof...(Seq)>(*this, {_seqs...});
     }
 
     template<typename ...Fseq, enable_if_t_<is_fixed_sequence_pack_v<Fseq...>,bool> = false>
     FASTOR_INLINE TensorFixedViewExprnD<TensorMap<T,Rest...>,Fseq...> operator()(Fseq... ) {
-        static_assert(Dimension==sizeof...(Fseq),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
+        static_assert(dimension_t::value==sizeof...(Fseq),"INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
         return TensorFixedViewExprnD<TensorMap<T,Rest...>,Fseq...>(*this);
     }
 
@@ -126,7 +124,7 @@ public:
     FASTOR_INLINE Tensor<U,Rest...> cast() const {
         Tensor<U,Rest...> out;
         U *out_data = out.data();
-        for (FASTOR_INDEX i=0; i<Size; ++i) {
+        for (FASTOR_INDEX i=0; i<size(); ++i) {
             out_data[get_mem_index(i)] = static_cast<U>(_data[i]);
         }
         return out;

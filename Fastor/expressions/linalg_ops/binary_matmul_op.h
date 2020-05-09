@@ -19,8 +19,8 @@ struct BinaryMatMulOp: public AbstractTensor<BinaryMatMulOp<TLhs, TRhs, DIM0>,DI
     using rhs_expr_type = expression_t<TRhs>;
     using lhs_type = typename TLhs::result_type;
     using rhs_type = typename TRhs::result_type;
-    static constexpr FASTOR_INDEX lhs_rank = lhs_type::Dimension_t::value;
-    static constexpr FASTOR_INDEX rhs_rank = rhs_type::Dimension_t::value;
+    static constexpr FASTOR_INDEX lhs_rank = lhs_type::dimension_t::value;
+    static constexpr FASTOR_INDEX rhs_rank = rhs_type::dimension_t::value;
     static constexpr FASTOR_INDEX M = get_tensor_dimension_v<0,lhs_type>;
     static constexpr FASTOR_INDEX K = get_tensor_dimension_v<1,lhs_type>;
     static constexpr FASTOR_INDEX N = get_tensor_dimension_v<1,rhs_type>;
@@ -204,10 +204,10 @@ template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
     enable_if_t_<is_less_equal_v_<DIM0,2> && is_less_equal_v_<DIM1,2>
     && !is_tensor_v<Derived0> && !is_tensor_v<Derived1>,bool> = 0 >
 FASTOR_INLINE
-conditional_t_<Derived0::result_type::Dimension_t::value == 1,
+conditional_t_<Derived0::result_type::dimension_t::value == 1,
     Tensor<typename Derived0::scalar_type,
         get_tensor_dimension_v<1,typename Derived1::result_type> >,
-    conditional_t_<Derived1::result_type::Dimension_t::value == 1,
+    conditional_t_<Derived1::result_type::dimension_t::value == 1,
         Tensor<typename Derived0::scalar_type,
             get_tensor_dimension_v<0,typename Derived0::result_type> >,
         Tensor<typename Derived0::scalar_type,
@@ -227,10 +227,10 @@ template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
     enable_if_t_<is_less_equal_v_<DIM0,2> && is_less_equal_v_<DIM1,2>
     && !is_tensor_v<Derived0> && is_tensor_v<Derived1>,bool> = 0 >
 FASTOR_INLINE
-conditional_t_<Derived0::result_type::Dimension_t::value == 1,
+conditional_t_<Derived0::result_type::dimension_t::value == 1,
     Tensor<typename Derived0::scalar_type,
         get_tensor_dimension_v<1,typename Derived1::result_type> >,
-    conditional_t_<Derived1::result_type::Dimension_t::value == 1,
+    conditional_t_<Derived1::result_type::dimension_t::value == 1,
         Tensor<typename Derived0::scalar_type,
             get_tensor_dimension_v<0,typename Derived0::result_type> >,
         Tensor<typename Derived0::scalar_type,
@@ -248,10 +248,10 @@ template<typename Derived0, size_t DIM0, typename Derived1, size_t DIM1,
     enable_if_t_<is_less_equal_v_<DIM0,2> && is_less_equal_v_<DIM1,2>
     && is_tensor_v<Derived0> && !is_tensor_v<Derived1>,bool> = 0 >
 FASTOR_INLINE
-conditional_t_<Derived0::result_type::Dimension_t::value == 1,
+conditional_t_<Derived0::result_type::dimension_t::value == 1,
     Tensor<typename Derived0::scalar_type,
         get_tensor_dimension_v<1,typename Derived1::result_type> >,
-    conditional_t_<Derived1::result_type::Dimension_t::value == 1,
+    conditional_t_<Derived1::result_type::dimension_t::value == 1,
         Tensor<typename Derived0::scalar_type,
             get_tensor_dimension_v<0,typename Derived0::result_type> >,
         Tensor<typename Derived0::scalar_type,

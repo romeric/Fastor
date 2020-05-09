@@ -9,7 +9,7 @@
 template<typename U>
 FASTOR_INLINE U get_mem_index(U index) const {
 #if FASTOR_BOUNDS_CHECK
-    FASTOR_ASSERT((index>=0 && index<Size), "INDEX OUT OF BOUNDS");
+    FASTOR_ASSERT((index>=0 && index < size()), "INDEX OUT OF BOUNDS");
 #endif
     return index;
 }
@@ -18,7 +18,7 @@ FASTOR_INLINE U get_mem_index(U index) const {
 // Given a multi-dimensional index get the flat index in to the tensor
 //----------------------------------------------------------------------------------------------------------//
 template<typename... Args, typename std::enable_if<sizeof...(Args)==1
-                        && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
+                        && sizeof...(Args)==dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
 FASTOR_INLINE size_t get_flat_index(Args ... args) const {
     constexpr size_t M = get_value<1,Rest...>::value;
     const size_t i = get_index<0>(args...) < 0 ? M + get_index<0>(args...) : get_index<0>(args...);
@@ -29,7 +29,7 @@ FASTOR_INLINE size_t get_flat_index(Args ... args) const {
 }
 
 template<typename... Args, typename std::enable_if<sizeof...(Args)==2
-                        && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
+                        && sizeof...(Args)==dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
 FASTOR_INLINE size_t get_flat_index(Args ... args) const {
     constexpr size_t M = get_value<1,Rest...>::value;
     constexpr size_t N = get_value<2,Rest...>::value;
@@ -42,7 +42,7 @@ FASTOR_INLINE size_t get_flat_index(Args ... args) const {
 }
 
 template<typename... Args, typename std::enable_if<sizeof...(Args)==3
-                        && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
+                        && sizeof...(Args)==dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
 FASTOR_INLINE size_t get_flat_index(Args ... args) const {
     constexpr size_t M = get_value<1,Rest...>::value;
     constexpr size_t N = get_value<2,Rest...>::value;
@@ -57,7 +57,7 @@ FASTOR_INLINE size_t get_flat_index(Args ... args) const {
 }
 
 template<typename... Args, typename std::enable_if<sizeof...(Args)==4
-                        && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
+                        && sizeof...(Args)==dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
 FASTOR_INLINE size_t get_flat_index(Args ... args) const {
     constexpr size_t M = get_value<1,Rest...>::value;
     constexpr size_t N = get_value<2,Rest...>::value;
@@ -75,25 +75,25 @@ FASTOR_INLINE size_t get_flat_index(Args ... args) const {
 }
 
 template<typename... Args, typename std::enable_if<sizeof...(Args)>=5
-                        && sizeof...(Args)==Dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
+                        && sizeof...(Args)==dimension_t::value && is_arithmetic_pack<Args...>::value,bool>::type =0>
 FASTOR_INLINE size_t get_flat_index(Args ... args) const {
     /* The type of largs needs to be the type of incoming pack i.e.
         whatever the tensor is indexed with
     */
     get_nth_type<0,Args...> largs[sizeof...(Args)] = {args...};
 
-    constexpr std::array<size_t,Dimension> products_ = nprods_views<Index<Rest...>,
-        typename std_ext::make_index_sequence<Dimension>::type>::values;
-    constexpr size_t DimensionHolder[Dimension] = {Rest...};
+    constexpr std::array<size_t,dimension_t::value> products_ = nprods_views<Index<Rest...>,
+        typename std_ext::make_index_sequence<dimension_t::value>::type>::values;
+    constexpr size_t DimensionHolder[dimension_t::value] = {Rest...};
 
-    for (size_t i=0; i<Dimension; ++i) {
+    for (size_t i=0; i<dimension_t::value; ++i) {
         if ( largs[i] < 0 ) largs[i] += DimensionHolder[i];
 #if FASTOR_BOUNDS_CHECK
         FASTOR_ASSERT( (largs[i]>=0 && largs[i]<DimensionHolder[i]), "INDEX OUT OF BOUNDS");
 #endif
     }
     size_t index = 0;
-    for (size_t i=0; i<Dimension; ++i) {
+    for (size_t i=0; i<dimension_t::value; ++i) {
         index += products_[i]*largs[i];
     }
     return index;
@@ -101,15 +101,15 @@ FASTOR_INLINE size_t get_flat_index(Args ... args) const {
 //----------------------------------------------------------------------------------------------------------//
 
 
-FASTOR_INLINE int get_flat_index(const std::array<int, Dimension> &as) const {
-    constexpr std::array<size_t,Dimension> products_ = nprods_views<Index<Rest...>,
-        typename std_ext::make_index_sequence<Dimension>::type>::values;
+FASTOR_INLINE int get_flat_index(const std::array<int, dimension_t::value> &as) const {
+    constexpr std::array<size_t,dimension_t::value> products_ = nprods_views<Index<Rest...>,
+        typename std_ext::make_index_sequence<dimension_t::value>::type>::values;
     size_t index = 0;
-    for (size_t i=0; i<Dimension; ++i) {
+    for (size_t i=0; i<dimension_t::value; ++i) {
         index += products_[i]*as[i];
     }
 #if FASTOR_BOUNDS_CHECK
-    FASTOR_ASSERT((index>=0 && index<Size), "INDEX OUT OF BOUNDS");
+    FASTOR_ASSERT((index>=0 && index<size()), "INDEX OUT OF BOUNDS");
 #endif
     return index;
 }

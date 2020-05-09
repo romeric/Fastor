@@ -12,17 +12,14 @@ namespace Fastor {
 
 template<typename T, size_t ...Rest>
 class SingleValueTensor : public AbstractTensor<SingleValueTensor<T,Rest...>,sizeof...(Rest)> {
-    const FASTOR_ALIGN std::array<T,1> _data;
 public:
-    using scalar_type = T;
+    using scalar_type      = T;
     using simd_vector_type = choose_best_simd_vector_t<T>;
-    using simd_abi_type = typename simd_vector_type::abi_type;
-    using result_type = SingleValueTensor<T,Rest...>;
-    using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
-    static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
-    static constexpr FASTOR_INDEX Size = pack_prod<Rest...>::value;
-    static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return Dimension;}
-    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return Size;}
+    using simd_abi_type    = typename simd_vector_type::abi_type;
+    using result_type      = SingleValueTensor<T,Rest...>;
+    using dimension_t      = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
+    static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return sizeof...(Rest);}
+    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return pack_prod<Rest...>::value;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX dim) const {
 #ifndef NDEBUG
         FASTOR_ASSERT(dim>=0 && dim < sizeof...(Rest), "TENSOR SHAPE MISMATCH");
@@ -44,18 +41,18 @@ public:
     template<typename U>
     FASTOR_INLINE int get_mem_index(U index) const {
 #if FASTOR_BOUNDS_CHECK
-        FASTOR_ASSERT((index>=0 && index<Size), "INDEX OUT OF BOUNDS");
+        FASTOR_ASSERT((index>=0 && index<size()), "INDEX OUT OF BOUNDS");
 #endif
         return index;
     }
 
-    template<typename... Args, typename std::enable_if<sizeof...(Args)==Dimension_t::value &&
+    template<typename... Args, typename std::enable_if<sizeof...(Args)==dimension_t::value &&
                                 is_arithmetic_pack<Args...>::value,bool>::type =0>
     FASTOR_INLINE int get_flat_index(Args ... args) const {
 #if FASTOR_BOUNDS_CHECK
         int largs[sizeof...(Args)] = {args...};
-        constexpr int DimensionHolder[Dimension] = {Rest...};
-        for (int i=0; i<Dimension; ++i) {
+        constexpr int DimensionHolder[dimension_t::value] = {Rest...};
+        for (int i=0; i<dimension_t::value; ++i) {
             if (largs[i]==-1) largs[i] += DimensionHolder[i];
             assert( (largs[i]>=0 && largs[i]<DimensionHolder[i]) && "INDEX OUT OF BOUNDS");
         }
@@ -63,15 +60,15 @@ public:
         return 0;
     }
 
-    FASTOR_INLINE int get_flat_index(const std::array<int, Dimension> &as) const {
+    FASTOR_INLINE int get_flat_index(const std::array<int, dimension_t::value> &as) const {
 #if FASTOR_BOUNDS_CHECK
-        constexpr std::array<size_t,Dimension> products_ = nprods_views<Index<Rest...>,
-            typename std_ext::make_index_sequence<Dimension>::type>::values;
+        constexpr std::array<size_t,dimension_t::value> products_ = nprods_views<Index<Rest...>,
+            typename std_ext::make_index_sequence<dimension_t::value>::type>::values;
         int index = 0;
-        for (int i=0; i<Dimension; ++i) {
+        for (int i=0; i<dimension_t::value; ++i) {
             index += products_[i]*as[i];
         }
-        FASTOR_ASSERT((index>=0 && index<Size), "INDEX OUT OF BOUNDS");
+        FASTOR_ASSERT((index>=0 && index<size()), "INDEX OUT OF BOUNDS");
 #endif
         return 0;
     }
@@ -113,6 +110,11 @@ public:
         SingleValueTensor<U,Rest...> out(static_cast<U>(_data[0]));
         return out;
     }
+    //----------------------------------------------------------------------------------------------------------//
+
+    //----------------------------------------------------------------------------------------------------------//
+private:
+    const FASTOR_ALIGN std::array<T,1> _data;
     //----------------------------------------------------------------------------------------------------------//
 };
 
@@ -177,8 +179,8 @@ FASTOR_INLINE Tensor<T,M,N> matmul(const Tensor<T,M,K> &a, const SingleValueTens
     for (size_t i=0; i<M; ++i) {
         V vec_out;
         size_t j=0;
-        for (; j<ROUND_DOWN(K,(int)V::Size); j+=V::Size) {
-            vec_out = vec_out + V(&a_data[i*K+j])*b_value;
+        for (; j<ROUND_DOWN(K,V::Size); j+=V::Size) {
+            vec_out += V(&a_data[i*K+j])*b_value;
         }
         T out_value = 0.;
         for (; j<K; j++) {
@@ -188,7 +190,7 @@ FASTOR_INLINE Tensor<T,M,N> matmul(const Tensor<T,M,K> &a, const SingleValueTens
         V out_vec_value(out_value);
 
         j=0;
-        for (; j<ROUND_DOWN(N,(int)V::Size); j+=V::Size) {
+        for (; j<ROUND_DOWN(N,V::Size); j+=V::Size) {
             out_vec_value.store(&out_data[i*N+j],false);
         }
         for (; j<N; ++j) {
@@ -216,7 +218,7 @@ FASTOR_INLINE SingleValueTensor<T,M,N> matmul(const SingleValueTensor<T,M,K> &a,
     // using V = SIMDVector<T,DEFAULT_ABI>;
     // V vec_out;
     // size_t j=0;
-    // for (; j<ROUND_DOWN(K,(int)V::Size); j+=V::Size) {
+    // for (; j<ROUND_DOWN(K,V::Size); j+=V::Size) {
     //     vec_out = vec_out + V(a_value)*b_value;
     // }
     // T out_value = 0.;

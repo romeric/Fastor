@@ -33,23 +33,23 @@ FASTOR_INLINE Tensor(const TensorFixedViewExprnD<Tensor<T,Rest1...>,Fseqs...>& s
 #ifndef NDEBUG
     FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-    constexpr int DimensionHolder[Dimension] = {Rest...};
-    std::array<int,Dimension> as = {};
+    constexpr int DimensionHolder[dimension_t::value] = {Rest...};
+    std::array<int,dimension_t::value> as = {};
     int jt, counter=0;
 
     if (src.is_vectorisable() || src.is_strided_vectorisable())
     {
         using V = SIMDVector<T,simd_abi_type>;
         V _vec;
-        while(counter < Size)
+        while(counter < size())
         {
             _vec = src.template teval<T>(as);
             _vec.store(&_data[counter],false);
 
             counter+=V::Size;
-            for(jt = Dimension-1; jt>=0; jt--)
+            for(jt = dimension_t::value-1; jt>=0; jt--)
             {
-                if (jt == Dimension-1) as[jt]+=V::Size;
+                if (jt == dimension_t::value-1) as[jt]+=V::Size;
                 else as[jt] +=1;
                 if(as[jt]<DimensionHolder[jt])
                     break;
@@ -61,12 +61,12 @@ FASTOR_INLINE Tensor(const TensorFixedViewExprnD<Tensor<T,Rest1...>,Fseqs...>& s
         }
     }
     else {
-        while(counter < Size)
+        while(counter < size())
         {
             _data[counter] = src.template teval_s<T>(as);
 
             counter++;
-            for(jt = Dimension-1; jt>=0; jt--)
+            for(jt = dimension_t::value-1; jt>=0; jt--)
             {
                 as[jt] +=1;
                 if(as[jt]<DimensionHolder[jt])
@@ -148,16 +148,16 @@ FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
     }
 #endif
 
-    constexpr int DimensionHolder[Dimension] = {Rest...};
-    std::array<int,Dimension> as = {};
+    constexpr int DimensionHolder[dimension_t::value] = {Rest...};
+    std::array<int,dimension_t::value> as = {};
     int jt, counter=0;
 
-    while(counter < Size)
+    while(counter < size())
     {
         _data[counter] = src.template teval_s<T>(as);
 
         counter++;
-        for(jt = Dimension-1; jt>=0; jt--)
+        for(jt = dimension_t::value-1; jt>=0; jt--)
         {
             as[jt] +=1;
             if(as[jt]<DimensionHolder[jt])
@@ -207,23 +207,23 @@ FASTOR_INLINE Tensor(const TensorViewExpr<Tensor<T,Rest1...>,sizeof...(Rest)>& s
         FASTOR_ASSERT(src.dimension(i)==this->dimension(i), "TENSOR SHAPE MISMATCH");
     }
 #endif
-    constexpr int DimensionHolder[Dimension] = {Rest...};
-    std::array<int,Dimension> as = {};
+    constexpr int DimensionHolder[dimension_t::value] = {Rest...};
+    std::array<int,dimension_t::value> as = {};
     int jt, counter=0;
 
     if (src.is_vectorisable() || src.is_strided_vectorisable())
     {
         using V = SIMDVector<T,simd_abi_type>;
         V _vec;
-        while(counter < Size)
+        while(counter < size())
         {
             _vec = src.template teval<T>(as);
             _vec.store(&_data[counter],false);
 
             counter+=V::Size;
-            for(jt = Dimension-1; jt>=0; jt--)
+            for(jt = dimension_t::value-1; jt>=0; jt--)
             {
-                if (jt == Dimension-1) as[jt]+=V::Size;
+                if (jt == dimension_t::value-1) as[jt]+=V::Size;
                 else as[jt] +=1;
                 if(as[jt]<DimensionHolder[jt])
                     break;
@@ -235,12 +235,12 @@ FASTOR_INLINE Tensor(const TensorViewExpr<Tensor<T,Rest1...>,sizeof...(Rest)>& s
         }
     }
     else {
-        while(counter < Size)
+        while(counter < size())
         {
             _data[counter] = src.template teval_s<T>(as);
 
             counter++;
-            for(jt = Dimension-1; jt>=0; jt--)
+            for(jt = dimension_t::value-1; jt>=0; jt--)
             {
                 as[jt] +=1;
                 if(as[jt]<DimensionHolder[jt])
@@ -315,16 +315,16 @@ FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
     }
 #endif
 
-    constexpr int DimensionHolder[Dimension] = {Rest...};
-    std::array<int,Dimension> as = {};
+    constexpr int DimensionHolder[dimension_t::value] = {Rest...};
+    std::array<int,dimension_t::value> as = {};
     int jt, counter=0;
 
-    while(counter < Size)
+    while(counter < size())
     {
         _data[counter] = src.template teval_s<T>(as);
 
         counter++;
-        for(jt = Dimension-1; jt>=0; jt--)
+        for(jt = dimension_t::value-1; jt>=0; jt--)
         {
             as[jt] +=1;
             if(as[jt]<DimensionHolder[jt])
@@ -338,9 +338,9 @@ FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
 
     // // Generic vectorised version that takes care of the remainder scalar ops
     // using V=SIMDVector<T,simd_abi_type>;
-    // while(counter < Size)
+    // while(counter < size())
     // {
-    //     const FASTOR_INDEX remainder = DimensionHolder[Dimension-1] - as[Dimension-1];
+    //     const FASTOR_INDEX remainder = DimensionHolder[dimension_t::value-1] - as[dimension_t::value-1];
     //     if (remainder > V::Size) {
     //         // V _vec = src.template eval<T>(counter);
     //         V _vec = src.template teval<T>(as);
@@ -353,9 +353,9 @@ FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
     //         counter++;
     //     }
 
-    //     for(jt = Dimension-1; jt>=0; jt--)
+    //     for(jt = dimension_t::value-1; jt>=0; jt--)
     //     {
-    //         if (jt == Dimension-1 && remainder > V::Size) as[jt]+=V::Size;
+    //         if (jt == dimension_t::value-1 && remainder > V::Size) as[jt]+=V::Size;
     //         else as[jt] +=1;
     //         if(as[jt]<DimensionHolder[jt])
     //             break;

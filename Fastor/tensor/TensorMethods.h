@@ -7,39 +7,39 @@ FASTOR_INLINE void fill(U num0) {
     FASTOR_INDEX i = 0UL;
     using V = simd_vector_type;
     V _vec(num);
-    for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
+    for (; i<ROUND_DOWN(size(),V::Size); i+=V::Size) {
         _vec.store(&_data[i],false);
     }
-    for (; i<Size; ++i) _data[i] = num;
+    for (; i<size(); ++i) _data[i] = num;
 }
 
 template<typename U=T>
 FASTOR_INLINE void iota(U num0=0) {
-    std::iota(_data, &_data[Size], num0);
+    std::iota(_data, &_data[size()], num0);
 }
 
 template<typename U=T>
 FASTOR_INLINE void arange(U num0=0) {
-    std::iota(_data, &_data[Size], num0);
+    std::iota(_data, &_data[size()], num0);
     // T num = static_cast<T>(num0);
     // using V = SIMDVector<T,simd_abi_type>;
     // V _vec;
     // FASTOR_INDEX i=0;
-    // for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
+    // for (; i<ROUND_DOWN(size(),V::Size); i+=V::Size) {
     //     _vec.set_sequential(T(i)+num);
     //     _vec.store(&_data[i]);
     // }
-    // for (; i<Size; ++i) _data[i] = T(i)+num;
+    // for (; i<size(); ++i) _data[i] = T(i)+num;
 }
 
 FASTOR_INLINE void zeros() {
     using V = simd_vector_type;
     V _zeros;
     FASTOR_INDEX i=0;
-    for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
+    for (; i<ROUND_DOWN(size(),V::Size); i+=V::Size) {
         _zeros.store(&_data[i]);
     }
-    for (; i<Size; ++i) _data[i] = 0;
+    for (; i<size(); ++i) _data[i] = 0;
 }
 
 FASTOR_INLINE void ones() {
@@ -88,40 +88,40 @@ FASTOR_INLINE void eye() {
 
 FASTOR_INLINE void random() {
     //! Populate tensor with random FP numbers
-    for (FASTOR_INDEX i=0; i<this->Size; ++i) {
+    for (FASTOR_INDEX i=0; i<size(); ++i) {
         _data[get_mem_index(i)] = (T)rand()/RAND_MAX;
     }
 }
 
 FASTOR_INLINE void randint() {
     //! Populate tensor with random integer numbers
-    for (FASTOR_INDEX i=0; i<this->Size; ++i) {
+    for (FASTOR_INDEX i=0; i<size(); ++i) {
         _data[get_mem_index(i)] = (T)rand();
     }
 }
 
 FASTOR_INLINE void reverse() {
     // in-place reverse
-    if ((Size==0) || (Size==1)) return;
+    if ((size()==0) || (size()==1)) return;
     // std::reverse(_data,_data+Size); return;
 
     // This requires copying the data to avoid aliasing
     // Despite that this method seems to be faster than
     // std::reverse for big _data both on GCC and Clang
-    T FASTOR_ALIGN tmp[Size];
-    std::copy(_data,_data+Size,tmp);
+    T FASTOR_ALIGN tmp[size()];
+    std::copy(_data,_data+size(),tmp);
 
     // Although SSE register reversing is faster
     // The AVX one outperforms it
     using V = SIMDVector<T,simd_abi_type>;
     V vec;
     FASTOR_INDEX i = 0;
-    for (; i< ROUND_DOWN(Size,V::Size); i+=V::Size) {
-        vec.load(&tmp[Size - i - V::Size],false);
+    for (; i< ROUND_DOWN(size(),V::Size); i+=V::Size) {
+        vec.load(&tmp[size() - i - V::Size],false);
         vec.reverse().store(&_data[i],false);
     }
-    for (; i< Size; ++i) {
-        _data[i] = tmp[Size-i-1];
+    for (; i< size(); ++i) {
+        _data[i] = tmp[size()-i-1];
     }
 }
 
@@ -133,17 +133,17 @@ FASTOR_INLINE void reverse() {
 
 FASTOR_INLINE T sum() const {
 
-    if ((Size==0) || (Size==1)) return _data[0];
+    if ((size()==0) || (size()==1)) return _data[0];
     using V = SIMDVector<T,simd_abi_type>;
     V vec = static_cast<T>(0);
     V _vec_in;
     FASTOR_INDEX i = 0;
-    for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
+    for (; i<ROUND_DOWN(size(),V::Size); i+=V::Size) {
         _vec_in.load(&_data[i],false);
         vec += _vec_in;
     }
     T scalar = static_cast<T>(0);
-    for (; i< Size; ++i) {
+    for (; i< size(); ++i) {
         scalar += _data[i];
     }
     return vec.sum() + scalar;
@@ -151,17 +151,17 @@ FASTOR_INLINE T sum() const {
 
 FASTOR_INLINE T product() const {
 
-    if ((Size==0) || (Size==1)) return _data[0];
+    if ((size()==0) || (size()==1)) return _data[0];
 
     using V = SIMDVector<T,simd_abi_type>;
     FASTOR_INDEX i = 0;
 
     V vec = static_cast<T>(1);
-    for (; i< ROUND_DOWN(Size,V::Size); i+=V::Size) {
+    for (; i< ROUND_DOWN(size(),V::Size); i+=V::Size) {
         vec *= V(&_data[i],false);
     }
     T scalar = static_cast<T>(1);
-    for (; i< Size; ++i) {
+    for (; i< size(); ++i) {
         scalar *= _data[i];
     }
 
