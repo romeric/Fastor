@@ -6,37 +6,39 @@
 #include <cmath>
 
 
-#ifdef FASTOR_SSE2_IMPL
-#define ZEROPS (_mm_set1_ps(0.f))
-#define ZEROPD (_mm_set1_pd(0.0))
-// minus/negative version
-#define MZEROPS (_mm_set1_ps(-0.f))
-#define MZEROPD (_mm_set1_pd(-0.0))
-#define ONEPS (_mm_set1_ps(1.f))
-#define ONEPD (_mm_set1_pd(1.0))
-#define HALFPS (_mm_set1_ps(0.5f))
-#define HALFPD (_mm_set1_pd(0.5))
-#define TWOPS (_mm_set1_ps(2.0f))
-#define TOWPD (_mm_set1_pd(2.0))
-#endif
-#ifdef FASTOR_AVX_IMPL
-#define VZEROPS (_mm256_set1_ps(0.f))
-#define VZEROPD (_mm256_set1_pd(0.0))
-// minus/negative version
-#define MVZEROPS (_mm256_set1_ps(-0.f))
-#define MVZEROPD (_mm256_set1_pd(-0.0))
-#define VONEPS (_mm256_set1_ps(1.f))
-#define VONEPD (_mm256_set1_pd(1.0))
-#define VHALFPS (_mm256_set1_ps(0.5f))
-#define VHALFPD (_mm256_set1_pd(0.5))
-#define VTWOPS (_mm256_set1_ps(2.0f))
-#define VTOWPD (_mm256_set1_pd(2.0))
-#endif
-
-
 namespace Fastor {
 
+// Macros for immediate construction
+//----------------------------------------------------------------------------------------------------------------//
+#ifdef FASTOR_SSE2_IMPL
+#define ZEROPS  (_mm_set1_ps(0.f))
+#define ZEROPD  (_mm_set1_pd(0.0))
+#define MZEROPS (_mm_set1_ps(-0.f))
+#define MZEROPD (_mm_set1_pd(-0.0))
+#define ONEPS   (_mm_set1_ps(1.f))
+#define ONEPD   (_mm_set1_pd(1.0))
+#define HALFPS  (_mm_set1_ps(0.5f))
+#define HALFPD  (_mm_set1_pd(0.5))
+#define TWOPS   (_mm_set1_ps(2.0f))
+#define TOWPD   (_mm_set1_pd(2.0))
+#endif
+#ifdef FASTOR_AVX_IMPL
+#define VZEROPS  (_mm256_set1_ps(0.f))
+#define VZEROPD  (_mm256_set1_pd(0.0))
+#define MVZEROPS (_mm256_set1_ps(-0.f))
+#define MVZEROPD (_mm256_set1_pd(-0.0))
+#define VONEPS   (_mm256_set1_ps(1.f))
+#define VONEPD   (_mm256_set1_pd(1.0))
+#define VHALFPS  (_mm256_set1_ps(0.5f))
+#define VHALFPD  (_mm256_set1_pd(0.5))
+#define VTWOPS   (_mm256_set1_ps(2.0f))
+#define VTOWPD   (_mm256_set1_pd(2.0))
+#endif
+//----------------------------------------------------------------------------------------------------------------//
+
+
 // Mask load the 3 lower parts
+//----------------------------------------------------------------------------------------------------------------//
 #ifdef FASTOR_SSE2_IMPL
 FASTOR_INLINE __m128 _mm_loadl3_ps(const float *arr) {
 #ifdef FASTOR_HAS_AVX512_MASKS
@@ -142,10 +144,12 @@ FASTOR_INLINE void _mm256_storeul3_pd(double *arr, __m256d value) {
 #endif
 }
 #endif
+//----------------------------------------------------------------------------------------------------------------//
 
 
 
-//! Horizontal summation of registers
+//! Horizontal summation/multiplication of registers
+//----------------------------------------------------------------------------------------------------------------//
 #ifdef FASTOR_SSE2_IMPL
 FASTOR_INLINE int _mm_sum_epi32(__m128i a) {
     // W/O HADD: IVY 5 - HW 5 - SKY 6
@@ -261,10 +265,12 @@ FASTOR_INLINE double _mm256_prod_pd(__m256d a) {
 }
 
 #endif
-//!---------------------------------------------------------------//
-//!
-//!---------------------------------------------------------------//
+//----------------------------------------------------------------------------------------------------------------//
+
+
+
 //! Reversing a register
+//----------------------------------------------------------------------------------------------------------------//
 #ifdef FASTOR_SSE2_IMPL
 FASTOR_INLINE __m128 _mm_reverse_ps(__m128 a) {
     // 1OP
@@ -311,10 +317,12 @@ FASTOR_INLINE __m256i _mm256_reverse_epi64(__m256i v) {
     return _mm256_castpd_si256(_mm256_reverse_pd(_mm256_castsi256_pd(v)));
 }
 #endif
-//!---------------------------------------------------------------//
-//!
-//!---------------------------------------------------------------//
-//! Bit shifting
+//----------------------------------------------------------------------------------------------------------------//
+
+
+
+//! Bit shifting - for extracting values and so on
+//----------------------------------------------------------------------------------------------------------------//
 #ifdef FASTOR_SSE2_IMPL
 FASTOR_INLINE __m128 _mm_shift1_ps(__m128 a) {
     // 1OP
@@ -392,9 +400,11 @@ FASTOR_INLINE __m256d _mm256_shift3_pd(__m256d a) {
     return _mm256_permute2f128_pd(r1,r1,0x1);
 }
 #endif
-//!---------------------------------------------------------------//
-//!
-//!---------------------------------------------------------------//
+//----------------------------------------------------------------------------------------------------------------//
+
+
+// Negation
+//----------------------------------------------------------------------------------------------------------------//
 #ifdef FASTOR_SSE2_IMPL
 // Change sign of a register - all one cycle
 FASTOR_INLINE __m128 _mm_neg_ps(__m128 a) {
@@ -412,9 +422,11 @@ FASTOR_INLINE __m256d _mm256_neg_pd(__m256d a) {
     return _mm256_xor_pd(a, MVZEROPD);
 }
 #endif
-//!---------------------------------------------------------------//
-//!
-//!---------------------------------------------------------------//
+//----------------------------------------------------------------------------------------------------------------//
+
+
+// Absolute values
+//----------------------------------------------------------------------------------------------------------------//
 #ifdef FASTOR_SSE2_IMPL
 // Absolute value of a register - all one cycle
 FASTOR_INLINE __m128 _mm_abs_ps(__m128 x) {
@@ -436,9 +448,11 @@ FASTOR_INLINE __m256d _mm256_abs_pd(__m256d x) {
     return _mm256_andnot_pd(sign_mask, x); // !sign_mask & x
 }
 #endif
-//!---------------------------------------------------------------//
-//!
-//!---------------------------------------------------------------//
+//----------------------------------------------------------------------------------------------------------------//
+
+
+// Horizontal max
+//----------------------------------------------------------------------------------------------------------------//
 #ifdef FASTOR_SSE2_IMPL
 // maximum value in a register - horizontal max
 FASTOR_INLINE float _mm_hmax_ps(__m128 a) {
@@ -474,10 +488,11 @@ FASTOR_INLINE double _mm256_hmax_pd(__m256d a) {
     return _mm_cvtsd_f64(_mm256_castpd256_pd128(_mm256_max_pd(max0,tmp)));
 }
 #endif
-//!---------------------------------------------------------------//
-//!
-//!---------------------------------------------------------------//
-// minimum value in a register - horizontal min
+//----------------------------------------------------------------------------------------------------------------//
+
+
+// Horizontal min
+//----------------------------------------------------------------------------------------------------------------//
 #ifdef FASTOR_SSE2_IMPL
 FASTOR_INLINE float _mm_hmin_ps(__m128 a) {
     // 8OPS
@@ -512,8 +527,11 @@ FASTOR_INLINE double _mm256_hmin_pd(__m256d a) {
     return _mm_cvtsd_f64(_mm256_castpd256_pd128(_mm256_min_pd(max0,tmp)));
 }
 #endif
-//!---------------------------------------------------
-// indexing a register
+//----------------------------------------------------------------------------------------------------------------//
+
+
+// Indexing a register
+//----------------------------------------------------------------------------------------------------------------//
 #ifdef FASTOR_SSE4_2_IMPL
 FASTOR_INLINE float _mm_get0_ps(__m128 a) {
     // NO OP
@@ -598,10 +616,12 @@ FASTOR_INLINE double _mm256_get3_pd(__m256d a) {
     return _mm_cvtsd_f64(_mm_shuffle_pd(higher,higher,_MM_SHUFFLE2(0,1)));
 }
 #endif
+//----------------------------------------------------------------------------------------------------------------//
 
 
-//!------------------------------------------------------------------
+
 // Integral arithmetics that are not available pre AVX2
+//----------------------------------------------------------------------------------------------------------------//
 #ifdef FASTOR_SSE2_IMPL
 FASTOR_INLINE __m128i _mm_mul_epi32x(__m128i a, __m128i b)
 {
@@ -736,15 +756,14 @@ FASTOR_INLINE __m256i _mm256_mul_epi64x(__m256i _a, __m256i _b) {
     return out;
 }
 #endif
+//----------------------------------------------------------------------------------------------------------------//
 
 
 
-
-
-#if defined(__cplusplus)
-
-//!-----------------------------------------------------------------
 //! Some further auxilary functions C++ only
+//----------------------------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------------------------------------------//
+#if defined(__cplusplus)
 #ifdef FASTOR_SSE2_IMPL
 static FASTOR_INLINE __m128d _add_pd(__m128d a) {
     // IVY 4 OPS
@@ -821,30 +840,34 @@ FASTOR_INLINE __m128d _hsub_pd(__m128d a) {
 }
 #endif
 
-//!-----------------------------------------------------------------
-
 #ifdef FASTOR_AVX_IMPL
 // Similar to SSE4 _mm_dp_pd for dot product
 FASTOR_INLINE __m128d _mm256_dp_pd(__m256d __X, __m256d __Y) {
     return _add_pd(_mm256_mul_pd(__X, __Y));
 }
 #endif
+//----------------------------------------------------------------------------------------------------------------//
 
 
+//----------------------------------------------------------------------------------------------------------------//
 // Additional math functions for scalars -> the name sqrts is to remove ambiguity with libm sqrt
 template<typename T, typename std::enable_if<std::is_arithmetic<T>::value,bool>::type=0>
 FASTOR_INLINE T sqrts(T a) {return std::sqrt(a);}
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 template<>
 FASTOR_INLINE float sqrts(float a) {return _mm_cvtss_f32(_mm_sqrt_ps(_mm_set1_ps(a)));}
 template<>
 FASTOR_INLINE double sqrts(double a) {return _mm_cvtsd_f64(_mm_sqrt_pd(_mm_set1_pd(a)));}
 #endif
 
+//----------------------------------------------------------------------------------------------------------------//
 #endif
+//----------------------------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------------------------------------------//
 
 
 
+//----------------------------------------------------------------------------------------------------------------//
 // helper functions for going from array to mask and vice-versa
 // used when AVX512 masking is available
 template <int N, enable_if_t_<N==2 || N==4 || N==8,bool> = false>
@@ -933,12 +956,9 @@ inline void mask_to_array(uint64_t c, int (&b)[N])
     for (int i=0; i < N; ++i)
         b[i] *= -1;
 }
-
-
-
+//----------------------------------------------------------------------------------------------------------------//
 
 } // end of namespace Fastor
 
 
 #endif // EXT_INTRIN_H
-
