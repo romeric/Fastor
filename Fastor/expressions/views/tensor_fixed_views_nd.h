@@ -35,7 +35,7 @@ public:
     template<int N, typename... Ts> using get_nth_pt = get_nth_type<N,to_positive_t<Ts,Rest>...>;
     static constexpr FASTOR_INDEX Dimension = sizeof...(Fseqs);
     static constexpr FASTOR_INDEX DIMS = sizeof...(Fseqs);
-    static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
+    static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
     constexpr FASTOR_INLINE bool is_vectorisable() const {return _is_vectorisable;}
     constexpr FASTOR_INLINE bool is_strided_vectorisable() const {return _is_strided_vectorisable;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return dimension_helper::Size;}
@@ -244,7 +244,7 @@ public:
     template<int N, typename... Ts> using get_nth_pt = get_nth_type<N,to_positive_t<Ts,Rest>...>;
     static constexpr FASTOR_INDEX Dimension = sizeof...(Fseqs);
     static constexpr FASTOR_INDEX DIMS = sizeof...(Fseqs);
-    static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
+    static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
     constexpr FASTOR_INLINE bool is_vectorisable() const {return _is_vectorisable;}
     constexpr FASTOR_INLINE bool is_strided_vectorisable() const {return _is_strided_vectorisable;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return dimension_helper::Size;}

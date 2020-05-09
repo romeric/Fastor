@@ -23,7 +23,7 @@ public:
     using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = Tensor<T,M,N>;
     static constexpr FASTOR_INDEX Dimension = 2;
-    static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
+    static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
     static constexpr FASTOR_INDEX rank() {return 2;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return _seq0.size()*_seq1.size();}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return i==0 ? _seq0.size() : _seq1.size();}
@@ -117,7 +117,7 @@ public:
     using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = Tensor<T,M,N>;
     static constexpr FASTOR_INDEX Dimension = 2;
-    static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
+    static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
     static constexpr FASTOR_INDEX rank() {return 2;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return _seq0.size()*_seq1.size();}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return i==0 ? _seq0.size() : _seq1.size();}

@@ -23,7 +23,7 @@ public:
     using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = Tensor<T,range_detector<F0,L0,S0>::value>;
     static constexpr FASTOR_INDEX Dimension = 1;
-    static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
+    static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() { return range_detector<F0,L0,S0>::value;}
     static constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX ) {return range_detector<F0,L0,S0>::value;}
     constexpr const Tensor<T,N>& expr() const {return _expr;}
@@ -86,7 +86,7 @@ public:
     using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = Tensor<T,range_detector<F0,L0,S0>::value>;
     static constexpr FASTOR_INDEX Dimension = 1;
-    static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
+    static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return range_detector<F0,L0,S0>::value;}
     static constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) {return range_detector<F0,L0,S0>::value;}
     constexpr const Tensor<T,N>& expr() const {return _expr;}

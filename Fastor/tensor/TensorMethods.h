@@ -5,8 +5,9 @@ template<typename U=T>
 FASTOR_INLINE void fill(U num0) {
     T num = static_cast<T>(num0);
     FASTOR_INDEX i = 0UL;
-    SIMDVector<T,simd_abi_type> _vec(num);
-    for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
+    using V = simd_vector_type;
+    V _vec(num);
+    for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
         _vec.store(&_data[i],false);
     }
     for (; i<Size; ++i) _data[i] = num;
@@ -21,9 +22,10 @@ template<typename U=T>
 FASTOR_INLINE void arange(U num0=0) {
     std::iota(_data, &_data[Size], num0);
     // T num = static_cast<T>(num0);
-    // SIMDVector<T,simd_abi_type> _vec;
+    // using V = SIMDVector<T,simd_abi_type>;
+    // V _vec;
     // FASTOR_INDEX i=0;
-    // for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
+    // for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
     //     _vec.set_sequential(T(i)+num);
     //     _vec.store(&_data[i]);
     // }
@@ -31,9 +33,10 @@ FASTOR_INLINE void arange(U num0=0) {
 }
 
 FASTOR_INLINE void zeros() {
-    SIMDVector<T,simd_abi_type> _zeros;
+    using V = simd_vector_type;
+    V _zeros;
     FASTOR_INDEX i=0;
-    for (; i<ROUND_DOWN(Size,Stride); i+=Stride) {
+    for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {
         _zeros.store(&_data[i]);
     }
     for (; i<Size; ++i) _data[i] = 0;
@@ -47,7 +50,7 @@ FASTOR_INLINE void eye2() {
     // Second order identity tensor (identity matrices)
     static_assert(sizeof...(Rest)==2, "CANNOT BUILD AN IDENTITY TENSOR");
     static_assert(no_of_unique<Rest...>::value==1, "TENSOR MUST BE UNIFORM");
-    constexpr int N = get_value<2,Rest...>::value;
+    constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
     zeros();
     for (FASTOR_INDEX i=0; i<N; ++i) {
         _data[i*N+i] = (T)1;
@@ -111,14 +114,11 @@ FASTOR_INLINE void reverse() {
     // Although SSE register reversing is faster
     // The AVX one outperforms it
     using V = SIMDVector<T,simd_abi_type>;
-    constexpr int unroll_upto = V::unroll_size(Size);
-    constexpr int stride = V::Size;
-    int i = 0;
-
     V vec;
-    for (; i< unroll_upto; i+=stride) {
-        vec.load(&tmp[Size - i - stride]);
-        vec.reverse().store(&_data[i]);
+    FASTOR_INDEX i = 0;
+    for (; i< ROUND_DOWN(Size,V::Size); i+=V::Size) {
+        vec.load(&tmp[Size - i - V::Size],false);
+        vec.reverse().store(&_data[i],false);
     }
     for (; i< Size; ++i) {
         _data[i] = tmp[Size-i-1];
@@ -135,8 +135,7 @@ FASTOR_INLINE T sum() const {
 
     if ((Size==0) || (Size==1)) return _data[0];
     using V = SIMDVector<T,simd_abi_type>;
-
-    V vec =static_cast<T>(0);
+    V vec = static_cast<T>(0);
     V _vec_in;
     FASTOR_INDEX i = 0;
     for (; i<ROUND_DOWN(Size,V::Size); i+=V::Size) {

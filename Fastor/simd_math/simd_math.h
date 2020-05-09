@@ -10,59 +10,59 @@ namespace Fastor {
 #ifdef FASTOR_USE_VDT
 #include <vdt/vdtMath.h>
 
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 inline __m128 internal_exp(__m128 a) {
    __m128 out;
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<4UL; i++) {
       ((float*)&out)[i] = vdt::fast_expf(((float*)&a)[i]);
    }
    return out;
 }
 inline __m128 internal_log(__m128 a) {
    __m128 out;
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<4UL; i++) {
       ((float*)&out)[i] = vdt::fast_logf(((float*)&a)[i]);
    }
    return out;
 }
 inline __m128 internal_sin(__m128 a) {
    __m128 out;
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<4UL; i++) {
        ((float*)&out)[i] = vdt::fast_sinf(((float*)&a)[i]);
    }
    return out;
 }
 inline __m128 internal_cos(__m128 a) {
    __m128 out;
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<4UL; i++) {
        ((float*)&out)[i] = vdt::fast_cosf(((float*)&a)[i]);
    }
    return out;
 }
 inline __m128 internal_tan(__m128 a) {
    __m128 out;
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<4UL; i++) {
        ((float*)&out)[i] = vdt::fast_tanf(((float*)&a)[i]);
    }
    return out;
 }
 inline __m128 internal_asin(__m128 a) {
    __m128 out;
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<4UL; i++) {
        ((float*)&out)[i] = vdt::fast_asinf(((float*)&a)[i]);
    }
    return out;
 }
 inline __m128 internal_acos(__m128 a) {
    __m128 out;
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<4UL; i++) {
        ((float*)&out)[i] = vdt::fast_acosf(((float*)&a)[i]);
    }
    return out;
 }
 inline __m128 internal_atan(__m128 a) {
    __m128 out;
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<4UL; i++) {
        ((float*)&out)[i] = vdt::fast_atanf(((float*)&a)[i]);
    }
    return out;
@@ -70,56 +70,56 @@ inline __m128 internal_atan(__m128 a) {
 
 inline __m128d internal_exp(__m128d a) {
    __m128d out;
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<2UL; i++) {
       ((double*)&out)[i] = vdt::fast_exp(((double*)&a)[i]);
    }
    return out;
 }
 inline __m128d internal_log(__m128d a) {
    __m128d out;
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<2UL; i++) {
       ((double*)&out)[i] = vdt::fast_log(((double*)&a)[i]);
    }
    return out;
 }
 inline __m128d internal_sin(__m128d a) {
    __m128d out;
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<2UL; i++) {
        ((double*)&out)[i] = vdt::fast_sin(((double*)&a)[i]);
    }
    return out;
 }
 inline __m128d internal_cos(__m128d a) {
    __m128d out;
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<2UL; i++) {
        ((double*)&out)[i] = vdt::fast_cos(((double*)&a)[i]);
    }
    return out;
 }
 inline __m128d internal_tan(__m128d a) {
    __m128d out;
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<2UL; i++) {
        ((double*)&out)[i] = vdt::fast_tan(((double*)&a)[i]);
    }
    return out;
 }
 inline __m128d internal_asin(__m128d a) {
    __m128d out;
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<2UL; i++) {
        ((double*)&out)[i] = vdt::fast_asin(((double*)&a)[i]);
    }
    return out;
 }
 inline __m128d internal_acos(__m128d a) {
    __m128d out;
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<2UL; i++) {
        ((double*)&out)[i] = vdt::fast_acos(((double*)&a)[i]);
    }
    return out;
 }
 inline __m128d internal_atan(__m128d a) {
    __m128d out;
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<2UL; i++) {
        ((double*)&out)[i] = vdt::fast_atan(((double*)&a)[i]);
    }
    return out;
@@ -129,14 +129,14 @@ inline __m128d internal_atan(__m128d a) {
 #ifdef FASTOR_AVX_IMPL
 inline __m256 internal_exp(__m256 a) {
    __m256 out;
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<8UL; i++) {
        ((float*)&out)[i] = vdt::fast_expf(((float*)&a)[i]);
    }
    return out;
 }
 inline __m256 internal_log(__m256 a) {
    __m256 out;
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<8UL; i++) {
        ((float*)&out)[i] = vdt::fast_logf(((float*)&a)[i]);
    }
    return out;
@@ -144,49 +144,49 @@ inline __m256 internal_log(__m256 a) {
 // This can give inaccurate results
 //inline __m256 internal_pow(__m256 a, __m256 b) {
 //   __m256 out;
-//   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+//   for (FASTOR_INDEX i=0; i<8UL; i++) {
 //       out[i] = vdt::fast_expf(a[i]*vdt::fast_logf(b[i]));
 //   }
 //   return out;
 //}
 inline __m256 internal_sin(__m256 a) {
    __m256 out;
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<8UL; i++) {
        ((float*)&out)[i] = vdt::fast_sinf(((float*)&a)[i]);
    }
    return out;
 }
 inline __m256 internal_cos(__m256 a) {
    __m256 out;
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<8UL; i++) {
        ((float*)&out)[i] = vdt::fast_cosf(((float*)&a)[i]);
    }
    return out;
 }
 inline __m256 internal_tan(__m256 a) {
    __m256 out;
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<8UL; i++) {
        ((float*)&out)[i] = vdt::fast_tanf(((float*)&a)[i]);
    }
    return out;
 }
 inline __m256 internal_asin(__m256 a) {
    __m256 out;
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<8UL; i++) {
        ((float*)&out)[i] = vdt::fast_asinf(((float*)&a)[i]);
    }
    return out;
 }
 inline __m256 internal_acos(__m256 a) {
    __m256 out;
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<8UL; i++) {
        ((float*)&out)[i] = vdt::fast_acosf(((float*)&a)[i]);
    }
    return out;
 }
 inline __m256 internal_atan(__m256 a) {
    __m256 out;
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<8UL; i++) {
        ((float*)&out)[i] = vdt::fast_atanf(((float*)&a)[i]);
    }
    return out;
@@ -195,14 +195,14 @@ inline __m256 internal_atan(__m256 a) {
 
 inline __m256d internal_exp(__m256d a) {
    __m256d out;
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<4UL; i++) {
        ((double*)&out)[i] = vdt::fast_exp(((double*)&a)[i]);
    }
    return out;
 }
 __m256d internal_log(__m256d a) {
    __m256d out;
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<4UL; i++) {
        ((double*)&out)[i] = vdt::fast_log(((double*)&a)[i]);
    }
    return out;
@@ -210,49 +210,49 @@ __m256d internal_log(__m256d a) {
 // This can give inaccurate results
 //inline __m256d internal_pow(__m256d a, __m256d b) {
 //   __m256d out;
-//   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+//   for (FASTOR_INDEX i=0; i<4UL; i++) {
 //       out[i] = vdt::fast_exp(a[i]*vdt::fast_log(b[i]));
 //   }
 //   return out;
 //}
 inline __m256d internal_sin(__m256d a) {
    __m256d out;
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<4UL; i++) {
        ((double*)&out)[i] = vdt::fast_sin(((double*)&a)[i]);
    }
    return out;
 }
 inline __m256d internal_cos(__m256d a) {
    __m256d out;
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<4UL; i++) {
        ((double*)&out)[i] = vdt::fast_cos(((double*)&a)[i]);
    }
    return out;
 }
 inline __m256d internal_tan(__m256d a) {
    __m256d out;
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<4UL; i++) {
        ((double*)&out)[i] = vdt::fast_tan(((double*)&a)[i]);
    }
    return out;
 }
 inline __m256d internal_asin(__m256d a) {
    __m256d out;
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<4UL; i++) {
        ((double*)&out)[i] = vdt::fast_asin(((double*)&a)[i]);
    }
    return out;
 }
 inline __m256d internal_acos(__m256d a) {
    __m256d out;
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<4UL; i++) {
        ((double*)&out)[i] = vdt::fast_acos(((double*)&a)[i]);
    }
    return out;
 }
 inline __m256d internal_atan(__m256d a) {
    __m256d out;
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::Stride; i++) {
+   for (FASTOR_INDEX i=0; i<4UL; i++) {
        ((double*)&out)[i] = vdt::fast_atan(((double*)&a)[i]);
    }
    return out;
@@ -272,7 +272,7 @@ inline __m256d internal_atan(__m256d a) {
 template<typename T>
 inline T internal_exp(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
+   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
        out[i] = std::exp(a[i]);
    }
    return out;
@@ -281,7 +281,7 @@ inline T internal_exp(T a) {
 template<typename T>
 inline T internal_log(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
+   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
        out[i] = std::log(a[i]);
    }
    return out;
@@ -290,7 +290,7 @@ inline T internal_log(T a) {
 template<typename T>
 inline T internal_sin(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
+   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
        out[i] = std::sin(a[i]);
    }
    return out;
@@ -299,7 +299,7 @@ inline T internal_sin(T a) {
 template<typename T>
 inline T internal_cos(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
+   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
        out[i] = std::cos(a[i]);
    }
    return out;
@@ -308,7 +308,7 @@ inline T internal_cos(T a) {
 template<typename T>
 inline T internal_tan(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
+   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
        out[i] = std::tan(a[i]);
    }
    return out;
@@ -317,7 +317,7 @@ inline T internal_tan(T a) {
 template<typename T>
 inline T internal_asin(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
+   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
        out[i] = std::asin(a[i]);
    }
    return out;
@@ -326,7 +326,7 @@ inline T internal_asin(T a) {
 template<typename T>
 inline T internal_acos(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
+   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
        out[i] = std::acos(a[i]);
    }
    return out;
@@ -335,18 +335,18 @@ inline T internal_acos(T a) {
 template<typename T>
 inline T internal_atan(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
+   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
        out[i] = std::atan(a[i]);
    }
    return out;
 }
 
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 template<>
 inline __m128 internal_exp(__m128 a) {
    __m128 out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
        ((float*)&out)[i] = std::exp(((float*)&a)[i]);
    }
    return out;
@@ -355,7 +355,7 @@ template<>
 inline __m128 internal_log(__m128 a) {
    __m128 out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
        ((float*)&out)[i] = std::log(((float*)&a)[i]);
    }
    return out;
@@ -364,7 +364,7 @@ template<>
 inline __m128 internal_sin(__m128 a) {
    __m128 out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
        ((float*)&out)[i] = std::sin(((float*)&a)[i]);
    }
    return out;
@@ -373,7 +373,7 @@ template<>
 inline __m128 internal_cos(__m128 a) {
    __m128 out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
        ((float*)&out)[i] = std::cos(((float*)&a)[i]);
    }
    return out;
@@ -382,7 +382,7 @@ template<>
 inline __m128 internal_tan(__m128 a) {
    __m128 out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
        ((float*)&out)[i] = std::tan(((float*)&a)[i]);
    }
    return out;
@@ -390,7 +390,7 @@ inline __m128 internal_tan(__m128 a) {
 inline __m128 internal_asin(__m128 a) {
    __m128 out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
        ((float*)&out)[i] = std::asin(((float*)&a)[i]);
    }
    return out;
@@ -399,7 +399,7 @@ template<>
 inline __m128 internal_acos(__m128 a) {
    __m128 out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
        ((float*)&out)[i] = std::acos(((float*)&a)[i]);
    }
    return out;
@@ -408,7 +408,7 @@ template<>
 inline __m128 internal_atan(__m128 a) {
    __m128 out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
        ((float*)&out)[i] = std::atan(((float*)&a)[i]);
    }
    return out;
@@ -419,7 +419,7 @@ template<>
 inline __m128d internal_exp(__m128d a) {
    __m128d out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
        ((double*)&out)[i] = std::exp(((double*)&a)[i]);
    }
    return out;
@@ -428,7 +428,7 @@ template<>
 inline __m128d internal_log(__m128d a) {
    __m128d out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
        ((double*)&out)[i] = std::log(((double*)&a)[i]);
    }
    return out;
@@ -437,7 +437,7 @@ template<>
 inline __m128d internal_sin(__m128d a) {
    __m128d out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
        ((double*)&out)[i] = std::sin(((double*)&a)[i]);
    }
    return out;
@@ -446,7 +446,7 @@ template<>
 inline __m128d internal_cos(__m128d a) {
    __m128d out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
        ((double*)&out)[i] = std::cos(((double*)&a)[i]);
    }
    return out;
@@ -455,7 +455,7 @@ template<>
 inline __m128d internal_tan(__m128d a) {
    __m128d out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
        ((double*)&out)[i] = std::tan(((double*)&a)[i]);
    }
    return out;
@@ -464,7 +464,7 @@ template<>
 inline __m128d internal_asin(__m128d a) {
    __m128d out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
        ((double*)&out)[i] = std::asin(((double*)&a)[i]);
    }
    return out;
@@ -473,7 +473,7 @@ template<>
 inline __m128d internal_acos(__m128d a) {
    __m128d out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
        ((double*)&out)[i] = std::acos(((double*)&a)[i]);
    }
    return out;
@@ -482,7 +482,7 @@ template<>
 inline __m128d internal_atan(__m128d a) {
    __m128d out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
        ((double*)&out)[i] = std::atan(((double*)&a)[i]);
    }
    return out;
@@ -493,7 +493,7 @@ template<>
 inline __m256 internal_exp(__m256 a) {
    __m256 out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
        ((float*)&out)[i] = std::exp(((float*)&a)[i]);
    }
    return out;
@@ -502,7 +502,7 @@ template<>
 inline __m256 internal_log(__m256 a) {
    __m256 out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
        ((float*)&out)[i] = std::log(((float*)&a)[i]);
    }
    return out;
@@ -511,7 +511,7 @@ template<>
 inline __m256 internal_sin(__m256 a) {
    __m256 out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
        ((float*)&out)[i] = std::sin(((float*)&a)[i]);
    }
    return out;
@@ -520,7 +520,7 @@ template<>
 inline __m256 internal_cos(__m256 a) {
    __m256 out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
        ((float*)&out)[i] = std::cos(((float*)&a)[i]);
    }
    return out;
@@ -529,7 +529,7 @@ template<>
 inline __m256 internal_tan(__m256 a) {
    __m256 out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
        ((float*)&out)[i] = std::tan(((float*)&a)[i]);
    }
    return out;
@@ -538,7 +538,7 @@ template<>
 inline __m256 internal_asin(__m256 a) {
    __m256 out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
        ((float*)&out)[i] = std::asin(((float*)&a)[i]);
    }
    return out;
@@ -547,7 +547,7 @@ template<>
 inline __m256 internal_acos(__m256 a) {
    __m256 out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
        ((float*)&out)[i] = std::acos(((float*)&a)[i]);
    }
    return out;
@@ -556,7 +556,7 @@ template<>
 inline __m256 internal_atan(__m256 a) {
    __m256 out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<float>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
        ((float*)&out)[i] = std::atan(((float*)&a)[i]);
    }
    return out;
@@ -567,7 +567,7 @@ template<>
 inline __m256d internal_exp(__m256d a) {
    __m256d out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
        ((double*)&out)[i] = std::exp(((double*)&a)[i]);
    }
    return out;
@@ -576,7 +576,7 @@ template<>
 inline __m256d internal_log(__m256d a) {
    __m256d out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
        ((double*)&out)[i] = std::log(((double*)&a)[i]);
    }
    return out;
@@ -585,7 +585,7 @@ template<>
 inline __m256d internal_sin(__m256d a) {
    __m256d out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
        ((double*)&out)[i] = std::sin(((double*)&a)[i]);
    }
    return out;
@@ -594,7 +594,7 @@ template<>
 inline __m256d internal_cos(__m256d a) {
    __m256d out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
        ((double*)&out)[i] = std::cos(((double*)&a)[i]);
    }
    return out;
@@ -603,7 +603,7 @@ template<>
 inline __m256d internal_tan(__m256d a) {
    __m256d out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
        ((double*)&out)[i] = std::tan(((double*)&a)[i]);
    }
    return out;
@@ -612,7 +612,7 @@ template<>
 inline __m256d internal_asin(__m256d a) {
    __m256d out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
        ((double*)&out)[i] = std::asin(((double*)&a)[i]);
    }
    return out;
@@ -621,7 +621,7 @@ template<>
 inline __m256d internal_acos(__m256d a) {
    __m256d out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
        ((double*)&out)[i] = std::acos(((double*)&a)[i]);
    }
    return out;
@@ -630,7 +630,7 @@ template<>
 inline __m256d internal_atan(__m256d a) {
    __m256d out;
 
-   for (FASTOR_INDEX i=0; i<stride_finder<double>::value; i++) {
+   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
        ((double*)&out)[i] = std::atan(((double*)&a)[i]);
    }
    return out;
@@ -643,7 +643,7 @@ inline __m256d internal_atan(__m256d a) {
 template<typename T, typename U>
 inline T internal_pow(T a, U b) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
+   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
        out[i] = std::pow(a[i],b[i]);
    }
    return out;
@@ -652,7 +652,7 @@ inline T internal_pow(T a, U b) {
 template<typename T>
 inline T internal_sinh(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
+   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
        out[i] = std::sinh(a[i]);
    }
    return out;
@@ -661,7 +661,7 @@ inline T internal_sinh(T a) {
 template<typename T>
 inline T internal_cosh(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
+   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
        out[i] = std::cosh(a[i]);
    }
    return out;
@@ -670,7 +670,7 @@ inline T internal_cosh(T a) {
 template<typename T>
 inline T internal_tanh(T a) {
    T out;
-   for (FASTOR_INDEX i=0; i<stride_finder<typename std::remove_reference<decltype(a[0])>::type>::value; i++) {
+   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
        out[i] = std::tanh(a[i]);
    }
    return out;

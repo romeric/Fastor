@@ -22,7 +22,7 @@ public:
     using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = Tensor<T,IterSize>;
     static constexpr FASTOR_INDEX Dimension = 1;
-    static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
+    static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
     static constexpr FASTOR_INDEX rank() {return 1;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return IterSize;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX ) const {return IterSize;}
@@ -98,7 +98,7 @@ public:
     using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = Tensor<T,IterSizes...>;
     static constexpr FASTOR_INDEX Dimension = DIMS;
-    static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
+    static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
     static constexpr FASTOR_INDEX rank() {return DIMS;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return pack_prod<IterSizes...>::value;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return it_expr.dimension(i);}
@@ -180,7 +180,7 @@ public:
     using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = Tensor<T,IterSize>;
     static constexpr FASTOR_INDEX Dimension = 1;
-    static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
+    static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
     static constexpr FASTOR_INDEX rank() {return 1;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return IterSize;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX ) const {return IterSize;}
@@ -702,7 +702,7 @@ public:
     using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = Tensor<T,IterSizes...>;
     static constexpr FASTOR_INDEX Dimension = DIMS;
-    static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
+    static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
     static constexpr FASTOR_INDEX rank() {return DIMS;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return pack_prod<IterSizes...>::value;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return it_expr.dimension(i);}

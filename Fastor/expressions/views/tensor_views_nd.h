@@ -26,7 +26,7 @@ public:
     using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = TensorType<T,Rest...>;
     static constexpr FASTOR_INDEX Dimension = DIMS;
-    static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
+    static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
     static constexpr std::array<size_t,DIMS> products_ = nprods_views<Index<Rest...>,
         typename std_ext::make_index_sequence<DIMS>::type>::values;
 
@@ -229,7 +229,7 @@ public:
     using simd_abi_type = typename simd_vector_type::abi_type;
     using result_type = TensorType<T,Rest...>;
     static constexpr FASTOR_INDEX Dimension = DIMS;
-    static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
+    static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
     static constexpr std::array<size_t,DIMS> products_ = nprods_views<Index<Rest...>,
         typename std_ext::make_index_sequence<DIMS>::type>::values;
 

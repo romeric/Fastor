@@ -7,7 +7,7 @@ template<size_t ...Rest1, typename Seq0, typename Seq1,
     typename std::enable_if<sizeof...(Rest)==sizeof...(Rest1),bool>::type=0>
 FASTOR_INLINE Tensor(const TensorFixedViewExpr2D<Tensor<T,Rest1...>,Seq0,Seq1,2>& src) {
     using scalar_type_ = T;
-    constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
+    constexpr FASTOR_INDEX Stride_ = simd_size_v<scalar_type_>;
 #ifndef NDEBUG
     FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
     for (FASTOR_INDEX i = 0; i<sizeof...(Rest); ++i) {
@@ -98,7 +98,7 @@ template<typename Derived, size_t DIMS,
         && !requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
     using scalar_type_ = typename scalar_type_finder<Derived>::type;
-    constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
+    constexpr FASTOR_INDEX Stride_ = simd_size_v<scalar_type_>;
     const Derived &src = src_.self();
 #ifndef NDEBUG
     FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -178,7 +178,7 @@ FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
 template<size_t ...Rest1, enable_if_t_<sizeof...(Rest)==sizeof...(Rest1),bool> = false>
 FASTOR_INLINE Tensor(const TensorViewExpr<Tensor<T,Rest1...>,2>& src) {
     using scalar_type_ = T;
-    constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
+    constexpr FASTOR_INDEX Stride_ = simd_size_v<scalar_type_>;
 #ifndef NDEBUG
     FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
     for (FASTOR_INDEX i = 0; i<sizeof...(Rest); ++i) {
@@ -266,7 +266,7 @@ template<typename Derived, size_t DIMS, enable_if_t_<has_tensor_view_v<Derived> 
     !requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
     using scalar_type_ = typename scalar_type_finder<Derived>::type;
-    constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
+    constexpr FASTOR_INDEX Stride_ = simd_size_v<scalar_type_>;
     const Derived &src = src_.self();
 #ifndef NDEBUG
     FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");
@@ -306,7 +306,7 @@ template<typename Derived, size_t DIMS, enable_if_t_<has_tensor_view_v<Derived> 
     !requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
     // using scalar_type_ = typename scalar_type_finder<Derived>::type;
-    // constexpr FASTOR_INDEX Stride_ = stride_finder<scalar_type_>::value;
+    // constexpr FASTOR_INDEX Stride_ = simd_size_v<scalar_type_>;
     const Derived &src = src_.self();
 #ifndef NDEBUG
     FASTOR_ASSERT(src.size()==this->size(), "TENSOR SIZE MISMATCH");

@@ -23,7 +23,6 @@ public:
     using Dimension_t = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
     static constexpr FASTOR_INDEX Dimension = sizeof...(Rest);
     static constexpr FASTOR_INDEX Size = pack_prod<Rest...>::value;
-    static constexpr FASTOR_INDEX Stride = stride_finder<T>::value;
     static constexpr FASTOR_INDEX rank() {return sizeof...(Rest);}
     FASTOR_INLINE FASTOR_INDEX size() const {return pack_prod<Rest...>::value;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX dim) const {

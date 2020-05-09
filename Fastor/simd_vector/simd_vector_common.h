@@ -14,14 +14,6 @@ namespace Fastor {
 /* Common functions for all SIMDVector types
 */
 
-// Stride finder for SIMDVector
-//----------------------------------------------------------------------------------------------------------//
-template<typename T> struct stride_finder {
-    static constexpr size_t value = internal::get_simd_vector_size<SIMDVector<T,DEFAULT_ABI>>::value;
-};
-//----------------------------------------------------------------------------------------------------------//
-
-
 // This is for generic use in tensor expressions that need a uniform simd type
 // between all of them
 //----------------------------------------------------------------------------------------------------------//
@@ -39,6 +31,16 @@ struct choose_best_simd_vector {
 // helper function
 template<typename T>
 using choose_best_simd_vector_t = typename choose_best_simd_vector<T>::type;
+//----------------------------------------------------------------------------------------------------------//
+
+
+//----------------------------------------------------------------------------------------------------------//
+// Get architecture native size/width of the SIMDVector - for instance for [T=double and AVX512] returns 8
+template<typename T>
+static constexpr size_t native_simd_size_v = internal::get_simd_vector_size<SIMDVector<T,simd_abi::native>>::value;
+// Get Fastor supported size/width of the SIMDVector
+template<typename T>
+static constexpr size_t simd_size_v = internal::get_simd_vector_size<choose_best_simd_vector_t<T>>::value;
 //----------------------------------------------------------------------------------------------------------//
 
 
