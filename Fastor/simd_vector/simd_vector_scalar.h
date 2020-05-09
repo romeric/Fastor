@@ -12,20 +12,13 @@ struct SIMDVector<T, simd_abi::scalar> {
     using abi_type = simd_abi::scalar;
     static constexpr FASTOR_INDEX Size = 1;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return 1;}
-    static constexpr int unroll_size(FASTOR_INDEX size) {return (static_cast<int>(size) - 1);}
 
     FASTOR_INLINE SIMDVector() : value(0) {}
     FASTOR_INLINE SIMDVector(T num) : value(num) {}
-    FASTOR_INLINE SIMDVector(const SIMDVector<T,simd_abi::scalar> &a) : value(a.value) {}
     FASTOR_INLINE SIMDVector(const T *data, bool Aligned=true) : value(*data) {}
-    FASTOR_INLINE SIMDVector(T *data, bool Aligned=true) : value(*data) {}
 
     FASTOR_INLINE SIMDVector<T,simd_abi::scalar> operator=(T num) {
         value = num;
-        return *this;
-    }
-    FASTOR_INLINE SIMDVector<T,simd_abi::scalar> operator=(const SIMDVector<T,simd_abi::scalar> &a) {
-        value = a.value;
         return *this;
     }
 
@@ -36,12 +29,12 @@ struct SIMDVector<T, simd_abi::scalar> {
         data[0] = value;
     }
 
-    FASTOR_INLINE void load(const T *data) {
-        value = *data;
-    }
-    FASTOR_INLINE void store(T *data) const {
-        data[0] = value;
-    }
+    // FASTOR_INLINE void load(const T *data) {
+    //     value = *data;
+    // }
+    // FASTOR_INLINE void store(T *data) const {
+    //     data[0] = value;
+    // }
 
     FASTOR_INLINE void aligned_load(const T *data) {
         value = *data;
@@ -214,7 +207,7 @@ FASTOR_INLINE SIMDVector<T,simd_abi::scalar> operator/(T a, const SIMDVector<T,s
 
 template <typename T>
 FASTOR_INLINE SIMDVector<T,simd_abi::scalar> rcp(const SIMDVector<T,simd_abi::scalar> &a) {
-    return 1 / a.value;
+    return T(1) / a.value;
 }
 
 template <typename T>
@@ -224,7 +217,7 @@ FASTOR_INLINE SIMDVector<T,simd_abi::scalar> sqrt(const SIMDVector<T,simd_abi::s
 
 template <typename T>
 FASTOR_INLINE SIMDVector<T,simd_abi::scalar> rsqrt(const SIMDVector<T,simd_abi::scalar> &a) {
-    return 1/std::sqrt(a.value);
+    return T(1) / std::sqrt(a.value);
 }
 
 template <typename T>

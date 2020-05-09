@@ -29,12 +29,6 @@ struct SIMDVector<int64_t,simd_abi::avx512> {
         else
             value = _mm512_loadu_si512((__m512i*)data);
     }
-    FASTOR_INLINE SIMDVector(int64_t *data, bool Aligned=true) {
-        if (Aligned)
-            value =_mm512_load_si512((__m512i*)data);
-        else
-            value = _mm512_loadu_si512((__m512i*)data);
-    }
 
     FASTOR_INLINE SIMDVector<int64_t,simd_abi::avx512> operator=(int64_t num) {
         value = _mm512_set1_epi64(num);
@@ -400,12 +394,6 @@ struct SIMDVector<int64_t,simd_abi::avx> {
         else
             value = _mm256_loadu_si256((__m256i*)data);
     }
-    FASTOR_INLINE SIMDVector(int64_t *data, bool Aligned=true) {
-        if (Aligned)
-            value =_mm256_load_si256((__m256i*)data);
-        else
-            value = _mm256_loadu_si256((__m256i*)data);
-    }
 
     FASTOR_INLINE SIMDVector<int64_t,simd_abi::avx> operator=(int64_t num) {
         value = _mm256_set1_epi64x(num);
@@ -716,12 +704,6 @@ struct SIMDVector<int64_t,simd_abi::sse> {
     }
     FASTOR_INLINE SIMDVector(__m128i regi) : value(regi) {}
     FASTOR_INLINE SIMDVector(const int64_t *data, bool Aligned=true) {
-        if (Aligned)
-            value =_mm_load_si128((__m128i*)data);
-        else
-            value = _mm_loadu_si128((__m128i*)data);
-    }
-    FASTOR_INLINE SIMDVector(int64_t *data, bool Aligned=true) {
         if (Aligned)
             value =_mm_load_si128((__m128i*)data);
         else

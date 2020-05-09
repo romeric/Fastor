@@ -26,12 +26,6 @@ struct SIMDVector<double, simd_abi::avx512> {
         else
             value = _mm512_loadu_pd(data);
     }
-    FASTOR_INLINE SIMDVector(double *data, bool Aligned=true) {
-        if (Aligned)
-            value =_mm512_load_pd(data);
-        else
-            value = _mm512_loadu_pd(data);
-    }
 
     FASTOR_INLINE SIMDVector<double,simd_abi::avx512> operator=(double num) {
         value = _mm512_set1_pd(num);
@@ -338,12 +332,6 @@ struct SIMDVector<double, simd_abi::avx> {
         else
             value = _mm256_loadu_pd(data);
     }
-    FASTOR_INLINE SIMDVector(double *data, bool Aligned=true) {
-        if (Aligned)
-            value =_mm256_load_pd(data);
-        else
-            value = _mm256_loadu_pd(data);
-    }
 
     FASTOR_INLINE SIMDVector<double,simd_abi::avx> operator=(double num) {
         value = _mm256_set1_pd(num);
@@ -637,12 +625,6 @@ struct SIMDVector<double, simd_abi::sse> {
     FASTOR_INLINE SIMDVector(double num) : value(_mm_set1_pd(num)) {}
     FASTOR_INLINE SIMDVector(__m128d regi) : value(regi) {}
     FASTOR_INLINE SIMDVector(const double *data, bool Aligned=true) {
-        if (Aligned)
-            value =_mm_load_pd(data);
-        else
-            value = _mm_loadu_pd(data);
-    }
-    FASTOR_INLINE SIMDVector(double *data, bool Aligned=true) {
         if (Aligned)
             value =_mm_load_pd(data);
         else

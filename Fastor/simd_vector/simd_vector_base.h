@@ -8,8 +8,9 @@
 
 namespace Fastor {
 
-// The default SIMDVector class that falls back to scalar implementation
-// if SIMD types are not available or if vectorisation is disallowed
+/* The default SIMDVector class that falls back to scalar implementation
+* if SIMD types are not available or if vectorisation is disallowed
+*/
 //--------------------------------------------------------------------------------------------------------------------//
 template <typename T, typename ABI = simd_abi::native>
 struct SIMDVector {
@@ -19,52 +20,25 @@ struct SIMDVector {
     using scalar_value_type = T;
     using abi_type = ABI;
 
-    FASTOR_INLINE SIMDVector() {
-        std::fill(value, value+Size, 0.);
-    }
-    FASTOR_INLINE SIMDVector(T num) {
-        std::fill(value, value+Size, num);
-    }
-    FASTOR_INLINE SIMDVector(const SIMDVector<T,ABI> &a) {
-        std::copy(a.value,a.value+a.Size,value);
-    }
-    FASTOR_INLINE SIMDVector(const T *data, bool Aligned=true) {
-        std::copy(data,data+Size,value);
-    }
-    FASTOR_INLINE SIMDVector(T *data, bool Aligned=true) {
-        std::copy(data,data+Size,value);
-    }
+    FASTOR_INLINE SIMDVector() : value{} {}
+    FASTOR_INLINE SIMDVector(T num) { std::fill(value, value+Size, num); }
+    FASTOR_INLINE SIMDVector(const SIMDVector<T,ABI> &a) { std::copy(a.value,a.value+a.Size,value); };
+    FASTOR_INLINE SIMDVector(const T *data, bool Aligned=true) { std::copy(data,data+Size,value);}
 
-    FASTOR_INLINE SIMDVector<T,ABI> operator=(T num) {
-        std::fill(value, value+Size, num);
-        return *this;
-    }
-    FASTOR_INLINE SIMDVector<T,ABI> operator=(const SIMDVector<T,ABI> &a) {
-        std::copy(a.value,a.value+a.Size,value);
-        return *this;
-    }
+    FASTOR_INLINE SIMDVector<T,ABI> operator=(T num) { std::fill(value, value+Size, num); return *this;}
+    FASTOR_INLINE SIMDVector<T,ABI> operator=(const SIMDVector<T,ABI> &a) { std::copy(a.value,a.value+a.Size,value); return *this; };
 
-    FASTOR_INLINE void load(const T *data, bool Aligned=true) {
-        std::copy(data,data+Size,value);
-        unused(Aligned);
-    }
-    FASTOR_INLINE void store(T *data, bool Aligned=true) const {
-        std::copy(value,value+Size,data);
-        unused(Aligned);
-    }
+    FASTOR_INLINE void load(const T *data, bool Aligned=true )  { std::copy(data,data+Size,value);  unused(Aligned);}
+    FASTOR_INLINE void store(T *data, bool Aligned=true ) const { std::copy(value,value+Size,data); unused(Aligned);}
 
-    FASTOR_INLINE void aligned_load(const T *data) {
-        std::copy(data,data+Size,value);
-    }
-    FASTOR_INLINE void aligned_store(T *data) const {
-        std::copy(value,value+Size,data);
-    }
+    FASTOR_INLINE void aligned_load(const T *data)  { std::copy(data,data+Size,value); }
+    FASTOR_INLINE void aligned_store(T *data) const { std::copy(value,value+Size,data);}
 
     FASTOR_INLINE void mask_load(const scalar_value_type *a, uint8_t mask, bool ) {
         // perhaps very inefficient but they never get used
         int maska[Size];
         mask_to_array(mask,maska);
-        std::fill(value, value+Size, 0.);
+        std::fill(value, value+Size, 0);
         for (FASTOR_INDEX i=0; i<Size; ++i) {
             if (maska[i] == -1) {
                 ((scalar_value_type*)&value)[Size - i - 1] = a[Size - i - 1];
@@ -94,10 +68,9 @@ struct SIMDVector {
     }
     template<typename U, typename ... Args>
     FASTOR_INLINE void set(U first, Args ... args) {
+        static_assert(sizeof...(args)+1==Size,"CANNOT SET VECTOR WITH SPECIFIED NUMBER OF VALUES DUE TO ABI CONSIDERATION");
         T arr[Size] = {first,args...};
         std::reverse_copy(arr, arr+Size, value);
-        // Relax this restriction
-        static_assert(sizeof...(args)+1==Size,"CANNOT SET VECTOR WITH SPECIFIED NUMBER OF VALUES DUE TO ABI CONSIDERATION");
     }
     FASTOR_INLINE void set_sequential(T num0) {
         for (FASTOR_INDEX i=0; i<Size;++i)
@@ -343,92 +316,7 @@ FASTOR_INLINE SIMDVector<T,ABI> abs(const SIMDVector<T,ABI> &a) {
     return out;
 }
 
-
-
-
-// Binary comparison ops
-//----------------------------------------------------------------------------------------------------------------//
-#define FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(OP) \
-template<typename T, typename ABI> \
-FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> operator OP(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b) { \
-    constexpr FASTOR_INDEX Size = SIMDVector<T,ABI>::Size;\
-    T FASTOR_ALIGN val_a[Size];\
-    a.store(val_a);\
-    T FASTOR_ALIGN val_b[Size];\
-    b.store(val_b);\
-    SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;\
-    bool FASTOR_ALIGN val_out[Size];\
-    out.store(val_out);\
-    for (FASTOR_INDEX i=0; i<Size; ++i) {\
-        val_out[i] = val_a[i] OP val_b[i];\
-    }\
-    out.load(val_out);\
-    return out;\
-}\
-
-FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(==)
-FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(!=)
-FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(>)
-FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(<)
-FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(>=)
-FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(<=)
-FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(&&)
-FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(||)
-
-
-#define FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(OP) \
-template<typename T, typename U, typename ABI> \
-FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> operator OP(const SIMDVector<T,ABI> &a, U b) { \
-    constexpr FASTOR_INDEX Size = SIMDVector<T,ABI>::Size;\
-    T FASTOR_ALIGN val_a[Size];\
-    a.store(val_a);\
-    SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;\
-    bool FASTOR_ALIGN val_out[Size];\
-    out.store(val_out);\
-    for (FASTOR_INDEX i=0; i<Size; ++i) {\
-        val_out[i] = val_a[i] OP T(b);\
-    }\
-    out.load(val_out);\
-    return out;\
-}\
-
-FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(==)
-FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(!=)
-FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(>)
-FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(<)
-FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(>=)
-FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(<=)
-FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(&&)
-FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(||)
-
-
-#define FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(OP) \
-template<typename T, typename U, typename ABI> \
-FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> operator OP(U a, const SIMDVector<T,ABI> &b) { \
-    constexpr FASTOR_INDEX Size = SIMDVector<T,ABI>::Size;\
-    T FASTOR_ALIGN val_b[Size];\
-    b.store(val_b);\
-    SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;\
-    bool FASTOR_ALIGN val_out[Size];\
-    out.store(val_out);\
-    for (FASTOR_INDEX i=0; i<Size; ++i) {\
-        val_out[i] = T(a) OP val_b[i];\
-    }\
-    out.load(val_out);\
-    return out;\
-}\
-
-FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(==)
-FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(!=)
-FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(>)
-FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(<)
-FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(>=)
-FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(<=)
-FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(&&)
-FASTOR_MAKE_BINARY_CMP_SCALAR_SIMDVECTOR_OPS_(||)
-//----------------------------------------------------------------------------------------------------------------//
-
-}
+} // end of namespace Fastor
 
 #endif // SIMD_VECTOR_H
 

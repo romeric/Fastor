@@ -14,7 +14,7 @@ void test_intergers_divs<int,simd_abi::avx>() {
 
     using TT = int;
     using ABI = simd_abi::avx;
-        std::array<TT,8> arr = {70,3,6,1,5,9,14,20};
+    std::array<TT,8> arr = {70,3,6,1,5,9,14,20};
     {
         SIMDVector<TT,ABI> a(arr.data(),false);
         a /= 2;

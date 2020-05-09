@@ -306,9 +306,9 @@ void run() {
     print(FGRN(BOLD("All tests passed successfully")));
     run_fixed_size<T,4,4>();
     print(FGRN(BOLD("All tests passed successfully")));
-    run_fixed_size<T,8,8>();
+    run_fixed_size<T,2,8>();
     print(FGRN(BOLD("All tests passed successfully")));
-    run_fixed_size<T,7,13>();
+    run_fixed_size<T,3,13>();
     print(FGRN(BOLD("All tests passed successfully")));
 }
 
