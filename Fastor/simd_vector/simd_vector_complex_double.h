@@ -280,15 +280,15 @@ protected:
         value_r      = _mm256_permute4x64_pd(_mm256_unpacklo_pd(lo, hi), _MM_SHUFFLE(3, 1, 2, 0));
         value_i      = _mm256_permute4x64_pd(_mm256_unpackhi_pd(lo, hi), _MM_SHUFFLE(3, 1, 2, 0));
 #else
-        __m256d tmp0 = _mm256_unpacklo_pd(lo,hi);
-        __m256d tmp1 = _mm256_unpackhi_pd(lo,hi);
+        __m256d tmp0 = _mm256_unpacklo_pd(lo, hi);
+        __m256d tmp1 = _mm256_unpackhi_pd(lo, hi);
         __m128d tmp2 = _mm256_castpd256_pd128(tmp0);
         __m128d tmp3 = _mm256_extractf128_pd (tmp0,0x1);
-        value_r      = _mm256_castpd128_pd256(_mm_unpacklo_pd(tmp2,tmp3));
+        value_r      = _mm256_castpd128_pd256(        _mm_unpacklo_pd(tmp2,tmp3));
         value_r      = _mm256_insertf128_pd  (value_r,_mm_unpackhi_pd(tmp2,tmp3),0x1);
         tmp2         = _mm256_castpd256_pd128(tmp1);
         tmp3         = _mm256_extractf128_pd (tmp1,0x1);
-        value_i      = _mm256_castpd128_pd256(_mm_unpacklo_pd(tmp2,tmp3));
+        value_i      = _mm256_castpd128_pd256(        _mm_unpacklo_pd(tmp2,tmp3));
         value_i      = _mm256_insertf128_pd  (value_i,_mm_unpackhi_pd(tmp2,tmp3),0x1);
 #endif
     }
