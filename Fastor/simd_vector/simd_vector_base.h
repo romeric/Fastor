@@ -34,7 +34,7 @@ struct SIMDVector {
     FASTOR_INLINE void aligned_load(const T *data)  { std::copy(data,data+Size,value); }
     FASTOR_INLINE void aligned_store(T *data) const { std::copy(value,value+Size,data);}
 
-    FASTOR_INLINE void mask_load(const scalar_value_type *a, uint8_t mask, bool ) {
+    FASTOR_INLINE void mask_load(const scalar_value_type *a, uint8_t mask, bool Aligned=false) {
         // perhaps very inefficient but they never get used
         int maska[Size];
         mask_to_array(mask,maska);
@@ -44,8 +44,9 @@ struct SIMDVector {
                 ((scalar_value_type*)&value)[Size - i - 1] = a[Size - i - 1];
             }
         }
+        unused(Aligned);
     }
-    FASTOR_INLINE void mask_store(scalar_value_type *a, uint8_t mask, bool ) const {
+    FASTOR_INLINE void mask_store(scalar_value_type *a, uint8_t mask, bool Aligned=false) const {
         // perhaps very inefficient but they never get used
         int maska[Size];
         mask_to_array(mask,maska);
@@ -57,6 +58,7 @@ struct SIMDVector {
                 a[Size - i - 1] = 0;
             }
         }
+        unused(Aligned);
     }
 
     FASTOR_INLINE T operator[](FASTOR_INDEX i) const {return value[i];}
