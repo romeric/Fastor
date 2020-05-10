@@ -215,15 +215,15 @@ void test_simd_vectors() {
     FASTOR_EXIT_ASSERT(SIMDVector<Int64,simd_abi::sse>::size()==2);
     FASTOR_EXIT_ASSERT(SIMDVector<Int64,simd_abi::scalar>::size()==1);
 
-    FASTOR_EXIT_ASSERT(SIMDVector<std::complex<double>>::size()==2);
-    FASTOR_EXIT_ASSERT(SIMDVector<std::complex<double>,simd_abi::avx>::size()==2);
-    FASTOR_EXIT_ASSERT(SIMDVector<std::complex<double>,simd_abi::sse>::size()==1);
-    FASTOR_EXIT_ASSERT(SIMDVector<std::complex<double>,simd_abi::scalar>::size()==1);
+    // FASTOR_EXIT_ASSERT(SIMDVector<std::complex<double>>::size()==2);
+    // FASTOR_EXIT_ASSERT(SIMDVector<std::complex<double>,simd_abi::avx>::size()==2);
+    // FASTOR_EXIT_ASSERT(SIMDVector<std::complex<double>,simd_abi::sse>::size()==1);
+    // FASTOR_EXIT_ASSERT(SIMDVector<std::complex<double>,simd_abi::scalar>::size()==1);
 
-    FASTOR_EXIT_ASSERT(SIMDVector<std::complex<float>>::size()==4);
-    FASTOR_EXIT_ASSERT(SIMDVector<std::complex<float>,simd_abi::avx>::size()==4);
-    FASTOR_EXIT_ASSERT(SIMDVector<std::complex<float>,simd_abi::sse>::size()==2);
-    FASTOR_EXIT_ASSERT(SIMDVector<std::complex<float>,simd_abi::scalar>::size()==1);
+    // FASTOR_EXIT_ASSERT(SIMDVector<std::complex<float>>::size()==4);
+    // FASTOR_EXIT_ASSERT(SIMDVector<std::complex<float>,simd_abi::avx>::size()==4);
+    // FASTOR_EXIT_ASSERT(SIMDVector<std::complex<float>,simd_abi::sse>::size()==2);
+    // FASTOR_EXIT_ASSERT(SIMDVector<std::complex<float>,simd_abi::scalar>::size()==1);
 #endif
 
     print(FGRN(BOLD("All tests passed successfully")));

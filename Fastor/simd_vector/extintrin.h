@@ -532,7 +532,7 @@ FASTOR_INLINE double _mm256_hmin_pd(__m256d a) {
 
 // Indexing a register
 //----------------------------------------------------------------------------------------------------------------//
-#ifdef FASTOR_SSE4_2_IMPL
+#ifdef FASTOR_SSE2_IMPL
 FASTOR_INLINE float _mm_get0_ps(__m128 a) {
     // NO OP
     return _mm_cvtss_f32(a);

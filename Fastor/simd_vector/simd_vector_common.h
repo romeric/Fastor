@@ -4,6 +4,7 @@
 #include "Fastor/simd_vector/simd_vector_base.h"
 #include "Fastor/simd_vector/simd_vector_float.h"
 #include "Fastor/simd_vector/simd_vector_double.h"
+#include "Fastor/simd_vector/simd_vector_complex_double.h"
 #include "Fastor/simd_vector/simd_vector_int32.h"
 #include "Fastor/simd_vector/simd_vector_int64.h"
 #include "Fastor/simd_vector/simd_vector_scalar.h"
@@ -19,11 +20,12 @@ namespace Fastor {
 //----------------------------------------------------------------------------------------------------------//
 template<typename T>
 struct choose_best_simd_vector {
-    using type = typename std::conditional< std::is_same<T,float>::value      ||
-                                            std::is_same<T,double>::value     ||
-                                            std::is_same<T,int32_t>::value    ||
+    using type = typename std::conditional< std::is_same<T,float>::value                    ||
+                                            std::is_same<T,double>::value                   ||
+                                            std::is_same<T,std::complex<double>>::value     ||
+                                            std::is_same<T,int32_t>::value                  ||
                                             std::is_same<T,int64_t>::value,
-                                            SIMDVector<T,DEFAULT_ABI>,
+                                            SIMDVector<T,simd_abi::native>,
                                             SIMDVector<T,simd_abi::scalar>
                 >::type;
 };

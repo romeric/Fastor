@@ -36,6 +36,7 @@ test_auxiliary:
 
 test_simd_vectors:
 	$(CXX) test_simd_vectors.cpp -o test_simd_vectors.exe $(CXX_FLAGS) $(INCLUDES)
+	$(CXX) test_simd_vectors_complex.cpp -o test_simd_vectors_complex.exe $(CXX_FLAGS) $(INCLUDES)
 
 test_basics:
 	$(CXX) test_basics.cpp -o test_basics.exe $(CXX_FLAGS) $(INCLUDES)
@@ -136,6 +137,7 @@ run_auxiliary:
 
 run_simd_vectors:
 	./test_simd_vectors.exe
+	./test_simd_vectors_complex.exe
 
 run_basics:
 	./test_basics.exe

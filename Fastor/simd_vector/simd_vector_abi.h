@@ -2,6 +2,7 @@
 #define FASTOR_SIMD_VECTOR_ABI
 
 #include "Fastor/commons/commons.h"
+#include <complex>
 #include <type_traits>
 
 namespace Fastor {
@@ -61,10 +62,23 @@ struct get_simd_vector_size<__svec<T,ABI>> {
     // Size should be at least 1UL
     static constexpr size_t value = (bitsize / sizeof(T) / 8UL) != 0 ? (bitsize / sizeof(T) / 8UL) : 1UL;
 };
+// Specialisation for fixed size simd vectors
 template<template<typename, typename> class __svec, typename T, size_t N>
 struct get_simd_vector_size<__svec<T,simd_abi::fixed_size<N> > > {
     static constexpr size_t bitsize = N*8UL;
     static constexpr size_t value = N;
+};
+// Specialisation for complex simd vectors
+template<template<typename, typename> class __svec, typename ABI>
+struct get_simd_vector_size<__svec<std::complex<double>,ABI>> {
+    using T = double;
+    static constexpr size_t bitsize = std::is_same<ABI,simd_abi::avx512>::value
+                                                ? FASTOR_AVX512_BITSIZE : (std::is_same<ABI,simd_abi::avx>::value
+                                                    ? FASTOR_AVX_BITSIZE : (std::is_same<ABI,simd_abi::sse>::value
+                                                        ? FASTOR_SSE_BITSIZE : sizeof(T)*8));
+
+    // Size should be at least 1UL
+    static constexpr size_t value = (bitsize / sizeof(T) / 8UL) != 0 ? (bitsize / sizeof(T) / 8UL) : 1UL;
 };
 
 
@@ -156,9 +170,10 @@ struct choose_best_simd_type<__svec<T,ABI>,N> {
     //                 >::type
     //              >::type;
 
-    using type = typename std::conditional< std::is_same<T,float>::value      ||
-                                            std::is_same<T,double>::value     ||
-                                            std::is_same<T,int32_t>::value    ||
+    using type = typename std::conditional< std::is_same<T,float>::value                    ||
+                                            std::is_same<T,double>::value                   ||
+                                            std::is_same<T,std::complex<double>>::value     ||
+                                            std::is_same<T,int32_t>::value                  ||
                                             std::is_same<T,int64_t>::value,
                                             size_based_type,
                                             __svec<T,simd_abi::scalar>

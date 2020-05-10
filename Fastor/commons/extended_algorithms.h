@@ -58,7 +58,29 @@ inline size_t set_stack_size(size_t size) {
 }
 #endif
 
+
+
+// Get sign of a number
+template <typename T>
+inline constexpr int signum(T x, std::false_type is_signed) {
+    return T(0) < x;
 }
+template <typename T>
+inline constexpr int signum(T x, std::true_type is_signed) {
+    return (T(0) < x) - (x < T(0));
+}
+template <typename T>
+inline constexpr int signum(T x) {
+    return signum(x, std::is_signed<T>());
+}
+
+// Get a string +/- based on sign
+template <typename T> std::string signum_string(T val) {
+    return signum(val) == 1 ? "+" : "-";
+}
+
+
+} // end of namespace Fastor
 
 
 #endif // EXTENDED_ALGORITHMS_H
