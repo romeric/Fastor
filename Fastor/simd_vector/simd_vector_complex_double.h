@@ -114,8 +114,13 @@ struct SIMDVector<std::complex<double>, simd_abi::avx> {
         *this *= vector_type(num);
     }
     FASTOR_INLINE void operator*=(const vector_type &a) {
+#ifdef FASTOR_FMA_IMPL
+        __m256d tmp = _mm256_fmsub_pd(value_r,a.value_r,_mm256_mul_pd(value_i,a.value_i));
+        value_i     = _mm256_fmadd_pd(value_r,a.value_i,_mm256_mul_pd(value_i,a.value_r));
+#else
         __m256d tmp = _mm256_sub_pd(_mm256_mul_pd(value_r,a.value_r),_mm256_mul_pd(value_i,a.value_i));
         value_i     = _mm256_add_pd(_mm256_mul_pd(value_r,a.value_i),_mm256_mul_pd(value_i,a.value_r));
+#endif
         value_r = tmp;
     }
 
@@ -124,9 +129,15 @@ struct SIMDVector<std::complex<double>, simd_abi::avx> {
     }
     FASTOR_INLINE void operator/=(const vector_type &a) {
         __m256d tmp = value_r;
-        value_r     = _mm256_add_pd(_mm256_mul_pd(value_r,a.value_r),_mm256_mul_pd(value_i,a.value_i));
-        value_i     = _mm256_sub_pd(_mm256_mul_pd(value_i,a.value_r),_mm256_mul_pd(tmp,a.value_i));
-        __m256d den = _mm256_add_pd(_mm256_mul_pd(a.value_r,a.value_r),_mm256_mul_pd(a.value_i,a.value_i));
+#ifdef FASTOR_FMA_IMPL
+        value_r     = _mm256_fmadd_pd(value_r  , a.value_r, _mm256_mul_pd(value_i,a.value_i));
+        value_i     = _mm256_fmsub_pd(value_i  , a.value_r, _mm256_mul_pd(tmp,a.value_i));
+        __m256d den = _mm256_fmadd_pd(a.value_r, a.value_r, _mm256_mul_pd(a.value_i,a.value_i));
+#else
+        value_r     = _mm256_add_pd(_mm256_mul_pd(value_r  , a.value_r), _mm256_mul_pd(value_i,a.value_i));
+        value_i     = _mm256_sub_pd(_mm256_mul_pd(value_i  , a.value_r), _mm256_mul_pd(tmp,a.value_i));
+        __m256d den = _mm256_add_pd(_mm256_mul_pd(a.value_r, a.value_r), _mm256_mul_pd(a.value_i,a.value_i));
+#endif
         value_r     = _mm256_div_pd(value_r,den);
         value_i     = _mm256_div_pd(value_i,den);
     }
@@ -147,11 +158,19 @@ struct SIMDVector<std::complex<double>, simd_abi::avx> {
     }
     /* Actual magnitude - Note that this is a vertical operation */
     FASTOR_INLINE SIMDVector<double,simd_abi::avx> magnitude() const {
+#ifdef FASTOR_FMA_IMPL
+        return _mm256_sqrt_pd(_mm256_fmadd_pd(value_r,value_r,_mm256_mul_pd(value_i,value_i)));
+#else
         return _mm256_sqrt_pd(_mm256_add_pd(_mm256_mul_pd(value_r,value_r),_mm256_mul_pd(value_i,value_i)));
+#endif
     }
     /* STL compliant squared norm - Note that this is a vertical operation */
     FASTOR_INLINE SIMDVector<double,simd_abi::avx> norm() const {
+#ifdef FASTOR_FMA_IMPL
+        return _mm256_fmadd_pd(value_r,value_r,_mm256_mul_pd(value_i,value_i));
+#else
         return _mm256_add_pd(_mm256_mul_pd(value_r,value_r),_mm256_mul_pd(value_i,value_i));
+#endif
     }
     // Magnitude based minimum
     FASTOR_INLINE scalar_value_type minimum() const;
@@ -335,8 +354,13 @@ operator-(const SIMDVector<std::complex<double>,simd_abi::avx> &a) {
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
 operator*(const SIMDVector<std::complex<double>,simd_abi::avx> &a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
     SIMDVector<std::complex<double>,simd_abi::avx> out;
+#ifdef FASTOR_FMA_IMPL
+    out.value_r = _mm256_fmsub_pd(a.value_r,b.value_r,_mm256_mul_pd(a.value_i,b.value_i));
+    out.value_i = _mm256_fmadd_pd(a.value_r,b.value_i,_mm256_mul_pd(a.value_i,b.value_r));
+#else
     out.value_r = _mm256_sub_pd(_mm256_mul_pd(a.value_r,b.value_r),_mm256_mul_pd(a.value_i,b.value_i));
     out.value_i = _mm256_add_pd(_mm256_mul_pd(a.value_r,b.value_i),_mm256_mul_pd(a.value_i,b.value_r));
+#endif
     return out;
 }
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
@@ -351,9 +375,15 @@ operator*(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
 operator/(const SIMDVector<std::complex<double>,simd_abi::avx> &a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
     SIMDVector<std::complex<double>,simd_abi::avx> out;
+#ifdef FASTOR_FMA_IMPL
+    out.value_r = _mm256_fmadd_pd(a.value_r,b.value_r,_mm256_mul_pd(a.value_i,b.value_i));
+    out.value_i = _mm256_fmsub_pd(a.value_i,b.value_r,_mm256_mul_pd(a.value_r,b.value_i));
+    __m256d den = _mm256_fmadd_pd(b.value_r,b.value_r,_mm256_mul_pd(b.value_i,b.value_i));
+#else
     out.value_r = _mm256_add_pd(_mm256_mul_pd(a.value_r,b.value_r),_mm256_mul_pd(a.value_i,b.value_i));
     out.value_i = _mm256_sub_pd(_mm256_mul_pd(a.value_i,b.value_r),_mm256_mul_pd(a.value_r,b.value_i));
     __m256d den = _mm256_add_pd(_mm256_mul_pd(b.value_r,b.value_r),_mm256_mul_pd(b.value_i,b.value_i));
+#endif
     out.value_r = _mm256_div_pd(out.value_r,den);
     out.value_i = _mm256_div_pd(out.value_i,den);
     return out;
@@ -370,7 +400,11 @@ operator/(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
 rcp(const SIMDVector<std::complex<double>,simd_abi::avx> &a) {
     SIMDVector<std::complex<double>,simd_abi::avx> out;
+#ifdef FASTOR_FMA_IMPL
+    __m256d den = _mm256_fmadd_pd(a.value_r,a.value_r,_mm256_mul_pd(a.value_i,a.value_i));
+#else
     __m256d den = _mm256_add_pd(_mm256_mul_pd(a.value_r,a.value_r),_mm256_mul_pd(a.value_i,a.value_i));
+#endif
     out.value_r = _mm256_div_pd(out.value_r,den);
     out.value_i = _mm256_neg_pd(_mm256_div_pd(out.value_i,den));
     return out;
@@ -514,8 +548,13 @@ struct SIMDVector<std::complex<double>, simd_abi::sse> {
         *this *= vector_type(num);
     }
     FASTOR_INLINE void operator*=(const vector_type &a) {
+#ifdef FASTOR_FMA_IMPL
+        __m128d tmp = _mm_fmsub_pd(value_r,a.value_r,_mm_mul_pd(value_i,a.value_i));
+        value_i     = _mm_fmadd_pd(value_r,a.value_i,_mm_mul_pd(value_i,a.value_r));
+#else
         __m128d tmp = _mm_sub_pd(_mm_mul_pd(value_r,a.value_r),_mm_mul_pd(value_i,a.value_i));
         value_i     = _mm_add_pd(_mm_mul_pd(value_r,a.value_i),_mm_mul_pd(value_i,a.value_r));
+#endif
         value_r = tmp;
     }
 
@@ -524,9 +563,15 @@ struct SIMDVector<std::complex<double>, simd_abi::sse> {
     }
     FASTOR_INLINE void operator/=(const vector_type &a) {
         __m128d tmp = value_r;
-        value_r     = _mm_add_pd(_mm_mul_pd(value_r,a.value_r),_mm_mul_pd(value_i,a.value_i));
-        value_i     = _mm_sub_pd(_mm_mul_pd(value_i,a.value_r),_mm_mul_pd(tmp,a.value_i));
-        __m128d den = _mm_add_pd(_mm_mul_pd(a.value_r,a.value_r),_mm_mul_pd(a.value_i,a.value_i));
+#ifdef FASTOR_FMA_IMPL
+        value_r     = _mm_fmadd_pd(value_r  , a.value_r, _mm_mul_pd(value_i,a.value_i));
+        value_i     = _mm_fmsub_pd(value_i  , a.value_r, _mm_mul_pd(tmp,a.value_i));
+        __m128d den = _mm_fmadd_pd(a.value_r, a.value_r, _mm_mul_pd(a.value_i,a.value_i));
+#else
+        value_r     = _mm_add_pd(_mm_mul_pd(value_r  , a.value_r), _mm_mul_pd(value_i,a.value_i));
+        value_i     = _mm_sub_pd(_mm_mul_pd(value_i  , a.value_r), _mm_mul_pd(tmp,a.value_i));
+        __m128d den = _mm_add_pd(_mm_mul_pd(a.value_r, a.value_r), _mm_mul_pd(a.value_i,a.value_i));
+#endif
         value_r     = _mm_div_pd(value_r,den);
         value_i     = _mm_div_pd(value_i,den);
     }
@@ -551,11 +596,19 @@ struct SIMDVector<std::complex<double>, simd_abi::sse> {
     }
     /* Actual magnitude - Note that this is a vertical operation */
     FASTOR_INLINE SIMDVector<double,simd_abi::sse> magnitude() const {
+#ifdef FASTOR_FMA_IMPL
+        return _mm_sqrt_pd(_mm_fmadd_pd(value_r,value_r,_mm_mul_pd(value_i,value_i)));
+#else
         return _mm_sqrt_pd(_mm_add_pd(_mm_mul_pd(value_r,value_r),_mm_mul_pd(value_i,value_i)));
+#endif
     }
     /* STL compliant squared norm - Note that this is a vertical operation */
     FASTOR_INLINE SIMDVector<double,simd_abi::sse> norm() const {
+#ifdef FASTOR_FMA_IMPL
+        return _mm_fmadd_pd(value_r,value_r,_mm_mul_pd(value_i,value_i));
+#else
         return _mm_add_pd(_mm_mul_pd(value_r,value_r),_mm_mul_pd(value_i,value_i));
+#endif
     }
     // Magnitude based minimum
     FASTOR_INLINE scalar_value_type minimum() const {
@@ -760,8 +813,13 @@ operator-(const SIMDVector<std::complex<double>,simd_abi::sse> &a) {
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
 operator*(const SIMDVector<std::complex<double>,simd_abi::sse> &a, const SIMDVector<std::complex<double>,simd_abi::sse> &b) {
     SIMDVector<std::complex<double>,simd_abi::sse> out;
+#ifdef FASTOR_FMA_IMPL
+    out.value_r = _mm_fmsub_pd(a.value_r,b.value_r,_mm_mul_pd(a.value_i,b.value_i));
+    out.value_i = _mm_fmadd_pd(a.value_r,b.value_i,_mm_mul_pd(a.value_i,b.value_r));
+#else
     out.value_r = _mm_sub_pd(_mm_mul_pd(a.value_r,b.value_r),_mm_mul_pd(a.value_i,b.value_i));
     out.value_i = _mm_add_pd(_mm_mul_pd(a.value_r,b.value_i),_mm_mul_pd(a.value_i,b.value_r));
+#endif
     return out;
 }
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
@@ -776,9 +834,15 @@ operator*(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
 operator/(const SIMDVector<std::complex<double>,simd_abi::sse> &a, const SIMDVector<std::complex<double>,simd_abi::sse> &b) {
     SIMDVector<std::complex<double>,simd_abi::sse> out;
+#ifdef FASTOR_FMA_IMPL
+    out.value_r = _mm_fmadd_pd(a.value_r,b.value_r,_mm_mul_pd(a.value_i,b.value_i));
+    out.value_i = _mm_fmsub_pd(a.value_i,b.value_r,_mm_mul_pd(a.value_r,b.value_i));
+    __m128d den = _mm_fmadd_pd(b.value_r,b.value_r,_mm_mul_pd(b.value_i,b.value_i));
+#else
     out.value_r = _mm_add_pd(_mm_mul_pd(a.value_r,b.value_r),_mm_mul_pd(a.value_i,b.value_i));
     out.value_i = _mm_sub_pd(_mm_mul_pd(a.value_i,b.value_r),_mm_mul_pd(a.value_r,b.value_i));
     __m128d den = _mm_add_pd(_mm_mul_pd(b.value_r,b.value_r),_mm_mul_pd(b.value_i,b.value_i));
+#endif
     out.value_r = _mm_div_pd(out.value_r,den);
     out.value_i = _mm_div_pd(out.value_i,den);
     return out;
@@ -795,7 +859,11 @@ operator/(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
 rcp(const SIMDVector<std::complex<double>,simd_abi::sse> &a) {
     SIMDVector<std::complex<double>,simd_abi::sse> out;
+#ifdef FASTOR_FMA_IMPL
+    __m128d den = _mm_fmadd_pd(a.value_r,a.value_r,_mm_mul_pd(a.value_i,a.value_i));
+#else
     __m128d den = _mm_add_pd(_mm_mul_pd(a.value_r,a.value_r),_mm_mul_pd(a.value_i,a.value_i));
+#endif
     out.value_r = _mm_div_pd(out.value_r,den);
     out.value_i = _mm_neg_pd(_mm_div_pd(out.value_i,den));
     return out;
