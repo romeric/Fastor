@@ -849,6 +849,50 @@ FASTOR_INLINE __m128d _mm256_dp_pd(__m256d __X, __m256d __Y) {
 //----------------------------------------------------------------------------------------------------------------//
 
 
+// Arrangments for std::complex after load / before store
+//----------------------------------------------------------------------------------------------------------------//
+#ifdef FASTOR_SSE2_IMPL
+FASTOR_INLINE void arrange_from_load(__m128d& value_r, __m128d& value_i, __m128d lo, __m128d hi) {
+    value_r = _mm_shuffle_pd(lo, hi, _MM_SHUFFLE2(0, 0));
+    value_i = _mm_shuffle_pd(lo, hi, _MM_SHUFFLE2(1, 1));
+}
+
+FASTOR_INLINE void arrange_for_store(__m128d &lo, __m128d &hi, __m128d value_r, __m128d value_i) {
+    lo = _mm_shuffle_pd(value_r, value_i, _MM_SHUFFLE2(0, 0));
+    hi = _mm_shuffle_pd(value_r, value_i, _MM_SHUFFLE2(1, 1));
+}
+#endif
+
+#ifdef FASTOR_AVX_IMPL
+FASTOR_INLINE void arrange_from_load(__m256d& value_r, __m256d& value_i, __m256d lo, __m256d hi) {
+#ifdef FASTOR_AVX2_IMPL
+    value_r      = _mm256_permute4x64_pd(_mm256_unpacklo_pd(lo, hi), _MM_SHUFFLE(3, 1, 2, 0));
+    value_i      = _mm256_permute4x64_pd(_mm256_unpackhi_pd(lo, hi), _MM_SHUFFLE(3, 1, 2, 0));
+#else
+    __m256d tmp0 = _mm256_unpacklo_pd(lo, hi);
+    __m256d tmp1 = _mm256_unpackhi_pd(lo, hi);
+    __m128d tmp2 = _mm256_castpd256_pd128(tmp0);
+    __m128d tmp3 = _mm256_extractf128_pd (tmp0,0x1);
+    value_r      = _mm256_castpd128_pd256(        _mm_unpacklo_pd(tmp2,tmp3));
+    value_r      = _mm256_insertf128_pd  (value_r,_mm_unpackhi_pd(tmp2,tmp3),0x1);
+    tmp2         = _mm256_castpd256_pd128(tmp1);
+    tmp3         = _mm256_extractf128_pd (tmp1,0x1);
+    value_i      = _mm256_castpd128_pd256(        _mm_unpacklo_pd(tmp2,tmp3));
+    value_i      = _mm256_insertf128_pd  (value_i,_mm_unpackhi_pd(tmp2,tmp3),0x1);
+#endif
+}
+
+FASTOR_INLINE void arrange_for_store(__m256d &lo, __m256d &hi, __m256d value_r, __m256d value_i) {
+    __m256d tmp0 = _mm256_unpacklo_pd(value_r, value_i);
+    __m256d tmp1 = _mm256_unpackhi_pd(value_r, value_i);
+    lo           = _mm256_permute2f128_pd(tmp1, tmp0, 0x2);
+    hi           = _mm256_permute2f128_pd(tmp0, tmp1, 0x1);
+    hi           = _mm256_insertf128_pd(hi,_mm256_extractf128_pd(tmp1,0x1),0x1);
+}
+#endif
+//----------------------------------------------------------------------------------------------------------------//
+
+
 //----------------------------------------------------------------------------------------------------------------//
 // Additional math functions for scalars -> the name sqrts is to remove ambiguity with libm sqrt
 template<typename T, typename std::enable_if<std::is_arithmetic<T>::value,bool>::type=0>

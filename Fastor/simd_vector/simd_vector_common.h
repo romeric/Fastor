@@ -477,6 +477,16 @@ maskload(const typename V::scalar_value_type * FASTOR_RESTRICT a, const int (&ma
 }
 #ifdef FASTOR_AVX2_IMPL
 template<>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+maskload<SIMDVector<std::complex<double>,simd_abi::avx>>(const std::complex<double> * FASTOR_RESTRICT a, const int (&maska)[4]) {
+    __m256i mask = _mm256_set_epi64x(maska[0],maska[1],maska[2],maska[3]);
+    __m256d lo   = _mm256_maskload_pd(reinterpret_cast<const double*>(a  ), (__m256i) mask);
+    __m256d hi   = _mm256_maskload_pd(reinterpret_cast<const double*>(a+2), (__m256i) mask);
+    __m256d value_r, value_i;
+    arrange_from_load(value_r, value_i, lo, hi);
+    return SIMDVector<std::complex<double>,simd_abi::avx>(value_r,value_i);
+}
+template<>
 FASTOR_INLINE SIMDVector<double,simd_abi::avx>
 maskload<SIMDVector<double,simd_abi::avx>>(const double * FASTOR_RESTRICT a, const int (&maska)[4]) {
     __m256i mask = _mm256_set_epi64x(maska[0],maska[1],maska[2],maska[3]);
@@ -499,6 +509,16 @@ FASTOR_INLINE SIMDVector<int,simd_abi::avx>
 maskload<SIMDVector<int,simd_abi::avx>>(const int * FASTOR_RESTRICT a, const int (&maska)[8]) {
     __m256i mask = _mm256_set_epi32(maska[0],maska[1],maska[2],maska[3],maska[4],maska[5],maska[6],maska[7]);
     return _mm256_maskload_epi32(a,(__m256i) mask);
+}
+template<>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
+maskload<SIMDVector<std::complex<double>,simd_abi::sse>>(const std::complex<double> * FASTOR_RESTRICT a, const int (&maska)[2]) {
+    __m128i mask = _mm_set_epi64x(maska[0],maska[1]);
+    __m128d lo   = _mm_maskload_pd(reinterpret_cast<const double*>(a  ), (__m128i) mask);
+    __m128d hi   = _mm_maskload_pd(reinterpret_cast<const double*>(a+1), (__m128i) mask);
+    __m128d value_r, value_i;
+    arrange_from_load(value_r, value_i, lo, hi);
+    return SIMDVector<std::complex<double>,simd_abi::sse>(value_r,value_i);
 }
 template<>
 FASTOR_INLINE SIMDVector<double,simd_abi::sse>
@@ -539,6 +559,15 @@ void maskstore(typename V::scalar_value_type * FASTOR_RESTRICT a, const int (&ma
 #ifdef FASTOR_AVX2_IMPL
 template<>
 FASTOR_INLINE
+void maskstore(std::complex<double> * FASTOR_RESTRICT a, const int (&maska)[4], SIMDVector<std::complex<double>,simd_abi::avx> &v) {
+    __m256i mask = _mm256_set_epi64x(maska[0],maska[1],maska[2],maska[3]);
+    __m256d lo, hi;
+    arrange_for_store(lo, hi, v.value_r, v.value_i);
+    _mm256_maskstore_pd(reinterpret_cast<double*>(a  ), (__m256i) mask, lo);
+    _mm256_maskstore_pd(reinterpret_cast<double*>(a+2), (__m256i) mask, hi);
+}
+template<>
+FASTOR_INLINE
 void maskstore(double * FASTOR_RESTRICT a, const int (&maska)[4], SIMDVector<double,simd_abi::avx> &v) {
     __m256i mask = _mm256_set_epi64x(maska[0],maska[1],maska[2],maska[3]);
     _mm256_maskstore_pd(a,(__m256i) mask, v.value);
@@ -560,6 +589,15 @@ FASTOR_INLINE
 void maskstore(int * FASTOR_RESTRICT a, const int (&maska)[8], SIMDVector<int,simd_abi::avx> &v) {
     __m256i mask = _mm256_set_epi32(maska[0],maska[1],maska[2],maska[3],maska[4],maska[5],maska[6],maska[7]);
     _mm256_maskstore_epi32(a,(__m256i) mask, v.value);
+}
+template<>
+FASTOR_INLINE
+void maskstore(std::complex<double> * FASTOR_RESTRICT a, const int (&maska)[2], SIMDVector<std::complex<double>,simd_abi::sse> &v) {
+    __m128i mask = _mm_set_epi64x(maska[0],maska[1]);
+    __m128d lo, hi;
+    arrange_for_store(lo, hi, v.value_r, v.value_i);
+    _mm_maskstore_pd(reinterpret_cast<double*>(a  ), (__m128i) mask, lo);
+    _mm_maskstore_pd(reinterpret_cast<double*>(a+1), (__m128i) mask, hi);
 }
 template<>
 FASTOR_INLINE

@@ -171,23 +171,23 @@ protected:
     FASTOR_INLINE void complex_aligned_load(const std::complex<double> *data) {
         __m256d lo = _mm256_load_pd(reinterpret_cast<const double*>(data  ));
         __m256d hi = _mm256_load_pd(reinterpret_cast<const double*>(data+2));
-        arrange_from_load(lo, hi);
+        arrange_from_load(value_r, value_i, lo, hi);
     }
     FASTOR_INLINE void complex_unaligned_load(const std::complex<double> *data) {
         __m256d lo = _mm256_loadu_pd(reinterpret_cast<const double*>(data  ));
         __m256d hi = _mm256_loadu_pd(reinterpret_cast<const double*>(data+2));
-        arrange_from_load(lo, hi);
+        arrange_from_load(value_r, value_i, lo, hi);
     }
 
     FASTOR_INLINE void complex_aligned_store(std::complex<double> *data) const {
         __m256d lo, hi;
-        arrange_for_store(lo, hi);
+        arrange_for_store(lo, hi, value_r, value_i);
         _mm256_store_pd(reinterpret_cast<double*>(data  ), lo);
         _mm256_store_pd(reinterpret_cast<double*>(data+2), hi);
     }
     FASTOR_INLINE void complex_unaligned_store(std::complex<double> *data) const {
         __m256d lo, hi;
-        arrange_for_store(lo, hi);
+        arrange_for_store(lo, hi, value_r, value_i);
         _mm256_storeu_pd(reinterpret_cast<double*>(data  ), lo);
         _mm256_storeu_pd(reinterpret_cast<double*>(data+2), hi);
     }
@@ -197,7 +197,7 @@ protected:
         __m256d lo, hi;
         __m256d lo = _mm256_mask_loadu_pd(lo, mask, reinterpret_cast<const double*>(data  ));
         __m256d hi = _mm256_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+1));
-        arrange_from_load(lo, hi);
+        arrange_from_load(value_r, value_i, lo, hi);
 #else
         int maska[Size];
         mask_to_array(mask,maska);
@@ -216,7 +216,7 @@ protected:
         __m256d lo, hi;
         __m256d lo = _mm256_mask_loadu_pd(lo, mask, reinterpret_cast<const double*>(data  ));
         __m256d hi = _mm256_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+1));
-        arrange_from_load(lo, hi);
+        arrange_from_load(value_r, value_i, lo, hi);
 #else
         int maska[Size];
         mask_to_array(mask,maska);
@@ -234,7 +234,7 @@ protected:
     FASTOR_INLINE void complex_mask_aligned_store(scalar_value_type *data, uint8_t mask, bool Aligned=false) const {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m256d lo, hi;
-        arrange_for_store(lo, hi);
+        arrange_for_store(lo, hi, value_r, value_i);
         _mm256_mask_store_pd(reinterpret_cast<double*>(data  ), mask, lo);
         _mm256_mask_store_pd(reinterpret_cast<double*>(data+2), mask, hi);
 #else
@@ -255,7 +255,7 @@ protected:
     FASTOR_INLINE void complex_mask_unaligned_store(scalar_value_type *data, uint8_t mask, bool Aligned=false) const {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m256d lo, hi;
-        arrange_for_store(lo, hi);
+        arrange_for_store(lo, hi, value_r, value_i);
         _mm256_mask_storeu_pd(reinterpret_cast<double*>(data  ), mask, lo);
         _mm256_mask_storeu_pd(reinterpret_cast<double*>(data+2), mask, hi);
 #else
@@ -272,33 +272,6 @@ protected:
             }
         }
 #endif
-    }
-
-
-    FASTOR_INLINE void arrange_from_load(__m256d lo, __m256d hi) {
-#ifdef FASTOR_AVX2_IMPL
-        value_r      = _mm256_permute4x64_pd(_mm256_unpacklo_pd(lo, hi), _MM_SHUFFLE(3, 1, 2, 0));
-        value_i      = _mm256_permute4x64_pd(_mm256_unpackhi_pd(lo, hi), _MM_SHUFFLE(3, 1, 2, 0));
-#else
-        __m256d tmp0 = _mm256_unpacklo_pd(lo, hi);
-        __m256d tmp1 = _mm256_unpackhi_pd(lo, hi);
-        __m128d tmp2 = _mm256_castpd256_pd128(tmp0);
-        __m128d tmp3 = _mm256_extractf128_pd (tmp0,0x1);
-        value_r      = _mm256_castpd128_pd256(        _mm_unpacklo_pd(tmp2,tmp3));
-        value_r      = _mm256_insertf128_pd  (value_r,_mm_unpackhi_pd(tmp2,tmp3),0x1);
-        tmp2         = _mm256_castpd256_pd128(tmp1);
-        tmp3         = _mm256_extractf128_pd (tmp1,0x1);
-        value_i      = _mm256_castpd128_pd256(        _mm_unpacklo_pd(tmp2,tmp3));
-        value_i      = _mm256_insertf128_pd  (value_i,_mm_unpackhi_pd(tmp2,tmp3),0x1);
-#endif
-    }
-
-    FASTOR_INLINE void arrange_for_store(__m256d &lo, __m256d &hi) const {
-        __m256d tmp0 = _mm256_unpacklo_pd(value_r, value_i);
-        __m256d tmp1 = _mm256_unpackhi_pd(value_r, value_i);
-        lo           = _mm256_permute2f128_pd(tmp1, tmp0, 0x2);
-        hi           = _mm256_permute2f128_pd(tmp0, tmp1, 0x1);
-        hi           = _mm256_insertf128_pd(hi,_mm256_extractf128_pd(tmp1,0x1),0x1);
     }
 };
 
