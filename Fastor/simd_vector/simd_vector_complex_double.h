@@ -29,7 +29,7 @@ struct SIMDVector<std::complex<double>, simd_abi::avx> {
         value_r = _mm256_set1_pd(num.real());
         value_i = _mm256_set1_pd(num.imag());
     }
-    FASTOR_INLINE SIMDVector(__m256d reg0, __m256d reg1) : value_r(reg0), value_i(reg1) {}
+    FASTOR_INLINE SIMDVector(value_type reg0, value_type reg1) : value_r(reg0), value_i(reg1) {}
     FASTOR_INLINE SIMDVector(const std::complex<double> *data, bool Aligned=true) {
         if (Aligned)
             complex_aligned_load(data);
@@ -94,6 +94,10 @@ struct SIMDVector<std::complex<double>, simd_abi::avx> {
     }
 
     // In-place operators
+    template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    FASTOR_INLINE void operator+=(U num) {
+        value_r = _mm256_add_pd(value_r,_mm256_set1_pd(num));
+    }
     FASTOR_INLINE void operator+=(scalar_value_type num) {
         *this += vector_type(num);
     }
@@ -102,6 +106,10 @@ struct SIMDVector<std::complex<double>, simd_abi::avx> {
         value_i = _mm256_add_pd(value_i,a.value_i);
     }
 
+    template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    FASTOR_INLINE void operator-=(U num) {
+        value_r = _mm256_sub_pd(value_r,_mm256_set1_pd(num));
+    }
     FASTOR_INLINE void operator-=(scalar_value_type num) {
         *this -= vector_type(num);
     }
@@ -110,6 +118,12 @@ struct SIMDVector<std::complex<double>, simd_abi::avx> {
         value_i = _mm256_sub_pd(value_i,a.value_i);
     }
 
+    template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    FASTOR_INLINE void operator*=(U num) {
+        __m256d val = _mm256_set1_pd(num);
+        value_r = _mm256_mul_pd(value_r,val);
+        value_i = _mm256_mul_pd(value_i,val);
+    }
     FASTOR_INLINE void operator*=(scalar_value_type num) {
         *this *= vector_type(num);
     }
@@ -124,6 +138,12 @@ struct SIMDVector<std::complex<double>, simd_abi::avx> {
         value_r = tmp;
     }
 
+    template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    FASTOR_INLINE void operator/=(U num) {
+        __m256d val = _mm256_set1_pd(num);
+        value_r = _mm256_div_pd(value_r,val);
+        value_i = _mm256_div_pd(value_i,val);
+    }
     FASTOR_INLINE void operator/=(scalar_value_type num) {
         *this /= vector_type(num);
     }
@@ -177,14 +197,14 @@ struct SIMDVector<std::complex<double>, simd_abi::avx> {
     // Magnitude based maximum
     FASTOR_INLINE scalar_value_type maximum() const;
 
-    FASTOR_INLINE std::complex<double> dot(const vector_type &other) const {
+    FASTOR_INLINE scalar_value_type dot(const vector_type &other) const {
         vector_type out(*this);
         out *= other;
         return out.sum();
     }
 
-    __m256d value_r;
-    __m256d value_i;
+    value_type value_r;
+    value_type value_i;
 
 protected:
     FASTOR_INLINE void complex_aligned_load(const std::complex<double> *data) {
@@ -322,6 +342,20 @@ FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
 operator+(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
     return SIMDVector<std::complex<double>,simd_abi::avx>(a) + b;
 }
+template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator+(const SIMDVector<std::complex<double>,simd_abi::avx> &a, U b) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out(a);
+    out.value_r = _mm256_add_pd(a.value_r,_mm256_set1_pd(b));
+    return out;
+}
+template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator+(U a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out(b);
+    out.value_r = _mm256_add_pd(_mm256_set1_pd(a), b.value_r);
+    return out;
+}
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
 operator+(const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
     return b;
@@ -341,6 +375,18 @@ operator-(const SIMDVector<std::complex<double>,simd_abi::avx> &a, std::complex<
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
 operator-(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
     return SIMDVector<std::complex<double>,simd_abi::avx>(a) - b;
+}
+template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator-(const SIMDVector<std::complex<double>,simd_abi::avx> &a, U b) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out(a);
+    out.value_r = _mm256_sub_pd(a.value_r,_mm256_set1_pd(b));
+    return out;
+}
+template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator-(U a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
+    return SIMDVector<std::complex<double>,simd_abi::avx>(std::complex<double>(a,0)) - b;
 }
 /* This is negation and not complex conjugate  */
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
@@ -371,6 +417,24 @@ FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
 operator*(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
     return SIMDVector<std::complex<double>,simd_abi::avx>(a) * b;
 }
+template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator*(const SIMDVector<std::complex<double>,simd_abi::avx> &a, U b) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out;
+    __m256d val = _mm256_set1_pd(b);
+    out.value_r = _mm256_mul_pd(a.value_r,val);
+    out.value_i = _mm256_mul_pd(a.value_i,val);
+    return out;
+}
+template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator*(U a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out;
+    __m256d val = _mm256_set1_pd(a);
+    out.value_r = _mm256_mul_pd(val,b.value_r);
+    out.value_i = _mm256_mul_pd(val,b.value_i);
+    return out;
+}
 
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
 operator/(const SIMDVector<std::complex<double>,simd_abi::avx> &a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
@@ -395,6 +459,20 @@ operator/(const SIMDVector<std::complex<double>,simd_abi::avx> &a, std::complex<
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
 operator/(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
     return SIMDVector<std::complex<double>,simd_abi::avx>(a) / b;
+}
+template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator/(const SIMDVector<std::complex<double>,simd_abi::avx> &a, U b) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out;
+    __m256d val = _mm256_set1_pd(b);
+    out.value_r = _mm256_div_pd(a.value_r,val);
+    out.value_i = _mm256_div_pd(a.value_i,val);
+    return out;
+}
+template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator/(U a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
+    return SIMDVector<std::complex<double>,simd_abi::avx>(std::complex<double>(a,0)) / b;
 }
 
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
@@ -466,7 +544,7 @@ struct SIMDVector<std::complex<double>, simd_abi::sse> {
         value_r = _mm_set1_pd(num.real());
         value_i = _mm_set1_pd(num.imag());
     }
-    FASTOR_INLINE SIMDVector(__m128d reg0, __m128d reg1) : value_r(reg0), value_i(reg1) {}
+    FASTOR_INLINE SIMDVector(value_type reg0, value_type reg1) : value_r(reg0), value_i(reg1) {}
     FASTOR_INLINE SIMDVector(const std::complex<double> *data, bool Aligned=true) {
         if (Aligned)
             complex_aligned_load(data);
@@ -528,6 +606,10 @@ struct SIMDVector<std::complex<double>, simd_abi::sse> {
     }
 
     // In-place operators
+    template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    FASTOR_INLINE void operator+=(U num) {
+        value_r = _mm_add_pd(value_r,_mm_set1_pd(num));
+    }
     FASTOR_INLINE void operator+=(scalar_value_type num) {
         *this += vector_type(num);
     }
@@ -536,6 +618,10 @@ struct SIMDVector<std::complex<double>, simd_abi::sse> {
         value_i = _mm_add_pd(value_i,a.value_i);
     }
 
+    template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    FASTOR_INLINE void operator-=(U num) {
+        value_r = _mm_sub_pd(value_r,_mm_set1_pd(num));
+    }
     FASTOR_INLINE void operator-=(scalar_value_type num) {
         *this -= vector_type(num);
     }
@@ -544,6 +630,12 @@ struct SIMDVector<std::complex<double>, simd_abi::sse> {
         value_i = _mm_sub_pd(value_i,a.value_i);
     }
 
+    template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    FASTOR_INLINE void operator*=(U num) {
+        __m128d val = _mm_set1_pd(num);
+        value_r = _mm_mul_pd(value_r,val);
+        value_i = _mm_mul_pd(value_i,val);
+    }
     FASTOR_INLINE void operator*=(scalar_value_type num) {
         *this *= vector_type(num);
     }
@@ -558,6 +650,12 @@ struct SIMDVector<std::complex<double>, simd_abi::sse> {
         value_r = tmp;
     }
 
+    template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    FASTOR_INLINE void operator/=(U num) {
+        __m128d val = _mm_set1_pd(num);
+        value_r = _mm_div_pd(value_r,val);
+        value_i = _mm_div_pd(value_i,val);
+    }
     FASTOR_INLINE void operator/=(scalar_value_type num) {
         *this /= vector_type(num);
     }
@@ -633,38 +731,36 @@ struct SIMDVector<std::complex<double>, simd_abi::sse> {
         }
     }
 
-    FASTOR_INLINE std::complex<double> dot(const vector_type &other) const {
+    FASTOR_INLINE scalar_value_type dot(const vector_type &other) const {
         vector_type out(*this);
         out *= other;
         return out.sum();
     }
 
-    __m128d value_r;
-    __m128d value_i;
+    value_type value_r;
+    value_type value_i;
 
 protected:
     FASTOR_INLINE void complex_aligned_load(const std::complex<double> *data) {
         __m128d lo = _mm_load_pd(reinterpret_cast<const double*>(data  ));
         __m128d hi = _mm_load_pd(reinterpret_cast<const double*>(data+1));
-        value_r = _mm_shuffle_pd(lo, hi, _MM_SHUFFLE2(0, 0));
-        value_i = _mm_shuffle_pd(lo, hi, _MM_SHUFFLE2(1, 1));
+        arrange_from_load(value_r, value_i, lo, hi);
     }
     FASTOR_INLINE void complex_unaligned_load(const std::complex<double> *data) {
         __m128d lo = _mm_loadu_pd(reinterpret_cast<const double*>(data  ));
         __m128d hi = _mm_loadu_pd(reinterpret_cast<const double*>(data+1));
-        value_r = _mm_shuffle_pd(lo, hi, _MM_SHUFFLE2(0, 0));
-        value_i = _mm_shuffle_pd(lo, hi, _MM_SHUFFLE2(1, 1));
+        arrange_from_load(value_r, value_i, lo, hi);
     }
 
     FASTOR_INLINE void complex_aligned_store(std::complex<double> *data) const {
-        __m128d lo = _mm_shuffle_pd(value_r, value_i, _MM_SHUFFLE2(0, 0));
-        __m128d hi = _mm_shuffle_pd(value_r, value_i, _MM_SHUFFLE2(1, 1));
+        __m128d lo, hi;
+        arrange_for_store(lo, hi, value_r, value_i);
         _mm_store_pd(reinterpret_cast<double*>(data  ),lo);
         _mm_store_pd(reinterpret_cast<double*>(data+1),hi);
     }
     FASTOR_INLINE void complex_unaligned_store(std::complex<double> *data) const {
-        __m128d lo = _mm_shuffle_pd(value_r, value_i, _MM_SHUFFLE2(0, 0));
-        __m128d hi = _mm_shuffle_pd(value_r, value_i, _MM_SHUFFLE2(1, 1));
+        __m128d lo, hi;
+        arrange_for_store(lo, hi, value_r, value_i);
         _mm_storeu_pd(reinterpret_cast<double*>(data  ),lo);
         _mm_storeu_pd(reinterpret_cast<double*>(data+1),hi);
     }
@@ -674,8 +770,7 @@ protected:
         __m128d lo, hi;
         lo = _mm_mask_load_pd(lo, mask, reinterpret_cast<const double*>(data  ));
         hi = _mm_mask_load_pd(hi, mask, reinterpret_cast<const double*>(data+1));
-        value_r = _mm_shuffle_pd(lo, hi, _MM_SHUFFLE2(0, 0));
-        value_i = _mm_shuffle_pd(lo, hi, _MM_SHUFFLE2(1, 1));
+        arrange_from_load(value_r, value_i, lo, hi);
 #else
         int maska[Size];
         mask_to_array(mask,maska);
@@ -694,8 +789,7 @@ protected:
         __m128d lo, hi;
         lo = _mm_mask_loadu_pd(lo, mask, reinterpret_cast<const double*>(data  ));
         hi = _mm_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+1));
-        value_r = _mm_shuffle_pd(lo, hi, _MM_SHUFFLE2(0, 0));
-        value_i = _mm_shuffle_pd(lo, hi, _MM_SHUFFLE2(1, 1));
+        arrange_from_load(value_r, value_i, lo, hi);
 #else
         int maska[Size];
         mask_to_array(mask,maska);
@@ -712,8 +806,8 @@ protected:
 
     FASTOR_INLINE void complex_mask_aligned_store(scalar_value_type *data, uint8_t mask, bool Aligned=false) const {
 #ifdef FASTOR_HAS_AVX512_MASKS
-        __m128d lo = _mm_shuffle_pd(value_r, value_i, _MM_SHUFFLE2(0, 0));
-        __m128d hi = _mm_shuffle_pd(value_r, value_i, _MM_SHUFFLE2(1, 1));
+        __m128d lo, hi;
+        arrange_for_store(lo, hi, value_r, value_i);
         _mm_mask_store_pd(reinterpret_cast<double*>(data  ), mask, lo);
         _mm_mask_store_pd(reinterpret_cast<double*>(data+1), mask, hi);
 #else
@@ -733,8 +827,8 @@ protected:
     }
     FASTOR_INLINE void complex_mask_unaligned_store(scalar_value_type *data, uint8_t mask, bool Aligned=false) const {
 #ifdef FASTOR_HAS_AVX512_MASKS
-        __m128d lo = _mm_shuffle_pd(value_r, value_i, _MM_SHUFFLE2(0, 0));
-        __m128d hi = _mm_shuffle_pd(value_r, value_i, _MM_SHUFFLE2(1, 1));
+        __m128d lo, hi;
+        arrange_for_store(lo, hi, value_r, value_i);
         _mm_mask_storeu_pd(reinterpret_cast<double*>(data  ), mask, lo);
         _mm_mask_storeu_pd(reinterpret_cast<double*>(data+1), mask, hi);
 #else
@@ -781,6 +875,20 @@ FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
 operator+(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi::sse> &b) {
     return SIMDVector<std::complex<double>,simd_abi::sse>(a) + b;
 }
+template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
+operator+(const SIMDVector<std::complex<double>,simd_abi::sse> &a, U b) {
+    SIMDVector<std::complex<double>,simd_abi::sse> out(a);
+    out.value_r = _mm_add_pd(a.value_r,_mm_set1_pd(b));
+    return out;
+}
+template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
+operator+(U a, const SIMDVector<std::complex<double>,simd_abi::sse> &b) {
+    SIMDVector<std::complex<double>,simd_abi::sse> out(b);
+    out.value_r = _mm_add_pd(_mm_set1_pd(a), b.value_r);
+    return out;
+}
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
 operator+(const SIMDVector<std::complex<double>,simd_abi::sse> &b) {
     return b;
@@ -800,6 +908,18 @@ operator-(const SIMDVector<std::complex<double>,simd_abi::sse> &a, std::complex<
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
 operator-(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi::sse> &b) {
     return SIMDVector<std::complex<double>,simd_abi::sse>(a) - b;
+}
+template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
+operator-(const SIMDVector<std::complex<double>,simd_abi::sse> &a, U b) {
+    SIMDVector<std::complex<double>,simd_abi::sse> out(a);
+    out.value_r = _mm_sub_pd(a.value_r,_mm_set1_pd(b));
+    return out;
+}
+template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
+operator-(U a, const SIMDVector<std::complex<double>,simd_abi::sse> &b) {
+    return SIMDVector<std::complex<double>,simd_abi::sse>(std::complex<double>(a,0)) - b;
 }
 /* This is negation and not complex conjugate  */
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
@@ -830,6 +950,24 @@ FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
 operator*(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi::sse> &b) {
     return SIMDVector<std::complex<double>,simd_abi::sse>(a) * b;
 }
+template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
+operator*(const SIMDVector<std::complex<double>,simd_abi::sse> &a, U b) {
+    SIMDVector<std::complex<double>,simd_abi::sse> out;
+    __m128d val = _mm_set1_pd(b);
+    out.value_r = _mm_mul_pd(a.value_r,val);
+    out.value_i = _mm_mul_pd(a.value_i,val);
+    return out;
+}
+template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
+operator*(U a, const SIMDVector<std::complex<double>,simd_abi::sse> &b) {
+    SIMDVector<std::complex<double>,simd_abi::sse> out;
+    __m128d val = _mm_set1_pd(a);
+    out.value_r = _mm_mul_pd(val,b.value_r);
+    out.value_i = _mm_mul_pd(val,b.value_i);
+    return out;
+}
 
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
 operator/(const SIMDVector<std::complex<double>,simd_abi::sse> &a, const SIMDVector<std::complex<double>,simd_abi::sse> &b) {
@@ -854,6 +992,20 @@ operator/(const SIMDVector<std::complex<double>,simd_abi::sse> &a, std::complex<
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
 operator/(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi::sse> &b) {
     return SIMDVector<std::complex<double>,simd_abi::sse>(a) / b;
+}
+template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
+operator/(const SIMDVector<std::complex<double>,simd_abi::sse> &a, U b) {
+    SIMDVector<std::complex<double>,simd_abi::sse> out;
+    __m128d val = _mm_set1_pd(b);
+    out.value_r = _mm_div_pd(a.value_r,val);
+    out.value_i = _mm_div_pd(a.value_i,val);
+    return out;
+}
+template<typename U, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
+operator/(U a, const SIMDVector<std::complex<double>,simd_abi::sse> &b) {
+    return SIMDVector<std::complex<double>,simd_abi::sse>(std::complex<double>(a,0)) / b;
 }
 
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>

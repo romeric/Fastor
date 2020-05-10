@@ -16,9 +16,37 @@ zadd(const std::array<std::complex<T>,N> &a, const std::array<std::complex<T>,N>
 }
 template<typename T, size_t N>
 std::array<std::complex<T>,N>
+zadd(const std::array<std::complex<T>,N> &a, const T &b) {
+    std::array<std::complex<T>,N> out;
+    for (size_t i=0; i< N; ++i) out[i] = a[i] + std::complex<T>(b,0);
+    return out;
+}
+template<typename T, size_t N>
+std::array<std::complex<T>,N>
+zadd(const T &b, const std::array<std::complex<T>,N> &a) {
+    std::array<std::complex<T>,N> out;
+    for (size_t i=0; i< N; ++i) out[i] = std::complex<T>(b,0) + a[i];
+    return out;
+}
+template<typename T, size_t N>
+std::array<std::complex<T>,N>
 zsub(const std::array<std::complex<T>,N> &a, const std::array<std::complex<T>,N> &b) {
     std::array<std::complex<T>,N> out;
     for (size_t i=0; i< N; ++i) out[i] = a[i]-b[i];
+    return out;
+}
+template<typename T, size_t N>
+std::array<std::complex<T>,N>
+zsub(const std::array<std::complex<T>,N> &a, const T &b) {
+    std::array<std::complex<T>,N> out;
+    for (size_t i=0; i< N; ++i) out[i] = a[i] - std::complex<T>(b,0);
+    return out;
+}
+template<typename T, size_t N>
+std::array<std::complex<T>,N>
+zsub(const T &b, const std::array<std::complex<T>,N> &a) {
+    std::array<std::complex<T>,N> out;
+    for (size_t i=0; i< N; ++i) out[i] = std::complex<T>(b,0) - a[i];
     return out;
 }
 template<typename T, size_t N>
@@ -30,11 +58,48 @@ zmul(const std::array<std::complex<T>,N> &a, const std::array<std::complex<T>,N>
 }
 template<typename T, size_t N>
 std::array<std::complex<T>,N>
+zmul(const std::array<std::complex<T>,N> &a, const T &b) {
+    std::array<std::complex<T>,N> out;
+    for (size_t i=0; i< N; ++i) {
+        out[i] = a[i] * std::complex<T>(b,0);
+    }
+    return out;
+}
+template<typename T, size_t N>
+std::array<std::complex<T>,N>
+zmul(const T &b, const std::array<std::complex<T>,N> &a) {
+    std::array<std::complex<T>,N> out;
+    for (size_t i=0; i< N; ++i) {
+        out[i] = std::complex<T>(b,0) * a[i];
+    }
+    return out;
+}
+template<typename T, size_t N>
+std::array<std::complex<T>,N>
 zdiv(const std::array<std::complex<T>,N> &a, const std::array<std::complex<T>,N> &b) {
     std::array<std::complex<T>,N> out;
     for (size_t i=0; i< N; ++i) out[i] = a[i]/b[i];
     return out;
 }
+template<typename T, size_t N>
+std::array<std::complex<T>,N>
+zdiv(const std::array<std::complex<T>,N> &a, const T &b) {
+    std::array<std::complex<T>,N> out;
+    for (size_t i=0; i< N; ++i) {
+        out[i] = a[i] / std::complex<T>(b,0);
+    }
+    return out;
+}
+template<typename T, size_t N>
+std::array<std::complex<T>,N>
+zdiv(const T &b, const std::array<std::complex<T>,N> &a) {
+    std::array<std::complex<T>,N> out;
+    for (size_t i=0; i< N; ++i) {
+        out[i] = std::complex<T>(b,0) / a[i];
+    }
+    return out;
+}
+
 template<typename T, size_t N>
 T
 zsum(const std::array<T,N> &a) {
@@ -82,16 +147,18 @@ zarg(const std::array<std::complex<T>,N> &a) {
 
 
 template<typename ABI, typename TT, size_t N>
-void test_complex_double_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, std::array<TT,N> & arr3) {
+void test_simd_complex_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, std::array<TT,N> & arr3) {
 
     TT diff;
     {
+        using V = SIMDVector<TT,ABI>;
+        using T = typename TT::value_type;
         // Size
         {
-            using V = SIMDVector<TT,ABI>;
             FASTOR_EXIT_ASSERT( std::abs(int(V::Size)   - (int)N) < Tol, "TEST FAILED");
             FASTOR_EXIT_ASSERT( std::abs(int(V::size()) - (int)N) < Tol, "TEST FAILED");
         }
+
         // Load/store
         {
             SIMDVector<TT,ABI> a(arr1.data(),false);
@@ -253,6 +320,70 @@ void test_complex_double_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, 
         FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
         FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
+#if defined(FASTOR_SSE2_IMPL) && defined(FASTOR_AVX_IMPL)
+        // scaling with real numbers
+        {
+            // in-place
+            a.load(arr1.data(),false);
+            a += 5;
+            diff = (a).sum() - zsum(zadd(arr1,T(5)));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+
+            a.load(arr1.data(),false);
+            a -= 5;
+            diff = (a).sum() - zsum(zsub(arr1,T(5)));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+
+            a.load(arr1.data(),false);
+            a *= 5;
+            diff = (a).sum() - zsum(zmul(arr1,T(5)));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+
+            a.load(arr1.data(),false);
+            a /= 5;
+            diff = (a).sum() - zsum(zdiv(arr1,T(5)));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+
+            // binary
+            a.load(arr1.data(),false);
+            diff = (a+5).sum() - zsum(zadd(arr1,T(5)));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+
+            diff = (5+a).sum() - zsum(zadd(T(5),arr1));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+
+            diff = (a-5).sum() - zsum(zsub(arr1,T(5)));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+
+            diff = (5-a).sum() - zsum(zsub(T(5),arr1));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+
+            diff = (a*5).sum() - zsum(zmul(arr1,T(5)));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+
+            diff = (5*a).sum() - zsum(zmul(T(5),arr1));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+
+            diff = (a/5).sum() - zsum(zdiv(arr1,T(5)));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+
+            diff = (5/a).sum() - zsum(zdiv(T(5),arr1));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        }
+#endif
+
         // FMAs
         {
             a.load(arr1.data(),false);
@@ -307,33 +438,61 @@ void test_complex_double_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, 
 
 
 template<typename T, typename ABI>
-void test_complex_double();
+void test_simd_complex();
 template<>
-void test_complex_double<double,simd_abi::sse>() {
+void test_simd_complex<float,simd_abi::scalar>() {
+    using TT = std::complex<float>;
+    // These arrays are used to mimick complex SIMDVector
+    std::array<TT,1> arr1 = {TT(3,-4)};
+    std::array<TT,1> arr2 = {TT(6,14)};
+    std::array<TT,1> arr3 = {arr1[0]};
+    test_simd_complex_impl<simd_abi::scalar>(arr1,arr2,arr3);
+}
+template<>
+void test_simd_complex<double,simd_abi::scalar>() {
+    using TT = std::complex<double>;
+    // These arrays are used to mimick complex SIMDVector
+    std::array<TT,1> arr1 = {TT(3,-4)};
+    std::array<TT,1> arr2 = {TT(6,14)};
+    std::array<TT,1> arr3 = {arr1[0]};
+    test_simd_complex_impl<simd_abi::scalar>(arr1,arr2,arr3);
+}
+#ifdef FASTOR_SSE2_IMPL
+template<>
+void test_simd_complex<double,simd_abi::sse>() {
     using TT = std::complex<double>;
     // These arrays are used to mimick complex SIMDVector
     std::array<TT,2> arr1 = {TT(3,-4),TT(7,12)};
     std::array<TT,2> arr2 = {TT(6,14),TT(-5,1.2)};
     std::array<TT,2> arr3 = {arr1[0],arr1[0]};
-    test_complex_double_impl<simd_abi::sse>(arr1,arr2,arr3);
+    test_simd_complex_impl<simd_abi::sse>(arr1,arr2,arr3);
 }
+#endif
+#ifdef FASTOR_AVX_IMPL
 template<>
-void test_complex_double<double,simd_abi::avx>() {
+void test_simd_complex<double,simd_abi::avx>() {
     using TT = std::complex<double>;
     // These arrays are used to mimick complex SIMDVector
     std::array<TT,4> arr1 = {TT(3,-4),TT(7,12),TT(5,-2),TT(11,9)};
     std::array<TT,4> arr2 = {TT(6,14),TT(-5,1.2),TT(0,8),TT(1,15)};
     std::array<TT,4> arr3 = {arr1[0],arr1[0],arr1[0],arr1[0]};
-    test_complex_double_impl<simd_abi::avx>(arr1,arr2,arr3);
+    test_simd_complex_impl<simd_abi::avx>(arr1,arr2,arr3);
 }
-
+#endif
 
 
 int main() {
 
+    print(FBLU(BOLD("Testing SIMDVector of complex single precision")));
+    test_simd_complex<float,simd_abi::scalar>();
     print(FBLU(BOLD("Testing SIMDVector of complex double precision")));
-    test_complex_double<double,simd_abi::sse>();
-    test_complex_double<double,simd_abi::avx>();
+    test_simd_complex<double,simd_abi::scalar>();
+#ifdef FASTOR_SSE2_IMPL
+    test_simd_complex<double,simd_abi::sse>();
+#endif
+#ifdef FASTOR_AVX_IMPL
+    test_simd_complex<double,simd_abi::avx>();
+#endif
 
     return 0;
 }

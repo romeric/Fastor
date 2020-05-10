@@ -64,6 +64,10 @@ struct SIMDVector {
     FASTOR_INLINE T operator[](FASTOR_INDEX i) const {return value[i];}
     FASTOR_INLINE T operator()(FASTOR_INDEX i) const {return value[i];}
 
+    // For compatibility with complex simd vector
+    FASTOR_INLINE SIMDVector<T,ABI> real() const {return value;}
+    FASTOR_INLINE SIMDVector<T,ABI> imag() const {return 0;}
+
     FASTOR_INLINE void set(T num) {
         for (FASTOR_INDEX i=0; i<Size;++i)
             value[i] = num;
@@ -141,6 +145,8 @@ struct SIMDVector {
         std::reverse(out.value,out.value+Size);
         return out;
     }
+    // This is for comatibility with complex simd vectors
+    FASTOR_INLINE SIMDVector<T,ABI> norm() {return *this;}
     FASTOR_INLINE T minimum() {
         T quan = 0;
         for (FASTOR_INDEX i=0; i<Size;++i)
@@ -315,6 +321,20 @@ FASTOR_INLINE SIMDVector<T,ABI> abs(const SIMDVector<T,ABI> &a) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<a.Size; ++i)
         out.value[i] = std::abs(a.value[i]);
+    return out;
+}
+
+// For compatibility with complex simd vectors
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> conj(const SIMDVector<T,ABI> &a) {
+    return a;
+}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> arg(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out(a);
+    for (FASTOR_INDEX i=0UL; i<SIMDVector<T,ABI>::Size; ++i) {
+       out[i] = std::arg(a[i]);
+    }
     return out;
 }
 
