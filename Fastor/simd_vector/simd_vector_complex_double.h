@@ -195,8 +195,8 @@ protected:
     FASTOR_INLINE void complex_mask_aligned_load(const scalar_value_type *data, uint8_t mask) {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m256d lo, hi;
-        __m256d lo = _mm256_mask_loadu_pd(lo, mask, reinterpret_cast<const double*>(data  ));
-        __m256d hi = _mm256_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+1));
+        lo = _mm256_mask_loadu_pd(lo, mask, reinterpret_cast<const double*>(data  ));
+        hi = _mm256_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+1));
         arrange_from_load(value_r, value_i, lo, hi);
 #else
         int maska[Size];
@@ -214,8 +214,8 @@ protected:
     FASTOR_INLINE void complex_mask_unaligned_load(const scalar_value_type *data, uint8_t mask) {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m256d lo, hi;
-        __m256d lo = _mm256_mask_loadu_pd(lo, mask, reinterpret_cast<const double*>(data  ));
-        __m256d hi = _mm256_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+1));
+        lo = _mm256_mask_loadu_pd(lo, mask, reinterpret_cast<const double*>(data  ));
+        hi = _mm256_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+1));
         arrange_from_load(value_r, value_i, lo, hi);
 #else
         int maska[Size];
@@ -619,8 +619,8 @@ protected:
     FASTOR_INLINE void complex_mask_aligned_load(const scalar_value_type *data, uint8_t mask) {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m128d lo, hi;
-        __m128d lo = _mm_mask_load_pd(lo, mask, reinterpret_cast<const double*>(data  ));
-        __m128d hi = _mm_mask_load_pd(hi, mask, reinterpret_cast<const double*>(data+1));
+        lo = _mm_mask_load_pd(lo, mask, reinterpret_cast<const double*>(data  ));
+        hi = _mm_mask_load_pd(hi, mask, reinterpret_cast<const double*>(data+1));
         value_r = _mm_shuffle_pd(lo, hi, _MM_SHUFFLE2(0, 0));
         value_i = _mm_shuffle_pd(lo, hi, _MM_SHUFFLE2(1, 1));
 #else
@@ -639,8 +639,8 @@ protected:
     FASTOR_INLINE void complex_mask_unaligned_load(const scalar_value_type *data, uint8_t mask) {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m128d lo, hi;
-        __m128d lo = _mm_mask_loadu_pd(lo, mask, reinterpret_cast<const double*>(data  ));
-        __m128d hi = _mm_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+1));
+        lo = _mm_mask_loadu_pd(lo, mask, reinterpret_cast<const double*>(data  ));
+        hi = _mm_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+1));
         value_r = _mm_shuffle_pd(lo, hi, _MM_SHUFFLE2(0, 0));
         value_i = _mm_shuffle_pd(lo, hi, _MM_SHUFFLE2(1, 1));
 #else
