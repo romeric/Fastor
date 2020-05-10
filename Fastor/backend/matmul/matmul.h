@@ -1,6 +1,7 @@
 #ifndef MATMUL_H
 #define MATMUL_H
 
+#include "Fastor/meta/meta.h"
 #include "Fastor/backend/matmul/matmul_kernels.h"
 
 #ifdef FASTOR_USE_LIBXSMM
@@ -28,13 +29,13 @@ void _matvecmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FA
 //-----------------------------------------------------------------------------------------------------------
 #if !defined(FASTOR_USE_LIBXSMM) && !defined(FASTOR_USE_MKL)
 template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<!(M!=K && M==N && (M==2UL || M==3UL || M==4UL || M==8UL)),bool>::type = 0>
+         enable_if_t_<!(M!=K && M==N && (M==2UL || M==3UL || M==4UL || M==8UL) && (is_same_v_<T,float> || is_same_v_<T,double>) ),bool> = 0>
 #else
 template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<
-            !(M!=K && M==N && (M==2UL || M==3UL || M==4UL|| M==8UL))
+         enable_if_t_<
+            !(M!=K && M==N && (M==2UL || M==3UL || M==4UL || M==8UL) && (is_same_v_<T,float> || is_same_v_<T,double>) )
             && is_less_equal<M*N*K/internal::meta_cube<FASTOR_BLAS_SWITCH_MATRIX_SIZE>::value,1>::value,
-            bool>::type = 0>
+            bool> = 0>
 #endif
 FASTOR_INLINE
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
@@ -112,10 +113,10 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
 #if defined(FASTOR_USE_LIBXSMM) && !defined(FASTOR_USE_MKL)
 template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<
-            !(M!=K && M==N && (M==2 || M==3 || M==4))
+        enable_if_t_<
+            !(M!=K && M==N && (M==2UL || M==3UL || M==4UL || M==8UL) && (is_same_v_<T,float> || is_same_v_<T,double>) )
             && is_greater<M*N*K/internal::meta_cube<FASTOR_BLAS_SWITCH_MATRIX_SIZE>::value,1>::value,
-            bool>::type = 0>
+            bool> = 0>
 FASTOR_INLINE
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
     blas::matmul_libxsmm<T,M,K,N>(a,b,c);
@@ -124,10 +125,10 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
 
 #if !defined(FASTOR_USE_LIBXSMM) && defined(FASTOR_USE_MKL)
 template<typename T, size_t M, size_t K, size_t N,
-         typename std::enable_if<
-            !(M!=K && M==N && (M==2 || M==3 || M==4))
+        enable_if_t_<
+            !(M!=K && M==N && (M==2UL || M==3UL || M==4UL || M==8UL) && (is_same_v_<T,float> || is_same_v_<T,double>) )
             && is_greater<M*N*K/internal::meta_cube<FASTOR_BLAS_SWITCH_MATRIX_SIZE>::value,1>::value,
-            bool>::type = 0>
+            bool> = 0>
 FASTOR_INLINE
 void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
     blas::matmul_mkl<T,M,K,N>(a,b,c);
