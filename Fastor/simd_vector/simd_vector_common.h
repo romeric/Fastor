@@ -695,6 +695,30 @@ FASTOR_INLINE SIMDVector<double,simd_abi::avx512> fmadd<double,simd_abi::avx512>
     return out;
 }
 #endif
+template<>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse> fmadd<std::complex<double>,simd_abi::sse>(
+    const SIMDVector<std::complex<double>,simd_abi::sse> &a,
+    const SIMDVector<std::complex<double>,simd_abi::sse> &b,
+    const SIMDVector<std::complex<double>,simd_abi::sse> &c) {
+    SIMDVector<std::complex<double>,simd_abi::sse> out;
+    // ar*br - ai*bi + cr
+    out.value_r = _mm_fnmadd_pd(a.value_i,b.value_i,_mm_fmadd_pd(a.value_r,b.value_r,c.value_r));
+    // ar*bi + ai*br + ci
+    out.value_i = _mm_fmadd_pd (a.value_i,b.value_r,_mm_fmadd_pd(a.value_r,b.value_i,c.value_i));
+    return out;
+}
+template<>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx> fmadd<std::complex<double>,simd_abi::avx>(
+    const SIMDVector<std::complex<double>,simd_abi::avx> &a,
+    const SIMDVector<std::complex<double>,simd_abi::avx> &b,
+    const SIMDVector<std::complex<double>,simd_abi::avx> &c) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out;
+    // ar*br - ai*bi + cr
+    out.value_r = _mm256_fnmadd_pd(a.value_i,b.value_i,_mm256_fmadd_pd(a.value_r,b.value_r,c.value_r));
+    // ar*bi + ai*br + ci
+    out.value_i = _mm256_fmadd_pd (a.value_i,b.value_r,_mm256_fmadd_pd(a.value_r,b.value_i,c.value_i));
+    return out;
+}
 // fmsub
 template<>
 FASTOR_INLINE SIMDVector<float,simd_abi::sse> fmsub<float,simd_abi::sse>(
@@ -742,6 +766,30 @@ FASTOR_INLINE SIMDVector<double,simd_abi::avx512> fmsub<double,simd_abi::avx512>
     return out;
 }
 #endif
+template<>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse> fmsub<std::complex<double>,simd_abi::sse>(
+    const SIMDVector<std::complex<double>,simd_abi::sse> &a,
+    const SIMDVector<std::complex<double>,simd_abi::sse> &b,
+    const SIMDVector<std::complex<double>,simd_abi::sse> &c) {
+    SIMDVector<std::complex<double>,simd_abi::sse> out;
+    // ar*br - ai*bi - cr
+    out.value_r = _mm_fnmadd_pd(a.value_i,b.value_i,_mm_fmsub_pd(a.value_r,b.value_r,c.value_r));
+    // ar*bi + ai*br - ci
+    out.value_i = _mm_fmadd_pd (a.value_i,b.value_r,_mm_fmsub_pd(a.value_r,b.value_i,c.value_i));
+    return out;
+}
+template<>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx> fmsub<std::complex<double>,simd_abi::avx>(
+    const SIMDVector<std::complex<double>,simd_abi::avx> &a,
+    const SIMDVector<std::complex<double>,simd_abi::avx> &b,
+    const SIMDVector<std::complex<double>,simd_abi::avx> &c) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out;
+    // ar*br - ai*bi + cr
+    out.value_r = _mm256_fnmadd_pd(a.value_i,b.value_i,_mm256_fmsub_pd(a.value_r,b.value_r,c.value_r));
+    // ar*bi + ai*br + ci
+    out.value_i = _mm256_fmadd_pd (a.value_i,b.value_r,_mm256_fmsub_pd(a.value_r,b.value_i,c.value_i));
+    return out;
+}
 // fnmadd
 template<>
 FASTOR_INLINE SIMDVector<float,simd_abi::sse> fnmadd<float,simd_abi::sse>(
@@ -789,6 +837,30 @@ FASTOR_INLINE SIMDVector<double,simd_abi::avx512> fnmadd<double,simd_abi::avx512
     return out;
 }
 #endif
+template<>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse> fnmadd<std::complex<double>,simd_abi::sse>(
+    const SIMDVector<std::complex<double>,simd_abi::sse> &a,
+    const SIMDVector<std::complex<double>,simd_abi::sse> &b,
+    const SIMDVector<std::complex<double>,simd_abi::sse> &c) {
+    SIMDVector<std::complex<double>,simd_abi::sse> out;
+    // -ar*br + ai*bi + cr
+    out.value_r = _mm_fmadd_pd (a.value_i,b.value_i,_mm_fnmadd_pd(a.value_r,b.value_r,c.value_r));
+    // -ar*bi - ai*br + ci
+    out.value_i = _mm_fnmadd_pd(a.value_i,b.value_r,_mm_fnmadd_pd(a.value_r,b.value_i,c.value_i));
+    return out;
+}
+template<>
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx> fnmadd<std::complex<double>,simd_abi::avx>(
+    const SIMDVector<std::complex<double>,simd_abi::avx> &a,
+    const SIMDVector<std::complex<double>,simd_abi::avx> &b,
+    const SIMDVector<std::complex<double>,simd_abi::avx> &c) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out;
+    // -ar*br + ai*bi + cr
+    out.value_r = _mm256_fmadd_pd (a.value_i,b.value_i,_mm256_fnmadd_pd(a.value_r,b.value_r,c.value_r));
+    // -ar*bi - ai*br + ci
+    out.value_i = _mm256_fnmadd_pd(a.value_i,b.value_r,_mm256_fnmadd_pd(a.value_r,b.value_i,c.value_i));
+    return out;
+}
 
 #endif
 //----------------------------------------------------------------------------------------------------------------

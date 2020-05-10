@@ -253,6 +253,34 @@ void test_complex_double_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, 
         FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
         FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
+        // FMAs
+        {
+            a.load(arr1.data(),false);
+            diff = (a*b+a).sum() - zsum(zadd(zmul(arr1,arr2),arr1));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+
+            diff = fmadd(a,b,a).sum() - zsum(zadd(zmul(arr1,arr2),arr1));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+
+            diff = (a*b-a).sum() - zsum(zsub(zmul(arr1,arr2),arr1));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+
+            diff = fmsub(a,b,a).sum() - zsum(zsub(zmul(arr1,arr2),arr1));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+
+            diff = (a-a*b).sum() - zsum(zsub(arr1,zmul(arr1,arr2)));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+
+            diff = fnmadd(a,b,a).sum() - zsum(zsub(arr1,zmul(arr1,arr2)));
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        }
+
 
         // norm
         a.load(arr1.data(),false);
