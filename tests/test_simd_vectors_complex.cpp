@@ -35,18 +35,17 @@ zdiv(const std::array<std::complex<T>,N> &a, const std::array<std::complex<T>,N>
     for (size_t i=0; i< N; ++i) out[i] = a[i]/b[i];
     return out;
 }
-// horizontal sum
 template<typename T, size_t N>
-std::complex<T>
-zsum(const std::array<std::complex<T>,N> &a) {
-    std::complex<T> out(a[0]);
+T
+zsum(const std::array<T,N> &a) {
+    T out(a[0]);
     for (size_t i=1; i< N; ++i) out += a[i];
     return out;
 }
 template<typename T, size_t N>
-std::complex<T>
-zproduct(const std::array<std::complex<T>,N> &a) {
-    std::complex<T> out(a[0]);
+T
+zproduct(const std::array<T,N> &a) {
+    T out(a[0]);
     for (size_t i=1; i< N; ++i) out *= a[i];
     return out;
 }
@@ -80,28 +79,18 @@ zarg(const std::array<std::complex<T>,N> &a) {
 }
 
 
-template<typename T, typename ABI>
-void test_complex_double_sse();
 
-template<>
-void test_complex_double_sse<double,simd_abi::sse>() {
 
-    using TT = std::complex<double>;
-    using ABI = simd_abi::sse;
-    // These arrays are used to mimick complex SIMDVector
-    std::array<TT,2> arr1 = {TT(3,-4),TT(7,12)};
-    std::array<TT,2> arr2 = {TT(6,14),TT(-5,1.2)};
+template<typename ABI, typename TT, size_t N>
+void test_complex_double_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, std::array<TT,N> & arr3) {
 
-    std::array<TT,2> arr3 = {arr1[0],arr1[0]};
-    // std::array<TT,2> arr4 = {arr2[0],TT(0,0)};
-    // std::array<TT,2> out;
     TT diff;
     {
         // Size
         {
             using V = SIMDVector<TT,ABI>;
-            FASTOR_EXIT_ASSERT( std::abs(int(V::Size)   - 2) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(int(V::size()) - 2) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(int(V::Size)   - (int)N) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(int(V::size()) - (int)N) < Tol, "TEST FAILED");
         }
         // Load/store
         {
@@ -267,11 +256,11 @@ void test_complex_double_sse<double,simd_abi::sse>() {
 
         // norm
         a.load(arr1.data(),false);
-        FASTOR_EXIT_ASSERT( std::abs( a.norm().sum() - znorm(arr1)[0] - znorm(arr1)[1] ) < Tol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs( a.norm().sum() - zsum(znorm(arr1)) ) < Tol, "TEST FAILED");
 
         // abs
         a.load(arr1.data(),false);
-        FASTOR_EXIT_ASSERT( std::abs( abs(a).real().sum() - zabs(arr1)[0] - zabs(arr1)[1] ) < Tol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs( abs(a).real().sum() - zsum(zabs(arr1)) ) < Tol, "TEST FAILED");
 
         // conj
         a.load(arr1.data(),false);
@@ -279,19 +268,44 @@ void test_complex_double_sse<double,simd_abi::sse>() {
         FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
         FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
-        // conj
+        // arg
         a.load(arr1.data(),false);
-        FASTOR_EXIT_ASSERT( std::abs( arg(a).real().sum() - zarg(arr1)[0] - zarg(arr1)[1] ) < BigTol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs( arg(a).real().sum() - zsum(zarg(arr1)) ) < BigTol, "TEST FAILED");
 
     }
 
     print(FGRN(BOLD("All tests passed successfully")));
 }
 
+
+template<typename T, typename ABI>
+void test_complex_double();
+template<>
+void test_complex_double<double,simd_abi::sse>() {
+    using TT = std::complex<double>;
+    // These arrays are used to mimick complex SIMDVector
+    std::array<TT,2> arr1 = {TT(3,-4),TT(7,12)};
+    std::array<TT,2> arr2 = {TT(6,14),TT(-5,1.2)};
+    std::array<TT,2> arr3 = {arr1[0],arr1[0]};
+    test_complex_double_impl<simd_abi::sse>(arr1,arr2,arr3);
+}
+template<>
+void test_complex_double<double,simd_abi::avx>() {
+    using TT = std::complex<double>;
+    // These arrays are used to mimick complex SIMDVector
+    std::array<TT,4> arr1 = {TT(3,-4),TT(7,12),TT(5,-2),TT(11,9)};
+    std::array<TT,4> arr2 = {TT(6,14),TT(-5,1.2),TT(0,8),TT(1,15)};
+    std::array<TT,4> arr3 = {arr1[0],arr1[0],arr1[0],arr1[0]};
+    test_complex_double_impl<simd_abi::avx>(arr1,arr2,arr3);
+}
+
+
+
 int main() {
 
     print(FBLU(BOLD("Testing SIMDVector of complex double precision")));
-    test_complex_double_sse<double,simd_abi::sse>();
+    test_complex_double<double,simd_abi::sse>();
+    test_complex_double<double,simd_abi::avx>();
 
     return 0;
 }

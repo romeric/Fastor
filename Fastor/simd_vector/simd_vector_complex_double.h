@@ -10,6 +10,436 @@
 
 namespace Fastor {
 
+// AVX VERSION
+//------------------------------------------------------------------------------------------------------------
+
+#ifdef FASTOR_AVX_IMPL
+
+template <>
+struct SIMDVector<std::complex<double>, simd_abi::avx> {
+    using vector_type = SIMDVector<std::complex<double>, simd_abi::avx>;
+    using value_type = __m256d;
+    using scalar_value_type = std::complex<double>;
+    using abi_type = simd_abi::avx;
+    static constexpr FASTOR_INDEX Size = internal::get_simd_vector_size<SIMDVector<double,simd_abi::avx>>::value;
+    static constexpr FASTOR_INLINE FASTOR_INDEX size() {return internal::get_simd_vector_size<SIMDVector<double,simd_abi::avx>>::value;}
+
+    FASTOR_INLINE SIMDVector() : value_r(_mm256_setzero_pd()), value_i(_mm256_setzero_pd()) {}
+    FASTOR_INLINE SIMDVector(std::complex<double> num) {
+        value_r = _mm256_set1_pd(num.real());
+        value_i = _mm256_set1_pd(num.imag());
+    }
+    FASTOR_INLINE SIMDVector(__m256d reg0, __m256d reg1) : value_r(reg0), value_i(reg1) {}
+    FASTOR_INLINE SIMDVector(const std::complex<double> *data, bool Aligned=true) {
+        if (Aligned)
+            complex_aligned_load(data);
+        else
+            complex_unaligned_load(data);
+    }
+
+    FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx> operator=(std::complex<double> num) {
+        value_r = _mm256_set1_pd(num.real());
+        value_i = _mm256_set1_pd(num.imag());
+        return *this;
+    }
+
+    FASTOR_INLINE void load(const std::complex<double> *data, bool Aligned=true) {
+        if (Aligned)
+            complex_aligned_load(data);
+        else
+            complex_unaligned_load(data);
+    }
+    FASTOR_INLINE void store(std::complex<double> *data, bool Aligned=true) const {
+        if (Aligned)
+            complex_aligned_store(data);
+        else
+            complex_unaligned_store(data);
+    }
+
+    FASTOR_INLINE void mask_load(const scalar_value_type *data, uint8_t mask, bool Aligned=false) {
+        if (!Aligned)
+            complex_mask_unaligned_load(data,mask);
+        else
+            complex_mask_aligned_load(data,mask);
+    }
+    FASTOR_INLINE void mask_store(scalar_value_type *data, uint8_t mask, bool Aligned=false) const {
+        if (!Aligned)
+            complex_mask_unaligned_store(data,mask);
+        else
+            complex_mask_aligned_store(data,mask);
+    }
+
+    FASTOR_INLINE scalar_value_type operator[](FASTOR_INDEX i) const {
+        if      (i == 0) { return scalar_value_type(_mm256_get0_pd(value_r), _mm256_get0_pd(value_i)); }
+        else if (i == 1) { return scalar_value_type(_mm256_get1_pd(value_r), _mm256_get1_pd(value_i)); }
+        else if (i == 2) { return scalar_value_type(_mm256_get2_pd(value_r), _mm256_get2_pd(value_i)); }
+        else             { return scalar_value_type(_mm256_get3_pd(value_r), _mm256_get3_pd(value_i)); }
+    }
+
+    FASTOR_INLINE SIMDVector<double,simd_abi::avx> real() const {
+        return value_r;
+    }
+    FASTOR_INLINE SIMDVector<double,simd_abi::avx> imag() const {
+        return value_i;
+    }
+
+    FASTOR_INLINE void set(std::complex<double> num) {
+        value_r = _mm256_set1_pd(num.real());
+        value_i = _mm256_set1_pd(num.imag());
+    }
+    FASTOR_INLINE void set_sequential(scalar_value_type num0, scalar_value_type num1,
+                                      scalar_value_type num2, scalar_value_type num3) {
+        const scalar_value_type tmp[Size] = {num0,num1,num2,num3};
+        complex_unaligned_load(tmp);
+    }
+
+    // In-place operators
+    FASTOR_INLINE void operator+=(scalar_value_type num) {
+        *this += vector_type(num);
+    }
+    FASTOR_INLINE void operator+=(const vector_type &a) {
+        value_r = _mm256_add_pd(value_r,a.value_r);
+        value_i = _mm256_add_pd(value_i,a.value_i);
+    }
+
+    FASTOR_INLINE void operator-=(scalar_value_type num) {
+        *this -= vector_type(num);
+    }
+    FASTOR_INLINE void operator-=(const vector_type &a) {
+        value_r = _mm256_sub_pd(value_r,a.value_r);
+        value_i = _mm256_sub_pd(value_i,a.value_i);
+    }
+
+    FASTOR_INLINE void operator*=(scalar_value_type num) {
+        *this *= vector_type(num);
+    }
+    FASTOR_INLINE void operator*=(const vector_type &a) {
+        __m256d tmp = _mm256_sub_pd(_mm256_mul_pd(value_r,a.value_r),_mm256_mul_pd(value_i,a.value_i));
+        value_i     = _mm256_add_pd(_mm256_mul_pd(value_r,a.value_i),_mm256_mul_pd(value_i,a.value_r));
+        value_r = tmp;
+    }
+
+    FASTOR_INLINE void operator/=(scalar_value_type num) {
+        *this /= vector_type(num);
+    }
+    FASTOR_INLINE void operator/=(const vector_type &a) {
+        __m256d tmp = value_r;
+        value_r     = _mm256_add_pd(_mm256_mul_pd(value_r,a.value_r),_mm256_mul_pd(value_i,a.value_i));
+        value_i     = _mm256_sub_pd(_mm256_mul_pd(value_i,a.value_r),_mm256_mul_pd(tmp,a.value_i));
+        __m256d den = _mm256_add_pd(_mm256_mul_pd(a.value_r,a.value_r),_mm256_mul_pd(a.value_i,a.value_i));
+        value_r     = _mm256_div_pd(value_r,den);
+        value_i     = _mm256_div_pd(value_i,den);
+    }
+    // end of in-place operators
+
+    FASTOR_INLINE scalar_value_type sum() const {
+        return scalar_value_type(_mm256_sum_pd(value_r),_mm256_sum_pd(value_i));
+    }
+    FASTOR_INLINE scalar_value_type product() const {
+        vector_type tmp(*this);
+        return tmp[0]*tmp[1]*tmp[2]*tmp[3];
+    }
+    FASTOR_INLINE vector_type reverse() const {
+        vector_type out;
+        out.value_r = _mm256_reverse_pd(value_r);
+        out.value_i = _mm256_reverse_pd(value_i);
+        return out;
+    }
+    /* Actual magnitude - Note that this is a vertical operation */
+    FASTOR_INLINE SIMDVector<double,simd_abi::avx> magnitude() const {
+        return _mm256_sqrt_pd(_mm256_add_pd(_mm256_mul_pd(value_r,value_r),_mm256_mul_pd(value_i,value_i)));
+    }
+    /* STL compliant squared norm - Note that this is a vertical operation */
+    FASTOR_INLINE SIMDVector<double,simd_abi::avx> norm() const {
+        return _mm256_add_pd(_mm256_mul_pd(value_r,value_r),_mm256_mul_pd(value_i,value_i));
+    }
+    // Magnitude based minimum
+    FASTOR_INLINE scalar_value_type minimum() const;
+    // Magnitude based maximum
+    FASTOR_INLINE scalar_value_type maximum() const;
+
+    FASTOR_INLINE std::complex<double> dot(const vector_type &other) const {
+        vector_type out(*this);
+        out *= other;
+        return out.sum();
+    }
+
+    __m256d value_r;
+    __m256d value_i;
+
+protected:
+    FASTOR_INLINE void complex_aligned_load(const std::complex<double> *data) {
+        __m256d lo = _mm256_load_pd(reinterpret_cast<const double*>(data  ));
+        __m256d hi = _mm256_load_pd(reinterpret_cast<const double*>(data+2));
+        arrange_from_load(lo, hi);
+    }
+    FASTOR_INLINE void complex_unaligned_load(const std::complex<double> *data) {
+        __m256d lo = _mm256_loadu_pd(reinterpret_cast<const double*>(data  ));
+        __m256d hi = _mm256_loadu_pd(reinterpret_cast<const double*>(data+2));
+        arrange_from_load(lo, hi);
+    }
+
+    FASTOR_INLINE void complex_aligned_store(std::complex<double> *data) const {
+        __m256d lo, hi;
+        arrange_for_store(lo, hi);
+        _mm256_store_pd(reinterpret_cast<double*>(data  ), lo);
+        _mm256_store_pd(reinterpret_cast<double*>(data+2), hi);
+    }
+    FASTOR_INLINE void complex_unaligned_store(std::complex<double> *data) const {
+        __m256d lo, hi;
+        arrange_for_store(lo, hi);
+        _mm256_storeu_pd(reinterpret_cast<double*>(data  ), lo);
+        _mm256_storeu_pd(reinterpret_cast<double*>(data+2), hi);
+    }
+
+    FASTOR_INLINE void complex_mask_aligned_load(const scalar_value_type *data, uint8_t mask) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+        __m256d lo, hi;
+        __m256d lo = _mm256_mask_loadu_pd(lo, mask, reinterpret_cast<const double*>(data  ));
+        __m256d hi = _mm256_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+1));
+        arrange_from_load(lo, hi);
+#else
+        int maska[Size];
+        mask_to_array(mask,maska);
+        value_r = _mm256_setzero_pd();
+        value_i = _mm256_setzero_pd();
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            if (maska[i] == -1) {
+                ((double*)&value_r)[Size - i - 1] = data[Size - i - 1].real();
+                ((double*)&value_i)[Size - i - 1] = data[Size - i - 1].imag();
+            }
+        }
+#endif
+    }
+    FASTOR_INLINE void complex_mask_unaligned_load(const scalar_value_type *data, uint8_t mask) {
+#ifdef FASTOR_HAS_AVX512_MASKS
+        __m256d lo, hi;
+        __m256d lo = _mm256_mask_loadu_pd(lo, mask, reinterpret_cast<const double*>(data  ));
+        __m256d hi = _mm256_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+1));
+        arrange_from_load(lo, hi);
+#else
+        int maska[Size];
+        mask_to_array(mask,maska);
+        value_r = _mm256_setzero_pd();
+        value_i = _mm256_setzero_pd();
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            if (maska[i] == -1) {
+                ((double*)&value_r)[Size - i - 1] = data[Size - i - 1].real();
+                ((double*)&value_i)[Size - i - 1] = data[Size - i - 1].imag();
+            }
+        }
+#endif
+    }
+
+    FASTOR_INLINE void complex_mask_aligned_store(scalar_value_type *data, uint8_t mask, bool Aligned=false) const {
+#ifdef FASTOR_HAS_AVX512_MASKS
+        __m256d lo, hi;
+        arrange_for_store(lo, hi);
+        _mm256_mask_store_pd(reinterpret_cast<double*>(data  ), mask, lo);
+        _mm256_mask_store_pd(reinterpret_cast<double*>(data+2), mask, hi);
+#else
+        int maska[Size];
+        mask_to_array(mask,maska);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            if (maska[i] == -1) {
+                double _real = ((const double*)&value_r)[Size - i - 1];
+                double _imag = ((const double*)&value_i)[Size - i - 1];
+                data[Size - i - 1] = std::complex<double>(_real,_imag);
+            }
+            else {
+                data[Size - i - 1] = std::complex<double>(0,0);
+            }
+        }
+#endif
+    }
+    FASTOR_INLINE void complex_mask_unaligned_store(scalar_value_type *data, uint8_t mask, bool Aligned=false) const {
+#ifdef FASTOR_HAS_AVX512_MASKS
+        __m256d lo, hi;
+        arrange_for_store(lo, hi);
+        _mm256_mask_storeu_pd(reinterpret_cast<double*>(data  ), mask, lo);
+        _mm256_mask_storeu_pd(reinterpret_cast<double*>(data+2), mask, hi);
+#else
+        int maska[Size];
+        mask_to_array(mask,maska);
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            if (maska[i] == -1) {
+                double _real = ((const double*)&value_r)[Size - i - 1];
+                double _imag = ((const double*)&value_i)[Size - i - 1];
+                data[Size - i - 1] = std::complex<double>(_real,_imag);
+            }
+            else {
+                data[Size - i - 1] = std::complex<double>(0,0);
+            }
+        }
+#endif
+    }
+
+
+    FASTOR_INLINE void arrange_from_load(__m256d lo, __m256d hi) {
+#ifdef FASTOR_AVX2_IMPL
+        value_r      = _mm256_permute4x64_pd(_mm256_unpacklo_pd(lo, hi), _MM_SHUFFLE(3, 1, 2, 0));
+        value_i      = _mm256_permute4x64_pd(_mm256_unpackhi_pd(lo, hi), _MM_SHUFFLE(3, 1, 2, 0));
+#else
+        __m128d tmp0 = _mm256_extractf128_pd(lo, 0x0);
+        __m128d tmp1 = _mm256_extractf128_pd(lo, 0x1);
+        __m256d lo_r = _mm256_insertf128_pd(value_r, _mm_unpacklo_pd(tmp0, tmp1), 0x0);
+        __m256d lo_i = _mm256_insertf128_pd(value_i, _mm_unpackhi_pd(tmp0, tmp1), 0x0);
+        tmp0         = _mm256_extractf128_pd(hi, 0x0);
+        tmp1         = _mm256_extractf128_pd(hi, 0x1);
+        __m256d hi_r = _mm256_insertf128_pd(value_r, _mm_unpacklo_pd(tmp0, tmp1), 0x1);
+        __m256d hi_i = _mm256_insertf128_pd(value_i, _mm_unpackhi_pd(tmp0, tmp1), 0x1);
+        value_r      = _mm256_blend_pd(lo_r, hi_r, 12);
+        value_i      = _mm256_blend_pd(lo_i, hi_i, 12);
+#endif
+    }
+
+    FASTOR_INLINE void arrange_for_store(__m256d &lo, __m256d &hi) const {
+        __m256d tmp0 = _mm256_unpacklo_pd(value_r, value_i);
+        __m256d tmp1 = _mm256_unpackhi_pd(value_r, value_i);
+        lo           = _mm256_permute2f128_pd(tmp1, tmp0, 0x2);
+        hi           = _mm256_permute2f128_pd(tmp0, tmp1, 0x1);
+        hi           = _mm256_insertf128_pd(hi,_mm256_extractf128_pd(tmp1,0x1),0x1);
+    }
+};
+
+FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, SIMDVector<std::complex<double>,simd_abi::avx> a) {
+    // ICC crashes without a copy
+    const __m256d vr = a.value_r;
+    const __m256d vi = a.value_i;
+    const double* value_r = reinterpret_cast<const double*>(&vr);
+    const double* value_i = reinterpret_cast<const double*>(&vi);
+    os << "[" << value_r[0] <<  signum_string(value_i[0]) << std::abs(value_i[0]) << "j, "
+              << value_r[1] <<  signum_string(value_i[1]) << std::abs(value_i[1]) << "j, "
+              << value_r[2] <<  signum_string(value_i[2]) << std::abs(value_i[2]) << "j, "
+              << value_r[3] <<  signum_string(value_i[3]) << std::abs(value_i[3]) << "j" << "]\n";
+    return os;
+}
+
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator+(const SIMDVector<std::complex<double>,simd_abi::avx> &a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out;
+    out.value_r = _mm256_add_pd(a.value_r,b.value_r);
+    out.value_i = _mm256_add_pd(a.value_i,b.value_i);
+    return out;
+}
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator+(const SIMDVector<std::complex<double>,simd_abi::avx> &a, std::complex<double> b) {
+    return a + SIMDVector<std::complex<double>,simd_abi::avx>(b);
+}
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator+(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
+    return SIMDVector<std::complex<double>,simd_abi::avx>(a) + b;
+}
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator+(const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
+    return b;
+}
+
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator-(const SIMDVector<std::complex<double>,simd_abi::avx> &a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out;
+    out.value_r = _mm256_sub_pd(a.value_r,b.value_r);
+    out.value_i = _mm256_sub_pd(a.value_i,b.value_i);
+    return out;
+}
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator-(const SIMDVector<std::complex<double>,simd_abi::avx> &a, std::complex<double> b) {
+    return a - SIMDVector<std::complex<double>,simd_abi::avx>(b);
+}
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator-(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
+    return SIMDVector<std::complex<double>,simd_abi::avx>(a) - b;
+}
+/* This is negation and not complex conjugate  */
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator-(const SIMDVector<std::complex<double>,simd_abi::avx> &a) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out;
+    out.value_r = _mm256_neg_pd(a.value_r);
+    out.value_i = _mm256_neg_pd(a.value_i);
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator*(const SIMDVector<std::complex<double>,simd_abi::avx> &a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out;
+    out.value_r = _mm256_sub_pd(_mm256_mul_pd(a.value_r,b.value_r),_mm256_mul_pd(a.value_i,b.value_i));
+    out.value_i = _mm256_add_pd(_mm256_mul_pd(a.value_r,b.value_i),_mm256_mul_pd(a.value_i,b.value_r));
+    return out;
+}
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator*(const SIMDVector<std::complex<double>,simd_abi::avx> &a, std::complex<double> b) {
+    return a * SIMDVector<std::complex<double>,simd_abi::avx>(b);
+}
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator*(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
+    return SIMDVector<std::complex<double>,simd_abi::avx>(a) * b;
+}
+
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator/(const SIMDVector<std::complex<double>,simd_abi::avx> &a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out;
+    out.value_r = _mm256_add_pd(_mm256_mul_pd(a.value_r,b.value_r),_mm256_mul_pd(a.value_i,b.value_i));
+    out.value_i = _mm256_sub_pd(_mm256_mul_pd(a.value_i,b.value_r),_mm256_mul_pd(a.value_r,b.value_i));
+    __m256d den = _mm256_add_pd(_mm256_mul_pd(b.value_r,b.value_r),_mm256_mul_pd(b.value_i,b.value_i));
+    out.value_r = _mm256_div_pd(out.value_r,den);
+    out.value_i = _mm256_div_pd(out.value_i,den);
+    return out;
+}
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator/(const SIMDVector<std::complex<double>,simd_abi::avx> &a, std::complex<double> b) {
+    return a / SIMDVector<std::complex<double>,simd_abi::avx>(b);
+}
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+operator/(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi::avx> &b) {
+    return SIMDVector<std::complex<double>,simd_abi::avx>(a) / b;
+}
+
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+rcp(const SIMDVector<std::complex<double>,simd_abi::avx> &a) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out;
+    __m256d den = _mm256_add_pd(_mm256_mul_pd(a.value_r,a.value_r),_mm256_mul_pd(a.value_i,a.value_i));
+    out.value_r = _mm256_div_pd(out.value_r,den);
+    out.value_i = _mm256_neg_pd(_mm256_div_pd(out.value_i,den));
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+sqrt(const SIMDVector<std::complex<double>,simd_abi::avx> &a) = delete;
+
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+rsqrt(const SIMDVector<std::complex<double>,simd_abi::avx> &a) = delete;
+
+/* This intentionally return a complex vector */
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+abs(const SIMDVector<std::complex<double>,simd_abi::avx> &a) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out;
+    out.value_r = a.magnitude().value;
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+conj(const SIMDVector<std::complex<double>,simd_abi::avx> &a) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out(a);
+    out.value_i = _mm256_neg_pd(out.value_i);
+    return out;
+}
+
+/* Argument or phase angle */
+FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
+arg(const SIMDVector<std::complex<double>,simd_abi::avx> &a) {
+    SIMDVector<std::complex<double>,simd_abi::avx> out(a);
+    for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
+       ((double*)&out.value_r)[i] = std::atan2(((double*)&a.value_i)[i],((double*)&a.value_r)[i]);
+    }
+    return out;
+}
+//------------------------------------------------------------------------------------------------------------
+
+#endif
+
+
+
+
 // SSE VERSION
 //------------------------------------------------------------------------------------------------------------
 
@@ -42,11 +472,6 @@ struct SIMDVector<std::complex<double>, simd_abi::sse> {
         value_i = _mm_set1_pd(num.imag());
         return *this;
     }
-    // FASTOR_INLINE SIMDVector<double,simd_abi::sse> operator=(__m128d reg0, __m128d reg1) {
-    //     value_r(reg0);
-    //     value_i(reg1);
-    //     return *this;
-    // }
 
     FASTOR_INLINE void load(const std::complex<double> *data, bool Aligned=true) {
         if (Aligned)
@@ -75,12 +500,8 @@ struct SIMDVector<std::complex<double>, simd_abi::sse> {
     }
 
     FASTOR_INLINE scalar_value_type operator[](FASTOR_INDEX i) const {
-        if (i == 0) {
-            return scalar_value_type(_mm_get0_pd(value_r), _mm_get0_pd(value_i));
-        }
-        else {
-            return scalar_value_type(_mm_get1_pd(value_r), _mm_get1_pd(value_i));
-        }
+        if      (i == 0) { return scalar_value_type(_mm_get0_pd(value_r), _mm_get0_pd(value_i)); }
+        else             { return scalar_value_type(_mm_get1_pd(value_r), _mm_get1_pd(value_i)); }
     }
 
     FASTOR_INLINE SIMDVector<double,simd_abi::sse> real() const {
@@ -401,7 +822,7 @@ operator/(std::complex<double> a, const SIMDVector<std::complex<double>,simd_abi
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
 rcp(const SIMDVector<std::complex<double>,simd_abi::sse> &a) {
     SIMDVector<std::complex<double>,simd_abi::sse> out;
-    __m128d den = _mm_mul_pd(a.value_i,a.value_i);
+    __m128d den = _mm_add_pd(_mm_mul_pd(a.value_r,a.value_r),_mm_mul_pd(a.value_i,a.value_i));
     out.value_r = _mm_div_pd(out.value_r,den);
     out.value_i = _mm_neg_pd(_mm_div_pd(out.value_i,den));
     return out;
@@ -432,7 +853,7 @@ conj(const SIMDVector<std::complex<double>,simd_abi::sse> &a) {
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
 arg(const SIMDVector<std::complex<double>,simd_abi::sse> &a) {
     SIMDVector<std::complex<double>,simd_abi::sse> out(a);
-    for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
+    for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
        ((double*)&out.value_r)[i] = std::atan2(((double*)&a.value_i)[i],((double*)&a.value_r)[i]);
     }
     return out;
