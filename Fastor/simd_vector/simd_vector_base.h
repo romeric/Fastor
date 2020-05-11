@@ -1,9 +1,13 @@
 #ifndef SIMD_VECTOR_BASE_H
 #define SIMD_VECTOR_BASE_H
 
+#include "Fastor/meta/meta.h"
 #include "Fastor/commons/commons.h"
 #include "Fastor/simd_vector/extintrin.h"
 #include "Fastor/simd_vector/simd_vector_abi.h"
+
+#include<cmath>
+#include<complex>
 
 
 namespace Fastor {
@@ -16,6 +20,7 @@ template <typename T, typename ABI = simd_abi::native>
 struct SIMDVector {
     static constexpr FASTOR_INDEX Size = internal::get_simd_vector_size<SIMDVector<T,ABI>>::value;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return internal::get_simd_vector_size<SIMDVector<T,ABI>>::value;}
+    using vector_type = SIMDVector<T,ABI>;
     using value_type = T[Size];
     using scalar_value_type = T;
     using abi_type = ABI;
@@ -65,8 +70,24 @@ struct SIMDVector {
     FASTOR_INLINE T operator()(FASTOR_INDEX i) const {return value[i];}
 
     // For compatibility with complex simd vector
-    FASTOR_INLINE SIMDVector<T,ABI> real() const {return value;}
-    FASTOR_INLINE SIMDVector<T,ABI> imag() const {return 0;}
+    template<typename U=T, enable_if_t_<is_complex_v_<U>,bool> = false>
+    FASTOR_INLINE SIMDVector<simd_cmplx_value_t<vector_type>,ABI> real() const {
+        simd_cmplx_value_t<vector_type> arr[Size];
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            arr[i] = value[i].real();
+        }
+        SIMDVector<simd_cmplx_value_t<vector_type>,ABI> out(arr,false);
+        return out;
+    }
+    template<typename U=T, enable_if_t_<is_complex_v_<U>,bool> = false>
+    FASTOR_INLINE SIMDVector<simd_cmplx_value_t<vector_type>,ABI> imag() const {
+        simd_cmplx_value_t<vector_type> arr[Size];
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            arr[i] = value[i].imag();
+        }
+        SIMDVector<simd_cmplx_value_t<vector_type>,ABI> out(arr,false);
+        return out;
+    }
 
     FASTOR_INLINE void set(T num) {
         for (FASTOR_INDEX i=0; i<Size;++i)
@@ -146,7 +167,24 @@ struct SIMDVector {
         return out;
     }
     // This is for comatibility with complex simd vectors
-    FASTOR_INLINE SIMDVector<T,ABI> norm() {return *this;}
+    template<typename U=T, enable_if_t_<is_complex_v_<U>,bool> = false>
+    FASTOR_INLINE SIMDVector<simd_cmplx_value_t<vector_type>,ABI> magnitude() {
+        simd_cmplx_value_t<vector_type> arr[Size];
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            arr[i] = std::abs(value[i]);
+        }
+        SIMDVector<simd_cmplx_value_t<vector_type>,ABI> out(arr,false);
+        return out;
+    }
+    template<typename U=T, enable_if_t_<is_complex_v_<U>,bool> = false>
+    FASTOR_INLINE SIMDVector<simd_cmplx_value_t<vector_type>,ABI> norm() {
+        simd_cmplx_value_t<vector_type> arr[Size];
+        for (FASTOR_INDEX i=0; i<Size; ++i) {
+            arr[i] = std::norm(value[i]);
+        }
+        SIMDVector<simd_cmplx_value_t<vector_type>,ABI> out(arr,false);
+        return out;
+    }
     FASTOR_INLINE T minimum() {
         T quan = 0;
         for (FASTOR_INDEX i=0; i<Size;++i)
@@ -325,17 +363,21 @@ FASTOR_INLINE SIMDVector<T,ABI> abs(const SIMDVector<T,ABI> &a) {
 }
 
 // For compatibility with complex simd vectors
-template<typename T, typename ABI>
+template<typename T, typename ABI, enable_if_t_<is_complex_v_<T>,bool> = false>
 FASTOR_INLINE SIMDVector<T,ABI> conj(const SIMDVector<T,ABI> &a) {
-    return a;
-}
-template<typename T, typename ABI>
-FASTOR_INLINE SIMDVector<T,ABI> arg(const SIMDVector<T,ABI> &a) {
-    SIMDVector<T,ABI> out(a);
+    T arr[SIMDVector<T,ABI>::Size];
     for (FASTOR_INDEX i=0UL; i<SIMDVector<T,ABI>::Size; ++i) {
-       out[i] = std::arg(a[i]);
+       arr[i] = std::conj(a[i]);
     }
-    return out;
+    return SIMDVector<T,ABI>(arr,false);
+}
+template<typename T, typename ABI, enable_if_t_<is_complex_v_<T>,bool> = false>
+FASTOR_INLINE SIMDVector<T,ABI> arg(const SIMDVector<T,ABI> &a) {
+    T arr[SIMDVector<T,ABI>::Size];
+    for (FASTOR_INDEX i=0UL; i<SIMDVector<T,ABI>::Size; ++i) {
+       arr[i] = std::arg(a[i]);
+    }
+    return SIMDVector<T,ABI>(arr,false);
 }
 
 } // end of namespace Fastor

@@ -1,6 +1,7 @@
 #ifndef FASTOR_SIMD_VECTOR_ABI
 #define FASTOR_SIMD_VECTOR_ABI
 
+#include "Fastor/meta/meta.h"
 #include "Fastor/commons/commons.h"
 #include <complex>
 #include <type_traits>
@@ -38,9 +39,7 @@ using native = simd_abi::scalar;
 //--------------------------------------------------------------------------------------------------------------//
 
 
-
-
-
+//--------------------------------------------------------------------------------------------------------------//
 // Forward declare
 template<size_t I, size_t J>
 struct is_less;
@@ -187,6 +186,33 @@ struct choose_best_simd_type<__svec<T,ABI>,N> {
 // to choose/switch between best simd types for utmost performance
 template<class __svec, size_t N>
 using choose_best_simd_t = typename internal::choose_best_simd_type<__svec,N>::type;
+//--------------------------------------------------------------------------------------------------------------//
+
+
+// For switching between complex and non-complex implementation of simd we need different return types
+//--------------------------------------------------------------------------------------------------------------//
+template<typename T, typename T2 = void>
+struct get_simd_cmplx_value_type;
+template<typename T>
+struct get_simd_cmplx_value_type<T, enable_if_t_<!is_complex_v_<T> > > {
+    using type = T;
+};
+template<typename T>
+struct get_simd_cmplx_value_type<T, enable_if_t_<is_complex_v_<T> > > {
+    using type = typename T::value_type;
+};
+
+template<class VecType>
+struct simd_cmplx_value_type;
+template<template<typename, typename> class __svec, typename T, typename ABI>
+struct simd_cmplx_value_type< __svec<T,ABI> > {
+    using type = typename get_simd_cmplx_value_type<T>::type;
+};
+template<class VecType>
+using simd_cmplx_value_t = typename simd_cmplx_value_type<VecType>::type;
+//--------------------------------------------------------------------------------------------------------------//
+
+
 
 } // end of namesapce Fastor
 

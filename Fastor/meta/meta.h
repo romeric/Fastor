@@ -52,6 +52,16 @@ constexpr bool is_numeric_v_ = is_numeric<T>::value;
 
 
 //----------------------------------------------------------------------------------------------------------//
+// If complex type
+template< class T > struct is_complex                  { static constexpr bool value = false; };
+template< class T > struct is_complex<std::complex<T>> { static constexpr bool value = true;  };
+
+template< class T >
+constexpr bool is_complex_v_ = is_complex<T>::value;
+//----------------------------------------------------------------------------------------------------------//
+
+
+//----------------------------------------------------------------------------------------------------------//
 // If a type is std::is_fundamental + std::complex<float/double> + any type that specialises this trait class
 // This class is provided because the behaviour of any code that specialises std::is_fundamental/arithmetic/
 // integral/floating_point is undefined
