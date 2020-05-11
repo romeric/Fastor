@@ -422,6 +422,14 @@ FASTOR_INLINE __m256d _mm256_neg_pd(__m256d a) {
     return _mm256_xor_pd(a, MVZEROPD);
 }
 #endif
+#ifdef FASTOR_AVX512F_IMPL
+FASTOR_INLINE __m512 _mm512_neg_ps(__m512 a) {
+    return _mm512_xor_ps(a, _mm512_set1_ps(-0.f));
+}
+FASTOR_INLINE __m512d _mm512_neg_pd(__m512d a) {
+    return _mm512_xor_pd(a, _mm512_set1_pd(-0.0));
+}
+#endif
 //----------------------------------------------------------------------------------------------------------------//
 
 
@@ -888,6 +896,26 @@ FASTOR_INLINE void arrange_for_store(__m256d &lo, __m256d &hi, __m256d value_r, 
     lo           = _mm256_permute2f128_pd(tmp1, tmp0, 0x2);
     hi           = _mm256_permute2f128_pd(tmp0, tmp1, 0x1);
     hi           = _mm256_insertf128_pd(hi,_mm256_extractf128_pd(tmp1,0x1),0x1);
+}
+#endif
+
+#ifdef FASTOR_AVX512F_IMPL
+FASTOR_INLINE void arrange_from_load(__m512d& value_r, __m512d& value_i, __m512d lo, __m512d hi) {
+    // Define to help with immediate construction - most likely
+    // the compiler will emit [vmovdqa64]
+    #define FT_LOAD512IDXR _mm512_setr_epi64(0, 2, 4, 6, 8, 10, 12, 14)
+    #define FT_LOAD512IDXI _mm512_setr_epi64(1, 3, 5, 7, 9, 11, 13, 15)
+    value_r = _mm512_permutex2var_pd(lo, FT_LOAD512IDXR, hi);
+    value_i = _mm512_permutex2var_pd(lo, FT_LOAD512IDXI, hi);
+}
+
+FASTOR_INLINE void arrange_for_store(__m512d &lo, __m512d &hi, __m512d value_r, __m512d value_i) {
+    // Define to help with immediate construction - most likely
+    // the compiler will emit [vmovdqa64]
+    #define FT_STORE512IDXR _mm512_setr_epi64(0, 8, 1, 9, 2, 10, 3, 11)
+    #define FT_STORE512IDXI _mm512_setr_epi64(4, 12, 5, 13, 6, 14, 7, 15)
+    lo = _mm512_permutex2var_pd(value_r, FT_STORE512IDXR, value_i);
+    hi = _mm512_permutex2var_pd(value_r, FT_STORE512IDXI, value_i);
 }
 #endif
 //----------------------------------------------------------------------------------------------------------------//
