@@ -859,6 +859,72 @@ FASTOR_INLINE __m128d _mm256_dp_pd(__m256d __X, __m256d __Y) {
 
 // Arrangments for std::complex after load / before store
 //----------------------------------------------------------------------------------------------------------------//
+// complex single
+#ifdef FASTOR_SSE2_IMPL
+FASTOR_INLINE void arrange_from_load(__m128& value_r, __m128& value_i, __m128 lo, __m128 hi) {
+    value_r = _mm_shuffle_ps(lo, hi, _MM_SHUFFLE(2, 0, 2, 0));
+    value_i = _mm_shuffle_ps(lo, hi, _MM_SHUFFLE(3, 1, 3, 1));
+}
+
+FASTOR_INLINE void arrange_for_store(__m128 &lo, __m128 &hi, __m128 value_r, __m128 value_i) {
+    lo = _mm_unpacklo_ps(value_r,value_i);
+    hi = _mm_unpackhi_ps(value_r,value_i);
+}
+#endif
+
+#ifdef FASTOR_AVX_IMPL
+FASTOR_INLINE void arrange_from_load(__m256& value_r, __m256& value_i, __m256 lo, __m256 hi) {
+#ifdef FASTOR_AVX2_IMPL
+    value_r = _mm256_castpd_ps(_mm256_permute4x64_pd(
+        _mm256_castps_pd(_mm256_shuffle_ps(lo, hi, _MM_SHUFFLE(2, 0, 2, 0))),_MM_SHUFFLE(3, 1, 2, 0)));
+    value_i = _mm256_castpd_ps(_mm256_permute4x64_pd(
+        _mm256_castps_pd(_mm256_shuffle_ps(lo, hi, _MM_SHUFFLE(3, 1, 3, 1))),_MM_SHUFFLE(3, 1, 2, 0)));
+#else
+    __m128 tmp0 = _mm256_castps256_ps128(lo);
+    __m128 tmp1 = _mm256_extractf128_ps(lo, 0x1);
+    __m128 tmp2 = _mm_shuffle_ps(tmp0, tmp1, _MM_SHUFFLE(2, 0, 2, 0));
+    __m128 tmp3 = _mm_shuffle_ps(tmp0, tmp1, _MM_SHUFFLE(3, 1, 3, 1));
+    value_r     = _mm256_castps128_ps256(tmp2);
+    value_i     = _mm256_castps128_ps256(tmp3);
+    tmp0        = _mm256_castps256_ps128(hi);
+    tmp1        = _mm256_extractf128_ps(hi, 0x1);
+    tmp2        = _mm_shuffle_ps(tmp0, tmp1, _MM_SHUFFLE(2, 0, 2, 0));
+    tmp3        = _mm_shuffle_ps(tmp0, tmp1, _MM_SHUFFLE(3, 1, 3, 1));
+    value_r     = _mm256_insertf128_ps(value_r, tmp2, 0x1);
+    value_i     = _mm256_insertf128_ps(value_i, tmp3, 0x1);
+#endif
+}
+
+FASTOR_INLINE void arrange_for_store(__m256 &lo, __m256 &hi, __m256 value_r, __m256 value_i) {
+    __m256 tmp0 = _mm256_unpacklo_ps(value_r, value_i);
+    __m256 tmp1 = _mm256_unpackhi_ps(value_r, value_i);
+    lo          = _mm256_permute2f128_ps(tmp1, tmp0, 0x2);
+    hi          = _mm256_permute2f128_ps(tmp0, tmp1, 0x1);
+    hi          = _mm256_insertf128_ps(hi,_mm256_extractf128_ps(tmp1,0x1),0x1);
+}
+#endif
+
+#ifdef FASTOR_AVX512F_IMPL
+FASTOR_INLINE void arrange_from_load(__m512& value_r, __m512& value_i, __m512 lo, __m512 hi) {
+    // Define to help with immediate construction - most likely
+    // the compiler will emit [vmovdqa32]
+    #define FT_LOAD512SIDXR _mm512_setr_epi32(0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30)
+    #define FT_LOAD512SIDXI _mm512_setr_epi32(1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31)
+    value_r = _mm512_permutex2var_ps(lo, FT_LOAD512SIDXR, hi);
+    value_i = _mm512_permutex2var_ps(lo, FT_LOAD512SIDXI, hi);
+}
+
+FASTOR_INLINE void arrange_for_store(__m512 &lo, __m512 &hi, __m512 value_r, __m512 value_i) {
+    // Define to help with immediate construction - most likely
+    // the compiler will emit [vmovdqa32]
+    #define FT_STORE512SIDXR _mm512_setr_epi32(0, 16, 1, 17, 2, 18, 3, 19, 4, 20, 5, 21, 6, 22, 7, 23)
+    #define FT_STORE512SIDXI _mm512_setr_epi32(8, 24, 9, 25, 10, 26, 11, 27, 12, 28, 13, 29, 14, 30, 15, 31)
+    lo = _mm512_permutex2var_ps(value_r, FT_STORE512SIDXR, value_i);
+    hi = _mm512_permutex2var_ps(value_r, FT_STORE512SIDXI, value_i);
+}
+#endif
+
+// complex double
 #ifdef FASTOR_SSE2_IMPL
 FASTOR_INLINE void arrange_from_load(__m128d& value_r, __m128d& value_i, __m128d lo, __m128d hi) {
     value_r = _mm_shuffle_pd(lo, hi, _MM_SHUFFLE2(0, 0));
@@ -903,19 +969,19 @@ FASTOR_INLINE void arrange_for_store(__m256d &lo, __m256d &hi, __m256d value_r, 
 FASTOR_INLINE void arrange_from_load(__m512d& value_r, __m512d& value_i, __m512d lo, __m512d hi) {
     // Define to help with immediate construction - most likely
     // the compiler will emit [vmovdqa64]
-    #define FT_LOAD512IDXR _mm512_setr_epi64(0, 2, 4, 6, 8, 10, 12, 14)
-    #define FT_LOAD512IDXI _mm512_setr_epi64(1, 3, 5, 7, 9, 11, 13, 15)
-    value_r = _mm512_permutex2var_pd(lo, FT_LOAD512IDXR, hi);
-    value_i = _mm512_permutex2var_pd(lo, FT_LOAD512IDXI, hi);
+    #define FT_LOAD512DIDXR _mm512_setr_epi64(0, 2, 4, 6, 8, 10, 12, 14)
+    #define FT_LOAD512DIDXI _mm512_setr_epi64(1, 3, 5, 7, 9, 11, 13, 15)
+    value_r = _mm512_permutex2var_pd(lo, FT_LOAD512DIDXR, hi);
+    value_i = _mm512_permutex2var_pd(lo, FT_LOAD512DIDXI, hi);
 }
 
 FASTOR_INLINE void arrange_for_store(__m512d &lo, __m512d &hi, __m512d value_r, __m512d value_i) {
     // Define to help with immediate construction - most likely
     // the compiler will emit [vmovdqa64]
-    #define FT_STORE512IDXR _mm512_setr_epi64(0, 8, 1, 9, 2, 10, 3, 11)
-    #define FT_STORE512IDXI _mm512_setr_epi64(4, 12, 5, 13, 6, 14, 7, 15)
-    lo = _mm512_permutex2var_pd(value_r, FT_STORE512IDXR, value_i);
-    hi = _mm512_permutex2var_pd(value_r, FT_STORE512IDXI, value_i);
+    #define FT_STORE512DIDXR _mm512_setr_epi64(0, 8, 1, 9, 2, 10, 3, 11)
+    #define FT_STORE512DIDXI _mm512_setr_epi64(4, 12, 5, 13, 6, 14, 7, 15)
+    lo = _mm512_permutex2var_pd(value_r, FT_STORE512DIDXR, value_i);
+    hi = _mm512_permutex2var_pd(value_r, FT_STORE512DIDXI, value_i);
 }
 #endif
 //----------------------------------------------------------------------------------------------------------------//

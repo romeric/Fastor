@@ -193,12 +193,12 @@ void test_simd_complex_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, st
             FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             diff = a.product() - zproduct(arr1);
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
             diff = b.product() - zproduct(arr2);
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
         }
 
 
@@ -223,8 +223,8 @@ void test_simd_complex_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, st
 
         // division
         diff = (a/b).sum() - zsum(zdiv(arr1,arr2));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
         // vector-scalar
         // addition
@@ -244,8 +244,8 @@ void test_simd_complex_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, st
 
         // division
         diff = (a/arr1[0]).sum() - zsum(zdiv(arr1,arr3));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
 
         // scalar-vector
@@ -266,8 +266,8 @@ void test_simd_complex_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, st
 
         // division
         diff = (arr1[0]/a).sum() - zsum(zdiv(arr3,arr1));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
 
         // In-place
@@ -292,8 +292,8 @@ void test_simd_complex_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, st
         a.load(arr1.data(),false);
         a /= b;
         diff = a.sum() - zsum(zdiv(arr1,arr2));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
         // with scalar
         a.load(arr1.data(),false);
@@ -317,8 +317,8 @@ void test_simd_complex_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, st
         a.load(arr1.data(),false);
         a /= arr1[0];
         diff = a.sum() - zsum(zdiv(arr1,arr3));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
 #if defined(FASTOR_SSE2_IMPL) && defined(FASTOR_AVX_IMPL)
         // scaling with real numbers
@@ -345,8 +345,8 @@ void test_simd_complex_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, st
             a.load(arr1.data(),false);
             a /= 5;
             diff = (a).sum() - zsum(zdiv(arr1,T(5)));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
             // binary
             a.load(arr1.data(),false);
@@ -375,12 +375,12 @@ void test_simd_complex_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, st
             FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             diff = (a/5).sum() - zsum(zdiv(arr1,T(5)));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
             diff = (5/a).sum() - zsum(zdiv(T(5),arr1));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
+            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
         }
 #endif
 
@@ -415,17 +415,17 @@ void test_simd_complex_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, st
 
         // norm
         a.load(arr1.data(),false);
-        FASTOR_EXIT_ASSERT( std::abs( a.norm().sum() - zsum(znorm(arr1)) ) < Tol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs( a.norm().sum() - zsum(znorm(arr1)) ) < BigTol, "TEST FAILED");
 
         // abs
         a.load(arr1.data(),false);
-        FASTOR_EXIT_ASSERT( std::abs( abs(a).real().sum() - zsum(zabs(arr1)) ) < Tol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs( abs(a).real().sum() - zsum(zabs(arr1)) ) < BigTol, "TEST FAILED");
 
         // conj
         a.load(arr1.data(),false);
         diff = conj(a).sum() - zsum(zconj(arr1));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
+        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
         // arg
         a.load(arr1.data(),false);
@@ -448,6 +448,28 @@ void test_simd_complex<float,simd_abi::scalar>() {
     std::array<TT,1> arr3 = {arr1[0]};
     test_simd_complex_impl<simd_abi::scalar>(arr1,arr2,arr3);
 }
+#ifdef FASTOR_SSE2_IMPL
+template<>
+void test_simd_complex<float,simd_abi::sse>() {
+    using TT = std::complex<float>;
+    // These arrays are used to mimick complex SIMDVector
+    std::array<TT,4> arr1 = {TT(3,-4),TT(7,12),TT(5,-2),TT(11,9)};
+    std::array<TT,4> arr2 = {TT(6,14),TT(-5,1.2),TT(0,8),TT(1,15)};
+    std::array<TT,4> arr3 = {arr1[0],arr1[0],arr1[0],arr1[0]};
+    test_simd_complex_impl<simd_abi::sse>(arr1,arr2,arr3);
+}
+#endif
+#ifdef FASTOR_AVX_IMPL
+template<>
+void test_simd_complex<float,simd_abi::avx>() {
+    using TT = std::complex<float>;
+    // These arrays are used to mimick complex SIMDVector
+    std::array<TT,8> arr1 = {TT(3,-4),TT(7,12),TT(5,-2),TT(11,9),TT(13,-4),TT(7,-12),TT(15,-2),TT(11,19)};
+    std::array<TT,8> arr2 = {TT(6,14),TT(-5,1.2),TT(0,8),TT(1,15),TT(-6,14),TT(5,2.2),TT(0,-8),TT(-1,15)};
+    std::array<TT,8> arr3 = {arr1[0],arr1[0],arr1[0],arr1[0],arr1[0],arr1[0],arr1[0],arr1[0]};
+    test_simd_complex_impl<simd_abi::avx>(arr1,arr2,arr3);
+}
+#endif
 template<>
 void test_simd_complex<double,simd_abi::scalar>() {
     using TT = std::complex<double>;
@@ -485,6 +507,12 @@ int main() {
 
     print(FBLU(BOLD("Testing SIMDVector of complex single precision")));
     test_simd_complex<float,simd_abi::scalar>();
+#ifdef FASTOR_SSE2_IMPL
+    test_simd_complex<float,simd_abi::sse>();
+#endif
+#ifdef FASTOR_AVX_IMPL
+    test_simd_complex<float,simd_abi::avx>();
+#endif
     print(FBLU(BOLD("Testing SIMDVector of complex double precision")));
     test_simd_complex<double,simd_abi::scalar>();
 #ifdef FASTOR_SSE2_IMPL

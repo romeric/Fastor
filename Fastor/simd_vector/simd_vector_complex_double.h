@@ -85,7 +85,7 @@ struct SIMDVector<std::complex<double>, simd_abi::avx512> {
         value_r = _mm512_set1_pd(num.real());
         value_i = _mm512_set1_pd(num.imag());
     }
-    FASTOR_INLINE void set_sequential(scalar_value_type num0, scalar_value_type num1,
+    FASTOR_INLINE void set(scalar_value_type num0, scalar_value_type num1,
                                       scalar_value_type num2, scalar_value_type num3,
                                       scalar_value_type num4, scalar_value_type num5,
                                       scalar_value_type num6, scalar_value_type num7) {
@@ -210,12 +210,12 @@ struct SIMDVector<std::complex<double>, simd_abi::avx512> {
 protected:
     FASTOR_INLINE void complex_aligned_load(const std::complex<double> *data) {
         __m512d lo = _mm512_load_pd(reinterpret_cast<const double*>(data  ));
-        __m512d hi = _mm512_load_pd(reinterpret_cast<const double*>(data+2));
+        __m512d hi = _mm512_load_pd(reinterpret_cast<const double*>(data+4));
         arrange_from_load(value_r, value_i, lo, hi);
     }
     FASTOR_INLINE void complex_unaligned_load(const std::complex<double> *data) {
         __m512d lo = _mm512_loadu_pd(reinterpret_cast<const double*>(data  ));
-        __m512d hi = _mm512_loadu_pd(reinterpret_cast<const double*>(data+2));
+        __m512d hi = _mm512_loadu_pd(reinterpret_cast<const double*>(data+4));
         arrange_from_load(value_r, value_i, lo, hi);
     }
 
@@ -223,20 +223,20 @@ protected:
         __m512d lo, hi;
         arrange_for_store(lo, hi, value_r, value_i);
         _mm512_store_pd(reinterpret_cast<double*>(data  ), lo);
-        _mm512_store_pd(reinterpret_cast<double*>(data+2), hi);
+        _mm512_store_pd(reinterpret_cast<double*>(data+4), hi);
     }
     FASTOR_INLINE void complex_unaligned_store(std::complex<double> *data) const {
         __m512d lo, hi;
         arrange_for_store(lo, hi, value_r, value_i);
         _mm512_storeu_pd(reinterpret_cast<double*>(data  ), lo);
-        _mm512_storeu_pd(reinterpret_cast<double*>(data+2), hi);
+        _mm512_storeu_pd(reinterpret_cast<double*>(data+4), hi);
     }
 
     FASTOR_INLINE void complex_mask_aligned_load(const scalar_value_type *data, uint8_t mask) {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m512d lo, hi;
         lo = _mm512_mask_loadu_pd(lo, mask, reinterpret_cast<const double*>(data  ));
-        hi = _mm512_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+1));
+        hi = _mm512_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+4));
         arrange_from_load(value_r, value_i, lo, hi);
 #else
         int maska[Size];
@@ -255,7 +255,7 @@ protected:
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m512d lo, hi;
         lo = _mm512_mask_loadu_pd(lo, mask, reinterpret_cast<const double*>(data  ));
-        hi = _mm512_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+1));
+        hi = _mm512_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+4));
         arrange_from_load(value_r, value_i, lo, hi);
 #else
         int maska[Size];
@@ -276,7 +276,7 @@ protected:
         __m512d lo, hi;
         arrange_for_store(lo, hi, value_r, value_i);
         _mm512_mask_store_pd(reinterpret_cast<double*>(data  ), mask, lo);
-        _mm512_mask_store_pd(reinterpret_cast<double*>(data+2), mask, hi);
+        _mm512_mask_store_pd(reinterpret_cast<double*>(data+4), mask, hi);
 #else
         int maska[Size];
         mask_to_array(mask,maska);
@@ -297,7 +297,7 @@ protected:
         __m512d lo, hi;
         arrange_for_store(lo, hi, value_r, value_i);
         _mm512_mask_storeu_pd(reinterpret_cast<double*>(data  ), mask, lo);
-        _mm512_mask_storeu_pd(reinterpret_cast<double*>(data+2), mask, hi);
+        _mm512_mask_storeu_pd(reinterpret_cast<double*>(data+4), mask, hi);
 #else
         int maska[Size];
         mask_to_array(mask,maska);
@@ -606,7 +606,7 @@ struct SIMDVector<std::complex<double>, simd_abi::avx> {
         value_r = _mm256_set1_pd(num.real());
         value_i = _mm256_set1_pd(num.imag());
     }
-    FASTOR_INLINE void set_sequential(scalar_value_type num0, scalar_value_type num1,
+    FASTOR_INLINE void set(scalar_value_type num0, scalar_value_type num1,
                                       scalar_value_type num2, scalar_value_type num3) {
         const scalar_value_type tmp[Size] = {num0,num1,num2,num3};
         complex_unaligned_load(tmp);
@@ -754,7 +754,7 @@ protected:
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m256d lo, hi;
         lo = _mm256_mask_loadu_pd(lo, mask, reinterpret_cast<const double*>(data  ));
-        hi = _mm256_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+1));
+        hi = _mm256_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+2));
         arrange_from_load(value_r, value_i, lo, hi);
 #else
         int maska[Size];
@@ -773,7 +773,7 @@ protected:
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m256d lo, hi;
         lo = _mm256_mask_loadu_pd(lo, mask, reinterpret_cast<const double*>(data  ));
-        hi = _mm256_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+1));
+        hi = _mm256_mask_loadu_pd(hi, mask, reinterpret_cast<const double*>(data+2));
         arrange_from_load(value_r, value_i, lo, hi);
 #else
         int maska[Size];
@@ -1119,7 +1119,7 @@ struct SIMDVector<std::complex<double>, simd_abi::sse> {
         value_r = _mm_set1_pd(num.real());
         value_i = _mm_set1_pd(num.imag());
     }
-    FASTOR_INLINE void set_sequential(scalar_value_type num0, scalar_value_type num1) {
+    FASTOR_INLINE void set(scalar_value_type num0, scalar_value_type num1) {
         const scalar_value_type tmp[Size] = {num0,num1};
         complex_unaligned_load(tmp);
     }
