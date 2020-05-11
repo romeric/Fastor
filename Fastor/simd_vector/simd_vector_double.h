@@ -244,9 +244,7 @@ FASTOR_INLINE SIMDVector<double,simd_abi::avx512> operator-(double a, const SIMD
     return out;
 }
 FASTOR_INLINE SIMDVector<double,simd_abi::avx512> operator-(const SIMDVector<double,simd_abi::avx512> &b) {
-    SIMDVector<double,simd_abi::avx512> out;
-    out.value = _mm512_xor_pd(b.value, _mm512_set1_pd(-0.0));
-    return out;
+    return _mm512_neg_pd(b.value);
 }
 
 FASTOR_INLINE SIMDVector<double,simd_abi::avx512> operator*(

@@ -275,9 +275,7 @@ FASTOR_INLINE SIMDVector<int32_t,simd_abi::avx512> operator-(int32_t a, const SI
     return out;
 }
 FASTOR_INLINE SIMDVector<int32_t,simd_abi::avx512> operator-(const SIMDVector<int32_t,simd_abi::avx512> &b) {
-    SIMDVector<int32_t,simd_abi::avx512> out;
-    out.value = _mm512_castps_si512(_mm512_xor_ps(_mm512_castsi512_ps(b.value), _mm512_set1_ps(-0.0)));
-    return out;
+    return _mm512_castps_si512(_mm512_neg_ps(_mm512_castsi512_ps(b.value)));
 }
 
 FASTOR_INLINE SIMDVector<int32_t,simd_abi::avx512> operator*(const SIMDVector<int32_t,simd_abi::avx512> &a, const SIMDVector<int32_t,simd_abi::avx512> &b) {
@@ -594,9 +592,7 @@ FASTOR_INLINE SIMDVector<int32_t,simd_abi::avx> operator-(int32_t a, const SIMDV
     return out;
 }
 FASTOR_INLINE SIMDVector<int32_t,simd_abi::avx> operator-(const SIMDVector<int32_t,simd_abi::avx> &b) {
-    SIMDVector<int32_t,simd_abi::avx> out;
-    out.value = _mm256_castps_si256(_mm256_neg_ps(_mm256_castsi256_ps(b.value)));
-    return out;
+    return _mm256_castps_si256(_mm256_neg_ps(_mm256_castsi256_ps(b.value)));
 }
 
 FASTOR_INLINE SIMDVector<int32_t,simd_abi::avx> operator*(const SIMDVector<int32_t,simd_abi::avx> &a, const SIMDVector<int32_t,simd_abi::avx> &b) {
@@ -901,9 +897,7 @@ FASTOR_INLINE SIMDVector<int32_t,simd_abi::sse> operator-(int32_t a, const SIMDV
     return out;
 }
 FASTOR_INLINE SIMDVector<int32_t,simd_abi::sse> operator-(const SIMDVector<int32_t,simd_abi::sse> &b) {
-    SIMDVector<int32_t,simd_abi::sse> out;
-    out.value = _mm_castps_si128(_mm_neg_ps(_mm_castsi128_ps(b.value)));
-    return out;
+    return _mm_castps_si128(_mm_neg_ps(_mm_castsi128_ps(b.value)));
 }
 
 FASTOR_INLINE SIMDVector<int32_t,simd_abi::sse> operator*(const SIMDVector<int32_t,simd_abi::sse> &a, const SIMDVector<int32_t,simd_abi::sse> &b) {

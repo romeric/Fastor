@@ -284,9 +284,7 @@ FASTOR_INLINE SIMDVector<int64_t,simd_abi::avx512> operator-(int64_t a, const SI
     return out;
 }
 FASTOR_INLINE SIMDVector<int64_t,simd_abi::avx512> operator-(const SIMDVector<int64_t,simd_abi::avx512> &b) {
-    SIMDVector<int64_t,simd_abi::avx512> out;
-    out.value = _mm512_castps_si512(_mm512_xor_ps(_mm512_castsi512_ps(b.value), _mm512_set1_ps(-0.0)));
-    return out;
+    return _mm512_castps_si512(_mm512_neg_ps(_mm512_castsi512_ps(b.value)));
 }
 
 FASTOR_INLINE SIMDVector<int64_t,simd_abi::avx512> operator*(const SIMDVector<int64_t,simd_abi::avx512> &a, const SIMDVector<int64_t,simd_abi::avx512> &b) {

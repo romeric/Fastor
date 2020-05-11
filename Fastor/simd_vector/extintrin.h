@@ -424,10 +424,18 @@ FASTOR_INLINE __m256d _mm256_neg_pd(__m256d a) {
 #endif
 #ifdef FASTOR_AVX512F_IMPL
 FASTOR_INLINE __m512 _mm512_neg_ps(__m512 a) {
+#ifdef FASTOR_AVX512DQ_IMPL
     return _mm512_xor_ps(a, _mm512_set1_ps(-0.f));
+#else
+    return _mm512_sub_ps(_mm512_set1_ps(0.f),a);
+#endif
 }
 FASTOR_INLINE __m512d _mm512_neg_pd(__m512d a) {
+#ifdef FASTOR_AVX512DQ_IMPL
     return _mm512_xor_pd(a, _mm512_set1_pd(-0.0));
+#else
+    return _mm512_sub_pd(_mm512_set1_pd(0.0),a);
+#endif
 }
 #endif
 //----------------------------------------------------------------------------------------------------------------//

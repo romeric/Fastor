@@ -159,24 +159,6 @@ struct SIMDVector<float,simd_abi::avx512> {
     }
     // end of in-place operators
 
-    // FASTOR_INLINE SIMDVector<float,simd_abi::avx512> shift(FASTOR_INDEX i) {
-    //     SIMDVector<float,simd_abi::avx512> out;
-    //     if (i==1)
-    //         out.value = _mm512_shift1_ps(value);
-    //     else if (i==2)
-    //         out.value = _mm512_shift2_ps(value);
-    //     else if (i==3)
-    //         out.value = _mm512_shift3_ps(value);
-    //     else if (i==4)
-    //         out.value = _mm512_shift4_ps(value);
-    //     else if (i==5)
-    //         out.value = _mm512_shift5_ps(value);
-    //     else if (i==6)
-    //         out.value = _mm512_shift6_ps(value);
-    //     else if (i==7)
-    //         out.value = _mm512_shift7_ps(value);
-    //     return out;
-    // }
     FASTOR_INLINE float sum() {
 // #ifdef FASTOR_INTEL
 //         return _mm512_reduce_add_ps(value);
@@ -265,9 +247,7 @@ FASTOR_INLINE SIMDVector<float,simd_abi::avx512> operator-(float a, const SIMDVe
     return out;
 }
 FASTOR_INLINE SIMDVector<float,simd_abi::avx512> operator-(const SIMDVector<float,simd_abi::avx512> &b) {
-    SIMDVector<float,simd_abi::avx512> out;
-    out.value = _mm512_xor_ps(b.value, _mm512_set1_ps(-0.0));
-    return out;
+    return _mm512_neg_ps(b.value);
 }
 
 FASTOR_INLINE SIMDVector<float,simd_abi::avx512> operator*(
