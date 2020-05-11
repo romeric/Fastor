@@ -479,6 +479,21 @@ void test_simd_complex<double,simd_abi::scalar>() {
     std::array<TT,1> arr3 = {arr1[0]};
     test_simd_complex_impl<simd_abi::scalar>(arr1,arr2,arr3);
 }
+#ifdef FASTOR_AVX512F_IMPL
+template<>
+void test_simd_complex<float,simd_abi::avx512>() {
+    using TT = std::complex<float>;
+    // These arrays are used to mimick complex SIMDVector
+    std::array<TT,16> arr1 = {TT(3,-4),TT(7,12),TT(5,-2),TT(11,9),TT(13,-4),TT(7,-12),TT(15,-2),TT(11,19),
+        TT(3,-4),TT(7,12),TT(5,-2),TT(11,9),TT(13,-4),TT(7,-12),TT(15,-2),TT(11,21)};
+    std::array<TT,16> arr2 = {TT(6,14),TT(-5,1.2),TT(0,8),TT(1,15),TT(-6,14),TT(5,2.2),TT(0,-8),TT(-1,15),
+        TT(6,14),TT(-5,1.2),TT(0,8),TT(1,15),TT(-6,14),TT(5,2.2),TT(0,-8),TT(-1,-15)};
+    std::array<TT,16> arr3 = {arr1[0],arr1[0],arr1[0],arr1[0],arr1[0],arr1[0],arr1[0],arr1[0],
+        arr1[0],arr1[0],arr1[0],arr1[0],arr1[0],arr1[0],arr1[0],arr1[0]};
+    test_simd_complex_impl<simd_abi::avx512>(arr1,arr2,arr3);
+}
+#endif
+
 #ifdef FASTOR_SSE2_IMPL
 template<>
 void test_simd_complex<double,simd_abi::sse>() {
@@ -522,6 +537,9 @@ int main() {
     test_simd_complex<float,simd_abi::sse>();
 #endif
 #ifdef FASTOR_AVX_IMPL
+    test_simd_complex<float,simd_abi::avx>();
+#endif
+#ifdef FASTOR_AVX512F_IMPL
     test_simd_complex<float,simd_abi::avx>();
 #endif
     print(FBLU(BOLD("Testing SIMDVector of complex double precision")));
