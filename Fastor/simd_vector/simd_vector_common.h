@@ -482,9 +482,11 @@ maskload(const typename V::scalar_value_type * FASTOR_RESTRICT a, const int (&ma
 template<>
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx>
 maskload<SIMDVector<std::complex<double>,simd_abi::avx>>(const std::complex<double> * FASTOR_RESTRICT a, const int (&maska)[4]) {
-    __m256i mask = _mm256_set_epi64x(maska[0],maska[1],maska[2],maska[3]);
-    __m256d lo   = _mm256_maskload_pd(reinterpret_cast<const double*>(a  ), (__m256i) mask);
-    __m256d hi   = _mm256_maskload_pd(reinterpret_cast<const double*>(a+2), (__m256i) mask);
+    // Split the mask in to a higher and lower part - we need two masks for this
+    __m256i mask0 = _mm256_set_epi64x(maska[2],maska[2],maska[3],maska[3]);
+    __m256d lo    = _mm256_maskload_pd(reinterpret_cast<const double*>(a  ), (__m256i) mask0);
+    __m256i mask1 = _mm256_set_epi64x(maska[0],maska[0],maska[1],maska[1]);
+    __m256d hi    = _mm256_maskload_pd(reinterpret_cast<const double*>(a+2), (__m256i) mask1);
     __m256d value_r, value_i;
     arrange_from_load(value_r, value_i, lo, hi);
     return SIMDVector<std::complex<double>,simd_abi::avx>(value_r,value_i);
@@ -492,9 +494,11 @@ maskload<SIMDVector<std::complex<double>,simd_abi::avx>>(const std::complex<doub
 template<>
 FASTOR_INLINE SIMDVector<std::complex<float>,simd_abi::avx>
 maskload<SIMDVector<std::complex<float>,simd_abi::avx>>(const std::complex<float> * FASTOR_RESTRICT a, const int (&maska)[8]) {
-    __m256i mask = _mm256_set_epi32(maska[0],maska[1],maska[2],maska[3],maska[4],maska[5],maska[6],maska[7]);
-    __m256 lo    = _mm256_maskload_ps(reinterpret_cast<const float*>(a  ), (__m256i) mask);
-    __m256 hi    = _mm256_maskload_ps(reinterpret_cast<const float*>(a+4), (__m256i) mask);
+    // Split the mask in to a higher and lower part - we need two masks for this
+    __m256i mask0 = _mm256_set_epi32(maska[3],maska[3],maska[4],maska[4],maska[6],maska[6],maska[7],maska[7]);
+    __m256 lo     = _mm256_maskload_ps(reinterpret_cast<const float*>(a  ), (__m256i) mask0);
+    __m256i mask1 = _mm256_set_epi32(maska[0],maska[0],maska[1],maska[1],maska[2],maska[2],maska[3],maska[3]);
+    __m256 hi     = _mm256_maskload_ps(reinterpret_cast<const float*>(a+4), (__m256i) mask1);
     __m256 value_r, value_i;
     arrange_from_load(value_r, value_i, lo, hi);
     return SIMDVector<std::complex<float>,simd_abi::avx>(value_r,value_i);
@@ -526,9 +530,11 @@ maskload<SIMDVector<int,simd_abi::avx>>(const int * FASTOR_RESTRICT a, const int
 template<>
 FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::sse>
 maskload<SIMDVector<std::complex<double>,simd_abi::sse>>(const std::complex<double> * FASTOR_RESTRICT a, const int (&maska)[2]) {
-    __m128i mask = _mm_set_epi64x(maska[0],maska[1]);
-    __m128d lo   = _mm_maskload_pd(reinterpret_cast<const double*>(a  ), (__m128i) mask);
-    __m128d hi   = _mm_maskload_pd(reinterpret_cast<const double*>(a+1), (__m128i) mask);
+    // Split the mask in to a higher and lower part - we need two masks for this
+    __m128i mask0 = _mm_set_epi64x(maska[1],maska[1]);
+    __m128d lo    = _mm_maskload_pd(reinterpret_cast<const double*>(a  ), (__m128i) mask0);
+    __m128i mask1 = _mm_set_epi64x(maska[0],maska[0]);
+    __m128d hi    = _mm_maskload_pd(reinterpret_cast<const double*>(a+1), (__m128i) mask1);
     __m128d value_r, value_i;
     arrange_from_load(value_r, value_i, lo, hi);
     return SIMDVector<std::complex<double>,simd_abi::sse>(value_r,value_i);
@@ -536,9 +542,11 @@ maskload<SIMDVector<std::complex<double>,simd_abi::sse>>(const std::complex<doub
 template<>
 FASTOR_INLINE SIMDVector<std::complex<float>,simd_abi::sse>
 maskload<SIMDVector<std::complex<float>,simd_abi::sse>>(const std::complex<float> * FASTOR_RESTRICT a, const int (&maska)[4]) {
-    __m128i mask = _mm_set_epi32(maska[0],maska[1],maska[2],maska[3]);
-    __m128  lo   = _mm_maskload_ps(reinterpret_cast<const float*>(a  ), (__m128i) mask);
-    __m128  hi   = _mm_maskload_ps(reinterpret_cast<const float*>(a+2), (__m128i) mask);
+    // Split the mask in to a higher and lower part - we need two masks for this
+    __m128i mask0 = _mm_set_epi32(maska[2],maska[2],maska[3],maska[3]);
+    __m128  lo    = _mm_maskload_ps(reinterpret_cast<const float*>(a  ), (__m128i) mask0);
+    __m128i mask1 = _mm_set_epi32(maska[0],maska[0],maska[1],maska[1]);
+    __m128  hi    = _mm_maskload_ps(reinterpret_cast<const float*>(a+2), (__m128i) mask1);
     __m128  value_r, value_i;
     arrange_from_load(value_r, value_i, lo, hi);
     return SIMDVector<std::complex<float>,simd_abi::sse>(value_r,value_i);
@@ -583,18 +591,22 @@ void maskstore(typename V::scalar_value_type * FASTOR_RESTRICT a, const int (&ma
 template<>
 FASTOR_INLINE
 void maskstore(std::complex<double> * FASTOR_RESTRICT a, const int (&maska)[4], SIMDVector<std::complex<double>,simd_abi::avx> &v) {
-    __m256i mask = _mm256_set_epi64x(maska[0],maska[1],maska[2],maska[3]);
+    // Split the mask in to a higher and lower part - we need two masks for this
+    __m256i mask0 = _mm256_set_epi64x(maska[2],maska[2],maska[3],maska[3]);
+    __m256i mask1 = _mm256_set_epi64x(maska[0],maska[0],maska[1],maska[1]);
     __m256d lo, hi;
     arrange_for_store(lo, hi, v.value_r, v.value_i);
-    _mm256_maskstore_pd(reinterpret_cast<double*>(a  ), (__m256i) mask, lo);
-    _mm256_maskstore_pd(reinterpret_cast<double*>(a+2), (__m256i) mask, hi);
+    _mm256_maskstore_pd(reinterpret_cast<double*>(a  ), (__m256i) mask0, lo);
+    _mm256_maskstore_pd(reinterpret_cast<double*>(a+2), (__m256i) mask1, hi);
 }
 void maskstore(std::complex<float> * FASTOR_RESTRICT a, const int (&maska)[8], SIMDVector<std::complex<float>,simd_abi::avx> &v) {
-    __m256i mask = _mm256_set_epi32(maska[0],maska[1],maska[2],maska[3],maska[4],maska[5],maska[6],maska[7]);
+    // Split the mask in to a higher and lower part - we need two masks for this
+    __m256i mask0 = _mm256_set_epi32(maska[3],maska[3],maska[4],maska[4],maska[6],maska[6],maska[7],maska[7]);
+    __m256i mask1 = _mm256_set_epi32(maska[0],maska[0],maska[1],maska[1],maska[2],maska[2],maska[3],maska[3]);
     __m256 lo, hi;
     arrange_for_store(lo, hi, v.value_r, v.value_i);
-    _mm256_maskstore_ps(reinterpret_cast<float*>(a  ), (__m256i) mask, lo);
-    _mm256_maskstore_ps(reinterpret_cast<float*>(a+4), (__m256i) mask, hi);
+    _mm256_maskstore_ps(reinterpret_cast<float*>(a  ), (__m256i) mask0, lo);
+    _mm256_maskstore_ps(reinterpret_cast<float*>(a+4), (__m256i) mask1, hi);
 }
 template<>
 FASTOR_INLINE
@@ -623,20 +635,24 @@ void maskstore(int * FASTOR_RESTRICT a, const int (&maska)[8], SIMDVector<int,si
 template<>
 FASTOR_INLINE
 void maskstore(std::complex<double> * FASTOR_RESTRICT a, const int (&maska)[2], SIMDVector<std::complex<double>,simd_abi::sse> &v) {
-    __m128i mask = _mm_set_epi64x(maska[0],maska[1]);
+    // Split the mask in to a higher and lower part - we need two masks for this
+    __m128i mask0 = _mm_set_epi64x(maska[1],maska[1]);
+    __m128i mask1 = _mm_set_epi64x(maska[0],maska[0]);
     __m128d lo, hi;
     arrange_for_store(lo, hi, v.value_r, v.value_i);
-    _mm_maskstore_pd(reinterpret_cast<double*>(a  ), (__m128i) mask, lo);
-    _mm_maskstore_pd(reinterpret_cast<double*>(a+1), (__m128i) mask, hi);
+    _mm_maskstore_pd(reinterpret_cast<double*>(a  ), (__m128i) mask0, lo);
+    _mm_maskstore_pd(reinterpret_cast<double*>(a+1), (__m128i) mask1, hi);
 }
 template<>
 FASTOR_INLINE
 void maskstore(std::complex<float> * FASTOR_RESTRICT a, const int (&maska)[4], SIMDVector<std::complex<float>,simd_abi::sse> &v) {
-    __m128i mask = _mm_set_epi32(maska[0],maska[1],maska[2],maska[3]);
+    // Split the mask in to a higher and lower part - we need two masks for this
+    __m128i mask0 = _mm_set_epi32(maska[2],maska[2],maska[3],maska[3]);
+    __m128i mask1 = _mm_set_epi32(maska[0],maska[0],maska[1],maska[1]);
     __m128 lo, hi;
     arrange_for_store(lo, hi, v.value_r, v.value_i);
-    _mm_maskstore_ps(reinterpret_cast<float*>(a  ), (__m128i) mask, lo);
-    _mm_maskstore_ps(reinterpret_cast<float*>(a+2), (__m128i) mask, hi);
+    _mm_maskstore_ps(reinterpret_cast<float*>(a  ), (__m128i) mask0, lo);
+    _mm_maskstore_ps(reinterpret_cast<float*>(a+2), (__m128i) mask1, hi);
 }
 template<>
 FASTOR_INLINE
