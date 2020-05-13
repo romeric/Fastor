@@ -1017,7 +1017,7 @@ FASTOR_INLINE double sqrts(double a) {return _mm_cvtsd_f64(_mm_sqrt_pd(_mm_set1_
 // helper functions for going from array to mask and vice-versa
 // used when AVX512 masking is available
 template <int N, enable_if_t_<N==2 || N==4 || N==8,bool> = false>
-inline uint8_t array_to_mask(const int (&b)[N])
+FASTOR_INLINE uint8_t array_to_mask(const int (&b)[N])
 {
     uint8_t c = 0;
     for (int i=0; i < N; ++i) {
@@ -1028,7 +1028,7 @@ inline uint8_t array_to_mask(const int (&b)[N])
     return c;
 }
 template <int N, enable_if_t_<N==16,bool> = false>
-inline uint16_t array_to_mask(const int (&b)[N])
+FASTOR_INLINE uint16_t array_to_mask(const int (&b)[N])
 {
     uint16_t c = 0;
     for (int i=0; i < N; ++i) {
@@ -1039,7 +1039,7 @@ inline uint16_t array_to_mask(const int (&b)[N])
     return c;
 }
 template <int N, enable_if_t_<N==32,bool> = false>
-inline uint32_t array_to_mask(const int (&b)[N])
+FASTOR_INLINE uint32_t array_to_mask(const int (&b)[N])
 {
     uint32_t c = 0;
     for (int i=0; i < N; ++i) {
@@ -1050,7 +1050,7 @@ inline uint32_t array_to_mask(const int (&b)[N])
     return c;
 }
 template <int N, enable_if_t_<N==64,bool> = false>
-inline uint64_t array_to_mask(const int (&b)[N])
+FASTOR_INLINE uint64_t array_to_mask(const int (&b)[N])
 {
     uint64_t c = 0;
     for (int i=0; i < N; ++i) {
@@ -1063,7 +1063,7 @@ inline uint64_t array_to_mask(const int (&b)[N])
 
 
 template <int N, enable_if_t_<N==2 || N==4 || N==8,bool> = false>
-inline void mask_to_array(uint8_t c, int (&b)[N])
+FASTOR_INLINE void mask_to_array(uint8_t c, int (&b)[N])
 {
     for (int i=0; i < N; ++i)
         b[i] = (c & (1 << (N - i -1))) != 0;
@@ -1073,7 +1073,7 @@ inline void mask_to_array(uint8_t c, int (&b)[N])
         b[i] *= -1;
 }
 template <int N, enable_if_t_<N==16,bool> = false>
-inline void mask_to_array(uint16_t c, int (&b)[N])
+FASTOR_INLINE void mask_to_array(uint16_t c, int (&b)[N])
 {
     for (int i=0; i < N; ++i)
         b[i] = (c & (1 << (N - i -1))) != 0;
@@ -1083,7 +1083,7 @@ inline void mask_to_array(uint16_t c, int (&b)[N])
         b[i] *= -1;
 }
 template <int N, enable_if_t_<N==32,bool> = false>
-inline void mask_to_array(uint32_t c, int (&b)[N])
+FASTOR_INLINE void mask_to_array(uint32_t c, int (&b)[N])
 {
     for (int i=0; i < N; ++i)
         b[i] = (c & (1 << (N - i -1))) != 0;
@@ -1093,7 +1093,7 @@ inline void mask_to_array(uint32_t c, int (&b)[N])
         b[i] *= -1;
 }
 template <int N, enable_if_t_<N==64,bool> = false>
-inline void mask_to_array(uint64_t c, int (&b)[N])
+FASTOR_INLINE void mask_to_array(uint64_t c, int (&b)[N])
 {
     for (int i=0; i < N; ++i)
         b[i] = (c & (1 << (N - i -1))) != 0;
@@ -1101,6 +1101,115 @@ inline void mask_to_array(uint64_t c, int (&b)[N])
     // set bits need to be -1 not 1
     for (int i=0; i < N; ++i)
         b[i] *= -1;
+}
+//----------------------------------------------------------------------------------------------------------------//
+
+
+
+// Splitting a mask in to two - used for masking complex SIMD vectors
+//----------------------------------------------------------------------------------------------------------------//
+/* Moves "from" bit of c1 to "to" bit of c2 */
+FASTOR_INLINE uint8_t move_bit(uint8_t c1, int from, uint8_t c2, int to)
+{
+    int bit;
+    /* Get the source bit as 0/1 value */
+    bit = (c1 >> from) & 1;
+    /* clear destination bit */
+    c2 &= ~(1 << to);
+    /* set destination bit */
+    return (uint8_t)(c2 | (bit << to));
+}
+
+// Splitting a mask into 2 parts when only 2 bits of the incoming mask are set
+template<size_t VectorSize, enable_if_t_<VectorSize==2,bool> = false>
+FASTOR_INLINE void split_mask(uint8_t mask, uint8_t& mask0, uint8_t& mask1) {
+    mask0 = 0; /* clear all bits */
+    mask0 = move_bit(mask, 0, mask0, 0);
+    mask0 = move_bit(mask, 0, mask0, 1);
+
+    mask1 = 0; /* clear all bits */
+    mask1 = move_bit(mask, 1, mask1, 0);
+    mask1 = move_bit(mask, 1, mask1, 1);
+}
+
+// Splitting a mask into 2 parts when only 4 bits of the incoming mask are set
+template<size_t VectorSize, enable_if_t_<VectorSize==4,bool> = false>
+FASTOR_INLINE void split_mask(uint8_t mask, uint8_t& mask0, uint8_t& mask1) {
+    mask0 = 0; /* clear all bits */
+    mask0 = move_bit(mask, 0, mask0, 0);
+    mask0 = move_bit(mask, 0, mask0, 1);
+    mask0 = move_bit(mask, 1, mask0, 2);
+    mask0 = move_bit(mask, 1, mask0, 3);
+
+    mask1 = 0; /* clear all bits */
+    mask1 = move_bit(mask, 2, mask1, 0);
+    mask1 = move_bit(mask, 2, mask1, 1);
+    mask1 = move_bit(mask, 3, mask1, 2);
+    mask1 = move_bit(mask, 3, mask1, 3);
+}
+
+// Splitting a mask into 2 parts when all 8 bits of the incoming mask are set
+template<size_t VectorSize, enable_if_t_<VectorSize==8,bool> = false>
+FASTOR_INLINE void split_mask(uint8_t mask, uint8_t& mask0, uint8_t& mask1) {
+    mask0 = 0; /* clear all bits */
+    mask0 = move_bit(mask, 0, mask0, 0);
+    mask0 = move_bit(mask, 0, mask0, 1);
+    mask0 = move_bit(mask, 1, mask0, 2);
+    mask0 = move_bit(mask, 1, mask0, 3);
+    mask0 = move_bit(mask, 2, mask0, 4);
+    mask0 = move_bit(mask, 2, mask0, 5);
+    mask0 = move_bit(mask, 3, mask0, 6);
+    mask0 = move_bit(mask, 3, mask0, 7);
+
+    mask1 = 0; /* clear all bits */
+    mask1 = move_bit(mask, 4, mask1, 0);
+    mask1 = move_bit(mask, 4, mask1, 1);
+    mask1 = move_bit(mask, 5, mask1, 2);
+    mask1 = move_bit(mask, 5, mask1, 3);
+    mask1 = move_bit(mask, 6, mask1, 4);
+    mask1 = move_bit(mask, 6, mask1, 5);
+    mask1 = move_bit(mask, 7, mask1, 6);
+    mask1 = move_bit(mask, 7, mask1, 7);
+}
+
+// Splitting a mask into 2 parts when all 16 bits of the incoming mask are set
+template<size_t VectorSize, enable_if_t_<VectorSize==16,bool> = false>
+FASTOR_INLINE void split_mask(uint16_t mask, uint16_t& mask0, uint16_t& mask1) {
+    mask0 = 0; /* clear all bits */
+    mask0 = move_bit(mask, 0, mask0, 0);
+    mask0 = move_bit(mask, 0, mask0, 1);
+    mask0 = move_bit(mask, 1, mask0, 2);
+    mask0 = move_bit(mask, 1, mask0, 3);
+    mask0 = move_bit(mask, 2, mask0, 4);
+    mask0 = move_bit(mask, 2, mask0, 5);
+    mask0 = move_bit(mask, 3, mask0, 6);
+    mask0 = move_bit(mask, 3, mask0, 7);
+    mask0 = move_bit(mask, 4, mask0, 8);
+    mask0 = move_bit(mask, 4, mask0, 9);
+    mask0 = move_bit(mask, 5, mask0, 10);
+    mask0 = move_bit(mask, 5, mask0, 11);
+    mask0 = move_bit(mask, 6, mask0, 12);
+    mask0 = move_bit(mask, 6, mask0, 13);
+    mask0 = move_bit(mask, 7, mask0, 14);
+    mask0 = move_bit(mask, 7, mask0, 15);
+
+    mask1 = 0; /* clear all bits */
+    mask1 = move_bit(mask, 8, mask1, 0);
+    mask1 = move_bit(mask, 8, mask1, 1);
+    mask1 = move_bit(mask, 9, mask1, 2);
+    mask1 = move_bit(mask, 9, mask1, 3);
+    mask1 = move_bit(mask, 10, mask1, 4);
+    mask1 = move_bit(mask, 10, mask1, 5);
+    mask1 = move_bit(mask, 11, mask1, 6);
+    mask1 = move_bit(mask, 11, mask1, 7);
+    mask1 = move_bit(mask, 12, mask1, 8);
+    mask1 = move_bit(mask, 12, mask1, 9);
+    mask1 = move_bit(mask, 13, mask1, 10);
+    mask1 = move_bit(mask, 13, mask1, 11);
+    mask1 = move_bit(mask, 14, mask1, 12);
+    mask1 = move_bit(mask, 14, mask1, 13);
+    mask1 = move_bit(mask, 15, mask1, 14);
+    mask1 = move_bit(mask, 15, mask1, 15);
 }
 //----------------------------------------------------------------------------------------------------------------//
 

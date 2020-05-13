@@ -239,11 +239,13 @@ protected:
         _mm512_storeu_ps(reinterpret_cast<float*>(data+8), hi);
     }
 
-    FASTOR_INLINE void complex_mask_aligned_load(const scalar_value_type *data, uint8_t mask) {
+    FASTOR_INLINE void complex_mask_aligned_load(const scalar_value_type *data, uint16_t mask) {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m512 lo, hi;
-        lo = _mm512_mask_loadu_ps(lo, mask, reinterpret_cast<const float*>(data  ));
-        hi = _mm512_mask_loadu_ps(hi, mask, reinterpret_cast<const float*>(data+8));
+        uint16_t mask0, mask1;
+        split_mask<Size>(mask, mask0, mask1);
+        lo = _mm512_mask_load_ps(lo, mask0, reinterpret_cast<const float*>(data  ));
+        hi = _mm512_mask_load_ps(hi, mask1, reinterpret_cast<const float*>(data+8));
         arrange_from_load(value_r, value_i, lo, hi);
 #else
         int maska[Size];
@@ -258,11 +260,13 @@ protected:
         }
 #endif
     }
-    FASTOR_INLINE void complex_mask_unaligned_load(const scalar_value_type *data, uint8_t mask) {
+    FASTOR_INLINE void complex_mask_unaligned_load(const scalar_value_type *data, uint16_t mask) {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m512 lo, hi;
-        lo = _mm512_mask_loadu_ps(lo, mask, reinterpret_cast<const float*>(data  ));
-        hi = _mm512_mask_loadu_ps(hi, mask, reinterpret_cast<const float*>(data+8));
+        uint16_t mask0, mask1;
+        split_mask<Size>(mask, mask0, mask1);
+        lo = _mm512_mask_loadu_ps(lo, mask0, reinterpret_cast<const float*>(data  ));
+        hi = _mm512_mask_loadu_ps(hi, mask1, reinterpret_cast<const float*>(data+8));
         arrange_from_load(value_r, value_i, lo, hi);
 #else
         int maska[Size];
@@ -278,12 +282,14 @@ protected:
 #endif
     }
 
-    FASTOR_INLINE void complex_mask_aligned_store(scalar_value_type *data, uint8_t mask, bool Aligned=false) const {
+    FASTOR_INLINE void complex_mask_aligned_store(scalar_value_type *data, uint16_t mask, bool Aligned=false) const {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m512 lo, hi;
         arrange_for_store(lo, hi, value_r, value_i);
-        _mm512_mask_store_ps(reinterpret_cast<float*>(data  ), mask, lo);
-        _mm512_mask_store_ps(reinterpret_cast<float*>(data+8), mask, hi);
+        uint16_t mask0, mask1;
+        split_mask<Size>(mask, mask0, mask1);
+        _mm512_mask_store_ps(reinterpret_cast<float*>(data  ), mask0, lo);
+        _mm512_mask_store_ps(reinterpret_cast<float*>(data+8), mask1, hi);
 #else
         int maska[Size];
         mask_to_array(mask,maska);
@@ -299,12 +305,14 @@ protected:
         }
 #endif
     }
-    FASTOR_INLINE void complex_mask_unaligned_store(scalar_value_type *data, uint8_t mask, bool Aligned=false) const {
+    FASTOR_INLINE void complex_mask_unaligned_store(scalar_value_type *data, uint16_t mask, bool Aligned=false) const {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m512 lo, hi;
         arrange_for_store(lo, hi, value_r, value_i);
-        _mm512_mask_storeu_ps(reinterpret_cast<float*>(data  ), mask, lo);
-        _mm512_mask_storeu_ps(reinterpret_cast<float*>(data+8), mask, hi);
+        uint16_t mask0, mask1;
+        split_mask<Size>(mask, mask0, mask1);
+        _mm512_mask_storeu_ps(reinterpret_cast<float*>(data  ), mask0, lo);
+        _mm512_mask_storeu_ps(reinterpret_cast<float*>(data+8), mask1, hi);
 #else
         int maska[Size];
         mask_to_array(mask,maska);
@@ -774,8 +782,10 @@ protected:
     FASTOR_INLINE void complex_mask_aligned_load(const scalar_value_type *data, uint8_t mask) {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m256 lo, hi;
-        lo = _mm256_mask_loadu_ps(lo, mask, reinterpret_cast<const float*>(data  ));
-        hi = _mm256_mask_loadu_ps(hi, mask, reinterpret_cast<const float*>(data+4));
+        uint8_t mask0, mask1;
+        split_mask<Size>(mask, mask0, mask1);
+        lo = _mm256_mask_load_ps(lo, mask0, reinterpret_cast<const float*>(data  ));
+        hi = _mm256_mask_load_ps(hi, mask1, reinterpret_cast<const float*>(data+4));
         arrange_from_load(value_r, value_i, lo, hi);
 #else
         int maska[Size];
@@ -793,8 +803,10 @@ protected:
     FASTOR_INLINE void complex_mask_unaligned_load(const scalar_value_type *data, uint8_t mask) {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m256 lo, hi;
-        lo = _mm256_mask_loadu_ps(lo, mask, reinterpret_cast<const float*>(data  ));
-        hi = _mm256_mask_loadu_ps(hi, mask, reinterpret_cast<const float*>(data+4));
+        uint8_t mask0, mask1;
+        split_mask<Size>(mask, mask0, mask1);
+        lo = _mm256_mask_loadu_ps(lo, mask0, reinterpret_cast<const float*>(data  ));
+        hi = _mm256_mask_loadu_ps(hi, mask1, reinterpret_cast<const float*>(data+4));
         arrange_from_load(value_r, value_i, lo, hi);
 #else
         int maska[Size];
@@ -814,8 +826,10 @@ protected:
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m256 lo, hi;
         arrange_for_store(lo, hi, value_r, value_i);
-        _mm256_mask_store_ps(reinterpret_cast<float*>(data  ), mask, lo);
-        _mm256_mask_store_ps(reinterpret_cast<float*>(data+4), mask, hi);
+        uint8_t mask0, mask1;
+        split_mask<Size>(mask, mask0, mask1);
+        _mm256_mask_store_ps(reinterpret_cast<float*>(data  ), mask0, lo);
+        _mm256_mask_store_ps(reinterpret_cast<float*>(data+4), mask1, hi);
 #else
         int maska[Size];
         mask_to_array(mask,maska);
@@ -835,8 +849,10 @@ protected:
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m256 lo, hi;
         arrange_for_store(lo, hi, value_r, value_i);
-        _mm256_mask_storeu_ps(reinterpret_cast<float*>(data  ), mask, lo);
-        _mm256_mask_storeu_ps(reinterpret_cast<float*>(data+4), mask, hi);
+        uint8_t mask0, mask1;
+        split_mask<Size>(mask, mask0, mask1);
+        _mm256_mask_storeu_ps(reinterpret_cast<float*>(data  ), mask0, lo);
+        _mm256_mask_storeu_ps(reinterpret_cast<float*>(data+4), mask1, hi);
 #else
         int maska[Size];
         mask_to_array(mask,maska);
@@ -1293,8 +1309,10 @@ protected:
     FASTOR_INLINE void complex_mask_aligned_load(const scalar_value_type *data, uint8_t mask) {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m128 lo, hi;
-        lo = _mm_mask_load_ps(lo, mask, reinterpret_cast<const float*>(data  ));
-        hi = _mm_mask_load_ps(hi, mask, reinterpret_cast<const float*>(data+2));
+        uint8_t mask0, mask1;
+        split_mask<Size>(mask, mask0, mask1);
+        lo = _mm_mask_load_ps(lo, mask0, reinterpret_cast<const float*>(data  ));
+        hi = _mm_mask_load_ps(hi, mask1, reinterpret_cast<const float*>(data+2));
         arrange_from_load(value_r, value_i, lo, hi);
 #else
         int maska[Size];
@@ -1312,8 +1330,10 @@ protected:
     FASTOR_INLINE void complex_mask_unaligned_load(const scalar_value_type *data, uint8_t mask) {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m128 lo, hi;
-        lo = _mm_mask_loadu_ps(lo, mask, reinterpret_cast<const float*>(data  ));
-        hi = _mm_mask_loadu_ps(hi, mask, reinterpret_cast<const float*>(data+2));
+        uint8_t mask0, mask1;
+        split_mask<Size>(mask, mask0, mask1);
+        lo = _mm_mask_loadu_ps(lo, mask0, reinterpret_cast<const float*>(data  ));
+        hi = _mm_mask_loadu_ps(hi, mask1, reinterpret_cast<const float*>(data+2));
         arrange_from_load(value_r, value_i, lo, hi);
 #else
         int maska[Size];
@@ -1333,8 +1353,10 @@ protected:
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m128 lo, hi;
         arrange_for_store(lo, hi, value_r, value_i);
-        _mm_mask_store_ps(reinterpret_cast<float*>(data  ), mask, lo);
-        _mm_mask_store_ps(reinterpret_cast<float*>(data+2), mask, hi);
+        uint8_t mask0, mask1;
+        split_mask<Size>(mask, mask0, mask1);
+        _mm_mask_store_ps(reinterpret_cast<float*>(data  ), mask0, lo);
+        _mm_mask_store_ps(reinterpret_cast<float*>(data+2), mask1, hi);
 #else
         int maska[Size];
         mask_to_array(mask,maska);
@@ -1354,8 +1376,10 @@ protected:
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m128 lo, hi;
         arrange_for_store(lo, hi, value_r, value_i);
-        _mm_mask_storeu_ps(reinterpret_cast<float*>(data  ), mask, lo);
-        _mm_mask_storeu_ps(reinterpret_cast<float*>(data+2), mask, hi);
+        uint8_t mask0, mask1;
+        split_mask<Size>(mask, mask0, mask1);
+        _mm_mask_storeu_ps(reinterpret_cast<float*>(data  ), mask0, lo);
+        _mm_mask_storeu_ps(reinterpret_cast<float*>(data+2), mask1, hi);
 #else
         int maska[Size];
         mask_to_array(mask,maska);
