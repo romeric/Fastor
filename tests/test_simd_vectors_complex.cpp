@@ -529,6 +529,325 @@ void test_simd_complex<double,simd_abi::avx512>() {
 #endif
 
 
+#ifdef FASTOR_AVX2_IMPL
+void test_mask_loading_single() {
+
+    using TT = std::complex<float>;
+
+    // SSE complex float
+    {
+        using V = SIMDVector<TT,simd_abi::sse>;
+
+        std::array<TT,4> carr1 = {TT(3,-4),TT(7,12),TT(5,-2),TT(11,9)};
+        std::array<TT,4> carr2 = {TT(0,0),TT(0,0),TT(0,0),TT(0,0)};
+        V a;
+
+        {
+            int maska[4] = {-1,-1,-1,-1};
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 26 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() - 15 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 26 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() - 15 ) < Tol );
+        }
+        {
+            int maska[4] = {0,-1,-1,-1};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 15 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  6 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 15 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  6 ) < Tol );
+        }
+        {
+            int maska[4] = {0,0,-1,-1};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 10 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  8 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 10 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  8 ) < Tol );
+        }
+        {
+            int maska[4] = {0,0,0,-1};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() -  3 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() +  4 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() -  3 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() +  4 ) < Tol );
+        }
+        {
+            int maska[4] = {0,0,0,0};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() -  0 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  0 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() -  0 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  0 ) < Tol );
+        }
+    }
+
+    // AVX complex float
+    {
+        using V = SIMDVector<TT,simd_abi::avx>;
+
+        std::array<TT,8> carr1 = {TT(3,-4),TT(7,12),TT(5,-2),TT(11,9),TT(13,-4),TT(7,-12),TT(15,-2),TT(11,19)};
+        std::array<TT,8> carr2 = {TT(0,0),TT(0,0),TT(0,0),TT(0,0),TT(0,0),TT(0,0),TT(0,0),TT(0,0)};
+        V a;
+
+        {
+            int maska[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 72 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() - 16 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 72 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() - 16 ) < Tol );
+        }
+        {
+            int maska[8] = {0,-1,-1,-1,-1,-1,-1,-1};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 61 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() +  3 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 61 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() +  3 ) < Tol );
+        }
+        {
+            int maska[8] = {0,0,-1,-1,-1,-1,-1,-1};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 46 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() +  1 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 46 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() +  1 ) < Tol );
+        }
+        {
+            int maska[8] = {0,0,0,-1,-1,-1,-1,-1};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 39 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() - 11 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 39 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() - 11 ) < Tol );
+        }
+        {
+            int maska[8] = {0,0,0,0,-1,-1,-1,-1};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 26 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() - 15 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 26 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() - 15 ) < Tol );
+        }
+        {
+            int maska[8] = {0,0,0,0,0,-1,-1,-1};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 15 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  6 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 15 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  6 ) < Tol );
+        }
+        {
+            int maska[8] = {0,0,0,0,0,0,-1,-1};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 10 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  8 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 10 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  8 ) < Tol );
+        }
+        {
+            int maska[8] = {0,0,0,0,0,0,0,-1};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() -  3 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() +  4 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() -  3 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() +  4 ) < Tol );
+        }
+        {
+            int maska[8] = {0,0,0,0,0,0,0,0};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() -  0 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  0 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() -  0 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  0 ) < Tol );
+        }
+    }
+
+    print(FGRN(BOLD("All tests passed successfully")));
+}
+
+
+void test_mask_loading_double() {
+
+    using TT = std::complex<double>;
+
+    // SSE complex double
+    {
+        using V = SIMDVector<TT,simd_abi::sse>;
+
+        std::array<TT,2> carr1 = {TT(3,-4),TT(7,12)};
+        std::array<TT,2> carr2 = {TT(0,0),TT(0,0)};
+        V a;
+
+        {
+            int maska[2] = {-1,-1};
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 10 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  8 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 10 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  8 ) < Tol );
+        }
+        {
+            int maska[2] = {0,-1};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() -  3 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() +  4 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() -  3 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() +  4 ) < Tol );
+        }
+        {
+            int maska[2] = {0,0};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() -  0 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  0 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() -  0 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  0 ) < Tol );
+        }
+    }
+
+    // AVX complex double
+    {
+        using V = SIMDVector<TT,simd_abi::avx>;
+
+        std::array<TT,4> carr1 = {TT(3,-4),TT(7,12),TT(5,-2),TT(11,9)};
+        std::array<TT,4> carr2 = {TT(0,0),TT(0,0),TT(0,0),TT(0,0)};
+        V a;
+
+        {
+            int maska[4] = {-1,-1,-1,-1};
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 26 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() - 15 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 26 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() - 15 ) < Tol );
+        }
+        {
+            int maska[4] = {0,-1,-1,-1};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 15 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  6 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 15 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  6 ) < Tol );
+        }
+        {
+            int maska[4] = {0,0,-1,-1};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 10 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  8 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 10 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  8 ) < Tol );
+        }
+        {
+            int maska[4] = {0,0,0,-1};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() -  3 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() +  4 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() -  3 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() +  4 ) < Tol );
+        }
+        {
+            int maska[4] = {0,0,0,0};
+            std::fill(carr2.begin(),carr2.end(),0);
+
+            a = maskload<V>(carr1.data(), maska);
+            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() -  0 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  0 ) < Tol );
+
+            maskstore(carr2.data(),maska,a);
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() -  0 ) < Tol );
+            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  0 ) < Tol );
+        }
+    }
+
+    print(FGRN(BOLD("All tests passed successfully")));
+}
+#endif
+
+
+
 int main() {
 
     print(FBLU(BOLD("Testing SIMDVector of complex single precision")));
@@ -552,6 +871,13 @@ int main() {
 #endif
 #ifdef FASTOR_AVX512F_IMPL
     test_simd_complex<double,simd_abi::avx>();
+#endif
+
+#ifdef FASTOR_AVX2_IMPL
+    print(FBLU(BOLD("Testing SIMDVector AVX2 mask operations - single precision")));
+    test_mask_loading_single();
+    print(FBLU(BOLD("Testing SIMDVector AVX2 mask operations - double precision")));
+    test_mask_loading_double();
 #endif
 
     return 0;

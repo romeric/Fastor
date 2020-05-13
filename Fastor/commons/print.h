@@ -102,6 +102,17 @@ inline void print(const std::vector<std::vector<T>> &arr) {
     std::cout << std::endl;
 }
 
+template<typename T, std::size_t M>
+inline void print(const std::vector<std::array<T,M>> &arr) {
+    for (std::size_t i=0; i<arr.size(); i++) {
+        for (std::size_t j=0; j<M; j++) {
+            std::cout << arr[i][j] << " ";
+        }
+        std::cout << '\n';
+    }
+    std::cout << std::endl;
+}
+
 template<typename T, std::size_t M, std::size_t N>
 inline void print(const std::array<std::array<T,M>,N> &arr) {
     for (std::size_t i=0; i<N; i++) {
@@ -137,34 +148,6 @@ inline void print() {
     std::cout << '\n';
 }
 /*--------------------------------------*/
-
-
-
-
-// IO for tensor expressions
-/*--------------------------------------*/
-// forward declare
-template<class Derived, size_t Rank>
-class AbstractTensor;
-template<class X>
-struct tensor_type_finder;
-
-template<class Expr, size_t DIM>
-inline std::ostream& operator<<(std::ostream &os, const AbstractTensor<Expr,DIM> &src) {
-    using result_type = typename Expr::result_type;
-    result_type tmp(src);
-    print(tmp);
-    return os;
-}
-
-template<class Expr, size_t DIM>
-inline void print(const AbstractTensor<Expr,DIM> &src) {
-    using result_type = typename Expr::result_type;
-    result_type tmp(src);
-    print(tmp);
-}
-// /*--------------------------------------*/
-
 
 
 

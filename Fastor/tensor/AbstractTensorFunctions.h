@@ -21,6 +21,25 @@ FASTOR_INLINE typename Derived::result_type evaluate(const AbstractTensor<Derive
 //----------------------------------------------------------------------------------------------------------//
 
 
+/* IO for tensor expressions */
+//----------------------------------------------------------------------------------------------------------//
+template<class Expr, size_t DIM>
+inline std::ostream& operator<<(std::ostream &os, const AbstractTensor<Expr,DIM> &src) {
+    using result_type = typename Expr::result_type;
+    result_type tmp(src);
+    print(tmp);
+    return os;
+}
+
+template<class Expr, size_t DIM>
+inline void print(const AbstractTensor<Expr,DIM> &src) {
+    using result_type = typename Expr::result_type;
+    result_type tmp(src);
+    print(tmp);
+}
+//----------------------------------------------------------------------------------------------------------//
+
+
 /* These are the set of functions that work on any expression that evaluate immediately
 */
 
