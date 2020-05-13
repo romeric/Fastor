@@ -57,13 +57,13 @@ struct SIMDVector<std::complex<float>, simd_abi::avx512> {
             complex_unaligned_store(data);
     }
 
-    FASTOR_INLINE void mask_load(const scalar_value_type *data, uint8_t mask, bool Aligned=false) {
+    FASTOR_INLINE void mask_load(const scalar_value_type *data, uint16_t mask, bool Aligned=false) {
         if (!Aligned)
             complex_mask_unaligned_load(data,mask);
         else
             complex_mask_aligned_load(data,mask);
     }
-    FASTOR_INLINE void mask_store(scalar_value_type *data, uint8_t mask, bool Aligned=false) const {
+    FASTOR_INLINE void mask_store(scalar_value_type *data, uint16_t mask, bool Aligned=false) const {
         if (!Aligned)
             complex_mask_unaligned_store(data,mask);
         else
@@ -282,7 +282,7 @@ protected:
 #endif
     }
 
-    FASTOR_INLINE void complex_mask_aligned_store(scalar_value_type *data, uint16_t mask, bool Aligned=false) const {
+    FASTOR_INLINE void complex_mask_aligned_store(scalar_value_type *data, uint16_t mask) const {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m512 lo, hi;
         arrange_for_store(lo, hi, value_r, value_i);
@@ -305,7 +305,7 @@ protected:
         }
 #endif
     }
-    FASTOR_INLINE void complex_mask_unaligned_store(scalar_value_type *data, uint16_t mask, bool Aligned=false) const {
+    FASTOR_INLINE void complex_mask_unaligned_store(scalar_value_type *data, uint16_t mask) const {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m512 lo, hi;
         arrange_for_store(lo, hi, value_r, value_i);
@@ -822,7 +822,7 @@ protected:
 #endif
     }
 
-    FASTOR_INLINE void complex_mask_aligned_store(scalar_value_type *data, uint8_t mask, bool Aligned=false) const {
+    FASTOR_INLINE void complex_mask_aligned_store(scalar_value_type *data, uint8_t mask) const {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m256 lo, hi;
         arrange_for_store(lo, hi, value_r, value_i);
@@ -845,7 +845,7 @@ protected:
         }
 #endif
     }
-    FASTOR_INLINE void complex_mask_unaligned_store(scalar_value_type *data, uint8_t mask, bool Aligned=false) const {
+    FASTOR_INLINE void complex_mask_unaligned_store(scalar_value_type *data, uint8_t mask) const {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m256 lo, hi;
         arrange_for_store(lo, hi, value_r, value_i);
@@ -1349,7 +1349,7 @@ protected:
 #endif
     }
 
-    FASTOR_INLINE void complex_mask_aligned_store(scalar_value_type *data, uint8_t mask, bool Aligned=false) const {
+    FASTOR_INLINE void complex_mask_aligned_store(scalar_value_type *data, uint8_t mask) const {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m128 lo, hi;
         arrange_for_store(lo, hi, value_r, value_i);
@@ -1372,7 +1372,7 @@ protected:
         }
 #endif
     }
-    FASTOR_INLINE void complex_mask_unaligned_store(scalar_value_type *data, uint8_t mask, bool Aligned=false) const {
+    FASTOR_INLINE void complex_mask_unaligned_store(scalar_value_type *data, uint8_t mask) const {
 #ifdef FASTOR_HAS_AVX512_MASKS
         __m128 lo, hi;
         arrange_for_store(lo, hi, value_r, value_i);
