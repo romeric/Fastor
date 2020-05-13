@@ -1108,6 +1108,7 @@ FASTOR_INLINE void mask_to_array(uint64_t c, int (&b)[N])
 
 // Splitting a mask in to two - used for masking complex SIMD vectors
 //----------------------------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------------------------------------------//
 /* Moves "from" bit of c1 to "to" bit of c2 */
 FASTOR_INLINE uint8_t move_bit(uint8_t c1, int from, uint8_t c2, int to)
 {
@@ -1119,6 +1120,19 @@ FASTOR_INLINE uint8_t move_bit(uint8_t c1, int from, uint8_t c2, int to)
     /* set destination bit */
     return (uint8_t)(c2 | (bit << to));
 }
+
+/* Moves "from" bit of c1 to "to" bit of c2 */
+FASTOR_INLINE uint16_t move_bit(uint16_t c1, int from, uint16_t c2, int to)
+{
+    int bit;
+    /* Get the source bit as 0/1 value */
+    bit = (c1 >> from) & 1;
+    /* clear destination bit */
+    c2 &= ~(1 << to);
+    /* set destination bit */
+    return (uint16_t)(c2 | (bit << to));
+}
+//----------------------------------------------------------------------------------------------------------------//
 
 // Splitting a mask into 2 parts when only 2 bits of the incoming mask are set
 template<size_t VectorSize, enable_if_t_<VectorSize==2,bool> = false>
