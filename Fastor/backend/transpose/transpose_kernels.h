@@ -104,10 +104,6 @@ inline void _MM_TRANSPOSE8_PD(__m512d &row0, __m512d &row1, __m512d &row2, __m51
     row1 = _mm512_insertf64x4(__tt1,_mm512_castpd512_pd256(__tt5),0x1);
     row2 = _mm512_insertf64x4(__tt2,_mm512_castpd512_pd256(__tt6),0x1);
     row3 = _mm512_insertf64x4(__tt3,_mm512_castpd512_pd256(__tt7),0x1);
-    // row4 = _mm512_insertf64x4(_mm512_castpd256_pd512(_mm512_extractf64x4_pd(__tt0,0x1)),_mm512_extractf64x4_pd(__tt4,0x1),0x1);
-    // row5 = _mm512_insertf64x4(_mm512_castpd256_pd512(_mm512_extractf64x4_pd(__tt1,0x1)),_mm512_extractf64x4_pd(__tt5,0x1),0x1);
-    // row6 = _mm512_insertf64x4(_mm512_castpd256_pd512(_mm512_extractf64x4_pd(__tt2,0x1)),_mm512_extractf64x4_pd(__tt6,0x1),0x1);
-    // row7 = _mm512_insertf64x4(_mm512_castpd256_pd512(_mm512_extractf64x4_pd(__tt3,0x1)),_mm512_extractf64x4_pd(__tt7,0x1),0x1);
     row4 = _mm512_permutex2var_pd(__tt0, vidx5, __tt4);
     row5 = _mm512_permutex2var_pd(__tt1, vidx5, __tt5);
     row6 = _mm512_permutex2var_pd(__tt2, vidx5, __tt6);

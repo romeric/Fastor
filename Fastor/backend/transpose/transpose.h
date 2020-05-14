@@ -292,6 +292,16 @@ FASTOR_INLINE void _transpose<double,3,3>(const double* FASTOR_RESTRICT a, doubl
 #ifdef FASTOR_AVX_IMPL
 template<>
 FASTOR_INLINE void _transpose<double,4,4>(const double * FASTOR_RESTRICT a, double * FASTOR_RESTRICT out) {
+#ifdef FASTOR_AVX512F_IMPL
+    __m512d amm0 = _mm512_loadu_pd(a);
+    __m512d amm1 = _mm512_loadu_pd(a+8);
+    __m512i idx0 = _mm512_setr_epi64(0, 4,  8, 12, 1, 5,  9, 13);
+    __m512i idx1 = _mm512_setr_epi64(2, 6, 10, 14, 3, 7, 11, 15);
+    __m512d omm0 = _mm512_permutex2var_pd(amm0, idx0, amm1);
+    __m512d omm1 = _mm512_permutex2var_pd(amm0, idx1, amm1);
+    _mm512_storeu_pd(out  , omm0);
+    _mm512_storeu_pd(out+8, omm1);
+#else
     __m256d row1 = _mm256_loadu_pd(a);
     __m256d row2 = _mm256_loadu_pd(a+4);
     __m256d row3 = _mm256_loadu_pd(a+8);
@@ -301,6 +311,7 @@ FASTOR_INLINE void _transpose<double,4,4>(const double * FASTOR_RESTRICT a, doub
     _mm256_storeu_pd(out+4, row2);
     _mm256_storeu_pd(out+8, row3);
     _mm256_storeu_pd(out+12, row4);
+#endif
 }
 #endif
 
