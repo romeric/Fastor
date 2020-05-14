@@ -48,7 +48,7 @@ Tensor<float,2,2,2,2,2,2,4,3,2,3,3,6> t_12; // A 12th order tensor
 ⎣     24,      25,      26 ⎦
 ~~~ -->
 
-### Tensor contraction:
+### Tensor contraction
 Einstein summation as well as summing over multiple (i.e. more than two) indices are supported. As a complete example consider
 ~~~c++
 #include <Fastor/Fastor.h>
