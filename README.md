@@ -189,7 +189,7 @@ L128:
 Aside from unaligned load and store instructions (which are in fact equally fast as aligned load and store) which are also unavoidable in this specific case the rest of the generated code is as efficient as it gets for an `AVX2` architecture beating the perforamnce of Fortran. With the help of an optimising compiler, Fastor's functionalities come closest to the ideal metal performance for numerical tensor algebra code.
  -->
 
-### SIMD optimised bespoke linear algebra kernels for fixed size tensors
+### SIMD optimised linear algebra kernels for fixed size tensors
 All basic linear algebra subroutines for small matrices/tensors (where the overhead of calling vendor/optimised `BLAS` is typically high) are fully SIMD vectorised and efficiently implemented. Note that Fastor exposes two functionally equivalent interfaces for linear algebra functions, the more verbose names such as matmul, determinant, inverse etc that evaluate immediately and the less verbose ones (%, det, inv) that evaluate lazy
 ~~~c++
 Tensor<double,3,3> A,B;
@@ -198,8 +198,9 @@ auto mulab = matmul(A,B);       // matrix matrix multiplication [or equivalently
 auto norma = norm(A);           // Frobenious norm of A
 auto deta  = determinant(B);    // determinant of B [or equivalently det(B)]
 auto inva  = inverse(A);        // inverse of A [or equivalently inv(A)]
-auto cofa  = cofactor(B);       // cofactor of B
+auto cofa  = cofactor(B);       // cofactor of B [or equivalently cof(B)]
 lu(A, L, U);                    // LU decomposition of A in to L and U
+qr(A, Q, R);                    // QR decomposition of A in to Q and R
 ~~~
 
 
