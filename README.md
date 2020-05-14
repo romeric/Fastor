@@ -9,8 +9,8 @@ Fastor offers:
 - **Explicit and configurable** explicit SIMD data types supporting all numeric types `float32`, `float64`, `complex float32` and `complex float64` as well as integral types
 - **Optional JIT backend** using Intel's [MKL-JIT](https://software.intel.com/en-us/articles/intel-math-kernel-library-improved-small-matrix-performance-using-just-in-time-jit-code) and [LIBXSMM](https://github.com/hfp/libxsmm) for performance portable code
 - Ability to **wrap existing data** and operate on them using Fastor's highly optimised kernels
-- **Light weight header-only** library with **fast compilaton time**
-- **Well-tested** on most compilers, including GCC, Clang, Intel's ICC and MSVC
+- **Light weight header-only** library with no external dependencies offering **fast compilation time**
+- **Well-tested** on most compilers including GCC, Clang, Intel's ICC and MSVC
 
 <!-- - **Operation minimisation or FLOP reducing algorithms:** Fastor relies on a domain-aware Expression Template (ET) engine that can not only perform lazy and delayed evaluation but also sophisticated mathematical transformations at *compile time* such as graph optimisation, nearly symbolic tensor algebraic manipulation to reduce the complexity of evaluation of BLAS and/or non-BLAS type expressions by orders of magnitude. Some of these functionalities are non-existent in other available C++ ET linear algebra libraries. For an example of what Fastor can do with expressions at compile time see the section on [smart expression templates](###Smart-expression-templates).
 - **Data parallelism for streaming architectures** Fastor utilises explicit SIMD instructions (from SSE all the way to AVX512 and FMA) through it's built-in `SIMDVector` layer. This backend is configurable and one can switch to a different implementation of SIMD types for instance to [Vc](https://github.com/VcDevel/Vc) or even to C++20 SIMD data types [std::experimental::simd](https://en.cppreference.com/w/cpp/experimental/simd/simd) which will cover ARM NEON, AltiVec and other potential streaming architectures like GPUs.
