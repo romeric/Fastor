@@ -228,6 +228,41 @@ FASTOR_INLINE void _transpose<double,2,2>(const double* FASTOR_RESTRICT a, doubl
 #ifdef FASTOR_SSE2_IMPL
 template<>
 FASTOR_INLINE void _transpose<double,3,3>(const double* FASTOR_RESTRICT a, double* FASTOR_RESTRICT out) {
+    // AVX512 is the fastest & AVX version despite more instructions is faster than SSE
+#if defined(FASTOR_AVX512F_IMPL)
+   // AVX512
+   /*-------------------------------------------------------*/
+    __m512d a07 = _mm512_loadu_pd(a);
+    const __m512i trans_mask = _mm512_setr_epi64(
+        0,3,6,
+        1,4,7,
+        2,5);
+    __m512d trans07 = _mm512_permutexvar_pd(trans_mask, a07);
+    _mm512_storeu_pd(out,trans07);
+    _mm_store_sd(out+8,_mm_load_sd(a+8));
+   /*-------------------------------------------------------*/
+#elif defined(FASTOR_AVX_IMPL)
+   // AVX
+   /*-------------------------------------------------------*/
+   __m256d row1 = _mm256_loadu_pd(a);
+   __m256d row2 = _mm256_loadu_pd(a+4);
+
+   __m128d a11 = _mm256_castpd256_pd128(row1);
+   __m128d a12 = _mm256_extractf128_pd(row1,0x1);
+   __m128d a21 = _mm256_castpd256_pd128(row2);
+   __m128d a22 = _mm256_extractf128_pd(row2,0x1);
+
+   row1 = _mm256_castpd128_pd256(_mm_shuffle_pd(a11,a12,0x2));
+   row1 = _mm256_insertf128_pd(row1,_mm_shuffle_pd(a22,a11,0x2),0x1);
+   row2 = _mm256_castpd128_pd256(_mm_shuffle_pd(a21,a22,0x2));
+   row2 = _mm256_insertf128_pd(row2,_mm_shuffle_pd(a12,a21,0x2),0x1);
+
+   _mm256_storeu_pd(out,row1);
+   _mm256_storeu_pd(out+4,row2);
+   _mm_store_sd(out+8,_mm_load_sd(a+8));
+   /*-------------------------------------------------------*/
+#else
+    // SSE
     /*-------------------------------------------------------*/
     __m128d a11 = _mm_loadu_pd(a);
     __m128d a12 = _mm_loadu_pd(a+2);
@@ -240,26 +275,7 @@ FASTOR_INLINE void _transpose<double,3,3>(const double* FASTOR_RESTRICT a, doubl
     _mm_storeu_pd(out+6,_mm_shuffle_pd(a12,a21,0x2));
     _mm_store_sd (out+8,_mm_load_sd(a+8));
     /*-------------------------------------------------------*/
-
-   /*-------------------------------------------------------*/
-//    // AVX VERSION
-//    __m256d row1 = _mm256_load_pd(a);
-//    __m256d row2 = _mm256_load_pd(a+4);
-
-//    __m128d a11 = _mm256_extractf128_pd(row1,0x0);
-//    __m128d a12 = _mm256_extractf128_pd(row1,0x1);
-//    __m128d a21 = _mm256_extractf128_pd(row2,0x0);
-//    __m128d a22 = _mm256_extractf128_pd(row2,0x1);
-
-//    row1 = _mm256_insertf128_pd(row1,_mm_shuffle_pd(a11,a12,0x2),0x0);
-//    row1 = _mm256_insertf128_pd(row1,_mm_shuffle_pd(a22,a11,0x2),0x1);
-//    row2 = _mm256_insertf128_pd(row2,_mm_shuffle_pd(a21,a22,0x2),0x0);
-//    row2 = _mm256_insertf128_pd(row2,_mm_shuffle_pd(a12,a21,0x2),0x1);
-
-//    _mm256_store_pd(out,row1);
-//    _mm256_store_pd(out+4,row2);
-//    _mm_store_sd(out+8,_mm_load_sd(a+8));
-   /*-------------------------------------------------------*/
+#endif
 }
 #endif
 

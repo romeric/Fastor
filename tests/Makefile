@@ -20,6 +20,7 @@ test_basics \
 test_booleans \
 test_matmul \
 test_tmatmul \
+test_transpose \
 test_linalg \
 test_lu \
 test_inverse \
@@ -53,6 +54,9 @@ test_matmul:
 test_tmatmul:
 	$(CXX) test_tmatmul_unmasked.cpp -o test_tmatmul_unmasked.exe $(INCLUDES) -std=c++14
 	$(CXX) test_tmatmul_masked.cpp -o test_tmatmul_masked.exe $(INCLUDES) -std=c++14
+
+test_transpose:
+	$(CXX) test_transpose.cpp -o test_transpose.exe $(CXX_FLAGS) $(INCLUDES)
 
 test_linalg:
 	$(CXX) test_linalg.cpp -o test_linalg.exe $(CXX_FLAGS) $(INCLUDES)
@@ -121,6 +125,7 @@ run_basics \
 run_booleans \
 run_matmul \
 run_tmatmul \
+run_transpose \
 run_linalg \
 run_lu \
 run_inverse \
@@ -154,6 +159,9 @@ run_matmul:
 run_tmatmul:
 	./test_tmatmul_unmasked.exe
 	./test_tmatmul_masked.exe
+
+run_transpose:
+	./test_transpose.exe
 
 run_linalg:
 	./test_linalg.exe

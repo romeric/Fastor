@@ -198,8 +198,7 @@ struct SIMDVector<int32_t,simd_abi::avx512> {
         return quan;
     }
     FASTOR_INLINE SIMDVector<int32_t,simd_abi::avx512> reverse() {
-        const __m512i rmask = _mm512_set_epi32 (0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15);
-        return _mm512_permutexvar_epi32(rmask,value);
+        return _mm512_reverse_epi32(value);
     }
 
     FASTOR_INLINE int32_t sum() {

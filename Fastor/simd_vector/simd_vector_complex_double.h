@@ -172,9 +172,8 @@ struct SIMDVector<std::complex<double>, simd_abi::avx512> {
     }
     FASTOR_INLINE vector_type reverse() const {
         vector_type out;
-        const __m512i reverse_mask = _mm512_set_epi64(0,1,2,3,4,5,6,7);
-        out.value_r = _mm512_permutevar_pd(value_r, reverse_mask);
-        out.value_i = _mm512_permutevar_pd(value_i, reverse_mask);
+        out.value_r = _mm512_reverse_pd(value_r);
+        out.value_i = _mm512_reverse_pd(value_i);
         return out;
     }
     /* Actual magnitude - Note that this is a vertical operation */

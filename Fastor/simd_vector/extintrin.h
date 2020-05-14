@@ -317,6 +317,28 @@ FASTOR_INLINE __m256i _mm256_reverse_epi64(__m256i v) {
     return _mm256_castpd_si256(_mm256_reverse_pd(_mm256_castsi256_pd(v)));
 }
 #endif
+#ifdef FASTOR_AVX512F_IMPL
+FASTOR_INLINE __m512 _mm512_reverse_ps(__m512 a) {
+    // SKY/ICE 3 OPS
+    const __m512i reverse_mask = _mm512_set_epi32(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15);
+    return _mm512_permutexvar_ps(reverse_mask, a);
+}
+FASTOR_INLINE __m512d _mm512_reverse_pd(__m512d a) {
+    // SKY/ICE 3 OPS
+    const __m512i reverse_mask = _mm512_set_epi64(0,1,2,3,4,5,6,7);
+    return _mm512_permutexvar_pd(reverse_mask, a);
+}
+FASTOR_INLINE __m512i _mm512_reverse_epi32(__m512i a) {
+    // SKY/ICE 3 OPS
+    const __m512i reverse_mask = _mm512_set_epi32(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15);
+    return _mm512_permutexvar_epi32(reverse_mask, a);
+}
+FASTOR_INLINE __m512i _mm512_reverse_epi64(__m512i a) {
+    // SKY/ICE 3 OPS
+    const __m512i reverse_mask = _mm512_set_epi64(0,1,2,3,4,5,6,7);
+    return _mm512_permutexvar_epi64(reverse_mask, a);
+}
+#endif
 //----------------------------------------------------------------------------------------------------------------//
 
 

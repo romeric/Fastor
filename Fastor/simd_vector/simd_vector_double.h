@@ -179,10 +179,7 @@ struct SIMDVector<double, simd_abi::avx512> {
         return _mm256_prod_pd(_mm256_mul_pd(low,high));
     }
     FASTOR_INLINE SIMDVector<double,simd_abi::avx512> reverse() {
-        SIMDVector<double,simd_abi::avx512> out;
-        const __m512i reverse_mask = _mm512_set_epi64(0,1,2,3,4,5,6,7);
-        out.value = _mm512_permutevar_pd(value, reverse_mask);
-        return out;
+        return _mm512_reverse_pd(value);
     }
     // FASTOR_INLINE double minimum() {return _mm512_hmin_pd(value);}
     // FASTOR_INLINE double maximum() {return _mm512_hmax_pd(value);}
