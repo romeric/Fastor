@@ -49,7 +49,7 @@ Tensor<float,2,2,2,2,2,2,4,3,2,3,3,6> t_12; // A 12th order tensor
 ~~~ -->
 
 ### Tensor contraction:
-Einstein summation as well as summing over multiple (i.e. more than two) indices are supported. As a complete example, for instance, consider
+Einstein summation as well as summing over multiple (i.e. more than two) indices are supported. As a complete example consider
 ~~~c++
 #include <Fastor/Fastor.h>
 using namespace Fastor;
@@ -76,7 +76,7 @@ int main() {
     return 0;
 }
 ~~~
-You can compile and run this by providing the following (or equivalent) flags to your compiler `-std=c++14 -O3 -march=native -DNDEBUG`.
+You can compile this by providing the following flags to your compiler `-std=c++14 -O3 -march=native -DNDEBUG`.
 
 ### Tensor views: A powerful indexing, slicing and broadcasting mechanism
 Fastor provides powerful tensor views for block indexing, slicing and broadcating familiar to scientific programmers. Consider the following examples
@@ -92,10 +92,10 @@ A(2,all,3) = 5.0;                                                    // A[2,:,3]
 
 // Static views -> fseq<first,last,step>
 C = A(fseq<0,2>(),fseq<0,2>(),fseq<0,last,2>());                     // C = A[0:2,0:2,0::2]
-D = B(all, all, fseq<0,1>()) + A(all, all, fseq<9,10>());            // D = B[:,:,0] + A[:,:,-1]
+D = B(all, all, fix<0>) + A(all, all, fix<last>());                  // D = B[:,:,0] + A[:,:,-1]
 A(2,all,3) = 5.0;                                                    // A[2,:,3] = 5.0
 
-// Overlapping is also allowed without having undefined behaviour
+// Overlapping is also allowed without having undefined/aliasing behaviour
 A(seq(2,last),all,all).noalias() += A(seq(0,last-2),all,all);        // A[2::,:,:] += A[::-2,:,:]
 // Note that in case of perfect overlapping noalias is not required
 A(seq(0,last-2),all,all) += A(seq(0,last-2),all,all);                // A[::2,:,:] += A[::2,:,:]
