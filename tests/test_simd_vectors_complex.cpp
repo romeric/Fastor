@@ -3,9 +3,6 @@
 
 using namespace Fastor;
 
-#define Tol 1e-12
-#define BigTol 1e-5
-
 
 template<typename T, size_t N>
 std::array<std::complex<T>,N>
@@ -149,10 +146,15 @@ zarg(const std::array<std::complex<T>,N> &a) {
 template<typename ABI, typename TT, size_t N>
 void test_simd_complex_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, std::array<TT,N> & arr3) {
 
+
     TT diff;
     {
         using V = SIMDVector<TT,ABI>;
         using T = typename TT::value_type;
+
+        T Tol    = is_same_v_<T,double> ? 1e-9 : (T)1e-04;
+        T BigTol = is_same_v_<T,double> ? 1e-4 : (T)1e-03;
+
         // Size
         {
             FASTOR_EXIT_ASSERT( std::abs(int(V::Size)   - (int)N) < Tol, "TEST FAILED");
@@ -533,6 +535,7 @@ void test_simd_complex<double,simd_abi::avx512>() {
 void test_mask_loading_single() {
 
     using TT = std::complex<float>;
+    float Tol = (float)1e-06;
 
     // SSE complex float
     {
@@ -727,6 +730,7 @@ void test_mask_loading_single() {
 void test_mask_loading_double() {
 
     using TT = std::complex<double>;
+    double Tol = 1e-09;
 
     // SSE complex double
     {
@@ -859,7 +863,7 @@ int main() {
     test_simd_complex<float,simd_abi::avx>();
 #endif
 #ifdef FASTOR_AVX512F_IMPL
-    test_simd_complex<float,simd_abi::avx>();
+    test_simd_complex<float,simd_abi::avx512>();
 #endif
     print(FBLU(BOLD("Testing SIMDVector of complex double precision")));
     test_simd_complex<double,simd_abi::scalar>();
@@ -870,7 +874,7 @@ int main() {
     test_simd_complex<double,simd_abi::avx>();
 #endif
 #ifdef FASTOR_AVX512F_IMPL
-    test_simd_complex<double,simd_abi::avx>();
+    test_simd_complex<double,simd_abi::avx512>();
 #endif
 
 #ifdef FASTOR_AVX2_IMPL
