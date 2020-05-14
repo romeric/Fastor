@@ -204,7 +204,7 @@ lu(A, L, U);                    // LU decomposition of A in to L and U
 
 
 ### Boolean tensor algebra
-A set of boolean tensor routines are available. Note that, whenever possible most of these operations are performed at compile time
+A set of boolean operations are available that whenever possible are performed at compile time
 ~~~c++
 isuniform(A);                   // does the tensor expression span equally in all dimensions - generalisation of square matrices
 isorthogonal(A);                // is the tensor expression orthogonal
