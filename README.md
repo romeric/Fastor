@@ -47,6 +47,8 @@ Tensor<float,2,2,2,2,2,2,4,3,2,3,3,6> t_12; // A 12th order tensor
 ⎢     21,      22,      23 ⎥
 ⎣     24,      25,      26 ⎦
 ~~~ -->
+
+### Tensor contraction:
 Einstein summation as well as summing over multiple (i.e. more than two) indices are supported. As a complete example, for instance, consider
 ~~~c++
 #include <Fastor/Fastor.h>
@@ -197,6 +199,7 @@ auto norma = norm(A);           // Frobenious norm of A
 auto deta  = determinant(B);    // determinant of B [or equivalently det(B)]
 auto inva  = inverse(A);        // inverse of A [or equivalently inv(A)]
 auto cofa  = cofactor(B);       // cofactor of B
+lu(A, L, U);                    // LU decomposition of A in to L and U
 ~~~
 
 
@@ -228,7 +231,7 @@ TensorMap<double,4> tn1(c_array);
 // Map to a Fastor matrix of 2x2
 TensorMap<double,2,2> tn2(c_array);
 
-// You can now operate on them. This will also modify c_array
+// You can now operate on these. This will also modify c_array
 tn1 += 1;
 tn2(0,1) = 5;
 ~~~
