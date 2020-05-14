@@ -247,6 +247,12 @@ template<size_t m, size_t n>
 struct meta_max<m,n> {
     static const size_t value = (m>=n) ? m : n;
 };
+
+namespace internal {
+// namespace to avoid clash with MSVC macros
+template<typename T> constexpr FASTOR_INLINE T min_(const T a, const T b) {return a < b ? a : b;}
+template<typename T> constexpr FASTOR_INLINE T max_(const T a, const T b) {return a > b ? a : b;}
+}
 //----------------------------------------------------------------------------------------------------------//
 
 //----------------------------------------------------------------------------------------------------------//

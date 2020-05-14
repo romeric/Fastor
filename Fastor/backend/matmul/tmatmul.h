@@ -5,6 +5,7 @@
 #include "Fastor/commons/commons.h"
 #include "Fastor/simd_vector/extintrin.h"
 #include "Fastor/simd_vector/SIMDVector.h"
+#include "Fastor/meta/meta.h"
 #include "Fastor/meta/tensor_meta.h"
 
 
@@ -66,21 +67,18 @@ const size_t klast  = min(j+1,K);     // or min(j+unrollInnerloop,K);
 
 */
 
-template<typename T> constexpr FASTOR_INLINE T __min(const T a, const T b) {return a < b ? a : b;}
-template<typename T> constexpr FASTOR_INLINE T __max(const T a, const T b) {return a > b ? a : b;}
-
 template<typename T, T K, T unrollOuterloop=1,T unrollInnerloop=1, typename LhsType = matrix_type::general, typename RhsType = matrix_type::general>
 constexpr FASTOR_INLINE T find_kfirst(const T i, const T j) {
     return is_same_v_<LhsType,matrix_type::lower_tri> || is_same_v_<LhsType,matrix_type::general> ?
         ( is_same_v_<RhsType,matrix_type::lower_tri> ? j : 0UL ) :
-            (is_same_v_<LhsType,matrix_type::upper_tri> ? ( is_same_v_<RhsType,matrix_type::lower_tri> ? __max(i,j) : i ) : 0UL );
+            (is_same_v_<LhsType,matrix_type::upper_tri> ? ( is_same_v_<RhsType,matrix_type::lower_tri> ? internal::max_(i,j) : i ) : 0UL );
 }
 template<typename T, T K, T unrollOuterloop=1,T unrollInnerloop=1, typename LhsType = matrix_type::general, typename RhsType = matrix_type::general>
 constexpr FASTOR_INLINE T find_klast(const T i, const T j) {
     return is_same_v_<LhsType,matrix_type::lower_tri> ?
-        ( is_same_v_<RhsType,matrix_type::upper_tri> ? __min(__min(i+unrollOuterloop,j+unrollInnerloop),K) : __min(i+unrollOuterloop,K) ) :
+        ( is_same_v_<RhsType,matrix_type::upper_tri> ? internal::min_(internal::min_(i+unrollOuterloop,j+unrollInnerloop),K) : internal::min_(i+unrollOuterloop,K) ) :
             (is_same_v_<LhsType,matrix_type::upper_tri> || (is_same_v_<LhsType,matrix_type::general>) ?
-                ( is_same_v_<RhsType,matrix_type::upper_tri> ? __min(j+unrollInnerloop,K) : K ) : K );
+                ( is_same_v_<RhsType,matrix_type::upper_tri> ? internal::min_(j+unrollInnerloop,K) : K ) : K );
 }
 
 

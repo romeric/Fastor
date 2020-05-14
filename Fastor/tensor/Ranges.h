@@ -56,7 +56,7 @@ struct fseq {
 static constexpr fseq<0,-1,1> fall;
 
 template<int F>
-static constexpr fseq<F,F+1,1> fix;
+static constexpr fseq<F,F+1,1> fix{};
 
 static constexpr fseq<0 ,1 ,1> ffirst;
 static constexpr fseq<-1,-1,1> flast;
