@@ -1,10 +1,12 @@
 # Fastor
-**Fastor** is a stack-based high performance tensor (fixed multi-dimensional array) library for modern C++. Fastor offers
+**Fastor** is a stack-based high performance tensor (fixed multi-dimensional array) library for modern C++. 
+
+Fastor offers:
 
 - **High-level interface** for manipulating multi-dimensional arrays in C++ that look and feel native to scientific programmers
-- **Bare metal** speed and performance for matrix/tensor multiplications/contractions and tensor factorisations [LU, QR etc] using SIMD vectorisation. Refer to [benchmarks](https://github.com/romeric/Fastor/wiki/10.-Benchmarks) to see how Fastor delivers performance on par with MKL JIT's dedicated API
+- **Bare metal** performance for matrix/tensor multiplications, contractions and tensor factorisations [LU, QR etc] using SIMD vectorisation. Refer to [benchmarks](https://github.com/romeric/Fastor/wiki/10.-Benchmarks) to see how Fastor delivers performance on par with MKL JIT's dedicated API
 - **Compile time operation minimisation** such as graph optimisation and nearly symbolic tensor algebraic manipulation to reduce the complexity of evaluation of BLAS or non-BLAS type expressions by orders of magnitude
-- **Explicit and configurable** explicit SIMD types supporting all numeric data types `float32`, `float64`, `complex float32` and `complex float64` as well as integral types
+- **Explicit and configurable** explicit SIMD data types supporting all numeric types `float32`, `float64`, `complex float32` and `complex float64` as well as integral types
 - **Optional JIT backend** using Intel's [MKL-JIT](https://software.intel.com/en-us/articles/intel-math-kernel-library-improved-small-matrix-performance-using-just-in-time-jit-code) and [LIBXSMM](https://github.com/hfp/libxsmm) for performance portable code
 - Ability to **wrap existing data** and operate on them using Fastor's highly optimised kernels
 - **Light weight header-only** library with **fast compilaton time**
@@ -214,6 +216,22 @@ any_of(A >= B);                 // is any element in A greater than or equal to 
 none_of(A == B);                // is no element in A and B equal
 ~~~
 
+### Interfacing with C arrays and external buffers
+You can wrap C arrays or map any external piece of memory as Fastor tensors and operate on them just like you would on Fastor's tensors without making any copies, using the `Fastor::TensorMap` feature. For instance 
+
+~~~c++
+double c_array[4] = {1,2,3,4};
+
+// Map to a Fastor vector
+TensorMap<double,4> tn1(c_array);
+
+// Map to a Fastor matrix of 2x2
+TensorMap<double,2,2> tn2(c_array);
+
+// You can now operate on them. This will also modify c_array
+tn1 += 1;
+tn2(0,1) = 5;
+~~~
 
 ### Basic expression templates
 Expression templates are archetypal of array/tensor libraries in C++ as they provide a means for lazy evaluation of arbitrary chained operations. Consider the following expression
