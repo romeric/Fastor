@@ -4,7 +4,7 @@
 Fastor offers:
 
 - **High-level interface** for manipulating multi-dimensional arrays in C++ that look and feel native to scientific programmers
-- **Bare metal** performance for matrix/tensor multiplications, contractions and tensor factorisations [LU, QR etc] using SIMD vectorisation. Refer to [benchmarks](https://github.com/romeric/Fastor/wiki/10.-Benchmarks) to see how Fastor delivers performance on par with MKL JIT's dedicated API
+- **Bare metal** performance for small matrix/tensor multiplications, contractions and tensor factorisations [LU, QR etc] using SIMD vectorisation. Refer to [benchmarks](https://github.com/romeric/Fastor/wiki/10.-Benchmarks) to see how Fastor delivers performance on par with MKL JIT's dedicated API
 - **Compile time operation minimisation** such as graph optimisation and nearly symbolic tensor algebraic manipulation to reduce the complexity of evaluation of BLAS or non-BLAS type expressions by orders of magnitude
 - **Explicit and configurable** explicit SIMD data types supporting all numeric types `float32`, `float64`, `complex float32` and `complex float64` as well as integral types
 - **Optional JIT backend** using Intel's [MKL-JIT](https://software.intel.com/en-us/articles/intel-math-kernel-library-improved-small-matrix-performance-using-just-in-time-jit-code) and [LIBXSMM](https://github.com/hfp/libxsmm) for performance portable code
