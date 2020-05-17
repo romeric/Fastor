@@ -196,9 +196,9 @@ Tensor<double,3,3> A,B;
 // fill A and B
 auto mulab = matmul(A,B);       // matrix matrix multiplication [or equivalently A % B]
 auto norma = norm(A);           // Frobenious norm of A
-auto deta  = determinant(B);    // determinant of B [or equivalently det(B)]
+auto detb  = determinant(B);    // determinant of B [or equivalently det(B)]
 auto inva  = inverse(A);        // inverse of A [or equivalently inv(A)]
-auto cofa  = cofactor(B);       // cofactor of B [or equivalently cof(B)]
+auto cofb  = cofactor(B);       // cofactor of B [or equivalently cof(B)]
 lu(A, L, U);                    // LU decomposition of A in to L and U
 qr(A, Q, R);                    // QR decomposition of A in to Q and R
 ~~~
