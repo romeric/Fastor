@@ -8,6 +8,7 @@
 #include "Fastor/expressions/linalg_ops/unary_lu_op.h"
 #include "Fastor/expressions/linalg_ops/binary_solve_op.h"
 #include "Fastor/expressions/linalg_ops/unary_trans_op.h"
+#include "Fastor/expressions/linalg_ops/unary_ctrans_op.h"
 #include "Fastor/expressions/linalg_ops/unary_adj_op.h"
 #include "Fastor/expressions/linalg_ops/unary_cof_op.h"
 #include "Fastor/expressions/linalg_ops/unary_inv_op.h"

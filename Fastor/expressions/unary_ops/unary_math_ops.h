@@ -2,6 +2,7 @@
 #define UNARY_MATH_OP_H
 
 
+#include "Fastor/simd_vector/SIMDVector.h"
 #include "Fastor/simd_math/simd_math.h"
 #include "Fastor/tensor/Tensor.h"
 #include "Fastor/expressions/linalg_ops/linalg_traits.h"
@@ -73,6 +74,8 @@ FASTOR_MAKE_UNARY_MATH_OPS(atan, atan, std::atan, Atan, scalar_type)
 FASTOR_MAKE_UNARY_MATH_OPS(sinh, sinh, std::sinh, Sinh, scalar_type)
 FASTOR_MAKE_UNARY_MATH_OPS(cosh, cosh, std::cosh, Cosh, scalar_type)
 FASTOR_MAKE_UNARY_MATH_OPS(tanh, tanh, std::tanh, Tanh, scalar_type)
+FASTOR_MAKE_UNARY_MATH_OPS(conj, conj, std::conj, Conj, scalar_type)
+FASTOR_MAKE_UNARY_MATH_OPS(arg , arg , std::arg , Arg , scalar_type)
 
 
 
@@ -106,6 +109,8 @@ FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(atan, Atan, )
 FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(sinh, Sinh, )
 FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(cosh, Cosh, )
 FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(tanh, Tanh, )
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(conj, Conj, )
+FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENT(arg , Arg , )
 
 
 
@@ -140,6 +145,8 @@ FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(atan, Atan, ASSIGN_TYPE)\
 FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(sinh, Sinh, ASSIGN_TYPE)\
 FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(cosh, Cosh, ASSIGN_TYPE)\
 FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(tanh, Tanh, ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(conj, Conj, ASSIGN_TYPE)\
+FASTOR_MAKE_UNARY_MATH_OP_ARITHMETIC_ASSIGNMENT(arg , Arg , ASSIGN_TYPE)\
 
 // FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENTS(OP, NAME, )
 FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENTS(OP, NAME, _add)
