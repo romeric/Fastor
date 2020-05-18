@@ -11,8 +11,6 @@ namespace Fastor {
 template<typename TLhs, typename TRhs, size_t DIM0>
 struct BinaryAddOp: public AbstractTensor<BinaryAddOp<TLhs, TRhs, DIM0>,DIM0> {
 private:
-    // const TLhs &_lhs;
-    // const TRhs &_rhs;
     expression_t<TLhs> _lhs;
     expression_t<TRhs> _rhs;
 public:
