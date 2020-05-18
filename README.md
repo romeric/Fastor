@@ -68,7 +68,7 @@ int main() {
 
     // An example of tensor permutation
     Tensor<float,3,4,5,2> F; F.random();
-    auto G = permutation<Index<J,K,I,L>>(F);
+    Tensor<float,4,5,3,2> G = permutation<Index<J,K,I,L>>(F);
 
     // Output the results
     print("Our big tensors:",C,E,G);
