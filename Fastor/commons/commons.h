@@ -358,7 +358,7 @@ SOFTWARE.
 //------------------------------------------------------------------------------------------------//
 #define __FASTOR_MAJOR__ 0
 #define __FASTOR_MINOR__ 6
-#define __FASTOR_PATCHLEVEL__ 0
+#define __FASTOR_PATCHLEVEL__ 2
 #define __FASTOR__ (__FASTOR_MAJOR__ * 0x10000 + __FASTOR_MINOR__ * 0x100 + __FASTOR_PATCHLEVEL__)
 //------------------------------------------------------------------------------------------------//
 
