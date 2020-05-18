@@ -60,7 +60,7 @@ FASTOR_INLINE Tensor<T,J,I> ctranspose(const Tensor<T,I,J> &a) {
     return out;
 }
 
-// For high order tensors
+/* Tensor conjugate transpose for higher order tensors immediately returning a tensor */
 template<typename T, size_t ... Rest, typename std::enable_if<sizeof...(Rest)>=3,bool>::type=0>
 FASTOR_INLINE Tensor<T,Rest...>
 ctranspose(const Tensor<T,Rest...> &a) {

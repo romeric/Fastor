@@ -38,6 +38,8 @@ private:
     expr_type _expr;
 };
 
+
+/* Tensor transpose returning a tensor expression */
 template<typename Expr, size_t DIM0>
 FASTOR_INLINE UnaryTransOp<Expr, DIM0>
 trans(const AbstractTensor<Expr,DIM0> &src) {
@@ -45,7 +47,7 @@ trans(const AbstractTensor<Expr,DIM0> &src) {
 }
 
 
-// For tensors
+/* Tensor transpose immediately returning a tensor */
 template<typename T, size_t I, size_t J>
 FASTOR_INLINE Tensor<T,J,I> transpose(const Tensor<T,I,J> &a) {
     Tensor<T,J,I> out;
@@ -53,7 +55,7 @@ FASTOR_INLINE Tensor<T,J,I> transpose(const Tensor<T,I,J> &a) {
     return out;
 }
 
-// For high order tensors
+/* Tensor transpose for higher order tensors immediately returning a tensor */
 template<typename T, size_t ... Rest, typename std::enable_if<sizeof...(Rest)>=3,bool>::type=0>
 FASTOR_INLINE Tensor<T,Rest...>
 transpose(const Tensor<T,Rest...> &a) {
@@ -76,7 +78,7 @@ transpose(const Tensor<T,Rest...> &a) {
     return out;
 }
 
-// Transpose for generic expressions is provided here
+// Transpose for generic expressions
 template<typename Expr, size_t DIM0>
 FASTOR_INLINE
 Tensor<
