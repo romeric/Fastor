@@ -7,21 +7,22 @@
 namespace Fastor {
 
 //----------------------------------------------------------------------------------------------------------//
-namespace matrix_type {
-struct general {};
-struct lower_tri {};
-struct lower_uni_tri {};
-struct strictly_lower_tri {};
-struct upper_tri {};
-struct upper_uni_tri {};
-struct strictly_upper_tri {};
-struct diagonal {};
-struct bidiagonal {};
-struct tridiagonal {};
-struct block_diagonal {};
-struct symmetric {};
-struct symmetric_positive_definite {};
-} // matrix_type
+// UpLoType
+namespace UpLoType {
+struct General {};
+struct Lower {};
+struct UniLower {};
+struct StrictlyLower {};
+struct Upper {};
+struct UniUpper {};
+struct StrictlyUpper {};
+struct Diagonal {};
+struct BiDiagonal {};
+struct TriDiagonal {};
+struct BlockDiagonal {};
+struct Symmetric {};
+struct SymmetricPositiveDefinite {};
+}
 //----------------------------------------------------------------------------------------------------------//
 
 

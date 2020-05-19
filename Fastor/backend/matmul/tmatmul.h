@@ -30,7 +30,7 @@ namespace internal {
 /*
 
 For triangular matmul only the iteration span of K is modified
-using the following logic [lt = lower_tri, ut=upper_tri]
+using the following logic [lt = Lower, ut=Upper]
 
 // if lhs == lt
 const size_t kfirst = 0;
@@ -67,18 +67,18 @@ const size_t klast  = min(j+1,K);     // or min(j+unrollInnerloop,K);
 
 */
 
-template<typename T, T K, T unrollOuterloop=1,T unrollInnerloop=1, typename LhsType = matrix_type::general, typename RhsType = matrix_type::general>
+template<typename T, T K, T unrollOuterloop=1,T unrollInnerloop=1, typename LhsType = UpLoType::General, typename RhsType = UpLoType::General>
 constexpr FASTOR_INLINE T find_kfirst(const T i, const T j) {
-    return is_same_v_<LhsType,matrix_type::lower_tri> || is_same_v_<LhsType,matrix_type::general> ?
-        ( is_same_v_<RhsType,matrix_type::lower_tri> ? j : 0UL ) :
-            (is_same_v_<LhsType,matrix_type::upper_tri> ? ( is_same_v_<RhsType,matrix_type::lower_tri> ? internal::max_(i,j) : i ) : 0UL );
+    return is_same_v_<LhsType,UpLoType::Lower> || is_same_v_<LhsType,UpLoType::General> ?
+        ( is_same_v_<RhsType,UpLoType::Lower> ? j : 0UL ) :
+            (is_same_v_<LhsType,UpLoType::Upper> ? ( is_same_v_<RhsType,UpLoType::Lower> ? internal::max_(i,j) : i ) : 0UL );
 }
-template<typename T, T K, T unrollOuterloop=1,T unrollInnerloop=1, typename LhsType = matrix_type::general, typename RhsType = matrix_type::general>
+template<typename T, T K, T unrollOuterloop=1,T unrollInnerloop=1, typename LhsType = UpLoType::General, typename RhsType = UpLoType::General>
 constexpr FASTOR_INLINE T find_klast(const T i, const T j) {
-    return is_same_v_<LhsType,matrix_type::lower_tri> ?
-        ( is_same_v_<RhsType,matrix_type::upper_tri> ? internal::min_(internal::min_(i+unrollOuterloop,j+unrollInnerloop),K) : internal::min_(i+unrollOuterloop,K) ) :
-            (is_same_v_<LhsType,matrix_type::upper_tri> || (is_same_v_<LhsType,matrix_type::general>) ?
-                ( is_same_v_<RhsType,matrix_type::upper_tri> ? internal::min_(j+unrollInnerloop,K) : K ) : K );
+    return is_same_v_<LhsType,UpLoType::Lower> ?
+        ( is_same_v_<RhsType,UpLoType::Upper> ? internal::min_(internal::min_(i+unrollOuterloop,j+unrollInnerloop),K) : internal::min_(i+unrollOuterloop,K) ) :
+            (is_same_v_<LhsType,UpLoType::Upper> || (is_same_v_<LhsType,UpLoType::General>) ?
+                ( is_same_v_<RhsType,UpLoType::Upper> ? internal::min_(j+unrollInnerloop,K) : K ) : K );
 }
 
 
@@ -90,7 +90,7 @@ constexpr FASTOR_INLINE T find_klast(const T i, const T j) {
 // unroll the inner-most loop (on unrollOuterloop)
 //-----------------------------------------------------------------------------------------------------------
 template<typename T, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
-    typename LhsType = matrix_type::general, typename RhsType = matrix_type::general,
+    typename LhsType = UpLoType::General, typename RhsType = UpLoType::General,
     typename std::enable_if<numSIMDCols==1,bool>::type = false>
 FASTOR_INLINE
 void interior_block_tmatmul_impl(
@@ -122,7 +122,7 @@ void interior_block_tmatmul_impl(
 }
 
 template<typename T, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
-    typename LhsType = matrix_type::general, typename RhsType = matrix_type::general,
+    typename LhsType = UpLoType::General, typename RhsType = UpLoType::General,
     typename std::enable_if<numSIMDCols==2,bool>::type = false>
 FASTOR_INLINE
 void interior_block_tmatmul_impl(
@@ -158,7 +158,7 @@ void interior_block_tmatmul_impl(
 
 
 template<typename T, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
-    typename LhsType = matrix_type::general, typename RhsType = matrix_type::general,
+    typename LhsType = UpLoType::General, typename RhsType = UpLoType::General,
     typename std::enable_if<numSIMDCols==3,bool>::type = false>
 FASTOR_INLINE
 void interior_block_tmatmul_impl(
@@ -197,7 +197,7 @@ void interior_block_tmatmul_impl(
 
 
 template<typename T, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
-    typename LhsType = matrix_type::general, typename RhsType = matrix_type::general,
+    typename LhsType = UpLoType::General, typename RhsType = UpLoType::General,
     typename std::enable_if<numSIMDCols==4,bool>::type = false>
 FASTOR_INLINE
 void interior_block_tmatmul_impl(
@@ -239,7 +239,7 @@ void interior_block_tmatmul_impl(
 
 
 template<typename T, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
-    typename LhsType = matrix_type::general, typename RhsType = matrix_type::general,
+    typename LhsType = UpLoType::General, typename RhsType = UpLoType::General,
     typename std::enable_if<numSIMDCols==5,bool>::type = false>
 FASTOR_INLINE
 void interior_block_tmatmul_impl(
@@ -284,7 +284,7 @@ void interior_block_tmatmul_impl(
 
 
 template<typename T, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
-    typename LhsType = matrix_type::general, typename RhsType = matrix_type::general,
+    typename LhsType = UpLoType::General, typename RhsType = UpLoType::General,
     typename std::enable_if<numSIMDCols==1,bool>::type = false>
 FASTOR_INLINE
 void interior_block_tmatmul_scalar_impl(
@@ -315,7 +315,7 @@ void interior_block_tmatmul_scalar_impl(
 
 
 template<typename T, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
-    typename LhsType = matrix_type::general, typename RhsType = matrix_type::general,
+    typename LhsType = UpLoType::General, typename RhsType = UpLoType::General,
     typename std::enable_if<numSIMDCols==1,bool>::type = false>
 FASTOR_INLINE
 void interior_block_tmatmul_mask_impl(
@@ -348,7 +348,7 @@ void interior_block_tmatmul_mask_impl(
 
 
 template<typename T, typename MaskT, typename V, size_t M, size_t K, size_t N, size_t unrollOuterloop, size_t numSIMDRows, size_t numSIMDCols,
-    typename LhsType = matrix_type::general, typename RhsType = matrix_type::general,
+    typename LhsType = UpLoType::General, typename RhsType = UpLoType::General,
     typename std::enable_if<numSIMDCols==1,bool>::type = false>
 FASTOR_INLINE
 void interior_block_tmatmul_mask_impl(
@@ -389,7 +389,7 @@ void interior_block_tmatmul_mask_impl(
 // higher order tensor products that can be expressed as trmm
 // The function uses two level unrolling one based on block sizes and one based on register widths
 // with any remainder left treated in a scalar fashion
-template<typename T, size_t M, size_t K, size_t N, typename LhsType = matrix_type::general, typename RhsType = matrix_type::general>
+template<typename T, size_t M, size_t K, size_t N, typename LhsType = UpLoType::General, typename RhsType = UpLoType::General>
 FASTOR_INLINE
 void _tmatmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
 
@@ -549,7 +549,7 @@ void _tmatmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T *
 // The function uses two level unrolling one based on block sizes and one based on register widths
 // with any remainder left treated in vector mode with masked and conditional load/stores.
 // Note that conditional load/store requires at least AVX intrinsics
-template<typename T, size_t M, size_t K, size_t N, typename LhsType = matrix_type::general, typename RhsType = matrix_type::general>
+template<typename T, size_t M, size_t K, size_t N, typename LhsType = UpLoType::General, typename RhsType = UpLoType::General>
 FASTOR_INLINE
 void _tmatmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
 
@@ -736,7 +736,7 @@ void _tmatmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT
 // Tensor<std::vector<T>,3,3> or Tensor<Tensor<...>,...> plus they cannot fuse [do fused-add-multiply]
 // so operations like [c += a*b] or potentially [c = c + a*b] might introduce multiple copies in
 // the inner most loops of matmul
-template<typename T, size_t M, size_t K, size_t N, typename LhsType = matrix_type::general, typename RhsType = matrix_type::general>
+template<typename T, size_t M, size_t K, size_t N, typename LhsType = UpLoType::General, typename RhsType = UpLoType::General>
 FASTOR_INLINE
 void _tmatmul_base_non_primitive(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
     // There is no SIMD here as V::Size == 1 anyway
@@ -766,7 +766,7 @@ void _tmatmul_base_non_primitive(const T * FASTOR_RESTRICT a, const T * FASTOR_R
 //-----------------------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------
 // Backend tmatmul function
-template<typename T, size_t M, size_t K, size_t N, typename LhsType = matrix_type::general, typename RhsType = matrix_type::general>
+template<typename T, size_t M, size_t K, size_t N, typename LhsType = UpLoType::General, typename RhsType = UpLoType::General>
 FASTOR_INLINE
 void _tmatmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 

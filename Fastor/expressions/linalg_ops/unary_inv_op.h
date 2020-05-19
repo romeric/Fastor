@@ -145,10 +145,10 @@ FASTOR_INLINE void ut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>&
     Tensor<T,M-N,M-N> inv_d;
     ut_inverse_dispatcher(d, inv_d);
 
-    Tensor<T,N,M-N> b_invd = tmatmul<matrix_type::general,matrix_type::upper_tri>(b, inv_d);
+    Tensor<T,N,M-N> b_invd = tmatmul<UpLoType::General,UpLoType::Upper>(b, inv_d);
 
     out(fseq<0,N>(),fseq<0,N>()) = inv_a;
-    out(fseq<0,N>(),fseq<N,M>()) = -tmatmul<matrix_type::upper_tri,matrix_type::general>(inv_a, b_invd);
+    out(fseq<0,N>(),fseq<N,M>()) = -tmatmul<UpLoType::Upper,UpLoType::General>(inv_a, b_invd);
     out(fseq<N,M>(),fseq<0,N>()) = 0;
     out(fseq<N,M>(),fseq<N,M>()) = inv_d;
 }
@@ -169,10 +169,10 @@ FASTOR_INLINE void ut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>&
     Tensor<T,M-N,M-N> inv_d;
     ut_inverse_dispatcher(d, inv_d);
 
-    Tensor<T,N,M-N> b_invd = tmatmul<matrix_type::general,matrix_type::upper_tri>(b, inv_d);
+    Tensor<T,N,M-N> b_invd = tmatmul<UpLoType::General,UpLoType::Upper>(b, inv_d);
 
     out(fseq<0,N>(),fseq<0,N>()) = inv_a;
-    out(fseq<0,N>(),fseq<N,M>()) = -tmatmul<matrix_type::upper_tri,matrix_type::general>(inv_a, b_invd);
+    out(fseq<0,N>(),fseq<N,M>()) = -tmatmul<UpLoType::Upper,UpLoType::General>(inv_a, b_invd);
     out(fseq<N,M>(),fseq<0,N>()) = 0;
     out(fseq<N,M>(),fseq<N,M>()) = inv_d;
 }
@@ -193,10 +193,10 @@ FASTOR_INLINE void ut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>&
     Tensor<T,M-N,M-N> inv_d;
     ut_inverse_dispatcher(d, inv_d);
 
-    Tensor<T,N,M-N> b_invd = tmatmul<matrix_type::general,matrix_type::upper_tri>(b, inv_d);
+    Tensor<T,N,M-N> b_invd = tmatmul<UpLoType::General,UpLoType::Upper>(b, inv_d);
 
     out(fseq<0,N>(),fseq<0,N>()) = inv_a;
-    out(fseq<0,N>(),fseq<N,M>()) = -tmatmul<matrix_type::upper_tri,matrix_type::general>(inv_a, b_invd);
+    out(fseq<0,N>(),fseq<N,M>()) = -tmatmul<UpLoType::Upper,UpLoType::General>(inv_a, b_invd);
     out(fseq<N,M>(),fseq<0,N>()) = 0;
     out(fseq<N,M>(),fseq<N,M>()) = inv_d;
 }
@@ -301,14 +301,14 @@ FASTOR_INLINE void lut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>
     Tensor<T,N,N> inv_a;
     lut_inverse_dispatcher(a, inv_a);
 
-    Tensor<T,M-N,N> c_inva = tmatmul<matrix_type::general,matrix_type::lower_tri>(c, inv_a);
+    Tensor<T,M-N,N> c_inva = tmatmul<UpLoType::General,UpLoType::Lower>(c, inv_a);
 
     Tensor<T,M-N,M-N> inv_d;
     lut_inverse_dispatcher(d, inv_d);
 
     out(fseq<0,N>(),fseq<0,N>()) = inv_a;
     out(fseq<0,N>(),fseq<N,M>()) = 0;
-    out(fseq<N,M>(),fseq<0,N>()) = -tmatmul<matrix_type::lower_tri,matrix_type::general>(inv_d, c_inva);
+    out(fseq<N,M>(),fseq<0,N>()) = -tmatmul<UpLoType::Lower,UpLoType::General>(inv_d, c_inva);
     out(fseq<N,M>(),fseq<N,M>()) = inv_d;
 }
 
@@ -325,14 +325,14 @@ FASTOR_INLINE void lut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>
     Tensor<T,N,N> inv_a;
     lut_inverse_dispatcher(a, inv_a);
 
-    Tensor<T,M-N,N> c_inva = tmatmul<matrix_type::general,matrix_type::lower_tri>(c, inv_a);
+    Tensor<T,M-N,N> c_inva = tmatmul<UpLoType::General,UpLoType::Lower>(c, inv_a);
 
     Tensor<T,M-N,M-N> inv_d;
     lut_inverse_dispatcher(d, inv_d);
 
     out(fseq<0,N>(),fseq<0,N>()) = inv_a;
     out(fseq<0,N>(),fseq<N,M>()) = 0;
-    out(fseq<N,M>(),fseq<0,N>()) = -tmatmul<matrix_type::lower_tri,matrix_type::general>(inv_d, c_inva);
+    out(fseq<N,M>(),fseq<0,N>()) = -tmatmul<UpLoType::Lower,UpLoType::General>(inv_d, c_inva);
     out(fseq<N,M>(),fseq<N,M>()) = inv_d;
 }
 
@@ -349,14 +349,14 @@ FASTOR_INLINE void lut_inverse_dispatcher(const Tensor<T,M,M> &in, Tensor<T,M,M>
     Tensor<T,N,N> inv_a;
     lut_inverse_dispatcher(a, inv_a);
 
-    Tensor<T,M-N,N> c_inva = tmatmul<matrix_type::general,matrix_type::lower_tri>(c, inv_a);
+    Tensor<T,M-N,N> c_inva = tmatmul<UpLoType::General,UpLoType::Lower>(c, inv_a);
 
     Tensor<T,M-N,M-N> inv_d;
     lut_inverse_dispatcher(d, inv_d);
 
     out(fseq<0,N>(),fseq<0,N>()) = inv_a;
     out(fseq<0,N>(),fseq<N,M>()) = 0;
-    out(fseq<N,M>(),fseq<0,N>()) = -tmatmul<matrix_type::lower_tri,matrix_type::general>(inv_d, c_inva);
+    out(fseq<N,M>(),fseq<0,N>()) = -tmatmul<UpLoType::Lower,UpLoType::General>(inv_d, c_inva);
     out(fseq<N,M>(),fseq<N,M>()) = inv_d;
 }
 //-----------------------------------------------------------------------------------------------------------//
@@ -631,44 +631,32 @@ inverse(const AbstractTensor<Derived,DIM> &src) {
 
 
 // Inverse of lower uni-triangular matrices
-template<InvCompType InvType = InvCompType::SimpleInv,
-    typename T, size_t M, enable_if_t_<InvType == InvCompType::SimpleInv,bool> = false>
-FASTOR_INLINE Tensor<T,M,M> lut_inverse(const Tensor<T,M,M> &in) {
+template<InvCompType InvType = InvCompType::SimpleInv, typename ULType = UpLoType::General,
+    typename T, size_t M, enable_if_t_<InvType == InvCompType::SimpleInv && is_same_v_<ULType,UpLoType::UniLower>,bool> = false>
+FASTOR_INLINE Tensor<T,M,M> tinverse(const Tensor<T,M,M> &in) {
     Tensor<T,M,M> out;
     internal::lut_inverse_dispatcher(in,out);
     return out;
 }
-// Inverse for generic expressions of lower uni-triangular matrices is provided here
-template<InvCompType InvType = InvCompType::SimpleInv,
-    typename Derived, size_t DIM>
-FASTOR_INLINE
-typename Derived::result_type
-lut_inverse(const AbstractTensor<Derived,DIM> &src) {
-    // If we are here Derived is already an expression
-    using result_type = typename Derived::result_type;
-    const result_type tmp(src.self());
-    return lut_inverse<InvType>(tmp);
-}
-
 
 // Inverse of lower uni-triangular matrices
-template<InvCompType InvType = InvCompType::SimpleInv,
-    typename T, size_t M, enable_if_t_<InvType == InvCompType::SimpleInv,bool> = false>
-FASTOR_INLINE Tensor<T,M,M> ut_inverse(const Tensor<T,M,M> &in) {
+template<InvCompType InvType = InvCompType::SimpleInv, typename ULType = UpLoType::General,
+    typename T, size_t M, enable_if_t_<InvType == InvCompType::SimpleInv && is_same_v_<ULType,UpLoType::Upper>,bool> = false>
+FASTOR_INLINE Tensor<T,M,M> tinverse(const Tensor<T,M,M> &in) {
     Tensor<T,M,M> out;
     internal::ut_inverse_dispatcher(in,out);
     return out;
 }
 // Inverse for generic expressions of lower uni-triangular matrices is provided here
-template<InvCompType InvType = InvCompType::SimpleInv,
+template<InvCompType InvType = InvCompType::SimpleInv, typename ULType = UpLoType::General,
     typename Derived, size_t DIM>
 FASTOR_INLINE
 typename Derived::result_type
-ut_inverse(const AbstractTensor<Derived,DIM> &src) {
+tinverse(const AbstractTensor<Derived,DIM> &src) {
     // If we are here Derived is already an expression
     using result_type = typename Derived::result_type;
     const result_type tmp(src.self());
-    return ut_inverse<InvType>(tmp);
+    return tinverse<InvType,ULType>(tmp);
 }
 
 

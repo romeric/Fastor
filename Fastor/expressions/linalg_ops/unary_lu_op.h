@@ -496,9 +496,9 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
     lu_block_dispatcher(A11, L11, U11);
 
     // Solve for U12 = {L11}^(-1)*A12
-    Tensor<T,N  ,M-N> U12 = tmatmul<matrix_type::lower_tri,matrix_type::general>(lut_inverse<InvCompType::SimpleInv>(L11),A12);
+    Tensor<T,N  ,M-N> U12 = tmatmul<UpLoType::Lower,UpLoType::General>(tinverse<InvCompType::SimpleInv, UpLoType::UniLower>(L11),A12);
     // Solve for L21 = A21*{U11}^(-1)
-    Tensor<T,M-N,  N> L21 = tmatmul<matrix_type::general,matrix_type::upper_tri>(A21,ut_inverse<InvCompType::SimpleInv>(U11));
+    Tensor<T,M-N,  N> L21 = tmatmul<UpLoType::General,UpLoType::Upper>(A21,tinverse<InvCompType::SimpleInv, UpLoType::Upper>(U11));
 
     Tensor<T,M-N,M-N> S   = A22 - matmul(L21,U12);
 
@@ -532,7 +532,6 @@ FASTOR_INLINE void lu_block_simple_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M
 } // useless
 
 /* For sizes greater than 64 we tile differently to avoid too many recursions
-    We tile based on half of the matrix size so for a 35x35 panel we will get
 */
 template <typename T, size_t M, enable_if_t_<is_greater_v_<M,64>,bool> = false>
 FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L, Tensor<T,M,M>& U) {
@@ -563,11 +562,11 @@ FASTOR_INLINE void lu_block_dispatcher(const Tensor<T,M,M>& A, Tensor<T,M,M>& L,
     useless::lu_block_simple_dispatcher(A11, L11, U11);
 
     // Solve for U12 = {L11}^(-1)*A12
-    Tensor<T,N  ,M-N> U12 = tmatmul<matrix_type::lower_tri,matrix_type::general>(lut_inverse<InvCompType::SimpleInv>(L11),A12);
+    Tensor<T,N  ,M-N> U12 = tmatmul<UpLoType::Lower,UpLoType::General>(tinverse<InvCompType::SimpleInv, UpLoType::UniLower>(L11),A12);
     // Ideally use forward_subs but its iterative nature makes it less efficient than tmatmul
     // Tensor<T,N  ,M-N> U12 = forward_subs(L11,A12);
     // Solve for L21 = A21*{U11}^(-1)
-    Tensor<T,M-N,  N> L21 = tmatmul<matrix_type::general,matrix_type::upper_tri>(A21,ut_inverse<InvCompType::SimpleInv>(U11));
+    Tensor<T,M-N,  N> L21 = tmatmul<UpLoType::General,UpLoType::Upper>(A21,tinverse<InvCompType::SimpleInv, UpLoType::Upper>(U11));
     // Not quite performant as we can't avoid the matmul here
     // Tensor<T,N  ,N  > I; I.eye2();
     // Tensor<T,M-N,  N> L21 = matmul(A21, backward_subs(U11, I));
