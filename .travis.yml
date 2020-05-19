@@ -1,0 +1,24 @@
+language: cpp
+
+os:
+  - linux
+
+dist: bionic
+
+compiler:
+  - gcc
+
+before_install:
+  - FASTORPATH=$(pwd)
+  - echo $FASTORPATH
+
+script:
+  # Run the test suite
+  - cd ~
+  - cd $FASTORPATH/tests
+  - make all && make run && make clean
+  - make all CXX_FLAGS=-std=c++14 && make run && make clean
+
+
+notifications:
+  email: false
