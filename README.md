@@ -81,7 +81,7 @@ int main() {
 You can compile this by providing the following flags to your compiler `-std=c++14 -O3 -march=native -DNDEBUG`.
 
 ### Tensor views: A powerful indexing, slicing and broadcasting mechanism
-Fastor provides powerful tensor views for block indexing, slicing and broadcating familiar to scientific programmers. Consider the following examples
+Fastor provides powerful tensor views for block indexing, slicing and broadcasting familiar to scientific programmers. Consider the following examples
 ~~~c++
 Tensor<double,4,3,10> A, B;
 A.random(); B.random();
