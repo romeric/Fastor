@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/romeric/Fastor.svg?branch=master)](https://travis-ci.com/romeric/Fastor)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 
 # Fastor
 **Fastor** is a stack-based high performance tensor (fixed multi-dimensional array) library for modern C++. 
