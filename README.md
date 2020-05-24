@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.com/romeric/Fastor.svg?branch=master)](https://travis-ci.com/romeric/Fastor)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/romeric/fastor)
 
 # Fastor
 **Fastor** is a stack-based high performance tensor (fixed multi-dimensional array) library for modern C++. 
@@ -9,7 +10,7 @@ Fastor offers:
 - **High-level interface** for manipulating multi-dimensional arrays in C++ that look and feel native to scientific programmers
 - **Bare metal performance** for small matrix/tensor multiplications, contractions and tensor factorisations [LU, QR etc]. Refer to [benchmarks](https://github.com/romeric/Fastor/wiki/Benchmarks) to see how Fastor delivers performance on par with MKL JIT's dedicated API
 - **Compile time operation minimisation** such as graph optimisation and nearly symbolic tensor algebraic manipulation to reduce the complexity of evaluation of BLAS or non-BLAS type expressions by orders of magnitude
-- **Explicit and configurable** SIMD vectorisation supporting all numeric data types `float32`, `float64`, `complex float32` and `complex float64` as well as integral types
+- Explicit and configurable **SIMD vectorisation** supporting all numeric data types `float32`, `float64`, `complex float32` and `complex float64` as well as integral types
 - **Optional JIT backend** using Intel's [MKL-JIT](https://software.intel.com/en-us/articles/intel-math-kernel-library-improved-small-matrix-performance-using-just-in-time-jit-code) and [LIBXSMM](https://github.com/hfp/libxsmm) for performance portable code
 - Ability to **wrap existing data** and operate on them using Fastor's highly optimised kernels
 - **Light weight header-only** library with no external dependencies offering **fast compilation times**
