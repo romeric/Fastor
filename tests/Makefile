@@ -16,7 +16,7 @@ endif
 all: tests
 tests: test_auxiliary \
 test_simd_vectors \
-test_basics \
+test_tensor_basics \
 test_booleans \
 test_matmul \
 test_tmatmul \
@@ -39,8 +39,8 @@ test_simd_vectors:
 	$(CXX) test_simd_vectors.cpp -o test_simd_vectors.exe $(CXX_FLAGS) $(INCLUDES)
 	$(CXX) test_simd_vectors_complex.cpp -o test_simd_vectors_complex.exe $(CXX_FLAGS) $(INCLUDES)
 
-test_basics:
-	$(CXX) test_basics.cpp -o test_basics.exe $(CXX_FLAGS) $(INCLUDES)
+test_tensor_basics:
+	$(CXX) test_tensor_basics.cpp -o test_tensor_basics.exe $(CXX_FLAGS) $(INCLUDES)
 
 test_booleans:
 	$(CXX) test_booleans.cpp -o test_booleans.exe $(CXX_FLAGS) $(INCLUDES)
@@ -121,7 +121,7 @@ test_binary_cmp_ops:
 
 run: run_auxiliary \
 run_simd_vectors \
-run_basics \
+run_tensor_basics \
 run_booleans \
 run_matmul \
 run_tmatmul \
@@ -144,8 +144,8 @@ run_simd_vectors:
 	./test_simd_vectors.exe
 	./test_simd_vectors_complex.exe
 
-run_basics:
-	./test_basics.exe
+run_tensor_basics:
+	./test_tensor_basics.exe
 
 run_booleans:
 	./test_booleans.exe
