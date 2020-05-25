@@ -274,9 +274,9 @@ void test_solve() {
 
 int main() {
 
-    // print(FBLU(BOLD("Testing tensor algebra routines: single precision")));
+    // print(FBLU(BOLD("Testing tensor solve: single precision")));
     // test_solve<float>();
-    print(FBLU(BOLD("Testing tensor algebra routines: double precision")));
+    print(FBLU(BOLD("Testing tensor solve: double precision")));
     test_solve<double>();
 
     return 0;

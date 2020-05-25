@@ -92,9 +92,9 @@ void test_inverse() {
 
 int main() {
 
-    print(FBLU(BOLD("Testing tensor algebra routines: single precision")));
+    print(FBLU(BOLD("Testing tensor inverse: single precision")));
     test_inverse<float>();
-    print(FBLU(BOLD("Testing tensor algebra routines: double precision")));
+    print(FBLU(BOLD("Testing tensor inverse: double precision")));
     test_inverse<double>();
 
     return 0;

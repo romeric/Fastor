@@ -12,12 +12,19 @@ before_install:
   - FASTORPATH=$(pwd)
   - echo $FASTORPATH
 
+install:
+  # build the tests
+  - cd ~
+  - cd $FASTORPATH/tests
+  - mkdir build && cd build
+  - cmake -DCMAKE_BUILD_TYPE=Release ../
+  - make -j2
+
 script:
   # Run the test suite
   - cd ~
-  - cd $FASTORPATH/tests
-  - make all && make run && make clean
-  - make all CXX_FLAGS=-std=c++14 && make run && make clean
+  - cd $FASTORPATH/tests/build/
+  - ctest -V
 
 
 notifications:

@@ -446,9 +446,9 @@ void run() {
 int main() {
 
 
-    print(FBLU(BOLD("Testing tensor contraction: single precision")));
+    print(FBLU(BOLD("Testing tensor matmul: single precision")));
     run<float>();
-    print(FBLU(BOLD("Testing tensor contraction: double precision")));
+    print(FBLU(BOLD("Testing tensor matmul: double precision")));
     run<double>();
 
 

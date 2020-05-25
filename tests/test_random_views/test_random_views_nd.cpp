@@ -81,7 +81,7 @@ void run() {
         FASTOR_EXIT_ASSERT(abs(a3.sum() - 4888) < BigTol);
         a3(it1).noalias() /= a3(it2);
         FASTOR_EXIT_ASSERT(abs(a3.sum() - 4348.14550) < 1e-2);
-        
+
         a3.iota(10);
         a3(it1).noalias() = a3(it2);
         FASTOR_EXIT_ASSERT(abs(a3.sum() - 4855) < BigTol);
@@ -101,9 +101,9 @@ void run() {
 
 int main() {
 
-    print(FBLU(BOLD("Testing multi-dimensional tensor views: single precision")));
+    print(FBLU(BOLD("Testing multi-dimensional random tensor views: single precision")));
     run<float>();
-    print(FBLU(BOLD("Testing multi-dimensional tensor views: double precision")));
+    print(FBLU(BOLD("Testing multi-dimensional random tensor views: double precision")));
     run<double>();
 
     return 0;

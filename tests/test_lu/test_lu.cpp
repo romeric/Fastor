@@ -320,7 +320,7 @@ void test_factorisation() {
 int main() {
 
     // We will test only double precision here
-    print(FBLU(BOLD("Testing tensor algebra routines: double precision")));
+    print(FBLU(BOLD("Testing LU factorisation: double precision")));
     test_factorisation<double>();
 
     return 0;
