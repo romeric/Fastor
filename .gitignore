@@ -11,3 +11,9 @@
 
 # directories
 *build
+*CMakeFiles
+*Testing
+
+# misc
+*.DS_Store
+*CMakeCache.txt

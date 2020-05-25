@@ -1,9 +1,18 @@
-The tests can be ran with different compiler flags
+To run the tests do
 
 ~~~
-make all && make run && make clean
-make all CXX_FLAGS="-std=c++14" && make run && make clean
-make all CXX_FLAGS="-std=c++14 -msse2" && make run && make clean
+cd tests && mkdir build && cd build && cmake ../ && make && ctest
 ~~~
 
-The first two combinations should always be tested as they cover optimisation ON and optimisation OFF
+To control verbosity of cmake build and ctest run processes you can specify
+
+~~~
+cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ../ && make && ctest -V
+~~~
+
+To run the tests with optimisation ON and optimisation OFF you can specify
+
+~~~
+cmake -DCMAKE_BUILD_TYPE=Debug
+cmake -DCMAKE_BUILD_TYPE=Release
+~~~
