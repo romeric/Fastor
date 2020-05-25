@@ -4,14 +4,14 @@ project(test_fastor)
 set(FASTOR_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../)
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_VERBOSE_MAKEFILE ON)
+# set(CMAKE_VERBOSE_MAKEFILE ON)
 
 enable_testing()
 
 if(MSVC)
     add_compile_options("/W4" "$<$<CONFIG:RELEASE>:/O2>")
 else()
-    add_compile_options("$<$<CONFIG:RELEASE>:-O3>" "$<$<CONFIG:RELEASE>:-march=native>")
+    add_compile_options("-march=native" "$<$<CONFIG:RELEASE>:-O3>" "$<$<CONFIG:RELEASE>:-march=native>")
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "g++")
         add_compile_options("-fabi-version=6")
     endif()
