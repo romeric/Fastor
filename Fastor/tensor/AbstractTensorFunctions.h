@@ -4,6 +4,8 @@
 #include "Fastor/tensor/Tensor.h"
 #include "Fastor/tensor/TensorTraits.h"
 
+#include <limits>
+
 namespace Fastor {
 
 /* The implementation of the evaluate function that evaluates any expression in to a tensor
@@ -93,6 +95,58 @@ FASTOR_INLINE typename Derived::scalar_type product(const AbstractTensor<Derived
         _scal *= src.template eval_s<T>(i);
     }
     return _vec.product() * _scal;
+}
+
+/* Get minimum element of a tensor
+*/
+template<class Derived, size_t DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+FASTOR_INLINE typename Derived::scalar_type min(const AbstractTensor<Derived,DIMS> &_src) {
+    const Derived &src = _src.self();
+    using result_type = typename Derived::result_type;
+    const result_type out(src);
+    return min(out);
+}
+template<class Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
+FASTOR_INLINE typename Derived::scalar_type min(const AbstractTensor<Derived,DIMS> &_src) {
+
+    const Derived &src = _src.self();
+    using T = typename Derived::scalar_type;
+    using V = typename Derived::simd_vector_type;
+    FASTOR_INDEX i;
+    T _scal=std::numeric_limits<T>::max(); V _vec(_scal);
+    for (i = 0; i < ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
+        _vec = min(src.template eval<T>(i),_vec);
+    }
+    for (; i < src.size(); ++i) {
+        _scal = std::min(src.template eval_s<T>(i),_scal);
+    }
+    return std::min(_vec.minimum(), _scal);
+}
+
+/* Get maximum element of a tensor
+*/
+template<class Derived, size_t DIMS, enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
+FASTOR_INLINE typename Derived::scalar_type max(const AbstractTensor<Derived,DIMS> &_src) {
+    const Derived &src = _src.self();
+    using result_type = typename Derived::result_type;
+    const result_type out(src);
+    return max(out);
+}
+template<class Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
+FASTOR_INLINE typename Derived::scalar_type max(const AbstractTensor<Derived,DIMS> &_src) {
+
+    const Derived &src = _src.self();
+    using T = typename Derived::scalar_type;
+    using V = typename Derived::simd_vector_type;
+    FASTOR_INDEX i;
+    T _scal=std::numeric_limits<T>::min(); V _vec(_scal);
+    for (i = 0; i < ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
+        _vec = max(src.template eval<T>(i),_vec);
+    }
+    for (; i < src.size(); ++i) {
+        _scal = std::max(src.template eval_s<T>(i),_scal);
+    }
+    return std::max(_vec.maximum(), _scal);
 }
 
 /* Get the lower triangular matrix from a 2D expression

@@ -4,9 +4,98 @@
 #include "Fastor/meta/meta.h"
 #include "Fastor/simd_vector/extintrin.h"
 #include "Fastor/simd_vector/SIMDVector.h"
+#include <cmath>
 
 namespace Fastor {
 
+// minimum
+//----------------------------------------------------------------------------------------------------------//
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> min(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::min(((T*)&a)[i],((T*)&b)[i]); }
+    return out;
+}
+#ifdef FASTOR_SSE2_IMPL
+#ifdef FASTOR_SSE4_1_IMPL
+template<>
+FASTOR_INLINE SIMDVector<int,simd_abi::sse> min(const SIMDVector<int,simd_abi::sse> &a, const SIMDVector<int,simd_abi::sse> &b) {
+    return _mm_min_epi32(a.value,b.value);
+}
+#endif
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::sse> min(const SIMDVector<float,simd_abi::sse> &a, const SIMDVector<float,simd_abi::sse> &b) {
+    return _mm_min_ps(a.value,b.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::sse> min(const SIMDVector<double,simd_abi::sse> &a, const SIMDVector<double,simd_abi::sse> &b) {
+    return _mm_min_pd(a.value,b.value);
+}
+#endif
+#ifdef FASTOR_AVX_IMPL
+#ifdef FASTOR_AVX2_IMPL
+template<>
+FASTOR_INLINE SIMDVector<int,simd_abi::avx> min(const SIMDVector<int,simd_abi::avx> &a, const SIMDVector<int,simd_abi::avx> &b) {
+    return _mm256_min_epi32(a.value,b.value);
+}
+#endif
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::avx> min(const SIMDVector<float,simd_abi::avx> &a, const SIMDVector<float,simd_abi::avx> &b) {
+    return _mm256_min_ps(a.value,b.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::avx> min(const SIMDVector<double,simd_abi::avx> &a, const SIMDVector<double,simd_abi::avx> &b) {
+    return _mm256_min_pd(a.value,b.value);
+}
+#endif
+//----------------------------------------------------------------------------------------------------------//
+
+
+// maximum
+//----------------------------------------------------------------------------------------------------------//
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> max(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::max(((T*)&a)[i],((T*)&b)[i]); }
+    return out;
+}
+#ifdef FASTOR_SSE2_IMPL
+#ifdef FASTOR_SSE4_1_IMPL
+template<>
+FASTOR_INLINE SIMDVector<int,simd_abi::sse> max(const SIMDVector<int,simd_abi::sse> &a, const SIMDVector<int,simd_abi::sse> &b) {
+    return _mm_max_epi32(a.value,b.value);
+}
+#endif
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::sse> max(const SIMDVector<float,simd_abi::sse> &a, const SIMDVector<float,simd_abi::sse> &b) {
+    return _mm_max_ps(a.value,b.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::sse> max(const SIMDVector<double,simd_abi::sse> &a, const SIMDVector<double,simd_abi::sse> &b) {
+    return _mm_max_pd(a.value,b.value);
+}
+#endif
+#ifdef FASTOR_AVX_IMPL
+#ifdef FASTOR_AVX2_IMPL
+template<>
+FASTOR_INLINE SIMDVector<int,simd_abi::avx> max(const SIMDVector<int,simd_abi::avx> &a, const SIMDVector<int,simd_abi::avx> &b) {
+    return _mm256_max_epi32(a.value,b.value);
+}
+#endif
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::avx> max(const SIMDVector<float,simd_abi::avx> &a, const SIMDVector<float,simd_abi::avx> &b) {
+    return _mm256_max_ps(a.value,b.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::avx> max(const SIMDVector<double,simd_abi::avx> &a, const SIMDVector<double,simd_abi::avx> &b) {
+    return _mm256_max_pd(a.value,b.value);
+}
+#endif
+//----------------------------------------------------------------------------------------------------------//
+
+
+
+// vdt math functions
 #ifdef FASTOR_USE_VDT
 #include <vdt/vdtMath.h>
 
