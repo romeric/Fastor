@@ -40,7 +40,7 @@ public:\
         return SIMD_OP(_expr.template eval<EVAL_TYPE>(i,j));\
     }\
     template<typename U=scalar_type>\
-    FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {\
+    FASTOR_INLINE EVAL_TYPE eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {\
         return SCALAR_OP(_expr.template eval_s<EVAL_TYPE>(i,j));\
     }\
     template<typename U>\
@@ -154,7 +154,7 @@ FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENTS(OP, NAME, _sub)
 FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENTS(OP, NAME, _mul)
 FASTOR_MAKE_UNARY_MATH_OP_ASSIGNMENTS(OP, NAME, _div)
 
-}
+} // end of namespace Fastor
 
 
 #endif // UNARY_MATH_OP_H

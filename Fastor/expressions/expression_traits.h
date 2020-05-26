@@ -2,6 +2,9 @@
 #define EXPRESSION_TRAITS_H
 
 #include "Fastor/commons/commons.h"
+#include "Fastor/meta/meta.h"
+// #include "Fastor/expressions/unary_ops/unary_bool_ops.h"
+// #include "Fastor/expressions/binary_ops/binary_cmp_ops.h"
 #include <type_traits>
 
 namespace Fastor {
@@ -28,16 +31,16 @@ static constexpr bool is_expression_v = is_expression<Derived>::value;
 // Expression binder - by value or ref
 //------------------------------------------------------------------------------------------------//
 template<class T>
-struct ExprBinderType {
+struct expression_binder_type {
 #ifndef FASTOR_COPY_EXPR
-    using type = typename std::conditional<std::is_arithmetic<T>::value, const T, const T&>::type;
+    using type = conditional_t_<is_arithmetic_v_<T>, const T, const T&>;
 #else
     using type = T;
 #endif
 };
 
 template<class T>
-using expression_t = typename ExprBinderType<T>::type;
+using expression_t = typename expression_binder_type<T>::type;
 //------------------------------------------------------------------------------------------------//
 
 
@@ -52,6 +55,43 @@ template<typename T, size_t ... Rest>
 class SingleValueTensor;
 
 // traits
+//----------------------------------------------------------------------------------------------------------//
+template<typename Derived>
+struct is_unary_bool_op {
+    static constexpr bool value = false;
+};
+
+template<typename Expr, size_t DIM>
+struct is_unary_bool_op<UnaryIsinfOp<Expr,DIM>> {
+    static constexpr bool value = true;
+};
+template<typename Expr, size_t DIM>
+struct is_unary_bool_op<UnaryIsnanOp<Expr,DIM>> {
+    static constexpr bool value = true;
+};
+template<typename Expr, size_t DIM>
+struct is_unary_bool_op<UnaryIsfiniteOp<Expr,DIM>> {
+    static constexpr bool value = true;
+};
+
+template<size_t ... Rest>
+struct is_unary_bool_op<Tensor<bool,Rest...>> {
+    static constexpr bool value = true;
+};
+template<size_t ... Rest>
+struct is_unary_bool_op<TensorMap<bool,Rest...>> {
+    static constexpr bool value = true;
+};
+template<size_t ... Rest>
+struct is_unary_bool_op<SingleValueTensor<bool,Rest...>> {
+    static constexpr bool value = true;
+};
+
+template<typename Derived>
+static constexpr bool is_unary_bool_op_v = is_unary_bool_op<Derived>::value;
+//----------------------------------------------------------------------------------------------------------//
+
+
 //----------------------------------------------------------------------------------------------------------//
 template<typename Derived>
 struct is_binary_cmp_op {
@@ -87,6 +127,18 @@ struct is_binary_cmp_op<SingleValueTensor<bool,Rest...>> {
 
 template<typename Derived>
 static constexpr bool is_binary_cmp_op_v = is_binary_cmp_op<Derived>::value;
+//----------------------------------------------------------------------------------------------------------//
+
+
+/* Is boolean expresssion */
+//----------------------------------------------------------------------------------------------------------//
+template<typename Derived>
+struct is_boolean_expression {
+    static constexpr bool value = is_unary_bool_op<Derived>::value || is_binary_cmp_op<Derived>::value;
+};
+
+template<typename Derived>
+static constexpr bool is_boolean_expression_v = is_boolean_expression<Derived>::value;
 //----------------------------------------------------------------------------------------------------------//
 
 

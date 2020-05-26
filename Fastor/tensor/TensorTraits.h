@@ -143,6 +143,21 @@ constexpr bool is_abstracttensor_v = is_abstracttensor<T>::value;
 //--------------------------------------------------------------------------------------------------------------------//
 
 
+/* Convert a tensor to a bool tensor */
+//--------------------------------------------------------------------------------------------------------------------//
+template <class Tens>
+struct to_bool_tensor;
+
+template <typename T, size_t ... Rest>
+struct to_bool_tensor<Tensor<T,Rest...>> {
+    using type = Tensor<bool,Rest...>;
+};
+
+template <class Tens>
+using to_bool_tensor_t = typename to_bool_tensor<Tens>::type;
+//--------------------------------------------------------------------------------------------------------------------//
+
+
 /* Concatenate two tensor and make a new tensor type */
 //--------------------------------------------------------------------------------------------------------------------//
 // Do not generalise this, as it leads to all kinds of problems

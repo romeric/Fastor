@@ -118,6 +118,17 @@ struct nprods;
 template<class Idx, class Seq>
 struct nprods_views;
 
+#define FASTOR_MAKE_UNARY_BOOL_OP_FORWARD_DECLARATION(NAME)\
+template<typename Expr, size_t DIM0>\
+struct Unary ##NAME ## Op;\
+
+FASTOR_MAKE_UNARY_BOOL_OP_FORWARD_DECLARATION(Isinf)
+FASTOR_MAKE_UNARY_BOOL_OP_FORWARD_DECLARATION(Isnan)
+FASTOR_MAKE_UNARY_BOOL_OP_FORWARD_DECLARATION(Isfinite)
+
+template<typename Derived>
+struct is_unary_bool_op;
+
 
 #define FASTOR_MAKE_BINARY_CMP_OP_FORWARD_DECLARATION(NAME)\
 template<typename TLhs, typename TRhs, size_t DIM0>\

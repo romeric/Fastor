@@ -10,14 +10,15 @@ namespace Fastor {
 #define FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(OP, NAME, EVAL_TYPE) \
 template<typename TLhs, typename TRhs, size_t DIM0>\
 struct BinaryCmpOp##NAME: public AbstractTensor<BinaryCmpOp##NAME<TLhs, TRhs, DIM0>,DIM0> {\
-    typename ExprBinderType<TLhs>::type _lhs;\
-    typename ExprBinderType<TRhs>::type _rhs;\
+    expression_t<TLhs> _lhs;\
+    expression_t<TRhs> _rhs;\
     static constexpr FASTOR_INDEX Dimension = DIM0;\
     static constexpr FASTOR_INDEX rank() {return DIM0;}\
     using scalar_type = typename scalar_type_finder<BinaryCmpOp##NAME<TLhs, TRhs, DIM0>>::type;\
     using simd_vector_type = binary_op_simd_vector_t<BinaryCmpOp##NAME<TLhs, TRhs, DIM0> >;\
     using simd_abi_type = typename simd_vector_type::abi_type;\
     using ABI = simd_abi::fixed_size<SIMDVector<scalar_type,simd_abi_type>::Size>;\
+    using result_type = to_bool_tensor_t<binary_arithmetic_result_t<BinaryCmpOp##NAME<TLhs, TRhs, DIM0>>>;\
     FASTOR_INLINE BinaryCmpOp##NAME(expression_t<TLhs> inlhs, expression_t<TRhs> inrhs) : _lhs(inlhs), _rhs(inrhs) {}\
     FASTOR_INLINE FASTOR_INDEX size() const {return helper_size<TLhs,TRhs>();}\
     template<class LExpr, class RExpr,\
@@ -222,18 +223,19 @@ FASTOR_MAKE_BINARY_CMP_TENSOR_OPS_(|| ,OR, scalar_type)
 
 
 #define FASTOR_MAKE_BINARY_CMP_ASSIGNMENT(NAME, ASSIGN_TYPE)\
-template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM>\
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,\
+  enable_if_t_<!(requires_evaluation_v<TLhs> || requires_evaluation_v<TRhs>),bool> = false >\
 FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const BinaryCmpOp ##NAME <TLhs, TRhs, OtherDIM> &src) {\
-    FASTOR_IF_CONSTEXPR (!(requires_evaluation_v<TLhs> || requires_evaluation_v<TRhs>)) {\
-        trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
-    }\
-    else {\
-        using lhs_type = remove_all_t<expression_t<TLhs>>;\
-        using rhs_type = remove_all_t<expression_t<TRhs>>;\
-        const lhs_type a(src.lhs());\
-        const rhs_type b(src.rhs());\
-        trivial_assign ##ASSIGN_TYPE (dst.self(), BinaryCmpOp ##NAME <TLhs, TRhs, OtherDIM>(a,b));\
-    }\
+    trivial_assign ##ASSIGN_TYPE (dst.self(), src.self());\
+}\
+template<typename Derived, size_t DIM, typename TLhs, typename TRhs, size_t OtherDIM,\
+  enable_if_t_<(requires_evaluation_v<TLhs> || requires_evaluation_v<TRhs>),bool> = false >\
+FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const BinaryCmpOp ##NAME <TLhs, TRhs, OtherDIM> &src) {\
+    using lhs_type = typename get_binary_arithmetic_result_type<TLhs>::type;\
+    using rhs_type = typename get_binary_arithmetic_result_type<TRhs>::type;\
+    const lhs_type a(src.lhs());\
+    const rhs_type b(src.rhs());\
+    trivial_assign ##ASSIGN_TYPE (dst.self(), BinaryCmpOp ##NAME <lhs_type, rhs_type, OtherDIM>(a,b));\
 }\
 
 #define FASTOR_MAKE_BINARY_CMP_ASSIGNMENTS(ASSIGN_TYPE)\

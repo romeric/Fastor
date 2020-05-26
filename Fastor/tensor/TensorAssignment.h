@@ -13,7 +13,7 @@ FASTOR_INLINE void trivial_assign(AbstractTensor<Derived,DIM> &dst, const Abstra
     FASTOR_ASSERT(src.size()==dst.self().size(), "TENSOR SIZE MISMATCH");
     T* _data = dst.self().data();
 
-    FASTOR_IF_CONSTEXPR(!is_binary_cmp_op_v<OtherDerived>) {
+    FASTOR_IF_CONSTEXPR(!is_boolean_expression_v<OtherDerived>) {
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
             src.template eval<T>(i).store(&_data[i], FASTOR_ALIGNED);
@@ -37,7 +37,7 @@ FASTOR_INLINE void trivial_assign_add(AbstractTensor<Derived,DIM> &dst, const Ab
     FASTOR_ASSERT(src.size()==dst.self().size(), "TENSOR SIZE MISMATCH");
     T* _data = dst.self().data();
 
-    FASTOR_IF_CONSTEXPR(!is_binary_cmp_op_v<OtherDerived>) {
+    FASTOR_IF_CONSTEXPR(!is_boolean_expression_v<OtherDerived>) {
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
             V _vec = V(&_data[i], FASTOR_ALIGNED) + src.template eval<T>(i);
@@ -62,7 +62,7 @@ FASTOR_INLINE void trivial_assign_sub(AbstractTensor<Derived,DIM> &dst, const Ab
     FASTOR_ASSERT(src.size()==dst.self().size(), "TENSOR SIZE MISMATCH");
     T* _data = dst.self().data();
 
-    FASTOR_IF_CONSTEXPR(!is_binary_cmp_op_v<OtherDerived>) {
+    FASTOR_IF_CONSTEXPR(!is_boolean_expression_v<OtherDerived>) {
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
             V _vec = V(&_data[i], FASTOR_ALIGNED) - src.template eval<T>(i);
@@ -87,7 +87,7 @@ FASTOR_INLINE void trivial_assign_mul(AbstractTensor<Derived,DIM> &dst, const Ab
     FASTOR_ASSERT(src.size()==dst.self().size(), "TENSOR SIZE MISMATCH");
     T* _data = dst.self().data();
 
-    FASTOR_IF_CONSTEXPR(!is_binary_cmp_op_v<OtherDerived>) {
+    FASTOR_IF_CONSTEXPR(!is_boolean_expression_v<OtherDerived>) {
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
             V _vec = V(&_data[i], FASTOR_ALIGNED) * src.template eval<T>(i);
@@ -112,7 +112,7 @@ FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, const Ab
     FASTOR_ASSERT(src.size()==dst.self().size(), "TENSOR SIZE MISMATCH");
     T* _data = dst.self().data();
 
-    FASTOR_IF_CONSTEXPR(!is_binary_cmp_op_v<OtherDerived>) {
+    FASTOR_IF_CONSTEXPR(!is_boolean_expression_v<OtherDerived>) {
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
             V _vec = V(&_data[i], FASTOR_ALIGNED) / src.template eval<T>(i);

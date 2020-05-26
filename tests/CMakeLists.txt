@@ -51,4 +51,6 @@ add_subdirectory(test_complex_expressions)
 
 add_subdirectory(test_tensormap)
 
+add_subdirectory(test_unary_bool_ops)
+
 add_subdirectory(test_binary_cmp_ops)

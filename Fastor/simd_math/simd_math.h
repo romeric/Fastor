@@ -104,14 +104,14 @@ FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> isi
 }
 
 template<typename T, typename ABI>
-FASTOR_INLINE SIMDVector<T,ABI> isnan(const SIMDVector<T,ABI> &a) {
+FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> isnan(const SIMDVector<T,ABI> &a) {
     SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((bool*)&out)[i] = std::isnan(((T*)&a)[i]); }
     return out;
 }
 
 template<typename T, typename ABI>
-FASTOR_INLINE SIMDVector<T,SIMDVector<T,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>>> isfinite(const SIMDVector<T,ABI> &a) {
+FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> isfinite(const SIMDVector<T,ABI> &a) {
     SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((bool*)&out)[i] = std::isfinite(((T*)&a)[i]); }
     return out;

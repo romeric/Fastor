@@ -22,26 +22,11 @@ struct SIMDVector<T, simd_abi::scalar> {
         return *this;
     }
 
-    FASTOR_INLINE void load(const T *data, bool ) {
-        value = *data;
-    }
-    FASTOR_INLINE void store(T *data, bool ) const {
-        data[0] = value;
-    }
+    FASTOR_INLINE void load(const T *data, bool Aligned=true)  { value   = *data; unused(Aligned); }
+    FASTOR_INLINE void store(T *data, bool Aligned=true) const { data[0] = value; unused(Aligned); }
 
-    // FASTOR_INLINE void load(const T *data) {
-    //     value = *data;
-    // }
-    // FASTOR_INLINE void store(T *data) const {
-    //     data[0] = value;
-    // }
-
-    FASTOR_INLINE void aligned_load(const T *data) {
-        value = *data;
-    }
-    FASTOR_INLINE void aligned_store(T *data) const {
-        data[0] = value;
-    }
+    FASTOR_INLINE void aligned_load(const T *data)  { value   = *data; }
+    FASTOR_INLINE void aligned_store(T *data) const { data[0] = value; }
 
     FASTOR_INLINE void mask_load(const scalar_value_type *a, uint8_t mask, bool ) {
         if (mask != 0x0) value = *a;

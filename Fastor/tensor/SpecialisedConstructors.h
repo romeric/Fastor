@@ -108,7 +108,7 @@ FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
 #endif
     constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
     constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
-    FASTOR_IF_CONSTEXPR(!is_binary_cmp_op_v<Derived>) {
+    FASTOR_IF_CONSTEXPR(!is_boolean_expression_v<Derived>) {
         for (FASTOR_INDEX i = 0; i <M; ++i) {
             FASTOR_INDEX j;
             for (j = 0; j <ROUND_DOWN(N,Stride_); j+=Stride_) {
@@ -276,7 +276,7 @@ FASTOR_INLINE Tensor(const AbstractTensor<Derived,DIMS>& src_) {
 #endif
     constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
     constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
-    FASTOR_IF_CONSTEXPR(!is_binary_cmp_op_v<Derived>) {
+    FASTOR_IF_CONSTEXPR(!is_boolean_expression_v<Derived>) {
         for (FASTOR_INDEX i = 0; i <M; ++i) {
             FASTOR_INDEX j;
             for (j = 0; j <ROUND_DOWN(N,Stride_); j+=Stride_) {

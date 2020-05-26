@@ -210,7 +210,13 @@ FASTOR_INLINE typename Derived::result_type triu(const AbstractTensor<Derived,DI
 // Boolean functions
 //----------------------------------------------------------------------------------------------------------//
 //----------------------------------------------------------------------------------------------------------//
-template<class Derived, size_t DIMS, enable_if_t_<is_binary_cmp_op_v<Derived>,bool> = false>
+template<class Derived, size_t DIMS, enable_if_t_<is_boolean_expression_v<Derived> && requires_evaluation_v<Derived>,bool> = false>
+FASTOR_INLINE bool all_of(const AbstractTensor<Derived,DIMS> &_src) {
+    using result_type = typename Derived::result_type;
+    const result_type tmp(_src.self());
+    return all_of(tmp);
+}
+template<class Derived, size_t DIMS, enable_if_t_<is_boolean_expression_v<Derived> && !requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE bool all_of(const AbstractTensor<Derived,DIMS> &_src) {
     const Derived &src = _src.self();
     bool val = true;
@@ -223,7 +229,13 @@ FASTOR_INLINE bool all_of(const AbstractTensor<Derived,DIMS> &_src) {
     return val;
 }
 
-template<class Derived, size_t DIMS, enable_if_t_<is_binary_cmp_op_v<Derived>,bool> = false>
+template<class Derived, size_t DIMS, enable_if_t_<is_boolean_expression_v<Derived> && requires_evaluation_v<Derived>,bool> = false>
+FASTOR_INLINE bool any_of(const AbstractTensor<Derived,DIMS> &_src) {
+    using result_type = typename Derived::result_type;
+    const result_type tmp(_src.self());
+    return any_of(tmp);
+}
+template<class Derived, size_t DIMS, enable_if_t_<is_boolean_expression_v<Derived> && !requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE bool any_of(const AbstractTensor<Derived,DIMS> &_src) {
     const Derived &src = _src.self();
     bool val = false;
@@ -236,7 +248,13 @@ FASTOR_INLINE bool any_of(const AbstractTensor<Derived,DIMS> &_src) {
     return val;
 }
 
-template<class Derived, size_t DIMS, enable_if_t_<is_binary_cmp_op_v<Derived>,bool> = false>
+template<class Derived, size_t DIMS, enable_if_t_<is_boolean_expression_v<Derived> && requires_evaluation_v<Derived>,bool> = false>
+FASTOR_INLINE bool none_of(const AbstractTensor<Derived,DIMS> &_src) {
+    using result_type = typename Derived::result_type;
+    const result_type tmp(_src.self());
+    return none_of(tmp);
+}
+template<class Derived, size_t DIMS, enable_if_t_<is_boolean_expression_v<Derived> && !requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE bool none_of(const AbstractTensor<Derived,DIMS> &_src) {
     const Derived &src = _src.self();
     bool val = false;
