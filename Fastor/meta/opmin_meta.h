@@ -548,6 +548,69 @@ struct sixtet_flop_cost<Index<Idx0...>,Index<Idx1...>,Index<Idx2...>,Index<Idx3.
 };
 //------------------------------------------------------------------------------------------------------------//
 
+
+
+
+
+// einsum helper to extract the resulting index and the resulting tensor
+//------------------------------------------------------------------------------------------------------------//
+template<typename ...Ts>
+struct einsum_helper;
+
+template<class Ind0,
+         typename T, size_t ... Rest0>
+struct einsum_helper<Ind0,Tensor<T,Rest0...>> {
+    using resulting_index = typename contraction_impl<Ind0, Tensor<T,Rest0...>,
+        typename std_ext::make_index_sequence<sizeof...(Rest0)>::type>::indices;
+    using resulting_tensor = typename contraction_impl<Ind0, Tensor<T,Rest0...>,
+      typename std_ext::make_index_sequence<sizeof...(Rest0)>::type>::type;
+};
+
+template<class Ind0, class Ind1,
+         class Tensor0, class Tensor1>
+struct einsum_helper<Ind0,Ind1,Tensor0,Tensor1> {
+    using resulting_index  = typename get_resuling_tensor<Ind0,Ind1,Tensor0,Tensor1>::resulting_index;
+    using resulting_tensor = typename get_resuling_tensor<Ind0,Ind1,Tensor0,Tensor1>::resulting_tensor;
+};
+
+template<class Ind0, class Ind1, class Ind2,
+         class Tensor0, class Tensor1, class Tensor2>
+struct einsum_helper<Ind0,Ind1,Ind2,Tensor0,Tensor1,Tensor2> {
+    using cost_model = triplet_flop_cost<Ind0,Ind1,Ind2,
+                                Tensor0,Tensor1,Tensor2>;
+    using resulting_index  = typename cost_model::resulting_index;
+    using resulting_tensor = typename cost_model::resulting_tensor;
+};
+
+template<class Ind0, class Ind1, class Ind2, class Ind3,
+         class Tensor0, class Tensor1, class Tensor2, class Tensor3>
+struct einsum_helper<Ind0,Ind1,Ind2,Ind3,Tensor0,Tensor1,Tensor2,Tensor3> {
+    using cost_model = quartet_flop_cost<Ind0,Ind1,Ind2,Ind3,
+                                Tensor0,Tensor1,Tensor2,Tensor3>;
+    using resulting_index  = typename cost_model::resulting_index;
+    using resulting_tensor = typename cost_model::resulting_tensor;
+};
+
+template<class Ind0, class Ind1, class Ind2, class Ind3, class Ind4,
+         class Tensor0, class Tensor1, class Tensor2, class Tensor3, class Tensor4>
+struct einsum_helper<Ind0,Ind1,Ind2,Ind3,Ind4,Tensor0,Tensor1,Tensor2,Tensor3,Tensor4> {
+    using cost_model = quintet_flop_cost<Ind0,Ind1,Ind2,Ind3,Ind4,
+                                Tensor0,Tensor1,Tensor2,Tensor3,Tensor4>;
+    using resulting_index  = typename cost_model::resulting_index;
+    using resulting_tensor = typename cost_model::resulting_tensor;
+};
+
+template<class Ind0, class Ind1, class Ind2, class Ind3, class Ind4, class Ind5,
+         class Tensor0, class Tensor1, class Tensor2, class Tensor3, class Tensor4, class Tensor5>
+struct einsum_helper<Ind0,Ind1,Ind2,Ind3,Ind4,Ind5,Tensor0,Tensor1,Tensor2,Tensor3,Tensor4,Tensor5> {
+    using cost_model = sixtet_flop_cost<Ind0,Ind1,Ind2,Ind3,Ind4,Ind5,
+                                Tensor0,Tensor1,Tensor2,Tensor3,Tensor4,Tensor5>;
+    using resulting_index  = typename cost_model::resulting_index;
+    using resulting_tensor = typename cost_model::resulting_tensor;
+};
+//------------------------------------------------------------------------------------------------------------//
+
+
 } // end of namespace Fastor
 
 
