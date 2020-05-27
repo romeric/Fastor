@@ -55,7 +55,7 @@ determinant(const Tensor<T,Rest...> &a) {
     return out;
 }
 
-// For expressions - dispatches to determinant for tensors
+// Find determinant of a tensor expression - dispatches to determinant for tensors
 template<DetCompType DetType = DetCompType::Simple, typename Derived, size_t DIMS>
 FASTOR_INLINE typename Derived::scalar_type determinant(const AbstractTensor<Derived,DIMS> &_src) {
     const Derived &src = _src.self();
@@ -67,26 +67,17 @@ FASTOR_INLINE typename Derived::scalar_type determinant(const AbstractTensor<Der
 
 template<DetCompType DetType = DetCompType::Simple, typename Derived, size_t DIMS>
 FASTOR_INLINE typename Derived::scalar_type det(const AbstractTensor<Derived,DIMS> &_src) {
-    const Derived &src = _src.self();
-    using result_type = typename Derived::result_type;
-    const result_type out = evaluate(src);
-    return determinant<DetType>(out);
+    return determinant<DetType>(_src.self());
 }
 
 template<DetCompType DetType = DetCompType::Simple, typename Derived, size_t DIMS>
 FASTOR_INLINE typename Derived::scalar_type absdet(const AbstractTensor<Derived,DIMS> &_src) {
-    const Derived &src = _src.self();
-    using result_type = typename Derived::result_type;
-    const result_type out = evaluate(src);
-    return std::abs(determinant<DetType>(out));
+    return std::abs(determinant<DetType>(_src.self()));
 }
 
 template<DetCompType DetType = DetCompType::Simple, typename Derived, size_t DIMS>
 FASTOR_INLINE typename Derived::scalar_type logdet(const AbstractTensor<Derived,DIMS> &_src) {
-    const Derived &src = _src.self();
-    using result_type = typename Derived::result_type;
-    const result_type out = evaluate(src);
-    return std::log(std::abs(determinant<DetType>(out)));
+    return std::log(std::abs(determinant<DetType>(_src.self())));
 }
 
 
