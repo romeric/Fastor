@@ -94,6 +94,17 @@ FASTOR_INLINE SIMDVector<double,simd_abi::avx> max(const SIMDVector<double,simd_
 //----------------------------------------------------------------------------------------------------------//
 
 
+// ! or not
+//----------------------------------------------------------------------------------------------------------//
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> operator!(const SIMDVector<T,ABI> &a) {
+    SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((bool*)&out)[i] = !(((T*)&a)[i]); }
+    return out;
+}
+//----------------------------------------------------------------------------------------------------------//
+
+
 // isinf/nan/finite
 //----------------------------------------------------------------------------------------------------------//
 template<typename T, typename ABI>

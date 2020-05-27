@@ -21,6 +21,7 @@ public:\
     using simd_vector_type = typename Expr::simd_vector_type;\
     using simd_abi_type = typename simd_vector_type::abi_type;\
     using result_type = to_bool_tensor_t<typename Expr::result_type>;\
+    using result_scalar_type = typename result_type::scalar_type;\
     using ABI = simd_abi::fixed_size<SIMDVector<EVAL_TYPE,simd_abi_type>::Size>;\
     static constexpr FASTOR_INDEX Dimension = DIM0;\
     static constexpr FASTOR_INDEX rank() {return DIM0;}\
@@ -59,7 +60,7 @@ FASTOR_INLINE Unary ##STRUCT_NAME ## Op<Expr, DIM0> OP_NAME(const AbstractTensor
   return Unary ##STRUCT_NAME ## Op<Expr, DIM0>(_expr.self());\
 }\
 
-
+FASTOR_MAKE_UNARY_BOOL_OPS(operator!, !      , !            , Not     , scalar_type)
 FASTOR_MAKE_UNARY_BOOL_OPS(isinf   , isinf   , std::isinf   , Isinf   , scalar_type)
 FASTOR_MAKE_UNARY_BOOL_OPS(isnan   , isnan   , std::isnan   , Isnan   , scalar_type)
 FASTOR_MAKE_UNARY_BOOL_OPS(isfinite, isfinite, std::isfinite, Isfinite, scalar_type)
@@ -82,6 +83,7 @@ FASTOR_INLINE void assign ##ASSIGN_TYPE (AbstractTensor<Derived,DIM> &dst, const
 }\
 
 // only assignment
+FASTOR_MAKE_UNARY_BOOL_OP_ASSIGNMENT(!       ,  Not     ,  )
 FASTOR_MAKE_UNARY_BOOL_OP_ASSIGNMENT(isinf   ,  Isinf   ,  )
 FASTOR_MAKE_UNARY_BOOL_OP_ASSIGNMENT(isnan   ,  Isnan   ,  )
 FASTOR_MAKE_UNARY_BOOL_OP_ASSIGNMENT(isfinite,  Isfinite,  )

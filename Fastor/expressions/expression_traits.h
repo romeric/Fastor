@@ -62,6 +62,10 @@ struct is_unary_bool_op {
 };
 
 template<typename Expr, size_t DIM>
+struct is_unary_bool_op<UnaryNotOp<Expr,DIM>> {
+    static constexpr bool value = true;
+};
+template<typename Expr, size_t DIM>
 struct is_unary_bool_op<UnaryIsinfOp<Expr,DIM>> {
     static constexpr bool value = true;
 };
