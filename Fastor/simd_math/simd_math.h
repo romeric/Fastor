@@ -19,8 +19,14 @@ FASTOR_INLINE SIMDVector<T,ABI> min(const SIMDVector<T,ABI> &a, const SIMDVector
 #ifdef FASTOR_SSE2_IMPL
 #ifdef FASTOR_SSE4_1_IMPL
 template<>
-FASTOR_INLINE SIMDVector<int,simd_abi::sse> min(const SIMDVector<int,simd_abi::sse> &a, const SIMDVector<int,simd_abi::sse> &b) {
+FASTOR_INLINE SIMDVector<int32_t,simd_abi::sse> min(const SIMDVector<int32_t,simd_abi::sse> &a, const SIMDVector<int32_t,simd_abi::sse> &b) {
     return _mm_min_epi32(a.value,b.value);
+}
+#endif
+#if defined(FASTOR_AVX512F_IMPL) && defined(FASTOR_AVX512VL_IMPL)
+template<>
+FASTOR_INLINE SIMDVector<int64_t,simd_abi::sse> min(const SIMDVector<int64_t,simd_abi::sse> &a, const SIMDVector<int64_t,simd_abi::sse> &b) {
+    return _mm_min_epi64(a.value,b.value);
 }
 #endif
 template<>
@@ -35,8 +41,14 @@ FASTOR_INLINE SIMDVector<double,simd_abi::sse> min(const SIMDVector<double,simd_
 #ifdef FASTOR_AVX_IMPL
 #ifdef FASTOR_AVX2_IMPL
 template<>
-FASTOR_INLINE SIMDVector<int,simd_abi::avx> min(const SIMDVector<int,simd_abi::avx> &a, const SIMDVector<int,simd_abi::avx> &b) {
+FASTOR_INLINE SIMDVector<int32_t,simd_abi::avx> min(const SIMDVector<int32_t,simd_abi::avx> &a, const SIMDVector<int32_t,simd_abi::avx> &b) {
     return _mm256_min_epi32(a.value,b.value);
+}
+#endif
+#if defined(FASTOR_AVX512F_IMPL) && defined(FASTOR_AVX512VL_IMPL)
+template<>
+FASTOR_INLINE SIMDVector<int64_t,simd_abi::avx> min(const SIMDVector<int64_t,simd_abi::avx> &a, const SIMDVector<int64_t,simd_abi::avx> &b) {
+    return _mm256_min_epi64(a.value,b.value);
 }
 #endif
 template<>
@@ -46,6 +58,24 @@ FASTOR_INLINE SIMDVector<float,simd_abi::avx> min(const SIMDVector<float,simd_ab
 template<>
 FASTOR_INLINE SIMDVector<double,simd_abi::avx> min(const SIMDVector<double,simd_abi::avx> &a, const SIMDVector<double,simd_abi::avx> &b) {
     return _mm256_min_pd(a.value,b.value);
+}
+#endif
+#ifdef FASTOR_AVX512F_IMPL
+template<>
+FASTOR_INLINE SIMDVector<int32_t,simd_abi::avx512> min(const SIMDVector<int32_t,simd_abi::avx512> &a, const SIMDVector<int32_t,simd_abi::avx512> &b) {
+    return _mm512_min_epi32(a.value,b.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<int64_t,simd_abi::avx512> min(const SIMDVector<int64_t,simd_abi::avx512> &a, const SIMDVector<int64_t,simd_abi::avx512> &b) {
+    return _mm512_min_epi64(a.value,b.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::avx512> min(const SIMDVector<float,simd_abi::avx512> &a, const SIMDVector<float,simd_abi::avx512> &b) {
+    return _mm512_min_ps(a.value,b.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::avx512> min(const SIMDVector<double,simd_abi::avx512> &a, const SIMDVector<double,simd_abi::avx512> &b) {
+    return _mm512_min_pd(a.value,b.value);
 }
 #endif
 //----------------------------------------------------------------------------------------------------------//
@@ -62,8 +92,14 @@ FASTOR_INLINE SIMDVector<T,ABI> max(const SIMDVector<T,ABI> &a, const SIMDVector
 #ifdef FASTOR_SSE2_IMPL
 #ifdef FASTOR_SSE4_1_IMPL
 template<>
-FASTOR_INLINE SIMDVector<int,simd_abi::sse> max(const SIMDVector<int,simd_abi::sse> &a, const SIMDVector<int,simd_abi::sse> &b) {
+FASTOR_INLINE SIMDVector<int32_t,simd_abi::sse> max(const SIMDVector<int32_t,simd_abi::sse> &a, const SIMDVector<int32_t,simd_abi::sse> &b) {
     return _mm_max_epi32(a.value,b.value);
+}
+#endif
+#if defined(FASTOR_AVX512F_IMPL) && defined(FASTOR_AVX512VL_IMPL)
+template<>
+FASTOR_INLINE SIMDVector<int64_t,simd_abi::sse> max(const SIMDVector<int64_t,simd_abi::sse> &a, const SIMDVector<int64_t,simd_abi::sse> &b) {
+    return _mm_max_epi64(a.value,b.value);
 }
 #endif
 template<>
@@ -78,8 +114,14 @@ FASTOR_INLINE SIMDVector<double,simd_abi::sse> max(const SIMDVector<double,simd_
 #ifdef FASTOR_AVX_IMPL
 #ifdef FASTOR_AVX2_IMPL
 template<>
-FASTOR_INLINE SIMDVector<int,simd_abi::avx> max(const SIMDVector<int,simd_abi::avx> &a, const SIMDVector<int,simd_abi::avx> &b) {
+FASTOR_INLINE SIMDVector<int32_t,simd_abi::avx> max(const SIMDVector<int32_t,simd_abi::avx> &a, const SIMDVector<int32_t,simd_abi::avx> &b) {
     return _mm256_max_epi32(a.value,b.value);
+}
+#endif
+#if defined(FASTOR_AVX512F_IMPL) && defined(FASTOR_AVX512VL_IMPL)
+template<>
+FASTOR_INLINE SIMDVector<int64_t,simd_abi::avx> max(const SIMDVector<int64_t,simd_abi::avx> &a, const SIMDVector<int64_t,simd_abi::avx> &b) {
+    return _mm256_max_epi64(a.value,b.value);
 }
 #endif
 template<>
@@ -91,9 +133,133 @@ FASTOR_INLINE SIMDVector<double,simd_abi::avx> max(const SIMDVector<double,simd_
     return _mm256_max_pd(a.value,b.value);
 }
 #endif
+#ifdef FASTOR_AVX512F_IMPL
+template<>
+FASTOR_INLINE SIMDVector<int32_t,simd_abi::avx512> max(const SIMDVector<int32_t,simd_abi::avx512> &a, const SIMDVector<int32_t,simd_abi::avx512> &b) {
+    return _mm512_max_epi32(a.value,b.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<int64_t,simd_abi::avx512> max(const SIMDVector<int64_t,simd_abi::avx512> &a, const SIMDVector<int64_t,simd_abi::avx512> &b) {
+    return _mm512_max_epi64(a.value,b.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::avx512> max(const SIMDVector<float,simd_abi::avx512> &a, const SIMDVector<float,simd_abi::avx512> &b) {
+    return _mm512_max_ps(a.value,b.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::avx512> max(const SIMDVector<double,simd_abi::avx512> &a, const SIMDVector<double,simd_abi::avx512> &b) {
+    return _mm512_max_pd(a.value,b.value);
+}
+#endif
 //----------------------------------------------------------------------------------------------------------//
 
 
+// ceil
+//----------------------------------------------------------------------------------------------------------//
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> ceil(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::ceil(((T*)&a)[i]);}
+    return out;
+}
+#ifdef FASTOR_SSE4_1_IMPL
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::sse> ceil(const SIMDVector<float,simd_abi::sse> &a) {
+    return _mm_ceil_ps(a.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::sse> ceil(const SIMDVector<double,simd_abi::sse> &a) {
+    return _mm_ceil_pd(a.value);
+}
+#endif
+#ifdef FASTOR_AVX_IMPL
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::avx> ceil(const SIMDVector<float,simd_abi::avx> &a) {
+    return _mm256_ceil_ps(a.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::avx> ceil(const SIMDVector<double,simd_abi::avx> &a) {
+    return _mm256_ceil_pd(a.value);
+}
+#endif
+// Part of SVML
+// #ifdef FASTOR_AVX512F_IMPL
+// template<>
+// FASTOR_INLINE SIMDVector<float,simd_abi::avx512> ceil(const SIMDVector<float,simd_abi::avx512> &a) {
+//     return _mm512_ceil_ps(a.value);
+// }
+// template<>
+// FASTOR_INLINE SIMDVector<double,simd_abi::avx512> ceil(const SIMDVector<double,simd_abi::avx512> &a) {
+//     return _mm512_ceil_pd(a.value);
+// }
+// #endif
+//----------------------------------------------------------------------------------------------------------//
+
+
+// round
+//----------------------------------------------------------------------------------------------------------//
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> round(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::round(((T*)&a)[i]);}
+    return out;
+}
+#ifdef FASTOR_SSE4_1_IMPL
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::sse> round(const SIMDVector<float,simd_abi::sse> &a) {
+    return _mm_round_ps(a.value, ( _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC ) );
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::sse> round(const SIMDVector<double,simd_abi::sse> &a) {
+    return _mm_round_pd(a.value, ( _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC ) );
+}
+#endif
+#ifdef FASTOR_AVX_IMPL
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::avx> round(const SIMDVector<float,simd_abi::avx> &a) {
+    return _mm256_round_ps(a.value, ( _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC ) );
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::avx> round(const SIMDVector<double,simd_abi::avx> &a) {
+    return _mm256_round_pd(a.value, ( _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC ) );
+}
+#endif
+//----------------------------------------------------------------------------------------------------------//
+
+
+// floor
+//----------------------------------------------------------------------------------------------------------//
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> floor(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::floor(((T*)&a)[i]);}
+    return out;
+}
+#ifdef FASTOR_SSE4_1_IMPL
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::sse> floor(const SIMDVector<float,simd_abi::sse> &a) {
+    return _mm_floor_ps(a.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::sse> floor(const SIMDVector<double,simd_abi::sse> &a) {
+    return _mm_floor_pd(a.value);
+}
+#endif
+#ifdef FASTOR_AVX_IMPL
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::avx> floor(const SIMDVector<float,simd_abi::avx> &a) {
+    return _mm256_floor_ps(a.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::avx> floor(const SIMDVector<double,simd_abi::avx> &a) {
+    return _mm256_floor_pd(a.value);
+}
+#endif
+//----------------------------------------------------------------------------------------------------------//
+
+
+
+// Boolean arithmetic
 // ! or not
 //----------------------------------------------------------------------------------------------------------//
 template<typename T, typename ABI>
@@ -132,6 +298,7 @@ FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> isf
 
 
 // vdt math functions
+//----------------------------------------------------------------------------------------------------------//
 #ifdef FASTOR_USE_VDT
 #include <vdt/vdtMath.h>
 
@@ -383,16 +550,17 @@ inline __m256d internal_atan(__m256d a) {
    return out;
 }
 #endif
+//----------------------------------------------------------------------------------------------------------//
 
 #else
 
+//----------------------------------------------------------------------------------------------------------//
 // SHUT GCC6 -Wignored-attributes WARNINGS
 #ifdef __GNUC__
 #if __GNUC__==6
 #pragma GCC diagnostic ignored "-Wignored-attributes"
 #endif
 #endif
-
 
 template<typename T>
 inline T internal_exp(T a) {
@@ -800,16 +968,13 @@ inline T internal_tanh(T a) {
    }
    return out;
 }
-
-
-
-
-
+//----------------------------------------------------------------------------------------------------------//
 
 
 
 
 // specialisation for doubles - necessary for SIMDVector<T,32>
+//----------------------------------------------------------------------------------------------------------//
 template<>
 inline float internal_exp(float a) {
   return std::exp(a);
@@ -1161,27 +1326,6 @@ template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> lgamma(const SIMDVector<T,ABI> &a) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::lgamma(((T*)&a)[i]);}
-    return out;
-}
-
-template<typename T, typename ABI>
-FASTOR_INLINE SIMDVector<T,ABI> ceil(const SIMDVector<T,ABI> &a) {
-    SIMDVector<T,ABI> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::ceil(((T*)&a)[i]);}
-    return out;
-}
-
-template<typename T, typename ABI>
-FASTOR_INLINE SIMDVector<T,ABI> round(const SIMDVector<T,ABI> &a) {
-    SIMDVector<T,ABI> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::round(((T*)&a)[i]);}
-    return out;
-}
-
-template<typename T, typename ABI>
-FASTOR_INLINE SIMDVector<T,ABI> floor(const SIMDVector<T,ABI> &a) {
-    SIMDVector<T,ABI> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::floor(((T*)&a)[i]);}
     return out;
 }
 
