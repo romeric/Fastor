@@ -148,11 +148,11 @@ einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) //{
 // nx1 or 1xn
 template<class Ind0, class Ind1,
          typename T, size_t I, size_t J, size_t K,
-         typename std::enable_if<Ind0::NoIndices==2 && Ind1::NoIndices==2 &&
-                                 Ind0::_IndexHolder[1] == Ind1::_IndexHolder[0] &&
-                                 Ind0::_IndexHolder[1] != Ind0::_IndexHolder[0] &&
-                                 Ind0::_IndexHolder[1] != Ind1::_IndexHolder[1] &&
-                                 Ind0::_IndexHolder[0] != Ind1::_IndexHolder[1]
+         typename std::enable_if<Ind0::Size==2 && Ind1::Size==2 &&
+                                 Ind0::values[1] == Ind1::values[0] &&
+                                 Ind0::values[1] != Ind0::values[0] &&
+                                 Ind0::values[1] != Ind1::values[1] &&
+                                 Ind0::values[0] != Ind1::values[1]
                                  ,bool>::type = 0>
 FASTOR_INLINE Tensor<T,I,K>
 einsum(const Tensor<T,I,J> &a, const Tensor<T,J,K> &b) {
@@ -165,9 +165,9 @@ einsum(const Tensor<T,I,J> &a, const Tensor<T,J,K> &b) {
 // matmul dispatcher for matrix-vector
 template<class Ind0, class Ind1,
          typename T, size_t I, size_t J,
-         typename std::enable_if<Ind0::NoIndices==2 && Ind1::NoIndices==1 &&
-                                 Ind0::_IndexHolder[1] == Ind1::_IndexHolder[0] &&
-                                 Ind0::_IndexHolder[0] != Ind1::_IndexHolder[0]
+         typename std::enable_if<Ind0::Size==2 && Ind1::Size==1 &&
+                                 Ind0::values[1] == Ind1::values[0] &&
+                                 Ind0::values[0] != Ind1::values[0]
                                  ,bool>::type = 0>
 FASTOR_INLINE Tensor<T,I>
 einsum(const Tensor<T,I,J> &a, const Tensor<T,J> &b) {
@@ -179,9 +179,9 @@ einsum(const Tensor<T,I,J> &a, const Tensor<T,J> &b) {
 // matmul dispatcher for matrix-vector
 template<class Ind0, class Ind1,
          typename T, size_t I, size_t J,
-         typename std::enable_if<Ind0::NoIndices==2 && Ind1::NoIndices==1 &&
-                                 Ind0::_IndexHolder[0] == Ind1::_IndexHolder[0] &&
-                                 Ind0::_IndexHolder[1] != Ind1::_IndexHolder[0],bool>::type = 0>
+         typename std::enable_if<Ind0::Size==2 && Ind1::Size==1 &&
+                                 Ind0::values[0] == Ind1::values[0] &&
+                                 Ind0::values[1] != Ind1::values[0],bool>::type = 0>
 FASTOR_INLINE Tensor<T,J>
 einsum(const Tensor<T,I,J> &a, const Tensor<T,I> &b) {
     Tensor<T,J> out;
@@ -193,9 +193,9 @@ einsum(const Tensor<T,I,J> &a, const Tensor<T,I> &b) {
 // matmul dispatcher for vector-matrix
 template<class Ind0, class Ind1,
          typename T, size_t I, size_t J,
-         typename std::enable_if<Ind1::NoIndices==2 && Ind0::NoIndices==1 &&
-                                 Ind1::_IndexHolder[0] == Ind0::_IndexHolder[0] &&
-                                 Ind1::_IndexHolder[1] != Ind0::_IndexHolder[0],bool>::type = 0>
+         typename std::enable_if<Ind1::Size==2 && Ind0::Size==1 &&
+                                 Ind1::values[0] == Ind0::values[0] &&
+                                 Ind1::values[1] != Ind0::values[0],bool>::type = 0>
 FASTOR_INLINE Tensor<T,J>
 einsum(const Tensor<T,I> &a, const Tensor<T,I,J> &b) {
     Tensor<T,J> out;
@@ -207,9 +207,9 @@ einsum(const Tensor<T,I> &a, const Tensor<T,I,J> &b) {
 // matmul dispatcher for vector-matrix
 template<class Ind0, class Ind1,
          typename T, size_t I, size_t J,
-         typename std::enable_if<Ind1::NoIndices==2 && Ind0::NoIndices==1 &&
-                                 Ind1::_IndexHolder[1] == Ind0::_IndexHolder[0] &&
-                                 Ind1::_IndexHolder[0] != Ind0::_IndexHolder[0],bool>::type = 0>
+         typename std::enable_if<Ind1::Size==2 && Ind0::Size==1 &&
+                                 Ind1::values[1] == Ind0::values[0] &&
+                                 Ind1::values[0] != Ind0::values[0],bool>::type = 0>
 FASTOR_INLINE Tensor<T,I>
 einsum(const Tensor<T,J> &a, const Tensor<T,I,J> &b) {
     Tensor<T,I> out;
@@ -235,10 +235,10 @@ einsum(const Tensor<T,I,J> & a, const Tensor<T,K,L> &b) {
     using OutTensor = typename VoigtType<T,I,J,K,L>::return_type;
     OutTensor out;
 
-    constexpr int i = static_cast<int>(Ind0::_IndexHolder[0]);
-    constexpr int j = static_cast<int>(Ind0::_IndexHolder[1]);
-    constexpr int k = static_cast<int>(Ind1::_IndexHolder[0]);
-    constexpr int l = static_cast<int>(Ind1::_IndexHolder[1]);
+    constexpr int i = static_cast<int>(Ind0::values[0]);
+    constexpr int j = static_cast<int>(Ind0::values[1]);
+    constexpr int k = static_cast<int>(Ind1::values[0]);
+    constexpr int l = static_cast<int>(Ind1::values[1]);
 
     constexpr bool is_dyadic = i<j && j<k && k<l;
     constexpr bool is_cyclic = (i<j && i<k && i<l) && j>k && j<l;
@@ -260,14 +260,14 @@ template<class Ind0, class Ind1, int Convert,
          typename T, size_t I, size_t J, size_t K, size_t L,
          typename std::enable_if<(!std::is_same<T,float>::value && !std::is_same<T,double>::value) &&
                                  I==J && J==K && K==L && (I==2 || I==3) &&
-                                 Ind0::NoIndices==2 && Ind1::NoIndices==2 && Convert==FASTOR_Voigt,bool>::type = 0>
+                                 Ind0::Size==2 && Ind1::Size==2 && Convert==FASTOR_Voigt,bool>::type = 0>
 FASTOR_INLINE typename VoigtType<T,I,J,K,L>::return_type
 einsum(const Tensor<T,I,J> & a, const Tensor<T,K,L> &b) {
 
-    constexpr int i = static_cast<int>(Ind0::_IndexHolder[0]);
-    constexpr int j = static_cast<int>(Ind0::_IndexHolder[1]);
-    constexpr int k = static_cast<int>(Ind1::_IndexHolder[0]);
-    constexpr int l = static_cast<int>(Ind1::_IndexHolder[1]);
+    constexpr int i = static_cast<int>(Ind0::values[0]);
+    constexpr int j = static_cast<int>(Ind0::values[1]);
+    constexpr int k = static_cast<int>(Ind1::values[0]);
+    constexpr int l = static_cast<int>(Ind1::values[1]);
 
     constexpr bool is_dyadic = i<j && j<k && k<l;
     constexpr bool is_cyclic = (i<j && i<k && i<l) && j>k && j<l;
