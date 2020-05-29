@@ -21,26 +21,6 @@ namespace Fastor {
 
 // Single tensor
 //-----------------------------------------------------------------------------------------------------------------------//
-// template<class Index_I, typename T, size_t ... Rest0,
-//     enable_if_t_<!is_single_reduction_v<is_single_reduction_v<Index<Idx0...>,Tensor<T,Rest0...>>,bool> = false>
-// FASTOR_INLINE
-// auto einsum(const Tensor<T,Rest0...> &a)
-// -> decltype(permute(a)) {
-//     static_assert(einsum_index_checker<Index_I>::value,
-//                   "INDICES FOR EINSUM FUNCTION CANNOT APPEAR MORE THAN TWICE. USE CONTRACTION INSTEAD");
-//     return permute(a);
-// }
-
-// template<class Index_I, typename T, size_t ... Rest0,
-//     enable_if_t_<is_single_reduction_v<is_single_reduction_v<Index<Idx0...>,Tensor<T,Rest0...>>,bool> = false>
-// FASTOR_INLINE
-// auto einsum(const Tensor<T,Rest0...> &a)
-// -> decltype(extractor_contract_1<Index_I>::contract_impl(a)) {
-//     static_assert(einsum_index_checker<Index_I>::value,
-//                   "INDICES FOR EINSUM FUNCTION CANNOT APPEAR MORE THAN TWICE. USE CONTRACTION INSTEAD");
-//     return extractor_contract_1<Index_I>::contract_impl(a);
-// }
-
 template<class Index_I, typename T, size_t ... Rest0>
 FASTOR_INLINE
 auto einsum(const Tensor<T,Rest0...> &a)
@@ -60,8 +40,7 @@ template<class Index_I, class Index_J,
          typename T, size_t ... Rest0, size_t ... Rest1,
          typename std::enable_if<is_reduction<Index_I,Index_J>::value,bool>::type=0>
 FASTOR_INLINE
-auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
--> decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
+Tensor<T> einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
     return inner(a,b);
 }
 

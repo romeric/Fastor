@@ -5,6 +5,20 @@ set(CMAKE_CXX_STANDARD 14)
 
 enable_testing()
 
+# single einsum
+add_executable(test_einsum_single test_einsum_single.cpp)
+add_test(test_einsum_single test_einsum_single)
+
+if(MSVC)
+    target_compile_options(test_einsum_single PRIVATE "/W4" "$<$<CONFIG:RELEASE>:/O2>")
+else()
+    target_compile_options(test_einsum_single PRIVATE "$<$<CONFIG:RELEASE>:-O3>" "$<$<CONFIG:RELEASE>:-march=native>")
+endif()
+
+target_include_directories(test_einsum_single PRIVATE ${FASTOR_INCLUDE_DIR})
+target_include_directories(test_einsum_single PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../)
+
+
 # tensor contraction
 # default
 add_executable(test_contraction_0 test_contraction.cpp)
