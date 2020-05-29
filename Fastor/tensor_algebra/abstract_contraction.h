@@ -20,6 +20,37 @@ namespace Fastor {
 // and the contractions are forwarded to their tensor counterparts
 // which perform operation minimiation and are optimised for performance
 
+// Single expression - contraction
+//-------------------------------------------------------------------------------------------------
+template<class Index_I, typename Derived0, size_t DIM0,
+    enable_if_t_<!is_tensor_v<Derived0>,bool> = false>
+typename contraction_impl<
+    Index_I,
+    typename Derived0::result_type,
+    typename std_ext::make_index_sequence<DIM0>::type>::type
+contraction(const AbstractTensor<Derived0,DIM0> &a)
+{
+    typename Derived0::result_type res_a(a);
+    return extractor_contract_1<Index_I>::contract_impl(res_a);
+}
+//-------------------------------------------------------------------------------------------------
+
+// Single expression - einsum
+//-------------------------------------------------------------------------------------------------
+template<class Index_I, typename Derived0, size_t DIM0,
+    enable_if_t_<!is_tensor_v<Derived0>,bool> = false>
+typename contraction_impl<
+    Index_I,
+    typename Derived0::result_type,
+    typename std_ext::make_index_sequence<DIM0>::type>::type
+einsum(const AbstractTensor<Derived0,DIM0> &a)
+{
+    typename Derived0::result_type res_a(a);
+    return extractor_contract_1<Index_I>::contract_impl(res_a);
+}
+//-------------------------------------------------------------------------------------------------
+
+
 // By pair expressions - contraction
 //-------------------------------------------------------------------------------------------------
 template<class Index_I, class Index_J, typename Derived0, typename Derived1, size_t DIM0, size_t DIM1,
