@@ -9,12 +9,11 @@
 
 namespace Fastor {
 
-
+namespace internal {
 
 template<size_t N>
 constexpr size_t count_less(const size_t (&seq)[N], size_t i, size_t cur = 0) {
-    return cur == N ? 0
-                    : (count_less(seq, i, cur + 1) + (seq[cur] < i ? 1 : 0));
+    return cur == N ? 0 : (count_less(seq, i, cur + 1) + (seq[cur] < i ? 1 : 0));
 }
 
 template<typename T, class List, class Tensor, class Seq>
@@ -344,41 +343,39 @@ struct extractor_perm<Index<Idx...> > {
     }
 };
 
+} // internal
+
 
 
 template<class Index_I, typename T, size_t ... Rest>
 FASTOR_INLINE
-typename permute_impl<T,Index_I, Tensor<T,Rest...>,
+typename internal::permute_impl<T,Index_I, Tensor<T,Rest...>,
     typename std_ext::make_index_sequence<sizeof...(Rest)>::type>::type
 permutation(const Tensor<T, Rest...> &a) {
-    return extractor_perm<Index_I>::permutation_impl(a);
+    return internal::extractor_perm<Index_I>::permutation_impl(a);
 }
-
 
 template<class Index_I, typename Derived, size_t DIMS,
     enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE
-typename permute_impl<typename scalar_type_finder<Derived>::type,Index_I,
+typename internal::permute_impl<typename scalar_type_finder<Derived>::type,Index_I,
     typename Derived::result_type,
     typename std_ext::make_index_sequence<DIMS>::type>::type
 permutation(const AbstractTensor<Derived, DIMS> &a) {
-    return extractor_perm<Index_I>::permutation_impl(a);
+    return internal::extractor_perm<Index_I>::permutation_impl(a);
 }
 
 template<class Index_I, typename Derived, size_t DIMS,
     enable_if_t_<requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE
-typename permute_impl<typename scalar_type_finder<Derived>::type,Index_I,
+typename internal::permute_impl<typename scalar_type_finder<Derived>::type,Index_I,
     typename Derived::result_type,
     typename std_ext::make_index_sequence<DIMS>::type>::type
 permutation(const AbstractTensor<Derived, DIMS> &a) {
     using result_type = typename Derived::result_type;
     const result_type tmp(a);
-    return extractor_perm<Index_I>::permutation_impl(tmp);
+    return internal::extractor_perm<Index_I>::permutation_impl(tmp);
 }
-
-
 
 }
 #endif // PERMUTATION_H
-

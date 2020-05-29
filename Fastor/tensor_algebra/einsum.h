@@ -9,6 +9,7 @@
 
 #include "Fastor/tensor_algebra/reshape.h"
 #include "Fastor/tensor_algebra/permutation.h"
+#include "Fastor/tensor_algebra/permute.h"
 #include "Fastor/tensor_algebra/innerproduct.h"
 #include "Fastor/tensor_algebra/outerproduct.h"
 #include "Fastor/tensor_algebra/contraction.h"
