@@ -25,7 +25,7 @@ struct permute_impl<T,Index<ls...>, Tensor<T, fs...>, std_ext::index_sequence<ss
     constexpr static size_t fvals[sizeof...(ls)] = {fs...};
     using type = Tensor<T,fvals[count_less(lst, lst[ss])]...>;
     using index_type = typename tmp_argsort<Index<ls...>,Index<ss...>>::new_argseq;
-    using maxes_out_type = Index<fvals[tmp_argsort<Index<ls...>,Index<ss...>>::new_argseq::_IndexHolder[ss]]...>;
+    using maxes_out_type = Index<fvals[tmp_argsort<Index<ls...>,Index<ss...>>::new_argseq::values[ss]]...>;
 };
 
 
@@ -57,10 +57,10 @@ struct RecursiveCartesianPerm<Index<Idx...>, Tensor<T,Rest...>,Last>
         typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type;
     using index_type = typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
         typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type;
-    static constexpr auto maxes_idx = permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
-        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type::_IndexHolder;
-    static constexpr auto maxes_out = permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
-        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type::_IndexHolder;
+    static constexpr std::array<size_t,sizeof...(Rest)> maxes_idx = permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type::values;
+    static constexpr std::array<size_t,sizeof...(Rest)> maxes_out = permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type::values;
 
     static constexpr int a_dim = sizeof...(Rest);
     static constexpr int out_dim = a_dim;
@@ -96,6 +96,14 @@ struct RecursiveCartesianPerm<Index<Idx...>, Tensor<T,Rest...>,Last>
 
 template<typename T, size_t Last, size_t ...Idx, size_t ...Rest>
 constexpr std::array<size_t,sizeof...(Rest)> RecursiveCartesianPerm<Index<Idx...>,
+  Tensor<T,Rest...>,Last>::maxes_idx;
+
+template<typename T, size_t Last, size_t ...Idx, size_t ...Rest>
+constexpr std::array<size_t,sizeof...(Rest)> RecursiveCartesianPerm<Index<Idx...>,
+  Tensor<T,Rest...>,Last>::maxes_out;
+
+template<typename T, size_t Last, size_t ...Idx, size_t ...Rest>
+constexpr std::array<size_t,sizeof...(Rest)> RecursiveCartesianPerm<Index<Idx...>,
   Tensor<T,Rest...>,Last>::products_a;
 
 template<typename T, size_t Last, size_t ...Idx, size_t ...Rest>
@@ -114,9 +122,9 @@ constexpr std::array<size_t,sizeof...(Rest)> RecursiveCartesianPerm<Index<Idx...
 //     using index_type = typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
 //         typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type;
 //     static constexpr auto maxes_idx = permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
-//         typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type::_IndexHolder;
+//         typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type::values;
 //     static constexpr auto maxes_out = permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
-//         typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type::_IndexHolder;
+//         typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type::values;
 
 //     static constexpr int a_dim = sizeof...(Rest);
 //     static constexpr int out_dim = a_dim;
@@ -195,9 +203,9 @@ struct extractor_perm<Index<Idx...> > {
         using index_type = typename permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
             typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type;
         constexpr auto& maxes_idx = permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
-            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type::_IndexHolder;
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type::values;
         constexpr auto& maxes_out = permute_impl<T,Index<Idx...>, Tensor<T,Rest...>,
-            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type::_IndexHolder;
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type::values;
 
         constexpr int a_dim = sizeof...(Rest);
         constexpr int out_dim = a_dim;
@@ -294,9 +302,9 @@ struct extractor_perm<Index<Idx...> > {
         // using index_type = typename permute_impl<T,Index<Idx...>, tensor_type,
             // typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type;
         constexpr auto& maxes_idx = permute_impl<T,Index<Idx...>, tensor_type,
-            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type::_IndexHolder;
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type::values;
         // constexpr auto& maxes_out = permute_impl<T,Index<Idx...>, tensor_type,
-            // typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type::_IndexHolder;
+            // typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type::values;
 
         constexpr int a_dim = DIMS;
         constexpr int out_dim = a_dim;

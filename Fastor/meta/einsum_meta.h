@@ -154,6 +154,10 @@ template<size_t N>
 constexpr int find_index(const size_t (&ind)[N], int num, size_t i=0){
     return (i==N) ? N : (static_cast<int>(ind[i])==num ? i : find_index(ind,num,i+1));
 }
+template<size_t N>
+constexpr int find_index(const std::array<size_t,N> &ind, int num, size_t i=0){
+    return (i==N) ? N : (static_cast<int>(ind[i])==num ? i : find_index(ind,num,i+1));
+}
 
 // check if a given value is ind1 and not ind0
 template<size_t M, size_t N>
@@ -339,12 +343,12 @@ struct no_of_loops_to_set<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tenso
 
     static constexpr size_t concat_idx[sizeof...(Idx0)+sizeof...(Idx1)] = {Idx0...,Idx1...};
     static constexpr size_t concat_nums[sizeof...(Idx0)+sizeof...(Idx1)] = {Rest0...,Rest1...};
-    static constexpr std::array<size_t,sizeof...(ss)> idx_in_concat = {find_index(concat_idx,index_temp::_IndexHolder[ss])...};
+    static constexpr std::array<size_t,sizeof...(ss)> idx_in_concat = {find_index(concat_idx,index_temp::values[ss])...};
     static constexpr std::array<size_t,sizeof...(ss)> dims = {concat_nums[idx_in_concat[ss]]...};
     static constexpr int value = pack_prod<dims[ss]...>::value;
 
     using type = Tensor<T,dims[ss]...>;
-    using indices = Index<index_temp::_IndexHolder[ss]...>;
+    using indices = Index<index_temp::values[ss]...>;
 
     using dims_type = Index<dims[ss]...>;
 };
@@ -372,7 +376,7 @@ struct IndexFirstTensor<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<
 
     static constexpr size_t idx[sizeof...(Idx0)] = {Idx0...};
     static constexpr std::array<size_t,sizeof...(Idx0)>
-    indices = {find_index(index_temp::_IndexHolder, idx[ss])...};
+    indices = {find_index(index_temp::values, idx[ss])...};
 
     using type = Tensor<T,indices[ss]...>;
 
@@ -394,7 +398,7 @@ struct IndexSecondTensor<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor
 
     static constexpr size_t idx[sizeof...(Idx1)] = {Idx1...};
     static constexpr std::array<size_t,sizeof...(Idx1)>
-    indices = {find_index(index_temp::_IndexHolder, idx[ss])...};
+    indices = {find_index(index_temp::values, idx[ss])...};
 
     using type = Tensor<T,indices[ss]...>;
 
@@ -419,7 +423,7 @@ struct IndexResultingTensor<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Ten
                                     Tensor<T,Rest0...>,Tensor<T,Rest1...>>::type;
 
     static constexpr std::array<size_t,sizeof...(ss)>
-    indices = {find_index(index_temp::_IndexHolder, resulting_index_0::_IndexHolder[ss])...};
+    indices = {find_index(index_temp::values, resulting_index_0::values[ss])...};
 
     using type = Tensor<T,indices[ss]...>;
 };
@@ -483,8 +487,8 @@ struct general_stride_finder<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Te
 
     static constexpr size_t b_idx[sizeof...(Idx1)] = {Idx1...};
     static constexpr size_t b_dim[sizeof...(Rest1)] = {Rest1...};
-//    static constexpr std::array<size_t,sizeof...(ss)> container_idx = {contains(OutIndices::_IndexHolder,b_idx[ss])...};
-    static constexpr size_t container_idxx[sizeof...(Rest1)] = {contains(OutIndices::_IndexHolder,b_idx[ss])...};
+//    static constexpr std::array<size_t,sizeof...(ss)> container_idx = {contains(OutIndices::values,b_idx[ss])...};
+    static constexpr size_t container_idxx[sizeof...(Rest1)] = {contains(OutIndices::values,b_idx[ss])...};
 //    static constexpr std::array<int,sizeof...(ss)> container_dim = {contain_prod(container_idxx,b_dim,ss)...};
     static constexpr int container_dim[sizeof...(Rest1)] = {contain_prod(container_idxx,b_dim,ss)...};
     static constexpr int value = last_indices_prod(container_dim,sizeof...(Rest1));
@@ -825,12 +829,12 @@ struct loop_setter<Index<Idx...>,Tensor<T,Rest...>,std_ext::index_sequence<ss...
 
     static constexpr size_t concat_idx[sizeof...(Idx)] = {Idx...};
     static constexpr size_t concat_nums[sizeof...(Rest)] = {Rest...};
-    static constexpr std::array<size_t,sizeof...(ss)> idx_in_concat = {find_index(concat_idx,index_temp::_IndexHolder[ss])...};
+    static constexpr std::array<size_t,sizeof...(ss)> idx_in_concat = {find_index(concat_idx,index_temp::values[ss])...};
     static constexpr std::array<size_t,sizeof...(ss)> dims = {concat_nums[idx_in_concat[ss]]...};
     static constexpr int value = pack_prod<dims[ss]...>::value;
 
     using type = Tensor<T,dims[ss]...>;
-    using indices = Index<index_temp::_IndexHolder[ss]...>;
+    using indices = Index<index_temp::values[ss]...>;
 
     using dims_type = Index<dims[ss]...>;
 };
@@ -856,7 +860,7 @@ struct IndexTensors<Index<Idx...>,Derived0<T,Rest...>,Index<Idx_t...>,Derived1<T
 
     static constexpr size_t idx[sizeof...(Idx_t)] = {Idx_t...};
     static constexpr std::array<size_t,sizeof...(Idx_t)>
-    indices = {find_index(index_temp::_IndexHolder, idx[ss])...};
+    indices = {find_index(index_temp::values, idx[ss])...};
 
     using type = Tensor<T,indices[ss]...>;
 
