@@ -444,13 +444,19 @@ struct is_reduction<Index<Idx0...>,Index<Idx1...>> {
 
 
 // Reduction for a single tensor
-template<class Idx0>
+template<class Idx, class Tens>
 struct is_single_reduction;
 
-template<size_t ... Idx0>
-struct is_single_reduction<Index<Idx0...>> {
-    static constexpr bool value = no_of_unique<Idx0...>::value==1;
+template<size_t ... Idx0, typename T, size_t ... Rest0>
+struct is_single_reduction<Index<Idx0...>, Tensor<T,Rest0...>> {
+    using OutTensor = typename contraction_impl<Index<Idx0...>, Tensor<T,Rest0...>,
+      typename std_ext::make_index_sequence<sizeof...(Rest0)>::type>::type;
+    static constexpr bool value = OutTensor::dimension_t::value == 0;
 };
+
+template<class Idx, class Tens>
+constexpr bool is_single_reduction_v = is_single_reduction<Idx,Tens>::value;
+//------------------------------------------------------------------------------------------------------------//
 
 
 
