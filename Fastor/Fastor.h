@@ -11,6 +11,7 @@
 #include "tensor/AbstractTensorFunctions.h"
 #include "tensor_algebra/einsum.h"
 #include "tensor_algebra/einsum_network.h"
+#include "tensor_algebra/einsum_explicit.h"
 #include "tensor_algebra/abstract_contraction.h"
 #include "expressions/expressions.h"
 #include "backend/voigt.h"

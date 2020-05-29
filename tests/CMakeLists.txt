@@ -30,6 +30,8 @@ add_subdirectory(test_tmatmul)
 
 add_subdirectory(test_transpose)
 
+add_subdirectory(test_permute)
+
 add_subdirectory(test_einsum)
 
 add_subdirectory(test_linalg)

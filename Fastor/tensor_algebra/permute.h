@@ -89,6 +89,75 @@ struct new_extractor_perm<Index<Idx...> > {
 
         return out;
     }
+
+
+    // Abstract permutation
+    template<typename Derived, size_t DIMS,
+        enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
+    static
+    FASTOR_INLINE
+    typename permute_impl<
+        Index<Idx...>, typename Derived::result_type,
+        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::resulting_tensor
+    permutation_impl(const AbstractTensor<Derived,DIMS> &a) {
+
+        using T           = typename Derived::scalar_type;
+        using tensor_type = typename Derived::result_type;
+
+        using _permute_impl = new_permute_impl<Index<Idx...>, tensor_type,
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>;
+        using resulting_index  = typename _permute_impl::resulting_index;
+        using resulting_tensor = typename _permute_impl::resulting_tensor;
+        constexpr bool requires_permutation = _permute_impl::requires_permutation;
+
+        FASTOR_IF_CONSTEXPR(!requires_permutation) return a;
+
+        constexpr auto& maxes_idx = resulting_index::values;
+        using maxes_out_type = typename put_dims_in_Index<resulting_tensor>::type;
+
+        constexpr int a_dim = DIMS;
+        constexpr int out_dim = a_dim;
+        constexpr std::array<int,a_dim> maxes_a = get_tensor_dimensions<tensor_type>::dims_int;
+
+        constexpr auto& products_a = nprods<typename get_tensor_dimensions<tensor_type>::tensor_to_index,
+            typename std_ext::make_index_sequence<a_dim>::type>::values;
+        constexpr auto& products_out = nprods<maxes_out_type,
+            typename std_ext::make_index_sequence<a_dim>::type>::values;
+
+        resulting_tensor out;
+        T *out_data = out.data();
+        const Derived & a_src = a.self();
+
+        int as[out_dim] = {};
+        int it,jt;
+
+        while(true)
+        {
+            int index_a = as[a_dim-1];
+            for(it = 0; it< a_dim; it++) {
+                index_a += products_a[it]*as[it];
+            }
+            int index_out = as[maxes_idx[out_dim-1]];
+            for(it = 0; it< out_dim-1; it++) {
+                index_out += products_out[it]*as[maxes_idx[it]];
+            }
+
+            out_data[index_out] = a_src.template eval_s<T>(index_a);
+
+            for(jt = out_dim-1 ; jt>=0 ; jt--)
+            {
+                if(++as[jt]<maxes_a[jt])
+                    break;
+                else
+                    as[jt]=0;
+            }
+            if(jt<0)
+                break;
+        }
+
+        return out;
+
+    }
 };
 
 } // internal
@@ -126,5 +195,6 @@ permute(const AbstractTensor<Derived, DIMS> &a) {
 }
 
 
-}
+} // end of namespace Fastor
+
 #endif // PERMUTE_H

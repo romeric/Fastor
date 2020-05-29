@@ -1,18 +1,14 @@
 #ifndef EINSUM_NETWORK_H
 #define EINSUM_NETWORK_H
 
-
 #include "Fastor/tensor_algebra/network_contraction.h"
 #include "Fastor/tensor_algebra/network_contraction_no_opmin.h"
 
-
 namespace Fastor {
-
 
 // Networks
 //-----------------------------------------------------------------------------------------
 #ifndef FASTOR_DONT_PERFORM_OP_MIN
-
 
 // 3
 template<class Index_I, class Index_J, class Index_K,

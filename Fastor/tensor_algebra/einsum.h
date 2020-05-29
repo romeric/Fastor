@@ -288,9 +288,6 @@ einsum(const Tensor<T,I,J> & a, const Tensor<T,K,L> &b) {
 
 #endif
 
-
 } // end of namespace
 
-
 #endif // EINSUM_H
-

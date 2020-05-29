@@ -137,9 +137,9 @@ void run() {
 
 int main() {
 
-    print(FBLU(BOLD("Testing all single einsum: single precision")));
+    print(FBLU(BOLD("Testing single einsum: single precision")));
     run<float>();
-    print(FBLU(BOLD("Testing all single einsum: double precision")));
+    print(FBLU(BOLD("Testing single einsum: double precision")));
     run<double>();
 
     return 0;

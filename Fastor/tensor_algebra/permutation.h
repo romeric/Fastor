@@ -265,19 +265,19 @@ struct extractor_perm<Index<Idx...> > {
     static
     FASTOR_INLINE
     typename permute_impl<
-        Index<Idx...>, typename tensor_type_finder<Derived>::type,
+        Index<Idx...>, typename Derived::result_type,
         typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::resulting_tensor
     permutation_impl(const AbstractTensor<Derived,DIMS> &a) {
 
-        using T = typename scalar_type_finder<Derived>::type;
-        using tensor_type = typename tensor_type_finder<Derived>::type;
+        using T           = typename Derived::scalar_type;
+        using tensor_type = typename Derived::result_type;
 
-        using resulting_tensor = typename permute_impl<Index<Idx...>, tensor_type,
-            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::resulting_tensor;
-        using maxes_out_type = typename permute_impl<Index<Idx...>, tensor_type,
-            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type;
-        constexpr auto& maxes_idx = permute_impl<Index<Idx...>, tensor_type,
-            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::resulting_index::values;
+        using _permute_impl = permute_impl<Index<Idx...>, tensor_type,
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>;
+        using resulting_tensor = typename _permute_impl::resulting_tensor;
+        using resulting_index  = typename _permute_impl::resulting_index;
+        using maxes_out_type   = typename _permute_impl::maxes_out_type;
+        constexpr auto& maxes_idx = resulting_index::values;
 
         constexpr int a_dim = DIMS;
         constexpr int out_dim = a_dim;
@@ -358,5 +358,6 @@ permutation(const AbstractTensor<Derived, DIMS> &a) {
     return internal::extractor_perm<Index_I>::permutation_impl(tmp);
 }
 
-}
+} // end of namespace Fastor
+
 #endif // PERMUTATION_H
