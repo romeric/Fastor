@@ -2,6 +2,7 @@
 #define EINSUM_META_H
 
 #include "Fastor/tensor/Tensor.h"
+#include <array>
 
 namespace Fastor {
 
@@ -875,7 +876,8 @@ IndexTensors<Index<Idx...>,Derived0<T,Rest...>,Index<Idx_t...>,Derived1<T,Rest_t
 
 
 
-//---------------------------------------------------------------------------------
+namespace internal {
+//------------------------------------------------------------------------------------------------------------//
 template<class arg>
 struct meta_argmin_wrapper;
 template<size_t ...rest>
@@ -928,9 +930,87 @@ struct tmp_argsort<Index<value>,Index<ss>> {
     using reduced_argseq = Index<ss>;
     using new_argseq = Index<ss>;
 };
-//---------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------//
 
-//}
+
+// Permutation functions
+//------------------------------------------------------------------------------------------------------------//
+template<size_t N>
+constexpr size_t count_less(const size_t (&seq)[N], size_t i, size_t cur = 0) {
+    return cur == N ? 0 : (count_less(seq, i, cur + 1) + (seq[cur] < i ? 1 : 0));
+}
+
+/* Check if a compile time array is sequential */
+template<size_t N>
+constexpr bool is_sequential(const size_t (&seq)[N], size_t i=0) {
+    return i+1 == N ? true : ( seq[i] + 1 == seq[i+1] ? is_sequential(seq, i+1) : false ) ;
+}
+template<size_t N>
+constexpr bool is_sequential(const std::array<size_t,N> &seq, size_t i=0) {
+    return i+1 == N ? true : ( seq[i] + 1 == seq[i+1] ? is_sequential(seq, i+1) : false ) ;
+}
+
+// permutation helper class
+template<class Idx, class Tens, class Seq>
+struct permute_impl;
+
+template<typename T, size_t ... ls, size_t ... fs, size_t... ss>
+struct permute_impl<Index<ls...>, Tensor<T, fs...>, std_ext::index_sequence<ss...>> {
+    constexpr static size_t lst[sizeof...(ls)] = { ls... };
+    constexpr static size_t fvals[sizeof...(ls)] = {fs...};
+    using resulting_tensor = Tensor<T,fvals[count_less(lst, lst[ss])]...>;
+    using resulting_index  = typename tmp_argsort<Index<ls...>,Index<ss...>>::new_argseq;
+    using maxes_out_type   = Index<fvals[tmp_argsort<Index<ls...>,Index<ss...>>::new_argseq::values[ss]]...>;
+    static constexpr bool requires_permutation = !(is_same_v_<resulting_tensor,Tensor<T, fs...>> &&
+                                                    is_sequential(resulting_index::values));
+};
+
+// permute helper class
+template<class Idx, class Tens, class Seq>
+struct new_permute_impl;
+
+template<typename T, size_t ... ls, size_t ... fs, size_t... ss>
+struct new_permute_impl<Index<ls...>, Tensor<T, fs...>, std_ext::index_sequence<ss...>> {
+    constexpr static size_t lst[sizeof...(ls)] = { ls... };
+    constexpr static size_t fvals[sizeof...(ls)] = {fs...};
+    using resulting_tensor = Tensor<T,fvals[count_less(lst, lst[ss])]...>;
+    constexpr static size_t aranger[sizeof...(ss)] = { ss... };
+    using resulting_index = Index<aranger[count_less(lst, lst[ss])]...>;
+    static constexpr bool requires_permutation = !(is_same_v_<resulting_tensor,Tensor<T, fs...>> &&
+                                                    is_sequential(resulting_index::values));
+};
+
+} // internal
+
+
+template<class Idx, class Tens>
+struct requires_permutation;
+template<typename T, size_t ... Idx, size_t ... Rest>
+struct requires_permutation<Index<Idx...>, Tensor<T, Rest...>> {
+    using _permute_impl = internal::permute_impl<Index<Idx...>, Tensor<T,Rest...>,
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>;
+    static constexpr bool value = _permute_impl::requires_permutation;
+};
+
+// helper
+template<class Idx, class Tens>
+constexpr bool requires_permutation_v = requires_permutation<Idx,Tens>::value;
+
+
+template<class Idx, class Tens>
+struct requires_permute;
+template<typename T, size_t ... Idx, size_t ... Rest>
+struct requires_permute<Index<Idx...>, Tensor<T, Rest...>> {
+    using _permute_impl = internal::new_permute_impl<Index<Idx...>, Tensor<T,Rest...>,
+            typename std_ext::make_index_sequence<sizeof...(Idx)>::type>;
+    static constexpr bool value = _permute_impl::requires_permutation;
+};
+
+// helper
+template<class Idx, class Tens>
+constexpr bool requires_permute_v = requires_permute<Idx,Tens>::value;
+//------------------------------------------------------------------------------------------------------------//
+
 
 }
 
