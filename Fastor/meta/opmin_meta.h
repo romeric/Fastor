@@ -569,8 +569,8 @@ struct einsum_helper<Ind0,Tensor<T,Rest0...>> {
 template<class Ind0, class Ind1,
          class Tensor0, class Tensor1>
 struct einsum_helper<Ind0,Ind1,Tensor0,Tensor1> {
-    using resulting_index  = typename get_resuling_tensor<Ind0,Ind1,Tensor0,Tensor1>::resulting_index;
-    using resulting_tensor = typename get_resuling_tensor<Ind0,Ind1,Tensor0,Tensor1>::resulting_tensor;
+    using resulting_index  = typename get_resuling_tensor<Ind0,Ind1,Tensor0,Tensor1>::type;
+    using resulting_tensor = typename get_resuling_tensor<Ind0,Ind1,Tensor0,Tensor1>::type;
 };
 
 template<class Ind0, class Ind1, class Ind2,
