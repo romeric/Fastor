@@ -4,8 +4,8 @@
 // Expression templates evaluators
 //----------------------------------------------------------------------------------------------------------//
 template<typename U=T>
-FASTOR_INLINE SIMDVector<T,simd_abi_type> eval(FASTOR_INDEX i) const {
-    SIMDVector<T,simd_abi_type> _vec;
+FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX i) const {
+    SIMDVector<U,simd_abi_type> _vec;
     _vec.load(&_data[get_mem_index(i)],false);
     return _vec;
 }
@@ -14,8 +14,8 @@ FASTOR_INLINE T eval_s(FASTOR_INDEX i) const {
     return _data[get_mem_index(i)];
 }
 template<typename U=T>
-FASTOR_INLINE SIMDVector<T,simd_abi_type> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
-    SIMDVector<T,simd_abi_type> _vec;
+FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
+    SIMDVector<U,simd_abi_type> _vec;
     _vec.load(&_data[get_flat_index(i,j)],false);
     return _vec;
 }
@@ -25,8 +25,8 @@ FASTOR_INLINE T eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
 }
 
 template<typename U=T>
-FASTOR_INLINE SIMDVector<T,simd_abi_type> teval(const std::array<int, dimension_t::value> &as) const {
-    SIMDVector<T,simd_abi_type> _vec;
+FASTOR_INLINE SIMDVector<U,simd_abi_type> teval(const std::array<int, dimension_t::value> &as) const {
+    SIMDVector<U,simd_abi_type> _vec;
     _vec.load(&_data[get_flat_index(as)],false);
     return _vec;
 }

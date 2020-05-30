@@ -599,6 +599,8 @@ void maskstore(std::complex<double> * FASTOR_RESTRICT a, const int (&maska)[4], 
     _mm256_maskstore_pd(reinterpret_cast<double*>(a  ), (__m256i) mask0, lo);
     _mm256_maskstore_pd(reinterpret_cast<double*>(a+2), (__m256i) mask1, hi);
 }
+template<>
+FASTOR_INLINE
 void maskstore(std::complex<float> * FASTOR_RESTRICT a, const int (&maska)[8], SIMDVector<std::complex<float>,simd_abi::avx> &v) {
     // Split the mask in to a higher and lower part - we need two masks for this
     __m256i mask0 = _mm256_set_epi32(maska[4],maska[4],maska[5],maska[5],maska[6],maska[6],maska[7],maska[7]);
