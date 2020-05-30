@@ -21,4 +21,5 @@ before_build:
   - cmake ..
 
 build:
+  project: test_fastor.sln
   verbosity: normal
