@@ -8,6 +8,7 @@ enable_testing()
 # single einsum
 add_executable(test_einsum_single test_einsum_single.cpp)
 add_test(test_einsum_single test_einsum_single)
+set_property(TARGET test_einsum_single PROPERTY CXX_STANDARD 17)
 
 if(MSVC)
     target_compile_options(test_einsum_single PRIVATE "/W2" "$<$<CONFIG:RELEASE>:/O2>")
