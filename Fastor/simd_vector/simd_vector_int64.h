@@ -218,12 +218,15 @@ struct SIMDVector<int64_t,simd_abi::avx512> {
     }
 
     FASTOR_INLINE int64_t sum() {
-        // const int64_t *vals = reinterpret_cast<const int64_t*>(&value);
-        // int64_t quan = 0;
-        // for (FASTOR_INDEX i=0; i<Size; ++i)
-        //     quan += vals[i];
-        // return quan;
+#ifdef FASTOR_HAS_AVX512_REDUCE_ADD
         return _mm512_reduce_add_epi64(value);
+#else
+        const int64_t *vals = reinterpret_cast<const int64_t*>(&value);
+        int64_t quan = 0;
+        for (FASTOR_INDEX i=0; i<Size; ++i)
+            quan += vals[i];
+        return quan;
+#endif
     }
 
     FASTOR_INLINE int64_t product() {
@@ -360,6 +363,18 @@ FASTOR_INLINE SIMDVector<int64_t,simd_abi::avx512> operator/(int64_t a, const SI
         val[i] = a / val_b[i];
     }
     out.value = _mm512_loadu_si512((__m512i*)val);
+#endif
+    return out;
+}
+
+FASTOR_INLINE SIMDVector<int64_t,simd_abi::avx512> abs(const SIMDVector<int64_t,simd_abi::avx512> &a) {
+    SIMDVector<int64_t,simd_abi::avx512> out;
+#ifdef FASTOR_HAS_AVX512_ABS
+    out.value = _mm512_abs_epi64(a.value);
+#else
+    for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
+       ((int64_t*)&out.value)[i] = std::abs(((int64_t*)&a.value)[i]);
+    }
 #endif
     return out;
 }

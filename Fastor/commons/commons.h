@@ -50,11 +50,11 @@ SOFTWARE.
 #ifdef __INTEL_COMPILER
 #define FASTOR_INTEL __INTEL_COMPILER_BUILD_DATE
 #elif defined(__clang__) && defined(__apple_build_version__)
-#define FASTOR_APPLECLANG (__clang_major__ * 0x10000 + __clang_minor__ * 0x100 + __clang_patchlevel__)
+#define FASTOR_APPLECLANG (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__)
 #elif defined(__clang__)
-#define FASTOR_CLANG (__clang_major__ * 0x10000 + __clang_minor__ * 0x100 + __clang_patchlevel__)
+#define FASTOR_CLANG (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__)
 #elif defined(__GNUC__)
-#define FASTOR_GCC (__GNUC__ * 0x10000 + __GNUC_MINOR__ * 0x100 + __GNUC_PATCHLEVEL__)
+#define FASTOR_GCC (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #elif defined(_MSC_VER)
 #define FASTOR_MSVC _MSC_FULL_VER
 #else
@@ -345,7 +345,33 @@ SOFTWARE.
 // Mask loading
 //------------------------------------------------------------------------------------------------//
 #if defined(FASTOR_AVX512F_IMPL) && defined(FASTOR_AVX512VL_IMPL)
-    #define FASTOR_HAS_AVX512_MASKS
+    #define FASTOR_HAS_AVX512_MASKS 1
+#endif
+//------------------------------------------------------------------------------------------------//
+
+// Horizontal add
+//------------------------------------------------------------------------------------------------//
+#if defined(FASTOR_AVX512F_IMPL)
+#if defined(FASTOR_INTEL)
+    #define FASTOR_HAS_AVX512_REDUCE_ADD 1
+#elif defined (FASTOR_GCC) && __GNUC__ >= 7
+    #define FASTOR_HAS_AVX512_REDUCE_ADD 1
+#elif defined (FASTOR_GCC) && __clang_major__ >= 4
+    #define FASTOR_HAS_AVX512_REDUCE_ADD 1
+#endif
+#endif
+//------------------------------------------------------------------------------------------------//
+
+// AVX512 abs
+//------------------------------------------------------------------------------------------------//
+#if defined(FASTOR_AVX512F_IMPL)
+#if defined(FASTOR_INTEL)
+    #define FASTOR_HAS_AVX512_ABS 1
+#elif defined (FASTOR_GCC) && __GNUC__ >= 7 && __GNUC_MINOR__ >= 4
+    #define FASTOR_HAS_AVX512_ABS 1
+#elif defined (FASTOR_GCC) && __clang_major__ >= 4
+    #define FASTOR_HAS_AVX512_ABS 1
+#endif
 #endif
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------//
@@ -360,7 +386,7 @@ SOFTWARE.
 #define __FASTOR_MAJOR__ 0
 #define __FASTOR_MINOR__ 6
 #define __FASTOR_PATCHLEVEL__ 2
-#define __FASTOR__ (__FASTOR_MAJOR__ * 0x10000 + __FASTOR_MINOR__ * 0x100 + __FASTOR_PATCHLEVEL__)
+#define __FASTOR__ (__FASTOR_MAJOR__ * 10000 + __FASTOR_MINOR__ * 100 + __FASTOR_PATCHLEVEL__)
 //------------------------------------------------------------------------------------------------//
 
 //------------------------------------------------------------------------------------------------//

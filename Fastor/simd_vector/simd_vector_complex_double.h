@@ -164,7 +164,15 @@ struct SIMDVector<std::complex<double>, simd_abi::avx512> {
     // end of in-place operators
 
     FASTOR_INLINE scalar_value_type sum() const {
+#ifdef FASTOR_HAS_AVX512_REDUCE_ADD
         return scalar_value_type(_mm512_reduce_add_pd(value_r),_mm512_reduce_add_pd(value_i));
+#else
+        __m256d lor  = _mm512_castpd512_pd256(value_r);
+        __m256d hir  = _mm512_extractf64x4_pd(value_r,0x1);
+        __m256d loi  = _mm512_castpd512_pd256(value_i);
+        __m256d hii  = _mm512_extractf64x4_pd(value_i,0x1);
+        return scalar_value_type(_mm256_sum_pd(_mm256_add_pd(lor,hir)), _mm256_sum_pd(_mm256_add_pd(loi,hii)));
+#endif
     }
     FASTOR_INLINE scalar_value_type product() const {
         vector_type tmp(*this);

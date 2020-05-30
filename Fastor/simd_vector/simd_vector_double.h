@@ -164,14 +164,13 @@ struct SIMDVector<double, simd_abi::avx512> {
     //     return out;
     // }
     FASTOR_INLINE double sum() {
-// #ifdef FASTOR_INTEL
-//         return _mm512_reduce_add_pd(value);
-// #else
-//         __m256d low  = _mm512_castpd512_pd256(value);
-//         __m256d high = _mm512_extractf64x4_pd(value,1);
-//         return _mm256_sum_pd(_mm256_add_pd(low,high));
-// #endif
+#ifdef FASTOR_HAS_AVX512_REDUCE_ADD
         return _mm512_reduce_add_pd(value);
+#else
+        __m256d low  = _mm512_castpd512_pd256(value);
+        __m256d high = _mm512_extractf64x4_pd(value,0x1);
+        return _mm256_sum_pd(_mm256_add_pd(low,high));
+#endif
     }
     FASTOR_INLINE double product() {
         __m256d low  = _mm512_castpd512_pd256(value);
@@ -298,7 +297,13 @@ FASTOR_INLINE SIMDVector<double,simd_abi::avx512> rsqrt(const SIMDVector<double,
 
 FASTOR_INLINE SIMDVector<double,simd_abi::avx512> abs(const SIMDVector<double,simd_abi::avx512> &a) {
     SIMDVector<double,simd_abi::avx512> out;
+#ifdef FASTOR_HAS_AVX512_ABS
     out.value = _mm512_abs_pd(a.value);
+#else
+    for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
+       ((double*)&out.value)[i] = std::abs(((double*)&a.value)[i]);
+    }
+#endif
     return out;
 }
 
