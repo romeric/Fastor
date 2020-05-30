@@ -143,7 +143,7 @@ FASTOR_MAKE_OS_STREAM_TENSORn(TensorMap)
 
 
 template<typename Derived, size_t DIM, typename T, size_t ...Rest>
-FASTOR_INLINE void assign(const AbstractTensor<Derived,DIM> &dst, const TensorMap<T,Rest...> &src) {
+FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, const TensorMap<T,Rest...> &src) {
     if (dst.self().data()==src.data()) return;
     trivial_assign(dst.self(),src);
 }

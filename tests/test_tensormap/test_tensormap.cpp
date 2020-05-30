@@ -55,6 +55,16 @@ void run() {
         FASTOR_EXIT_ASSERT(abs(a.sum() - ma.sum()) < Tol);
     }
 
+    // Map a const array and copy-assign it to a non-const tensor.
+    {
+        const T data[] = {1, 2, 3};
+        TensorMap<const T, 3> mdata{data};
+        Tensor<T, 3> tdata = mdata;
+        Tensor<T, 3> check{1, 2, 3};
+
+        FASTOR_EXIT_ASSERT(all_of(tdata == check));
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 }
 
