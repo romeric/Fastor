@@ -14,12 +14,11 @@ matrix:
   fast_finish: true
 
 before_build:
-  - cmd: |-
-    cd tests
-    mkdir build
-    cd build
-    cmake --version
-    cmake .. -G %generator%
+  - "cd tests"
+  - "mkdir build"
+  - "cd build"
+  - cmake --version
+  - cmake ..
 
 build:
   verbosity: normal
