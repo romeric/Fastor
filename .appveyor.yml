@@ -11,9 +11,10 @@ image:
   - Visual Studio 2019
 
 init:
-- echo %APPVEYOR_BUILD_WORKER_IMAGE%
-- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019" ( set generator="Visual Studio 16 2019 -A x64" )
-- echo %generator%
+  - echo %platform%
+  - echo %APPVEYOR_BUILD_WORKER_IMAGE%
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019" ( set generator="Visual Studio 16 2019" )
+  - echo %generator%
 
 matrix:
   fast_finish: true
@@ -23,7 +24,7 @@ before_build:
   - "mkdir build"
   - "cd build"
   - cmake --version
-  - cmake .. -G %generator%
+  - cmake .. -G %generator% -A %platform%
 
 build:
   project: C:/projects/fastor/tests/build/test_fastor.sln
