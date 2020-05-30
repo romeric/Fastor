@@ -1,25 +1,21 @@
 #ifndef TENSOR_METHODS_NONCONST_H
 #define TENSOR_METHODS_NONCONST_H
 
-template<typename U=T>
-FASTOR_INLINE void fill(U num0) {
-    T num = static_cast<T>(num0);
+FASTOR_INLINE void fill(T num0) {
     FASTOR_INDEX i = 0UL;
     using V = simd_vector_type;
-    V _vec(num);
+    V _vec(num0);
     for (; i<ROUND_DOWN(size(),V::Size); i+=V::Size) {
         _vec.store(&_data[i],false);
     }
-    for (; i<size(); ++i) _data[i] = num;
+    for (; i<size(); ++i) _data[i] = num0;
 }
 
-template<typename U=T>
-FASTOR_INLINE void iota(U num0=0) {
+FASTOR_INLINE void iota(T num0=0) {
     std::iota(_data, &_data[size()], num0);
 }
 
-template<typename U=T>
-FASTOR_INLINE void arange(U num0=0) {
+FASTOR_INLINE void arange(T num0=0) {
     std::iota(_data, &_data[size()], num0);
     // T num = static_cast<T>(num0);
     // using V = SIMDVector<T,simd_abi_type>;
