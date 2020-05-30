@@ -75,6 +75,7 @@ struct SIMDVector<int32_t,simd_abi::avx512> {
                 ((scalar_value_type*)&value)[Size - i - 1] = a[Size - i - 1];
             }
         }
+        unused(Aligned);
 #endif
     }
     FASTOR_INLINE void mask_store(scalar_value_type *a, uint8_t mask, bool Aligned=false) const {
@@ -95,6 +96,7 @@ struct SIMDVector<int32_t,simd_abi::avx512> {
                 a[Size - i - 1] = 0;
             }
         }
+        unused(Aligned);
 #endif
     }
 
@@ -428,6 +430,7 @@ struct SIMDVector<int32_t,simd_abi::avx> {
                 ((scalar_value_type*)&value)[Size - i - 1] = a[Size - i - 1];
             }
         }
+        unused(Aligned);
 #endif
     }
     FASTOR_INLINE void mask_store(scalar_value_type *a, uint8_t mask, bool Aligned=false) const {
@@ -448,6 +451,7 @@ struct SIMDVector<int32_t,simd_abi::avx> {
                 a[Size - i - 1] = 0;
             }
         }
+        unused(Aligned);
 #endif
     }
 
@@ -746,6 +750,7 @@ struct SIMDVector<int32_t,simd_abi::sse> {
                 ((scalar_value_type*)&value)[Size - i - 1] = a[Size - i - 1];
             }
         }
+        unused(Aligned);
 #endif
     }
     FASTOR_INLINE void mask_store(scalar_value_type *a, uint8_t mask, bool Aligned=false) const {
@@ -766,6 +771,7 @@ struct SIMDVector<int32_t,simd_abi::sse> {
                 a[Size - i - 1] = 0;
             }
         }
+        unused(Aligned);
 #endif
     }
 
