@@ -176,13 +176,13 @@ struct extractor_perm<Index<Idx...> > {
 
         using _permute_impl = permute_impl<Index<Idx...>, Tensor<T,Rest...>,
             typename std_ext::make_index_sequence<sizeof...(Idx)>::type>;
-        using resulting_index  = typename _permute_impl::resulting_index;
         using resulting_tensor = typename _permute_impl::resulting_tensor;
         constexpr bool requires_permutation = _permute_impl::requires_permutation;
         FASTOR_IF_CONSTEXPR(!requires_permutation) return a;
 
 #if CONTRACT_OPT==-1
 
+        using resulting_index  = typename _permute_impl::resulting_index;
         using maxes_out_type = typename _permute_impl::maxes_out_type;
         constexpr auto& maxes_idx = resulting_index::values;
         constexpr auto& maxes_out = maxes_out_type::values;
