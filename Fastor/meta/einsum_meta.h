@@ -987,7 +987,7 @@ struct new_permute_impl<Index<ls...>, Tensor<T, fs...>, std_ext::index_sequence<
 //------------------------------------------------------------------------------------------------------------//
 #if FASTOR_CXX_VERSION >= 2017
 template<size_t N>
-constexpr std::array<size_t, N> get_ground_map(const std::array<size_t, N> &idx) {
+constexpr std::array<size_t, N> get_floor_map(const std::array<size_t, N> &idx) {
     std::array<size_t, N> out = {};
     for (size_t i=0; i<N; ++i) {
         out[idx[i]] = i;
@@ -995,19 +995,70 @@ constexpr std::array<size_t, N> get_ground_map(const std::array<size_t, N> &idx)
     return out;
 }
 
+/* Find how many swaps/permutations are necessary going from the resulting einsum index to the output index
+*/
+template<size_t N>
+constexpr std::array<size_t, N> find_permuation(const std::array<size_t, N> &idx0, const std::array<size_t, N> &idx1) {
+    std::array<size_t, N> out = {};
+    for (size_t i=0; i<N; ++i) {
+        // int idx = find_index(idx1, idx0[i]);
+        int idx = find_index(idx0, idx1[i]);
+        out[i] = idx;
+    }
+    return out;
+}
+
+/* This meta function is used for explicit einsum when the user explicitly sets the type of the output.
+    In such cases the einsum is followed by a permutation for instance [einsum<Index<l,i,k,l,j>,OIndex<i,k,j>>(a)].
+    In the above example the resulting index from einsum is already Index<i,k,j> but the user decides to force this
+    nevertheless using OIndex<i,k,j>. Now if permuation is simply performed using OIndex<i,k,j> the final output would
+    be incorrect since permuation only works with what indices it is given and does not have the knowledge of the context.
+    This meta function is responsible for creating a mapping between einsum and permutation. It takes the resulting index
+    of einsum and the permutation index [the output index OIndex] and figures out how the tensor should be permuted.
+*/
 template<typename Ind0, typename Ind1, typename seq>
 struct permute_mapped_index_impl;
+
+// // specialisation for when the input and output indices are the same - the no permutation case
+// template<size_t ... Idx0, size_t ... ss>
+// struct permute_mapped_index_impl<Index<Idx0...>,Index<Idx0...>,std_ext::index_sequence<ss...>> {
+//     using resulting_index = Index<ss...>;
+// };
 
 template<size_t ... Idx0, size_t ... Idx1, size_t ... ss>
 struct permute_mapped_index_impl<Index<Idx0...>,Index<Idx1...>,std_ext::index_sequence<ss...>> {
     constexpr static size_t einsum_idx[sizeof...(Idx0)]         = { Idx0... };
     constexpr static size_t to_be_permuted_idx[sizeof...(Idx1)] = { Idx1... };
-    static constexpr std::array<size_t, sizeof...(Idx1)> argsort_idx = meta_argsort<Index<Idx1...>,Index<ss...>>::new_argseq::values;
-    static constexpr std::array<size_t, sizeof...(Idx1)> mapped_idx = get_ground_map(argsort_idx);
-    using resulting_index = Index<einsum_idx[mapped_idx[ss]]...>;
-    // using resulting_index = Index<einsum_idx[to_be_permuted_idx[ss]]...>;
-    // using resulting_index = Index<to_be_permuted_idx[einsum_idx[ss]]...>;
+    /* Given that the resulting index from einsum can be discontinuous like Index<5,8,2> we need to first create a continuous
+        Index starting from zero. This is done through [get_floor_map] function. We floor both resulting einsum and output
+        indices and we then call the [find_permuation] function to know how many swaps/permutations are necessary going from
+        the resulting einsum index to the output index
+    */
+    static constexpr std::array<size_t, sizeof...(Idx0)> argsort_idx0 = meta_argsort<Index<Idx0...>,Index<ss...>>::new_argseq::values;
+    static constexpr std::array<size_t, sizeof...(Idx1)> argsort_idx1 = meta_argsort<Index<Idx1...>,Index<ss...>>::new_argseq::values;
+    static constexpr std::array<size_t, sizeof...(Idx0)> mapped_idx0 = get_floor_map(argsort_idx0);
+    static constexpr std::array<size_t, sizeof...(Idx1)> mapped_idx1 = get_floor_map(argsort_idx1);
+    static constexpr std::array<size_t, sizeof...(Idx1)> mapped_idx = find_permuation(mapped_idx0,mapped_idx1);
+    using resulting_index = Index<mapped_idx[ss]...>;
 };
+
+/* Provided for debugging */
+template<size_t ... Idx0, size_t ... Idx1, size_t ... ss>
+constexpr std::array<size_t, sizeof...(Idx0)>
+permute_mapped_index_impl<Index<Idx0...>,Index<Idx1...>,std_ext::index_sequence<ss...>>::argsort_idx0;
+template<size_t ... Idx0, size_t ... Idx1, size_t ... ss>
+constexpr std::array<size_t, sizeof...(Idx1)>
+permute_mapped_index_impl<Index<Idx0...>,Index<Idx1...>,std_ext::index_sequence<ss...>>::argsort_idx1;
+template<size_t ... Idx0, size_t ... Idx1, size_t ... ss>
+constexpr std::array<size_t, sizeof...(Idx0)>
+permute_mapped_index_impl<Index<Idx0...>,Index<Idx1...>,std_ext::index_sequence<ss...>>::mapped_idx0;
+template<size_t ... Idx0, size_t ... Idx1, size_t ... ss>
+constexpr std::array<size_t, sizeof...(Idx1)>
+permute_mapped_index_impl<Index<Idx0...>,Index<Idx1...>,std_ext::index_sequence<ss...>>::mapped_idx1;
+template<size_t ... Idx0, size_t ... Idx1, size_t ... ss>
+constexpr std::array<size_t, sizeof...(Idx1)>
+permute_mapped_index_impl<Index<Idx0...>,Index<Idx1...>,std_ext::index_sequence<ss...>>::mapped_idx;
+
 
 template<typename Ind0, typename Ind1>
 struct permute_mapped_index {

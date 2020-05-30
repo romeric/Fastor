@@ -280,6 +280,24 @@ void run() {
     }
 
 
+    // this checks the no-permutation of the specialisations of permute_mapped_index_impl
+    {
+        constexpr size_t I=2, J=4, K=3, L=5, M=3;
+        Tensor<T,K,L,M,I,L> a; a.iota(3);
+        auto b1 = einsum<Index<k,l,m,i,l>>(a);
+        // no permutation
+        auto b2 = einsum<Index<k,l,m,i,l>,OIndex<k,m,i>>(a);
+
+        for (size_t kk=0; kk<K; ++kk) {
+            for (size_t mm=0; mm<M; ++mm) {
+                for (size_t ii=0; ii<I; ++ii) {
+                    FASTOR_EXIT_ASSERT( std::abs( b1(kk,mm,ii) - b2(kk,mm,ii) ) < Tol );
+                }
+            }
+        }
+    }
+
+
 
     // expressions
     {

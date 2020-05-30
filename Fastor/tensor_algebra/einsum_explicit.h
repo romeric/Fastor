@@ -139,7 +139,7 @@ decltype(auto) einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b, 
 //-----------------------------------------------------------------------------------------------------------------------//
 // single expression explicit einsum
 template<class Index_I, class Index_O,
-        typename AbstractTensorType0>
+        typename AbstractTensorType0, enable_if_t_<!is_tensor_v<AbstractTensorType0>,bool> = false>
 FASTOR_INLINE
 decltype(auto)
 einsum(const AbstractTensorType0& a)
@@ -161,10 +161,12 @@ decltype(auto)
 einsum(const AbstractTensorType0& a, const AbstractTensorTypes& ... rest)
 {
     auto res = internal::unpack_einsum_tuple<Index_I,Index_Ks...>::apply(internal::contraction_chain_evaluate(a,rest...));
+    auto res_idx = internal::unpack_einsum_helper_tuple<Index_I,Index_Ks...>::apply(internal::contraction_chain_evaluate(a,rest...));
 
-    constexpr bool requires_permutation = requires_permute_v<typename Index_O::parent_type, decltype(res)>;
+    using mapped_index = internal::permute_mapped_index_t<decltype(res_idx),typename Index_O::parent_type>;
+    constexpr bool requires_permutation = requires_permute_v<mapped_index, decltype(res)>;
     FASTOR_IF_CONSTEXPR(!requires_permutation) return res;
-    return permute<typename Index_O::parent_type>(res);
+    return permute<mapped_index>(res);
 }
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------

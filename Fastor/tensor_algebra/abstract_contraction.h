@@ -149,7 +149,7 @@ contraction_chain_evaluate()
 // as evaluate returns the tensor itself
 template<typename Derived0, size_t DIM0>
 FASTOR_INLINE
-auto
+decltype(auto)
 contraction_chain_evaluate(const AbstractTensor<Derived0,DIM0>& a)
 {
     return evaluate(a.self());
@@ -157,7 +157,7 @@ contraction_chain_evaluate(const AbstractTensor<Derived0,DIM0>& a)
 
 template<typename AbstractTensorType0, typename ... AbstractTensorTypes>
 FASTOR_INLINE
-auto
+decltype(auto)
 contraction_chain_evaluate(const AbstractTensorType0& a, const AbstractTensorTypes& ... rest)
 {
     return std::tuple_cat(std::make_tuple(evaluate(a)),contraction_chain_evaluate(rest...));
@@ -176,7 +176,7 @@ struct unpack_contraction_tuple {
     template<typename Tuple>
     static auto apply(Tuple t)
     {
-        static constexpr auto size = std::tuple_size<Tuple>::value;
+        constexpr auto size = std::tuple_size<Tuple>::value;
         return apply(t, std_ext::make_index_sequence<size>{});
     }
 };
@@ -194,7 +194,23 @@ struct unpack_einsum_tuple {
     template<typename Tuple>
     static auto apply(Tuple t)
     {
-        static constexpr auto size = std::tuple_size<Tuple>::value;
+        constexpr auto size = std::tuple_size<Tuple>::value;
+        return apply(t, std_ext::make_index_sequence<size>{});
+    }
+};
+
+template<class Index_I, class Index_J, class ... Index_Ks>
+struct unpack_einsum_helper_tuple {
+
+    template<typename Tuple, size_t ... I>
+    static constexpr auto apply(Tuple t, std_ext::index_sequence<I ...>)
+    {
+         return einsum_helper<Index_I,Index_J,Index_Ks...,decltype(std::get<I>(t)) ...>{};
+    }
+    template<typename Tuple>
+    static constexpr auto apply(Tuple t)
+    {
+        constexpr auto size = std::tuple_size<Tuple>::value;
         return apply(t, std_ext::make_index_sequence<size>{});
     }
 };
