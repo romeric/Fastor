@@ -10,6 +10,18 @@ platform:
 image:
   - Visual Studio 2019
 
+environment:
+  matrix:
+  - arch: Win64
+
+init:
+- set arch=
+- if "%arch%"=="Win64" ( set arch= Win64)
+- echo %arch%
+- echo %APPVEYOR_BUILD_WORKER_IMAGE%
+- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019" ( set generator="Visual Studio 16 2019%arch%" )
+- echo %generator%
+
 matrix:
   fast_finish: true
 
@@ -18,7 +30,7 @@ before_build:
   - "mkdir build"
   - "cd build"
   - cmake --version
-  - cmake ..
+  - cmake .. -G %generator%
 
 build:
   project: C:/projects/fastor/tests/build/test_fastor.sln
