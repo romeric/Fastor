@@ -222,7 +222,11 @@ struct SIMDVector<int32_t,simd_abi::avx512> {
     }
 
     FASTOR_INLINE int32_t dot(const SIMDVector<int32_t,simd_abi::avx512> &other) {
+#ifdef FASTOR_HAS_AVX512_REDUCE_ADD
         return _mm512_reduce_add_epi32(_mm512_mullo_epi32(value,other.value));
+#else
+        return (*this * other).sum();
+#endif
     }
 
     __m512i value;
