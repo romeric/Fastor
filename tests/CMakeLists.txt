@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 14)
 enable_testing()
 
 if(MSVC)
-    add_compile_options("/W4" "$<$<CONFIG:RELEASE>:/O2>")
+    add_compile_options("/std:c++17" "/W2" "$<$<CONFIG:RELEASE>:/O2>")
 else()
     add_compile_options("-march=native" "$<$<CONFIG:RELEASE>:-O3>" "$<$<CONFIG:RELEASE>:-march=native>")
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "g++")
@@ -26,7 +26,11 @@ add_subdirectory(test_tensor_basics)
 add_subdirectory(test_booleans)
 
 add_subdirectory(test_matmul)
+# This test checks over 30000 combination
+# MSVC creates an excessively large obj for this
+if(NOT MSVC)
 add_subdirectory(test_tmatmul)
+endif()
 
 add_subdirectory(test_transpose)
 

@@ -22,4 +22,4 @@ before_build:
 
 build:
   project: C:/projects/fastor/tests/build/test_fastor.sln
-  verbosity: normal
+  verbosity: minimal
