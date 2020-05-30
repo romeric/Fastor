@@ -1,0 +1,25 @@
+version: '{build}'
+
+branches:
+  only:
+    - master
+
+platform:
+  - x64
+
+image:
+  - Visual Studio 2019
+
+matrix:
+  fast_finish: true
+
+before_build:
+  - cmd: |-
+    cd tests
+    mkdir build
+    cd build
+    cmake --version
+    cmake .. -G %generator%
+
+build:
+  verbosity: normal
