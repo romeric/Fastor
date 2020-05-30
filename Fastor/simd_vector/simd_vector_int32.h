@@ -225,7 +225,7 @@ struct SIMDVector<int32_t,simd_abi::avx512> {
 #ifdef FASTOR_HAS_AVX512_REDUCE_ADD
         return _mm512_reduce_add_epi32(_mm512_mullo_epi32(value,other.value));
 #else
-        return (*this * other).sum();
+        return SIMDVector<int32_t,simd_abi::avx512>(_mm512_mullo_epi32(value,other.value)).sum();
 #endif
     }
 
