@@ -26,6 +26,7 @@ SOFTWARE.
 
 #include <cstdlib>
 #include <cassert>
+#include <stdexcept>
 
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------//
@@ -481,12 +482,9 @@ constexpr double PRECI_TOL  = 1e-14;
 #endif
 // The following assert is provided for cases where despite
 // the DNDEBUG one might want the code to stop at failure
-FASTOR_INLINE void FASTOR_EXIT_ASSERT(bool cond, const std::string &x="") {
-    if (cond==true) {
-        return;
-    }
-    else {
-        std::cout << x << '\n';
+FASTOR_INLINE void FASTOR_EXIT_ASSERT(bool cond, const std::string &msg="") {
+    if (cond==false) {
+        throw std::runtime_error(msg);
         exit(EXIT_FAILURE);
     }
 }

@@ -1,6 +1,8 @@
 #ifndef EINSUM_META_H
 #define EINSUM_META_H
 
+#include "Fastor/meta/meta.h"
+#include "Fastor/commons/commons.h"
 #include "Fastor/tensor/Tensor.h"
 #include <array>
 
@@ -892,16 +894,16 @@ struct meta_argmin_wrapper<Index<idx>> {
 
 // Complete compile-time sorting algorithm: Does not work if there a duplicate entries in a pack
 template<class arg>
-struct tmp_sort;
+struct meta_sort;
 template<size_t ...rest>
-struct tmp_sort<Index<rest...>> {
+struct meta_sort<Index<rest...>> {
     static constexpr int least_value_idx = meta_argmin_wrapper<Index<rest...>>::value;
     static constexpr int least_value = get_value<least_value_idx+1,rest...>::value;
     using reduced_seq = typename filter_<least_value,rest...>::type;
-    using new_seq = typename concat_<Index<least_value>,typename tmp_sort<reduced_seq>::new_seq>::type;
+    using new_seq = typename concat_<Index<least_value>,typename meta_sort<reduced_seq>::new_seq>::type;
 };
 template<size_t value>
-struct tmp_sort<Index<value>> {
+struct meta_sort<Index<value>> {
     using reduced_seq = Index<value>;
     using new_seq = Index<value>;
 };
@@ -909,21 +911,21 @@ struct tmp_sort<Index<value>> {
 
 // Complete compile-time arg-sorting algorithm: Does not work if there a duplicate entries in a pack
 template<class arg, class seq>
-struct tmp_argsort;
+struct meta_argsort;
 template<size_t ...rest, size_t ...ss>
-struct tmp_argsort<Index<rest...>,Index<ss...>> {
+struct meta_argsort<Index<rest...>,Index<ss...>> {
     static constexpr int least_value_idx = meta_argmin_wrapper<Index<rest...>>::value;
     static constexpr int least_value = get_value<least_value_idx+1,rest...>::value;
     using reduced_seq = typename filter_<least_value,rest...>::type;
-    using new_seq = typename concat_<Index<least_value>,typename tmp_sort<reduced_seq>::new_seq>::type;
+    using new_seq = typename concat_<Index<least_value>,typename meta_sort<reduced_seq>::new_seq>::type;
 
     static constexpr int least_index = get_value<least_value_idx+1,ss...>::value;
 
     using reduced_argseq = typename filter_<least_index,ss...>::type;
-    using new_argseq = typename concat_<Index<least_index>,typename tmp_argsort<reduced_seq,reduced_argseq>::new_argseq>::type;
+    using new_argseq = typename concat_<Index<least_index>,typename meta_argsort<reduced_seq,reduced_argseq>::new_argseq>::type;
 };
 template<size_t value, size_t ss>
-struct tmp_argsort<Index<value>,Index<ss>> {
+struct meta_argsort<Index<value>,Index<ss>> {
     using reduced_seq = Index<value>;
     using new_seq = Index<value>;
 
@@ -959,8 +961,8 @@ struct permute_impl<Index<ls...>, Tensor<T, fs...>, std_ext::index_sequence<ss..
     constexpr static size_t lst[sizeof...(ls)] = { ls... };
     constexpr static size_t fvals[sizeof...(ls)] = {fs...};
     using resulting_tensor = Tensor<T,fvals[count_less(lst, lst[ss])]...>;
-    using resulting_index  = typename tmp_argsort<Index<ls...>,Index<ss...>>::new_argseq;
-    using maxes_out_type   = Index<fvals[tmp_argsort<Index<ls...>,Index<ss...>>::new_argseq::values[ss]]...>;
+    using resulting_index  = typename meta_argsort<Index<ls...>,Index<ss...>>::new_argseq;
+    using maxes_out_type   = Index<fvals[meta_argsort<Index<ls...>,Index<ss...>>::new_argseq::values[ss]]...>;
     static constexpr bool requires_permutation = !(is_same_v_<resulting_tensor,Tensor<T, fs...>> &&
                                                     is_sequential(resulting_index::values));
 };
@@ -979,6 +981,45 @@ struct new_permute_impl<Index<ls...>, Tensor<T, fs...>, std_ext::index_sequence<
     static constexpr bool requires_permutation = !(is_same_v_<resulting_tensor,Tensor<T, fs...>> &&
                                                     is_sequential(resulting_index::values));
 };
+//------------------------------------------------------------------------------------------------------------//
+
+
+//------------------------------------------------------------------------------------------------------------//
+#if FASTOR_CXX_VERSION >= 2017
+template<size_t N>
+constexpr std::array<size_t, N> get_ground_map(const std::array<size_t, N> &idx) {
+    std::array<size_t, N> out = {};
+    for (size_t i=0; i<N; ++i) {
+        out[idx[i]] = i;
+    }
+    return out;
+}
+
+template<typename Ind0, typename Ind1, typename seq>
+struct permute_mapped_index_impl;
+
+template<size_t ... Idx0, size_t ... Idx1, size_t ... ss>
+struct permute_mapped_index_impl<Index<Idx0...>,Index<Idx1...>,std_ext::index_sequence<ss...>> {
+    constexpr static size_t einsum_idx[sizeof...(Idx0)]         = { Idx0... };
+    constexpr static size_t to_be_permuted_idx[sizeof...(Idx1)] = { Idx1... };
+    static constexpr std::array<size_t, sizeof...(Idx1)> argsort_idx = meta_argsort<Index<Idx1...>,Index<ss...>>::new_argseq::values;
+    static constexpr std::array<size_t, sizeof...(Idx1)> mapped_idx = get_ground_map(argsort_idx);
+    using resulting_index = Index<einsum_idx[mapped_idx[ss]]...>;
+    // using resulting_index = Index<einsum_idx[to_be_permuted_idx[ss]]...>;
+    // using resulting_index = Index<to_be_permuted_idx[einsum_idx[ss]]...>;
+};
+
+template<typename Ind0, typename Ind1>
+struct permute_mapped_index {
+    using resulting_index = typename permute_mapped_index_impl<Ind0,Ind1,
+        typename std_ext::make_index_sequence<Ind0::Size>::type>::resulting_index;
+};
+
+template<typename Ind0, typename Ind1>
+using permute_mapped_index_t = typename permute_mapped_index<Ind0,Ind1>::resulting_index;
+
+#endif // CXX 2017
+//------------------------------------------------------------------------------------------------------------//
 
 } // internal
 
@@ -1010,6 +1051,23 @@ struct requires_permute<Index<Idx...>, Tensor<T, Rest...>> {
 template<class Idx, class Tens>
 constexpr bool requires_permute_v = requires_permute<Idx,Tens>::value;
 //------------------------------------------------------------------------------------------------------------//
+
+
+// einsum helper to extract the resulting index and the resulting tensor
+//------------------------------------------------------------------------------------------------------------//
+template<typename ...Ts>
+struct permute_helper;
+
+template<class Index_I,
+         typename T, size_t ... Rest0>
+struct permute_helper<Index_I,Tensor<T,Rest0...>> {
+    using resulting_index  = typename internal::new_permute_impl<Index_I, Tensor<T,Rest0...>,
+        typename std_ext::make_index_sequence<sizeof...(Rest0)>::type>::resulting_index;
+    using resulting_tensor = typename internal::new_permute_impl<Index_I, Tensor<T,Rest0...>,
+        typename std_ext::make_index_sequence<sizeof...(Rest0)>::type>::resulting_tensor;
+};
+//------------------------------------------------------------------------------------------------------------//
+
 
 
 }

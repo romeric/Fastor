@@ -18,7 +18,6 @@ endif()
 target_include_directories(test_einsum_single PRIVATE ${FASTOR_INCLUDE_DIR})
 target_include_directories(test_einsum_single PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../)
 
-
 # tensor contraction
 # default
 add_executable(test_contraction_0 test_contraction.cpp)

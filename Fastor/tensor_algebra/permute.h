@@ -96,7 +96,7 @@ struct new_extractor_perm<Index<Idx...> > {
         enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
     static
     FASTOR_INLINE
-    typename permute_impl<
+    typename new_permute_impl<
         Index<Idx...>, typename Derived::result_type,
         typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::resulting_tensor
     permutation_impl(const AbstractTensor<Derived,DIMS> &a) {

@@ -33,6 +33,7 @@ add_subdirectory(test_transpose)
 add_subdirectory(test_permute)
 
 add_subdirectory(test_einsum)
+add_subdirectory(test_einsum_explicit)
 
 add_subdirectory(test_linalg)
 add_subdirectory(test_lu)
