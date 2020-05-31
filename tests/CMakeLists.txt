@@ -40,6 +40,7 @@ add_subdirectory(test_einsum_explicit)
 
 add_subdirectory(test_linalg)
 add_subdirectory(test_lu)
+add_subdirectory(test_qr)
 add_subdirectory(test_inverse)
 add_subdirectory(test_solve)
 

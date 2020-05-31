@@ -14,7 +14,7 @@ void test_solve() {
     {
         constexpr size_t M = 2;
         Tensor<T,M,M> a; a.iota(1);
-        for (size_t i=0; i<M; ++i) a(i,i) = 100;
+        for (size_t i=0; i<M; ++i) a(i,i) = T(100);
         Tensor<T,M> b; b.iota(100);
         Tensor<T,M,1> c; c.iota(100);
         Tensor<T,M,5> d; d.iota(100);
@@ -29,7 +29,7 @@ void test_solve() {
     {
         constexpr size_t M = 3;
         Tensor<T,M,M> a; a.iota(1);
-        for (size_t i=0; i<M; ++i) a(i,i) = 100;
+        for (size_t i=0; i<M; ++i) a(i,i) = T(100);
         Tensor<T,M> b; b.iota(100);
         Tensor<T,M,1> c; c.iota(100);
         Tensor<T,M,5> d; d.iota(100);
@@ -44,7 +44,7 @@ void test_solve() {
     {
         constexpr size_t M = 4;
         Tensor<T,M,M> a; a.iota(1);
-        for (size_t i=0; i<M; ++i) a(i,i) = 100;
+        for (size_t i=0; i<M; ++i) a(i,i) = T(100);
         Tensor<T,M> b; b.iota(100);
         Tensor<T,M,1> c; c.iota(100);
         Tensor<T,M,5> d; d.iota(100);
@@ -61,7 +61,7 @@ void test_solve() {
     {
         constexpr size_t M = 2;
         Tensor<T,M,M> a; a.iota(1);
-        for (size_t i=0; i<M; ++i) a(i,i) = 100;
+        for (size_t i=0; i<M; ++i) a(i,i) = T(100);
         Tensor<T,M> b; b.iota(100);
         Tensor<T,M,1> c; c.iota(100);
         Tensor<T,M,5> d; d.iota(100);
@@ -79,7 +79,7 @@ void test_solve() {
     {
         constexpr size_t M = 3;
         Tensor<T,M,M> a; a.iota(1);
-        for (size_t i=0; i<M; ++i) a(i,i) = 100;
+        for (size_t i=0; i<M; ++i) a(i,i) = T(100);
         Tensor<T,M> b; b.iota(100);
 
         Tensor<T,M> b1;
@@ -147,7 +147,7 @@ void test_solve() {
     {
         constexpr size_t M = 3;
         Tensor<T,M,M> a; a.iota(1);
-        for (size_t i=0; i<M; ++i) a(i,i) = 100;
+        for (size_t i=0; i<M; ++i) a(i,i) = T(100);
         Tensor<T,M,5> b; b.iota(100);
 
         Tensor<T,M,5> b1;
@@ -204,7 +204,7 @@ void test_solve() {
     {
         constexpr size_t M = 4;
         Tensor<T,M,M> a; a.iota(1);
-        for (size_t i=0; i<M; ++i) a(i,i) = 100;
+        for (size_t i=0; i<M; ++i) a(i,i) = T(100);
         Tensor<T,M> b; b.iota(100);
         Tensor<T,M,1> c; c.iota(100);
         Tensor<T,M,5> d; d.iota(100);
@@ -261,7 +261,7 @@ void test_solve() {
         constexpr size_t N = M;
         Tensor<T,M,M> A; A.arange(0);
         Tensor<T,M> b; b.iota(1);
-        for (size_t i=0; i<M; ++i) A(i,i) = 100 + i;
+        for (size_t i=0; i<M; ++i) A(i,i) = T(100 + i);
 
         Tensor<T,M> sol = solve(A,b);
         FASTOR_EXIT_ASSERT(std::abs(sum(solve<SolveCompType::BlockLUPiv> (A,b) - sol)) < BigTol);

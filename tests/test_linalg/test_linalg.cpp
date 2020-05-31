@@ -115,51 +115,10 @@ void test_linalg() {
         FASTOR_EXIT_ASSERT(std::abs(sum(transpose(cof(a1+0)) - adj(a1+a1-a1))) < BigTol);
     }
 
-    // QR
-    {
-        Tensor<T,4,4> A; A.arange();
-        for (size_t i=0; i<4; ++i) A(i,i) = 10;
-
-        {
-            Tensor<T,4,4> Q, R;
-            qr(A, Q, R);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - Q%R)) < BigTol);
-        }
-        {
-            Tensor<T,4,4> Q, R;
-            qr(A+0, Q, R);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - Q%R)) < BigTol);
-        }
-        {
-            Tensor<T,4,4> Q, R;
-            qr<QRCompType::MGSR>(A+0, Q, R);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - Q%R)) < BigTol);
-        }
-        {
-            Tensor<T,4,4> Q, R;
-            Tensor<size_t,4> P;
-            qr<QRCompType::MGSRPiv>(A+0, Q, R, P);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - Q%R)) < BigTol);
-        }
-        {
-            Tensor<T,4,4> Q, R, P;
-            qr<QRCompType::MGSRPiv>(A+0, Q, R, P);
-            FASTOR_EXIT_ASSERT(std::abs(sum(A - Q%R)) < BigTol);
-        }
-        // absdet by QR
-        {
-            FASTOR_EXIT_ASSERT(std::abs(absdet<DetCompType::QR>(A) - std::abs(determinant(A))) < HugeTol);
-        }
-        // logdet by QR
-        {
-            FASTOR_EXIT_ASSERT(std::abs(logdet<DetCompType::QR>(A) - std::log(std::abs(determinant(A)))) < HugeTol);
-        }
-    }
-
     // det by LU
     {
         Tensor<T,4,4> A; A.arange();
-        for (size_t i=0; i<4; ++i) A(i,i) = 10;
+        for (size_t i=0; i<4; ++i) A(i,i) = T(10);
         FASTOR_EXIT_ASSERT(std::abs(determinant<DetCompType::LU>(A) - determinant(A)) < HugeTol);
         FASTOR_EXIT_ASSERT(std::abs(det<DetCompType::LU>(A)         - det(A)        ) < HugeTol);
     }
