@@ -6,7 +6,7 @@
 #include "Fastor/tensor_algebra/permutation.h"
 #include "Fastor/tensor_algebra/permute.h"
 #include "Fastor/tensor_algebra/einsum.h"
-#include "Fastor/tensor_algebra/einsum_network.h"
+#include "Fastor/tensor_algebra/network_einsum.h"
 #include "Fastor/tensor_algebra/abstract_contraction.h"
 
 namespace Fastor {
@@ -62,15 +62,21 @@ einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
 template<class Index_I, class Index_J, class Index_K, class Index_O,
          typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2>
 FASTOR_INLINE
-decltype(auto) einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b, const Tensor<T,Rest2...> &c) {
+typename permute_helper<
+    internal::permute_mapped_index_t<
+        typename einsum_helper<Index_I,Index_J,Index_K,Tensor<T,Rest0...>,Tensor<T,Rest1...>,Tensor<T,Rest2...>>::resulting_index,
+        typename Index_O::parent_type>,
+    typename einsum_helper<Index_I,Index_J,Index_K,Tensor<T,Rest0...>,Tensor<T,Rest1...>,Tensor<T,Rest2...>>::resulting_tensor>::resulting_tensor
+einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b, const Tensor<T,Rest2...> &c) {
     using _einsum_helper = einsum_helper<Index_I,Index_J,Index_K,Tensor<T,Rest0...>,Tensor<T,Rest1...>,Tensor<T,Rest2...>>;
     using resulting_index_einsum  = typename _einsum_helper::resulting_index;
     using resulting_tensor_einsum = typename _einsum_helper::resulting_tensor;
     auto res = einsum<Index_I,Index_J,Index_K>(a,b,c);
 
-    constexpr bool requires_permutation = requires_permute_v<typename Index_O::parent_type, resulting_tensor_einsum>;
+    using mapped_index = internal::permute_mapped_index_t<resulting_index_einsum,typename Index_O::parent_type>;
+    constexpr bool requires_permutation = requires_permute_v<mapped_index, resulting_tensor_einsum>;
     FASTOR_IF_CONSTEXPR(!requires_permutation) return res;
-    return permute<typename Index_O::parent_type>(res);
+    return permute<mapped_index>(res);
 }
 //-----------------------------------------------------------------------------------------------------------------------//
 
@@ -161,10 +167,29 @@ FASTOR_INLINE
 decltype(auto)
 einsum(const AbstractTensor<Derived0,DIM0>& a, const AbstractTensor<Derived1,DIM1>& b)
 {
-    using lhs_type = typename Derived0::resulting_type;
-    using rhs_type = typename Derived1::resulting_type;
-    auto res = einsum<Index_I,Index_J>(a,b);
-    using resulting_index_einsum = typename einsum_helper<Index_I,Index_J,lhs_type,rhs_type>::resulting_index;
+    auto res = einsum<Index_I,Index_J>(a.self(),b.self());
+    using ttype0 = typename Derived0::resulting_type;
+    using ttype1 = typename Derived1::resulting_type;
+    using resulting_index_einsum = typename einsum_helper<Index_I,Index_J,ttype0,ttype1>::resulting_index;
+
+    using mapped_index = internal::permute_mapped_index_t<resulting_index_einsum,typename Index_O::parent_type>;
+    constexpr bool requires_permutation = requires_permute_v<mapped_index, decltype(res)>;
+    FASTOR_IF_CONSTEXPR(!requires_permutation) return res;
+    return permute<mapped_index>(res);
+}
+
+// 3 tensor network expression explicit einsum
+template<class Index_I, class Index_J, class Index_K, class Index_O,
+        typename Derived0, typename Derived1, typename Derived2, size_t DIM0, size_t DIM1, size_t DIM2>
+FASTOR_INLINE
+decltype(auto)
+einsum(const AbstractTensor<Derived0,DIM0>& a, const AbstractTensor<Derived1,DIM1>& b, const AbstractTensor<Derived2,DIM2>& c)
+{
+    auto res = einsum<Index_I,Index_J,Index_K>(a.self(),b.self(),c.self());
+    using ttype0 = typename Derived0::resulting_type;
+    using ttype1 = typename Derived1::resulting_type;
+    using ttype2 = typename Derived2::resulting_type;
+    using resulting_index_einsum = typename einsum_helper<Index_I,Index_J,Index_K,ttype0,ttype1,ttype2>::resulting_index;
 
     using mapped_index = internal::permute_mapped_index_t<resulting_index_einsum,typename Index_O::parent_type>;
     constexpr bool requires_permutation = requires_permute_v<mapped_index, decltype(res)>;
@@ -174,7 +199,8 @@ einsum(const AbstractTensor<Derived0,DIM0>& a, const AbstractTensor<Derived1,DIM
 
 #if !defined(FASTOR_MSVC)
 template<class Index_I, class ... Index_Ks, class Index_O,
-        typename AbstractTensorType0, typename ... AbstractTensorTypes>
+        typename AbstractTensorType0, typename ... AbstractTensorTypes,
+        enable_if_t_<sizeof...(AbstractTensorTypes) >= 3, bool > = false>
 FASTOR_INLINE
 decltype(auto)
 einsum(const AbstractTensorType0& a, const AbstractTensorTypes& ... rest)

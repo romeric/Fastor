@@ -234,7 +234,10 @@ FASTOR_INLINE
 auto
 einsum(const AbstractTensorType0& a, const AbstractTensorType1& b, const AbstractTensorTypes& ... rest)
 {
+    // network einsum is not defined yet
     return internal::unpack_einsum_tuple<Index_I,Index_J,Index_Ks...>::apply(internal::contraction_chain_evaluate(a,b,rest...));
+    // but it dispatches to network contraction anyway and contraction uses by-pair einsum in turn
+    // return internal::unpack_contraction_tuple<Index_I,Index_J,Index_Ks...>::apply(internal::contraction_chain_evaluate(a,b,rest...));
 }
 
 #endif // CXX 2014

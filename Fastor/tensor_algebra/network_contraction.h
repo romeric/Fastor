@@ -1,7 +1,6 @@
 #ifndef NETWORK_CONTRACTION_H
 #define NETWORK_CONTRACTION_H
 
-
 #ifndef FASTOR_DONT_PERFORM_OP_MIN
 
 #include "Fastor/tensor_algebra/einsum.h"
@@ -36,11 +35,6 @@ struct extractor_contract_3<Index<Idx0...>, Index<Idx1...>, Index<Idx2...> > {
 
         constexpr int which_variant = cost_model::which_variant;
 
-#ifdef FASTOR_PRINT_COST
-        constexpr int flop_cost = cost_model::min_cost;
-        print(flop_cost);
-#endif
-
         FASTOR_IF_CONSTEXPR (which_variant == 0) {
             auto tmp = einsum<Index<Idx0...>,Index<Idx1...>>(a,b);
             return einsum<resulting_index_0,Index<Idx2...>>(tmp,c);
@@ -65,8 +59,6 @@ struct extractor_contract_3<Index<Idx0...>, Index<Idx1...>, Index<Idx2...> > {
 };
 
 
-
-
 template<class Index_I, class Index_J, class Index_K,
          typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2>
 FASTOR_INLINE
@@ -74,7 +66,7 @@ auto contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b, const
 -> decltype(extractor_contract_3<Index_I,Index_J,Index_K>::contract_impl(a,b,c)) {
     return extractor_contract_3<Index_I,Index_J,Index_K>::contract_impl(a,b,c);
 }
-
+//---------------------------------------------------------------------------------------------------------------------//
 
 
 
@@ -106,11 +98,6 @@ struct extractor_contract_4<Index<Idx0...>, Index<Idx1...>, Index<Idx2...>, Inde
         using resulting_index_3 = typename cost_model::resulting_index_3;
 
         constexpr int which_variant = cost_model::which_variant;
-
-#ifdef FASTOR_PRINT_COST
-        constexpr int flop_cost = cost_model::min_cost;
-        print(flop_cost);
-#endif
 
         FASTOR_IF_CONSTEXPR (which_variant==0) {
             auto tmp = einsum<Index<Idx0...>,Index<Idx1...>,Index<Idx2...>>(a,b,c);
@@ -152,8 +139,6 @@ struct extractor_contract_4<Index<Idx0...>, Index<Idx1...>, Index<Idx2...>, Inde
 };
 
 
-
-
 template<class Index_I, class Index_J, class Index_K, class Index_L,
          typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2, size_t ... Rest3>
 FASTOR_INLINE
@@ -161,6 +146,7 @@ auto contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b, const
 -> decltype(extractor_contract_4<Index_I,Index_J,Index_K,Index_L>::contract_impl(a,b,c,d)) {
     return extractor_contract_4<Index_I,Index_J,Index_K,Index_L>::contract_impl(a,b,c,d);
 }
+//---------------------------------------------------------------------------------------------------------------------//
 
 
 
@@ -193,12 +179,6 @@ struct extractor_contract_5<Index<Idx0...>, Index<Idx1...>, Index<Idx2...>, Inde
 
         constexpr int which_variant = cost_model::which_variant;
 
-#ifdef FASTOR_PRINT_COST
-        constexpr int flop_cost = cost_model::min_cost;
-        print(flop_cost);
-#endif
-
-
         FASTOR_IF_CONSTEXPR (which_variant==0) {
             auto tmp = einsum<Index<Idx0...>,Index<Idx1...>,Index<Idx2...>,Index<Idx3...>>(a,b,c,d);
             return einsum<resulting_index_0,Index<Idx4...>>(tmp,e);
@@ -224,8 +204,6 @@ struct extractor_contract_5<Index<Idx0...>, Index<Idx1...>, Index<Idx2...>, Inde
 };
 
 
-
-
 template<class Index_I, class Index_J, class Index_K, class Index_L, class Index_M,
          typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2, size_t ... Rest3, size_t ... Rest4>
 FASTOR_INLINE
@@ -235,6 +213,7 @@ auto contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b,
 -> decltype(extractor_contract_5<Index_I,Index_J,Index_K,Index_L,Index_M>::contract_impl(a,b,c,d,e)) {
     return extractor_contract_5<Index_I,Index_J,Index_K,Index_L,Index_M>::contract_impl(a,b,c,d,e);
 }
+//---------------------------------------------------------------------------------------------------------------------//
 
 
 
@@ -269,11 +248,6 @@ struct extractor_contract_6<Index<Idx0...>, Index<Idx1...>, Index<Idx2...>, Inde
 
         constexpr int which_variant = cost_model::which_variant;
 
-#ifdef FASTOR_PRINT_COST
-        constexpr int flop_cost = cost_model::min_cost;
-        print(flop_cost);
-#endif
-
         FASTOR_IF_CONSTEXPR (which_variant==0) {
             auto tmp = einsum<Index<Idx0...>,Index<Idx1...>,Index<Idx2...>,Index<Idx3...>,Index<Idx4...>>(a,b,c,d,e);
             return einsum<resulting_index_0,Index<Idx5...>>(tmp,f);
@@ -304,8 +278,6 @@ struct extractor_contract_6<Index<Idx0...>, Index<Idx1...>, Index<Idx2...>, Inde
 };
 
 
-
-
 template<class Index_I, class Index_J, class Index_K, class Index_L, class Index_M, class Index_N,
          typename T, size_t ... Rest0, size_t ... Rest1, size_t ... Rest2, size_t ... Rest3, size_t ... Rest4, size_t ... Rest5>
 FASTOR_INLINE
@@ -315,7 +287,7 @@ auto contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b,
 -> decltype(extractor_contract_6<Index_I,Index_J,Index_K,Index_L,Index_M,Index_N>::contract_impl(a,b,c,d,e,f)) {
     return extractor_contract_6<Index_I,Index_J,Index_K,Index_L,Index_M,Index_N>::contract_impl(a,b,c,d,e,f);
 }
-
+//---------------------------------------------------------------------------------------------------------------------//
 
 
 
@@ -340,7 +312,6 @@ struct extractor_contract_7<Index<Idx0...>, Index<Idx1...>, Index<Idx2...>,
                   const Tensor<T,Rest2...> &c, const Tensor<T,Rest3...> &d,
                   const Tensor<T,Rest4...> &e, const Tensor<T,Rest5...> &f,
                   const Tensor<T,Rest6...> &g) {
-
 
         using resulting_tensor_0 =  typename get_resuling_tensor<Index<Idx0...>,Index<Idx1...>,
                                         Tensor<T,Rest0...>,Tensor<T,Rest1...>>::type;
@@ -377,8 +348,6 @@ struct extractor_contract_7<Index<Idx0...>, Index<Idx1...>, Index<Idx2...>,
 };
 
 
-
-
 template<class Index_I, class Index_J, class Index_K, class Index_L,
          class Index_M, class Index_N, class Index_O,
          typename T, size_t ... Rest0, size_t ... Rest1,
@@ -391,9 +360,7 @@ auto contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b,
 -> decltype(extractor_contract_7<Index_I,Index_J,Index_K,Index_L,Index_M,Index_N,Index_O>::contract_impl(a,b,c,d,e,f,g)) {
     return extractor_contract_7<Index_I,Index_J,Index_K,Index_L,Index_M,Index_N,Index_O>::contract_impl(a,b,c,d,e,f,g);
 }
-
-
-
+//---------------------------------------------------------------------------------------------------------------------//
 
 
 
@@ -460,8 +427,6 @@ struct extractor_contract_8<Index<Idx0...>, Index<Idx1...>, Index<Idx2...>,
 };
 
 
-
-
 template<class Index_I, class Index_J, class Index_K, class Index_L,
          class Index_M, class Index_N, class Index_O, class Index_P,
          typename T, size_t ... Rest0, size_t ... Rest1,
@@ -474,9 +439,10 @@ auto contraction(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b,
 -> decltype(extractor_contract_8<Index_I,Index_J,Index_K,Index_L,Index_M,Index_N,Index_O,Index_P>::contract_impl(a,b,c,d,e,f,g,h)) {
     return extractor_contract_8<Index_I,Index_J,Index_K,Index_L,Index_M,Index_N,Index_O,Index_P>::contract_impl(a,b,c,d,e,f,g,h);
 }
+//---------------------------------------------------------------------------------------------------------------------//
 
-}
+} // end of namespace Fastor
 
-#endif
+#endif // FASTOR_DONT_PERFORM_OP_MIN
 
 #endif // NETWORK_CONTRACTION_H

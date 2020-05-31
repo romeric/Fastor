@@ -78,7 +78,7 @@ void test_factorisation() {
 
             Tensor<T,M,M> A; A.iota();
             for (size_t i=0; i<M; ++i) {
-                A(i,i) = 100;
+                A(i,i) = T(100+i);
             }
 
             lu(A, L, U);
@@ -111,7 +111,7 @@ void test_factorisation() {
 
             Tensor<T,M,M> A; A.iota();
             for (size_t i=0; i<M; ++i) {
-                A(i,i) = 100;
+                A(i,i) = T(100+i);
             }
 
             lu(A, L, U);
@@ -144,7 +144,7 @@ void test_factorisation() {
 
             Tensor<T,M,M> A; A.iota();
             for (size_t i=0; i<M; ++i) {
-                A(i,i) = 100+i;
+                A(i,i) = T(100+i);
             }
 
             lu(A, L, U);
@@ -177,7 +177,7 @@ void test_factorisation() {
 
             Tensor<T,M,M> A; A.iota();
             for (size_t i=0; i<M; ++i) {
-                A(i,i) = 100+i;
+                A(i,i) = T(100+i);
             }
 
             lu(A, L, U);
@@ -210,7 +210,7 @@ void test_factorisation() {
 
             Tensor<T,M,M> A; A.iota();
             for (size_t i=0; i<M; ++i) {
-                A(i,i) = 100+i;
+                A(i,i) = T(100+i);
             }
 
             lu(A, L, U);
@@ -243,7 +243,7 @@ void test_factorisation() {
 
             Tensor<T,M,M> A; A.iota();
             for (size_t i=0; i<M; ++i) {
-                A(i,i) = 100+i;
+                A(i,i) = T(100+i);
             }
 
             lu(A, L, U);
@@ -277,7 +277,7 @@ void test_factorisation() {
 
             Tensor<T,M,M> A; A.iota();
             for (size_t i=0; i<M; ++i) {
-                A(i,i) = 100+i;
+                A(i,i) = T(100+i);
             }
 
             lu<LUCompType::BlockLUPiv>(A, L, U, p);
@@ -296,7 +296,7 @@ void test_factorisation() {
 
             Tensor<T,M,M> A; A.iota();
             for (size_t i=0; i<M; ++i) {
-                A(i,i) = 100+i;
+                A(i,i) = T(100+i);
             }
 
             lu<LUCompType::BlockLUPiv>(A, L, U, p);

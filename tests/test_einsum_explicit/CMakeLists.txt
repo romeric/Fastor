@@ -34,3 +34,18 @@ endif()
 
 target_include_directories(test_einsum_explicit_2 PRIVATE ${FASTOR_INCLUDE_DIR})
 target_include_directories(test_einsum_explicit_2 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../)
+
+
+# 3 tesnor network and beyond
+add_executable(test_einsum_explicit_3 test_einsum_explicit_3.cpp)
+add_test(test_einsum_explicit_3 test_einsum_explicit_3)
+set_property(TARGET test_einsum_explicit_3 PROPERTY CXX_STANDARD 17)
+
+if(MSVC)
+    target_compile_options(test_einsum_explicit_3 PRIVATE "/W2" "$<$<CONFIG:RELEASE>:/O2>")
+else()
+    target_compile_options(test_einsum_explicit_3 PRIVATE "$<$<CONFIG:RELEASE>:-O3>" "$<$<CONFIG:RELEASE>:-march=native>")
+endif()
+
+target_include_directories(test_einsum_explicit_3 PRIVATE ${FASTOR_INCLUDE_DIR})
+target_include_directories(test_einsum_explicit_3 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../)
