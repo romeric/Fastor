@@ -7,7 +7,7 @@ add_executable(test_unary_bool_ops test_unary_bool_ops.cpp)
 add_test(test_unary_bool_ops test_unary_bool_ops)
 
 if(MSVC)
-    add_compile_options(test_unary_bool_ops PRIVATE "/W4" "$<$<CONFIG:RELEASE>:/O2>")
+    add_compile_options(test_unary_bool_ops PRIVATE "/W2" "$<$<CONFIG:RELEASE>:/O2>")
 else()
     add_compile_options(test_unary_bool_ops PRIVATE "$<$<CONFIG:RELEASE>:-O3>" "$<$<CONFIG:RELEASE>:-march=native>")
 endif()

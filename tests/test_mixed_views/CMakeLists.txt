@@ -7,7 +7,7 @@ add_executable(test_mixed_views test_mixed_views.cpp)
 add_test(test_mixed_views test_mixed_views)
 
 if(MSVC)
-    target_compile_options(test_mixed_views PRIVATE "/W4" "$<$<CONFIG:RELEASE>:/O2>")
+    target_compile_options(test_mixed_views PRIVATE "/W2" "$<$<CONFIG:RELEASE>:/O2>")
 else()
     target_compile_options(test_mixed_views PRIVATE "$<$<CONFIG:RELEASE>:-O3>" "$<$<CONFIG:RELEASE>:-march=native>")
 endif()

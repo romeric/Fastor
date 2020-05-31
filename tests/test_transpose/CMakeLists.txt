@@ -7,7 +7,7 @@ add_executable(test_transpose test_transpose.cpp)
 add_test(test_transpose test_transpose)
 
 if(MSVC)
-    add_compile_options(test_transpose PRIVATE "/W4" "$<$<CONFIG:RELEASE>:/O2>")
+    add_compile_options(test_transpose PRIVATE "/W2" "$<$<CONFIG:RELEASE>:/O2>")
 else()
     add_compile_options(test_transpose PRIVATE "$<$<CONFIG:RELEASE>:-O3>" "$<$<CONFIG:RELEASE>:-march=native>")
 endif()

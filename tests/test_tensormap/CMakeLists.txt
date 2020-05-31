@@ -7,7 +7,7 @@ add_executable(test_tensormap test_tensormap.cpp)
 add_test(test_tensormap test_tensormap)
 
 if(MSVC)
-    add_compile_options(test_tensormap PRIVATE "/W4" "$<$<CONFIG:RELEASE>:/O2>")
+    add_compile_options(test_tensormap PRIVATE "/W2" "$<$<CONFIG:RELEASE>:/O2>")
 else()
     add_compile_options(test_tensormap PRIVATE "$<$<CONFIG:RELEASE>:-O3>" "$<$<CONFIG:RELEASE>:-march=native>")
 endif()

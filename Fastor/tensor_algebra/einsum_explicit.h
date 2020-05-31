@@ -154,6 +154,25 @@ einsum(const AbstractTensorType0& a)
     return permute<mapped_index>(res);
 }
 
+// pair expression explicit einsum
+template<class Index_I, class Index_J, class Index_O,
+        typename Derived0, typename Derived1, size_t DIM0, size_t DIM1>
+FASTOR_INLINE
+decltype(auto)
+einsum(const AbstractTensor<Derived0,DIM0>& a, const AbstractTensor<Derived1,DIM1>& b)
+{
+    using lhs_type = typename Derived0::resulting_type;
+    using rhs_type = typename Derived1::resulting_type;
+    auto res = einsum<Index_I,Index_J>(a,b);
+    using resulting_index_einsum = typename einsum_helper<Index_I,Index_J,lhs_type,rhs_type>::resulting_index;
+
+    using mapped_index = internal::permute_mapped_index_t<resulting_index_einsum,typename Index_O::parent_type>;
+    constexpr bool requires_permutation = requires_permute_v<mapped_index, decltype(res)>;
+    FASTOR_IF_CONSTEXPR(!requires_permutation) return res;
+    return permute<mapped_index>(res);
+}
+
+#if !defined(FASTOR_MSVC)
 template<class Index_I, class ... Index_Ks, class Index_O,
         typename AbstractTensorType0, typename ... AbstractTensorTypes>
 FASTOR_INLINE
@@ -168,6 +187,7 @@ einsum(const AbstractTensorType0& a, const AbstractTensorTypes& ... rest)
     FASTOR_IF_CONSTEXPR(!requires_permutation) return res;
     return permute<mapped_index>(res);
 }
+#endif
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 
