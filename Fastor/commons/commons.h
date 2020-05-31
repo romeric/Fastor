@@ -94,6 +94,19 @@ SOFTWARE.
 
 // Determine CXX version
 //------------------------------------------------------------------------------------------------//
+#if defined(FASTOR_MSVC)
+#if defined(_MSVC_LANG)
+    #if _MSVC_LANG == 199711L
+        #define FASTOR_CXX_VERSION 1998
+    #elif _MSVC_LANG == 201103L
+        #define FASTOR_CXX_VERSION 2011
+    #elif _MSVC_LANG == 201402L
+        #define FASTOR_CXX_VERSION 2014
+    #elif _MSVC_LANG == 201703L
+        #define FASTOR_CXX_VERSION 2017
+    #endif
+#endif
+#else
 #if defined(__cplusplus)
     #if __cplusplus == 199711L
         #define FASTOR_CXX_VERSION 1998
@@ -104,6 +117,7 @@ SOFTWARE.
     #elif __cplusplus == 201703L
         #define FASTOR_CXX_VERSION 2017
     #endif
+#endif
 #endif
 //------------------------------------------------------------------------------------------------//
 

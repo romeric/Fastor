@@ -123,8 +123,8 @@ void run() {
         FASTOR_EXIT_ASSERT(abs(norm(II_ijkl) - norm(II_iljk)) < Tol);
 
 
-        Tensor<T,3,3> A, B; A.iota(65); B.iota(13.2);
-        Tensor<T,3> D = {124.36, -37.29, 5.61};
+        Tensor<T,3,3> A, B; A.iota(65); B.iota(T(13.2));
+        Tensor<T,3> D = {T(124.36), T(-37.29), T(5.61)};
         auto bb_ijkl = einsum<Index<i,j>,Index<k,l>>(A,B);
         FASTOR_EXIT_ASSERT(abs(norm(bb_ijkl) - 10808.437) < HugeTol);
         auto bb_ikjl = permutation<Index<i,k,j,l>>(bb_ijkl);

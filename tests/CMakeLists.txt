@@ -4,7 +4,6 @@ project(test_fastor)
 set(FASTOR_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../)
 
 set(CMAKE_CXX_STANDARD 14)
-# set(CMAKE_VERBOSE_MAKEFILE ON)
 
 enable_testing()
 
