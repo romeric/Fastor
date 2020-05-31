@@ -356,6 +356,7 @@ void run() {
         FASTOR_EXIT_ASSERT(abs(c1.sum()-c2.sum()) < BigTol);
     }
 
+#if !defined(FASTOR_MSVC)
     // Tests pair-reduction including permuted reduction cases
     {
         Tensor<T,3,3,3> a; a.iota(1);
@@ -375,6 +376,7 @@ void run() {
         FASTOR_EXIT_ASSERT( abs( einsum<Index<i,j>,Index<j,k>,Index<k,i>>(a,a,a).sum() - 4185 ) < Tol);
         FASTOR_EXIT_ASSERT( abs( einsum<Index<i,j>,Index<k,j>,Index<k,i>>(a,a,a).sum() - 4545 ) < Tol);
     }
+#endif
 
     print(FGRN(BOLD("All tests passed successfully")));
 }
