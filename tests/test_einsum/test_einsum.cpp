@@ -179,7 +179,7 @@ void run() {
         Tensor<T,7,13> a2; a2.iota(14.5);
         FASTOR_EXIT_ASSERT(norm(transpose(a2) - permutation<Index<j,i>>(a2)) < Tol);
 
-        Tensor<T,3,4,5> a3; a3.iota(1.2);
+        Tensor<T,3,4,5> a3; a3.iota(T(1.2));
 
         Tensor<T,3,5,4> a4 = permutation<Index<i,k,j>>(a3);
         FASTOR_EXIT_ASSERT(abs(norm(a3(0,all,all))-norm(a4(0,all,all))) < HugeTol);

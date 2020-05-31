@@ -5,6 +5,10 @@
 #pragma warning (disable: 4003)
 // Disable MSVC warnings for conversion
 #pragma warning (disable: 4244)
+// Disable MSVC unreferenced parameters
+#pragma warning (disable: 4100)
+// Disable MSVC narrowing conversion
+#pragma warning (disable: 4267)
 
 #include "commons/utils.h"
 #include "simd_vector/SIMDVector.h"
@@ -23,6 +27,8 @@
 
 #pragma warning (default: 4003)
 #pragma warning (default: 4244)
+#pragma warning (default: 4100)
+#pragma warning (default: 4267)
 
 #endif // FASTOR_ALL_INCLUDE_H
 

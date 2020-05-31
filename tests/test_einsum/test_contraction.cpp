@@ -36,7 +36,7 @@ void run() {
 
 
         Tensor<T,2,2> A, B; A.iota(101); B.iota(77);
-        Tensor<T,2> D = {45.5, 73.82};
+        Tensor<T,2> D = {T(45.5), T(73.82)};
         auto bb_ijkl = contraction<Index<i,j>,Index<k,l>>(A,B);
         FASTOR_EXIT_ASSERT(abs(norm(bb_ijkl) - 32190.178937) < HugeTol);
         auto bb_ikjl = permutation<Index<i,k,j,l>>(bb_ijkl);
@@ -111,8 +111,8 @@ void run() {
         FASTOR_EXIT_ASSERT(abs(norm(II_ijkl) - norm(II_iljk)) < Tol);
 
 
-        Tensor<T,3,3> A, B; A.iota(65); B.iota(13.2);
-        Tensor<T,3> D = {124.36, -37.29, 5.61};
+        Tensor<T,3,3> A, B; A.iota(65); B.iota(T(13.2));
+        Tensor<T,3> D = {T(124.36), T(-37.29), T(5.61)};
         auto bb_ijkl = contraction<Index<i,j>,Index<k,l>>(A,B);
         FASTOR_EXIT_ASSERT(abs(norm(bb_ijkl) - 10808.437) < HugeTol);
         auto bb_ikjl = permutation<Index<i,k,j,l>>(bb_ijkl);
