@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 14)
 enable_testing()
 
 # single einsum
+# MSVC gives superfluous errors
+if(NOT MSVC)
 add_executable(test_einsum_single test_einsum_single.cpp)
 add_test(test_einsum_single test_einsum_single)
 
@@ -18,6 +20,7 @@ endif()
 
 target_include_directories(test_einsum_single PRIVATE ${FASTOR_INCLUDE_DIR})
 target_include_directories(test_einsum_single PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../)
+endif()
 
 # tensor contraction
 # default
