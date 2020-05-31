@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/romeric/Fastor.svg?branch=master)](https://travis-ci.com/romeric/Fastor)
+[![Build status](https://ci.appveyor.com/api/projects/status/hoj5lkq988kly121?svg=true)](https://ci.appveyor.com/project/romeric/fastor)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/romeric/fastor)
 
