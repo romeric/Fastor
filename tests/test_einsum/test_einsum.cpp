@@ -356,6 +356,26 @@ void run() {
         FASTOR_EXIT_ASSERT(abs(c1.sum()-c2.sum()) < BigTol);
     }
 
+    // Tests pair-reduction including permuted reduction cases
+    {
+        Tensor<T,3,3,3> a; a.iota(1);
+        FASTOR_EXIT_ASSERT( abs( einsum<Index<i,j,k>,Index<i,j,k>>(a,a).sum() - 6930 ) < Tol);
+        FASTOR_EXIT_ASSERT( abs( einsum<Index<i,j,k>,Index<i,k,j>>(a,a).sum() - 6858 ) < Tol);
+        FASTOR_EXIT_ASSERT( abs( einsum<Index<i,j,k>,Index<j,i,k>>(a,a).sum() - 6282 ) < Tol);
+        FASTOR_EXIT_ASSERT( abs( einsum<Index<i,j,k>,Index<j,k,i>>(a,a).sum() - 5994 ) < Tol);
+
+        FASTOR_EXIT_ASSERT( abs( einsum<Index<i,k,j>,Index<i,j,k>>(a,a).sum() - 6858 ) < Tol);
+        FASTOR_EXIT_ASSERT( abs( einsum<Index<j,i,k>,Index<i,j,k>>(a,a).sum() - 6282 ) < Tol);
+        FASTOR_EXIT_ASSERT( abs( einsum<Index<j,k,i>,Index<i,j,k>>(a,a).sum() - 5994 ) < Tol);
+    }
+
+    // Tests 3 network permuted reduction cases
+    {
+        Tensor<T,3,3> a; a.iota(1);
+        FASTOR_EXIT_ASSERT( abs( einsum<Index<i,j>,Index<j,k>,Index<k,i>>(a,a,a).sum() - 4185 ) < Tol);
+        FASTOR_EXIT_ASSERT( abs( einsum<Index<i,j>,Index<k,j>,Index<k,i>>(a,a,a).sum() - 4545 ) < Tol);
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 }
 

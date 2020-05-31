@@ -46,10 +46,11 @@ struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Te
 template<typename T, size_t Last, size_t ...Idx0, size_t ...Idx1, size_t ...Rest0, size_t ...Rest1>
 struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Tensor<T,Rest1...>,Last>
 {
-    using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
-    typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
-    using OutIndices = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
-    typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::indices;
+    using _contraction_impl = contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
+    typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>;
+    using resulting_tensor = typename _contraction_impl::type;
+    using resulting_index  = typename _contraction_impl::indices;
+    static constexpr bool _is_reduction = resulting_tensor::dimension_t::value == 0;
 
     static constexpr int a_dim = sizeof...(Rest0);
     static constexpr int b_dim = sizeof...(Rest1);
@@ -70,8 +71,8 @@ struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Te
     static constexpr auto& idx_out = IndexTensors<
           Index<Idx0..., Idx1...>,
           Tensor<T,Rest0...,Rest1...>,
-          OutIndices,OutTensor,
-          typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::indices;
+          resulting_index,resulting_tensor,
+          typename std_ext::make_index_sequence<resulting_tensor::Dimension>::type>::indices;
 
     using nloops = loop_setter<
             Index<Idx0...,Idx1...>,
@@ -84,10 +85,6 @@ struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Te
         typename std_ext::make_index_sequence<a_dim>::type>::values;
     static constexpr std::array<size_t,sizeof...(Rest1)> products_b = nprods<Index<Rest1...>,
         typename std_ext::make_index_sequence<b_dim>::type>::values;
-
-    using Index_with_dims = typename put_dims_in_Index<OutTensor>::type;
-    static constexpr std::array<size_t,OutTensor::Dimension> products_out = \
-          nprods<Index_with_dims,typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::values;
 
 #ifndef FASTOR_DONT_VECTORISE
     using vectorisability = is_vectorisable<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest1...>>;
@@ -104,31 +101,62 @@ struct RecursiveCartesian<Index<Idx0...>, Index<Idx1...>, Tensor<T,Rest0...>, Te
     FASTOR_INLINE
     void Do(const T *a_data, const T *b_data, T *out_data, std::array<int,out_dim> &as, std::array<int,out_dim> &idx)
     {
-        V _vec_a;
-        for (size_t i=0; i<Last; i+=stride) {
-            idx[0] = i;
-            std::reverse_copy(idx.begin(),idx.end(),as.begin());
+        FASTOR_IF_CONSTEXPR(!_is_reduction) {
 
-            int index_a = as[idx_a[a_dim-1]];
-            for(int it = 0; it< a_dim; it++) {
-              index_a += products_a[it]*as[idx_a[it]];
-            }
-            int index_b = as[idx_b[b_dim-1]];
-            for(int it = 0; it< b_dim; it++) {
-              index_b += products_b[it]*as[idx_b[it]];
-            }
-            int index_out = as[idx_out[OutTensor::Dimension-1]];
-            for(int it = 0; it< static_cast<int>(OutTensor::Dimension); it++) {
-              index_out += products_out[it]*as[idx_out[it]];
-            }
+            using Index_with_dims = typename put_dims_in_Index<resulting_tensor>::type;
+            constexpr std::array<size_t,resulting_tensor::Dimension> products_out = \
+                nprods<Index_with_dims,typename std_ext::make_index_sequence<resulting_tensor::Dimension>::type>::values;
 
-            // out_data[index_out] += a_data[index_a]*b_data[index_b];
-            // _vec_a.set(*(a_data+index_a));
-            _vec_a.set(a_data[index_a]);
-            // V _vec_out = _vec_a*V(b_data+index_b) +  V(out_data+index_out);
-            V _vec_out = fmadd(_vec_a,V(&b_data[index_b]),  V(&out_data[index_out]));
-            // _vec_out.store(out_data+index_out);
-            _vec_out.aligned_store(&out_data[index_out]);
+            V _vec_a;
+            for (size_t i=0; i<Last; i+=stride) {
+                idx[0] = i;
+                std::reverse_copy(idx.begin(),idx.end(),as.begin());
+
+                int index_a = as[idx_a[a_dim-1]];
+                for(int it = 0; it< a_dim; it++) {
+                  index_a += products_a[it]*as[idx_a[it]];
+                }
+                int index_b = as[idx_b[b_dim-1]];
+                for(int it = 0; it< b_dim; it++) {
+                  index_b += products_b[it]*as[idx_b[it]];
+                }
+                int index_out = as[idx_out[resulting_tensor::Dimension-1]];
+                for(int it = 0; it< static_cast<int>(resulting_tensor::Dimension); it++) {
+                  index_out += products_out[it]*as[idx_out[it]];
+                }
+
+                // out_data[index_out] += a_data[index_a]*b_data[index_b];
+                // _vec_a.set(*(a_data+index_a));
+                _vec_a.set(a_data[index_a]);
+                // V _vec_out = _vec_a*V(b_data+index_b) +  V(out_data+index_out);
+                V _vec_out = fmadd(_vec_a,V(&b_data[index_b]),  V(&out_data[index_out]));
+                _vec_out.store(out_data+index_out,false);
+                // _vec_out.aligned_store(&out_data[index_out]);
+            }
+        }
+
+        else {
+
+            using Index_with_dims = typename put_dims_in_Index<resulting_tensor>::type;
+            constexpr std::array<size_t,resulting_tensor::Dimension> products_out = \
+                nprods<Index_with_dims,typename std_ext::make_index_sequence<resulting_tensor::Dimension>::type>::values;
+
+            V _vec_a;
+            for (size_t i=0; i<Last; i+=stride) {
+                idx[0] = i;
+                std::reverse_copy(idx.begin(),idx.end(),as.begin());
+
+                int index_a = as[idx_a[a_dim-1]];
+                for(int it = 0; it< a_dim; it++) {
+                  index_a += products_a[it]*as[idx_a[it]];
+                }
+                int index_b = as[idx_b[b_dim-1]];
+                for(int it = 0; it< b_dim; it++) {
+                  index_b += products_b[it]*as[idx_b[it]];
+                }
+
+                out_data[0] += a_data[index_a]*b_data[index_b];
+            }
         }
         return;
     }
@@ -219,10 +247,10 @@ template<typename T, size_t Last, size_t ...Idx0, size_t ...Idx1, size_t ...Rest
 constexpr std::array<size_t,sizeof...(Rest1)> RecursiveCartesian<Index<Idx0...>, Index<Idx1...>,
   Tensor<T,Rest0...>, Tensor<T,Rest1...>,Last>::products_b;
 
-template<typename T, size_t Last, size_t ...Idx0, size_t ...Idx1, size_t ...Rest0, size_t ...Rest1>
-constexpr std::array<size_t,RecursiveCartesian<Index<Idx0...>, Index<Idx1...>,
-  Tensor<T,Rest0...>, Tensor<T,Rest1...>,Last>::OutTensor::Dimension> RecursiveCartesian<Index<Idx0...>, Index<Idx1...>,
-  Tensor<T,Rest0...>, Tensor<T,Rest1...>,Last>::products_out;
+// template<typename T, size_t Last, size_t ...Idx0, size_t ...Idx1, size_t ...Rest0, size_t ...Rest1>
+// constexpr std::array<size_t,RecursiveCartesian<Index<Idx0...>, Index<Idx1...>,
+//   Tensor<T,Rest0...>, Tensor<T,Rest1...>,Last>::OutTensor::Dimension> RecursiveCartesian<Index<Idx0...>, Index<Idx1...>,
+//   Tensor<T,Rest0...>, Tensor<T,Rest1...>,Last>::products_out;
 
 
 
@@ -259,9 +287,16 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
                typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type
       contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
 
-          static_assert(!is_reduction<Index<Idx0...>,Index<Idx1...>>::value,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
+          using _contraction_impl = contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
+              typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>;
+          using resulting_tensor = typename _contraction_impl::type;
+          using resulting_index  = typename _contraction_impl::indices;
+          // is reduction including permuted reduction
+          constexpr bool _is_reduction = resulting_tensor::dimension_t::value == 0;
 
 #if CONTRACT_OPT==-3
+
+          static_assert(!_is_reduction,"THIS VARIANT OF EINSUM CANNOT DEAL WITH REDUCTION CASES");
 
           constexpr int total = no_of_loops_to_set<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,
                   typename std_ext::make_index_sequence<no_of_unique<Idx0...,Idx1...>::value>::type>::value;
@@ -304,10 +339,9 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
 
 #elif CONTRACT_OPT==-2
 
-          using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
-            typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
+          static_assert(!_is_reduction,"THIS VARIANT OF EINSUM CANNOT DEAL WITH REDUCTION CASES");
 
-          OutTensor out;
+          resulting_tensor out;
           out.zeros();
           const T *a_data = a.data();
           const T *b_data = b.data();
@@ -321,7 +355,7 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
           constexpr auto& idx_b = IndexSecondTensor<Index<Idx0...>,Index<Idx1...>, Tensor<T,Rest0...>,Tensor<T,Rest1...>,
                                     typename std_ext::make_index_sequence<sizeof...(Rest1)>::type>::indices;
           constexpr auto& idx_out = IndexResultingTensor<Index<Idx0...>,Index<Idx1...>, Tensor<T,Rest0...>,Tensor<T,Rest1...>,
-                                    typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::indices;
+                                    typename std_ext::make_index_sequence<resulting_tensor::Dimension>::type>::indices;
 
           constexpr int total = no_of_loops_to_set<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,
                   typename std_ext::make_index_sequence<no_of_unique<Idx0...,Idx1...>::value>::type>::value;
@@ -334,7 +368,7 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
 
           constexpr std::array<size_t,a_dim> products_a = nprods<Index<Rest0...>,typename std_ext::make_index_sequence<a_dim>::type>::values;
           constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
-          using Index_with_dims = typename put_dims_in_Index<OutTensor>::type;
+          using Index_with_dims = typename put_dims_in_Index<resulting_tensor>::type;
           constexpr std::array<size_t,Index_with_dims::NoIndices> products_out = nprods<Index_with_dims,
                   typename std_ext::make_index_sequence<Index_with_dims::NoIndices>::type>::values;
 
@@ -375,12 +409,7 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
 
 #elif CONTRACT_OPT==-1
 
-              using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
-                typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
-              using OutIndices = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
-                typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::indices;
-
-              OutTensor out;
+              resulting_tensor out;
               out.zeros();
               const T *a_data = a.data();
               const T *b_data = b.data();
@@ -405,8 +434,8 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
               constexpr auto& idx_out = IndexTensors<
                       Index<Idx0..., Idx1...>,
                       Tensor<T,Rest0...,Rest1...>,
-                      OutIndices,OutTensor,
-                      typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::indices;
+                      resulting_index,resulting_tensor,
+                      typename std_ext::make_index_sequence<resulting_tensor::Dimension>::type>::indices;
 
               using nloops = loop_setter<
                         Index<Idx0...,Idx1...>,
@@ -417,10 +446,6 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
 
               constexpr std::array<size_t,a_dim> products_a = nprods<Index<Rest0...>,typename std_ext::make_index_sequence<a_dim>::type>::values;
               constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
-
-              using Index_with_dims = typename put_dims_in_Index<OutTensor>::type;
-              constexpr std::array<size_t,OutTensor::Dimension> products_out = \
-                      nprods<Index_with_dims,typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::values;
 
 #ifndef FASTOR_DONT_VECTORISE
               using vectorisability = is_vectorisable<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest1...>>;
@@ -435,79 +460,108 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
               int it;
               V _vec_a;
 
-#if __cplusplus >= 201703L
+#if FASTOR_CXX_VERSION >= 2017
               constexpr std::array<int,out_dim> remainings = find_remaining(maxes_out, total);
 #endif
 
-              for (int i = 0; i < total; i+=stride) {
+              FASTOR_IF_CONSTEXPR(!_is_reduction) {
 
-#if __cplusplus >= 201703L
-                  for (int n = 0; n < out_dim; ++n) {
-                      as[n] = ( i / remainings[n] ) % (int)maxes_out[n];
-                  }
+                  using Index_with_dims = typename put_dims_in_Index<resulting_tensor>::type;
+                  constexpr std::array<size_t,resulting_tensor::Dimension> products_out = \
+                          nprods<Index_with_dims,typename std_ext::make_index_sequence<resulting_tensor::Dimension>::type>::values;
+
+                  for (int i = 0; i < total; i+=stride) {
+
+#if FASTOR_CXX_VERSION >= 2017
+                      for (int n = 0; n < out_dim; ++n) {
+                          as[n] = ( i / remainings[n] ) % (int)maxes_out[n];
+                      }
 #else
-                  int remaining = total;
-                  for (int n = 0; n < out_dim; ++n) {
-                      remaining /= maxes_out[n];
-                      as[n] = ( i / remaining ) % maxes_out[n];
-                  }
+                      int remaining = total;
+                      for (int n = 0; n < out_dim; ++n) {
+                          remaining /= maxes_out[n];
+                          as[n] = ( i / remaining ) % maxes_out[n];
+                      }
 #endif
 
-                  int index_a = as[idx_a[a_dim-1]];
-                  for(it = 0; it< a_dim; it++) {
-                      index_a += products_a[it]*as[idx_a[it]];
+                      int index_a = as[idx_a[a_dim-1]];
+                      for(it = 0; it< a_dim; it++) {
+                          index_a += products_a[it]*as[idx_a[it]];
+                      }
+                      int index_b = as[idx_b[b_dim-1]];
+                      for(it = 0; it< b_dim; it++) {
+                          index_b += products_b[it]*as[idx_b[it]];
+                      }
+                      int index_out = as[idx_out[resulting_tensor::Dimension-1]];
+                      for(it = 0; it< static_cast<int>(resulting_tensor::Dimension); it++) {
+                          index_out += products_out[it]*as[idx_out[it]];
+                      }
+    //                  println(index_out,index_a,index_b,"\n");
+                      _vec_a.set(*(a_data+index_a));
+    //                  _vec_a.broadcast(&a_data[index_a]);
+                      V _vec_out = _vec_a*V(b_data+index_b) +  V(out_data+index_out);
+                      // V _vec_out = fmadd(_vec_a,V(b_data+index_b),  V(out_data+index_out));
+                      // _vec_out.store(out_data+index_out);
+                      _vec_out.aligned_store(out_data+index_out);
                   }
-                  int index_b = as[idx_b[b_dim-1]];
-                  for(it = 0; it< b_dim; it++) {
-                      index_b += products_b[it]*as[idx_b[it]];
-                  }
-                  int index_out = as[idx_out[OutTensor::Dimension-1]];
-                  for(it = 0; it< static_cast<int>(OutTensor::Dimension); it++) {
-                      index_out += products_out[it]*as[idx_out[it]];
-                  }
-//                  println(index_out,index_a,index_b,"\n");
-                  _vec_a.set(*(a_data+index_a));
-//                  _vec_a.broadcast(&a_data[index_a]);
-                  V _vec_out = _vec_a*V(b_data+index_b) +  V(out_data+index_out);
-                  // V _vec_out = fmadd(_vec_a,V(b_data+index_b),  V(out_data+index_out));
-                  // _vec_out.store(out_data+index_out);
-                  _vec_out.aligned_store(out_data+index_out);
+
+                  // ACTUALLY MUCH SLOWER
+                  // constexpr auto as_all = cartesian_product_2<out_dim,total>(maxes_out);
+
+                  // for (int i = 0; i < total; i+=stride) {
+                  //     int index_a = as_all[i][idx_a[a_dim-1]];
+                  //     for(it = 0; it< a_dim; it++) {
+                  //         index_a += products_a[it]*as_all[i][idx_a[it]];
+                  //     }
+                  //     int index_b = as_all[i][idx_b[b_dim-1]];
+                  //     for(it = 0; it< b_dim; it++) {
+                  //         index_b += products_b[it]*as_all[i][idx_b[it]];
+                  //     }
+                  //     int index_out = as_all[i][idx_out[idx_out.size()-1]];
+                  //     for(it = 0; it< idx_out.size(); it++) {
+                  //         index_out += products_out[it]*as_all[i][idx_out[it]];
+                  //     }
+
+                  //     _vec_a.set(*(a_data+index_a));
+                  //     // V _vec_out = _vec_a*V(b_data+index_b) +  V(out_data+index_out);
+                  //     V _vec_out = fmadd(_vec_a,V(b_data+index_b),  V(out_data+index_out));
+                  //     _vec_out.aligned_store(out_data+index_out);
+                  // }
+
               }
 
+              else {
+                  for (int i = 0; i < total; i+=stride) {
 
-              // ACTUALLY MUCH SLOWER
-              // constexpr auto as_all = cartesian_product_2<out_dim,total>(maxes_out);
+#if FASTOR_CXX_VERSION >= 2017
+                      for (int n = 0; n < out_dim; ++n) {
+                          as[n] = ( i / remainings[n] ) % (int)maxes_out[n];
+                      }
+#else
+                      int remaining = total;
+                      for (int n = 0; n < out_dim; ++n) {
+                          remaining /= maxes_out[n];
+                          as[n] = ( i / remaining ) % maxes_out[n];
+                      }
+#endif
 
-              // for (int i = 0; i < total; i+=stride) {
-              //     int index_a = as_all[i][idx_a[a_dim-1]];
-              //     for(it = 0; it< a_dim; it++) {
-              //         index_a += products_a[it]*as_all[i][idx_a[it]];
-              //     }
-              //     int index_b = as_all[i][idx_b[b_dim-1]];
-              //     for(it = 0; it< b_dim; it++) {
-              //         index_b += products_b[it]*as_all[i][idx_b[it]];
-              //     }
-              //     int index_out = as_all[i][idx_out[idx_out.size()-1]];
-              //     for(it = 0; it< idx_out.size(); it++) {
-              //         index_out += products_out[it]*as_all[i][idx_out[it]];
-              //     }
-
-              //     _vec_a.set(*(a_data+index_a));
-              //     // V _vec_out = _vec_a*V(b_data+index_b) +  V(out_data+index_out);
-              //     V _vec_out = fmadd(_vec_a,V(b_data+index_b),  V(out_data+index_out));
-              //     _vec_out.aligned_store(out_data+index_out);
-              // }
+                      int index_a = as[idx_a[a_dim-1]];
+                      for(it = 0; it< a_dim; it++) {
+                          index_a += products_a[it]*as[idx_a[it]];
+                      }
+                      int index_b = as[idx_b[b_dim-1]];
+                      for(it = 0; it< b_dim; it++) {
+                          index_b += products_b[it]*as[idx_b[it]];
+                      }
+                      out_data[0] += a_data[index_a]*b_data[index_b];
+                  }
+              }
 
               return out;
           }
 #elif CONTRACT_OPT==1
 
-              using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
-                typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
-              using OutIndices = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
-                typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::indices;
-
-              OutTensor out;
+              resulting_tensor out;
               out.zeros();
               const T *a_data = a.data();
               const T *b_data = b.data();
@@ -532,8 +586,8 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
               constexpr auto& idx_out = IndexTensors<
                       Index<Idx0..., Idx1...>,
                       Tensor<T,Rest0...,Rest1...>,
-                      OutIndices,OutTensor,
-                      typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::indices;
+                      resulting_index,resulting_tensor,
+                      typename std_ext::make_index_sequence<resulting_tensor::Dimension>::type>::indices;
 
               using nloops = loop_setter<
                         Index<Idx0...,Idx1...>,
@@ -544,10 +598,6 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
 
               constexpr std::array<size_t,a_dim> products_a = nprods<Index<Rest0...>,typename std_ext::make_index_sequence<a_dim>::type>::values;
               constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
-
-              using Index_with_dims = typename put_dims_in_Index<OutTensor>::type;
-              constexpr std::array<size_t,OutTensor::Dimension> products_out = \
-                      nprods<Index_with_dims,typename std_ext::make_index_sequence<OutTensor::Dimension>::type>::values;
 
 #ifndef FASTOR_DONT_VECTORISE
               using vectorisability = is_vectorisable<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest1...>>;
@@ -562,50 +612,82 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
               int it, jt, counter = 0;
               V _vec_a;
 
-              while(true)
-              {
-                  int index_a = as[idx_a[a_dim-1]];
-                  for(it = 0; it< a_dim; it++) {
-                     index_a += products_a[it]*as[idx_a[it]];
-                  }
-                  int index_b = as[idx_b[b_dim-1]];
-                  for(it = 0; it< b_dim; it++) {
-                     index_b += products_b[it]*as[idx_b[it]];
-                  }
+              FASTOR_IF_CONSTEXPR(!_is_reduction) {
+                  using Index_with_dims = typename put_dims_in_Index<resulting_tensor>::type;
+                  constexpr std::array<size_t,resulting_tensor::Dimension> products_out = \
+                          nprods<Index_with_dims,typename std_ext::make_index_sequence<resulting_tensor::Dimension>::type>::values;
 
-                  int index_out = as[idx_out[OutTensor::Dimension-1]];
-                  for(it = 0; it< static_cast<int>(OutTensor::Dimension); it++) {
-                     index_out += products_out[it]*as[idx_out[it]];
-                  }
-
-                  _vec_a.set(*(a_data+index_a));
-                  // V _vec_out = _vec_a*V(b_data+index_b) +  V(out_data+index_out);
-                  V _vec_out = fmadd(_vec_a,V(b_data+index_b),  V(out_data+index_out));
-                  // _vec_out.store(out_data+index_out);
-                  _vec_out.aligned_store(out_data+index_out);
-
-                  counter++;
-                  for(jt = maxes_out.size()-1; jt>=0 ; jt--)
+                  while(true)
                   {
-                      if (jt == maxes_out.size()-1) as[jt]+=stride;
-                      else as[jt] +=1;
-                      if(as[jt]<maxes_out[jt])
+                      int index_a = as[idx_a[a_dim-1]];
+                      for(it = 0; it< a_dim; it++) {
+                         index_a += products_a[it]*as[idx_a[it]];
+                      }
+                      int index_b = as[idx_b[b_dim-1]];
+                      for(it = 0; it< b_dim; it++) {
+                         index_b += products_b[it]*as[idx_b[it]];
+                      }
+
+                      int index_out = as[idx_out[resulting_tensor::Dimension-1]];
+                      for(it = 0; it< static_cast<int>(resulting_tensor::Dimension); it++) {
+                         index_out += products_out[it]*as[idx_out[it]];
+                      }
+
+                      _vec_a.set(*(a_data+index_a));
+                      // V _vec_out = _vec_a*V(b_data+index_b) +  V(out_data+index_out);
+                      V _vec_out = fmadd(_vec_a,V(b_data+index_b),  V(out_data+index_out));
+                      _vec_out.store(out_data+index_out,false);
+                      // _vec_out.aligned_store(out_data+index_out);
+
+                      counter++;
+                      for(jt = maxes_out.size()-1; jt>=0 ; jt--)
+                      {
+                          if (jt == maxes_out.size()-1) as[jt]+=stride;
+                          else as[jt] +=1;
+                          if(as[jt]<maxes_out[jt])
+                              break;
+                          else
+                              as[jt]=0;
+                      }
+                      if(jt<0)
                           break;
-                      else
-                          as[jt]=0;
                   }
-                  if(jt<0)
-                      break;
+              }
+
+              else {
+                  while(true)
+                  {
+                      int index_a = as[idx_a[a_dim-1]];
+                      for(it = 0; it< a_dim; it++) {
+                         index_a += products_a[it]*as[idx_a[it]];
+                      }
+                      int index_b = as[idx_b[b_dim-1]];
+                      for(it = 0; it< b_dim; it++) {
+                         index_b += products_b[it]*as[idx_b[it]];
+                      }
+
+                      out_data[0] += a_data[index_a]*b_data[index_b];
+
+                      counter++;
+                      for(jt = maxes_out.size()-1; jt>=0 ; jt--)
+                      {
+                          if (jt == maxes_out.size()-1) as[jt]+=1;
+                          else as[jt] +=1;
+                          if(as[jt]<maxes_out[jt])
+                              break;
+                          else
+                              as[jt]=0;
+                      }
+                      if(jt<0)
+                          break;
+                  }
               }
 
               return out;
           }
 #else
 
-              using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
-                typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
-
-              OutTensor out;
+              resulting_tensor out;
               out.zeros();
               const T *a_data = a.data();
               const T *b_data = b.data();
@@ -627,15 +709,12 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
 
               return out;
           }
-
-
 #endif
 
 };
 
 
-// Dispatch einsum to outer product, note that strided_contraction never
-// dispatches to outer product as that case never happens
+// Specialisation for outer product case
 template<size_t ... Idx0, size_t ... Idx1>
 struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
           typename std::enable_if<no_of_unique<Idx0...,Idx1...>::value==sizeof...(Idx0)+sizeof...(Idx1)>::type> {

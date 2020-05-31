@@ -34,7 +34,7 @@ constexpr bool check_all_eq(int index, int dimension,
 }
 
 // if position i should be contracted away, return 1001001, otherwise return dim[i].
-// triggers a compile-time error when used in a constant expression on mismatch.
+// triggers a compile-time error on mismatch.
 template<size_t N>
 constexpr int calc(size_t i, const int (&ind)[N], const int (&dim)[N]){
     return is_uniq(ind, i) ? dim[i] :
@@ -42,7 +42,7 @@ constexpr int calc(size_t i, const int (&ind)[N], const int (&dim)[N]){
 }
 
 // if position i should be contracted away, return 1001001, otherwise return ind[i].
-// triggers a compile-time error when used in a constant expression on mismatch.
+// triggers a compile-time error on mismatch.
 template<size_t N>
 constexpr int calc_idx(size_t i, const int (&ind)[N], const int (&dim)[N]){
     return is_uniq(ind, i) ? ind[i] :
@@ -439,15 +439,18 @@ IndexResultingTensor<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,R
 
 
 //------------------------------------------------------------------------------------------------------------//
+// This is for pure inner reduction and not permuted reduction
 template<class Idx0, class Idx1>
-struct is_reduction;
+struct is_pair_reduction;
 
 template<size_t ... Idx0, size_t ... Idx1>
-struct is_reduction<Index<Idx0...>,Index<Idx1...>> {
-    static constexpr bool size_check = sizeof...(Idx0)==sizeof...(Idx1);
-    static constexpr bool index_check = no_of_unique<Idx0...,Idx1...>::value==no_of_unique<Idx1...>::value;
-    static constexpr bool value = size_check && index_check;
+struct is_pair_reduction<Index<Idx0...>,Index<Idx1...>> {
+    static constexpr bool value = is_same_v_<Index<Idx0...>,Index<Idx1...>>;
 };
+
+// helper
+template<class Idx0, class Idx1>
+constexpr bool is_pair_reduction_v = is_pair_reduction<Idx0,Idx1>::value;
 
 
 // Reduction for a single tensor
@@ -456,11 +459,12 @@ struct is_single_reduction;
 
 template<size_t ... Idx0, typename T, size_t ... Rest0>
 struct is_single_reduction<Index<Idx0...>, Tensor<T,Rest0...>> {
-    using OutTensor = typename contraction_impl<Index<Idx0...>, Tensor<T,Rest0...>,
+    using resulting_tensor = typename contraction_impl<Index<Idx0...>, Tensor<T,Rest0...>,
       typename std_ext::make_index_sequence<sizeof...(Rest0)>::type>::type;
-    static constexpr bool value = OutTensor::dimension_t::value == 0;
+    static constexpr bool value = resulting_tensor::dimension_t::value == 0;
 };
 
+// helper
 template<class Idx, class Tens>
 constexpr bool is_single_reduction_v = is_single_reduction<Idx,Tens>::value;
 //------------------------------------------------------------------------------------------------------------//
@@ -745,10 +749,10 @@ struct contract_meta_engine<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Ten
     using OutIndices = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
                               typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::indices;
 
-    static constexpr int a_dim = sizeof...(Rest0);
-    static constexpr int b_dim = sizeof...(Rest1);
+    static constexpr int a_dim   = sizeof...(Rest0);
+    static constexpr int b_dim   = sizeof...(Rest1);
     static constexpr int out_dim = OutTensor::Dimension;
-    static constexpr int total = sizeof...(ss);
+    static constexpr int total   = sizeof...(ss);
 
     static constexpr auto& idx_a = IndexFirstTensor<Index<Idx0...>,Index<Idx1...>, Tensor<T,Rest0...>,Tensor<T,Rest1...>,
                               typename std_ext::make_index_sequence<sizeof...(Rest0)>::type>::indices;
@@ -768,8 +772,8 @@ struct contract_meta_engine<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Ten
     static constexpr std::array<size_t,a_dim> products_a = nprods<Index<Rest0...>,typename std_ext::make_index_sequence<a_dim>::type>::values;
     static constexpr std::array<size_t,b_dim> products_b = nprods<Index<Rest1...>,typename std_ext::make_index_sequence<b_dim>::type>::values;
     using Index_with_dims = typename put_dims_in_Index<OutTensor>::type;
-    static constexpr std::array<size_t,Index_with_dims::NoIndices> products_out = nprods<Index_with_dims,
-            typename std_ext::make_index_sequence<Index_with_dims::NoIndices>::type>::values;
+    static constexpr std::array<size_t,Index_with_dims::Size> products_out = nprods<Index_with_dims,
+            typename std_ext::make_index_sequence<Index_with_dims::Size>::type>::values;
 
     // Generate the cartesian product
     static constexpr auto& as_all = cartesian_product<maxes_out_type,typename std_ext::make_index_sequence<total>::type>::values;
@@ -779,8 +783,8 @@ struct contract_meta_engine<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Ten
     //        uniques_type>::indices;
     //static constexpr std::array<std::array<int,maxes_out_indices::NoIndices>,total> as_all = {all_cartesian_product<ss,2,3,4,2>()...};
 
-    static constexpr std::array<int,sizeof...(ss)> index_a = {get_indices(products_a,idx_a,as_all,ss,a_dim-1)...};
-    static constexpr std::array<int,sizeof...(ss)> index_b = {get_indices(products_b,idx_b,as_all,ss,b_dim-1)...};
+    static constexpr std::array<int,sizeof...(ss)> index_a   = {get_indices(products_a,idx_a,as_all,ss,a_dim-1)...};
+    static constexpr std::array<int,sizeof...(ss)> index_b   = {get_indices(products_b,idx_b,as_all,ss,b_dim-1)...};
     static constexpr std::array<int,sizeof...(ss)> index_out = {get_indices(products_out,idx_out,as_all,ss,out_dim-1)...};
 };
 

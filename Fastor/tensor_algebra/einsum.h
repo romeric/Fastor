@@ -38,7 +38,7 @@ auto einsum(const Tensor<T,Rest0...> &a)
 //-----------------------------------------------------------------------------------------------------------------------//
 template<class Index_I, class Index_J,
          typename T, size_t ... Rest0, size_t ... Rest1,
-         typename std::enable_if<is_reduction<Index_I,Index_J>::value,bool>::type=0>
+         enable_if_t_<is_pair_reduction_v<Index_I,Index_J>,bool> = false>
 FASTOR_INLINE
 Tensor<T> einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
     return inner(a,b);
@@ -48,7 +48,7 @@ Tensor<T> einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
 //-----------------------------------------------------------------------------------------------------------------------//
 template<class Index_I, class Index_J,
          typename T, size_t ... Rest0, size_t ... Rest1,
-         typename std::enable_if<!is_reduction<Index_I,Index_J>::value &&
+         typename std::enable_if<!is_pair_reduction<Index_I,Index_J>::value &&
          !internal::is_generalised_matrix_vector<Index_I,Index_J>::value &&
          !internal::is_generalised_vector_matrix<Index_I,Index_J>::value &&
          !internal::is_generalised_matrix_matrix<Index_I,Index_J>::value

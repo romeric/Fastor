@@ -27,7 +27,7 @@ struct extractor_reducible_contract<Index<Idx0...>, Index<Idx1...>> {
                typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type
       contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
 
-          static_assert(!is_reduction<Index<Idx0...>,Index<Idx1...>>::value,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
+          static_assert(!is_pair_reduction_v<Index<Idx0...>,Index<Idx1...>>,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
 
           constexpr int total = no_of_loops_to_set<Index<Idx0...>,Index<Idx1...>,Tensor<T,Rest0...>,Tensor<T,Rest1...>,
                   typename std_ext::make_index_sequence<no_of_unique<Idx0...,Idx1...>::value>::type>::value;
@@ -83,7 +83,7 @@ struct extractor_reducible_contract<Index<Idx0...>, Index<Idx1...>> {
              typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type
     contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
 
-      static_assert(!is_reduction<Index<Idx0...>,Index<Idx1...>>::value,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
+      static_assert(!is_pair_reduction_v<Index<Idx0...>,Index<Idx1...>>,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
 
       using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
         typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
@@ -173,7 +173,7 @@ struct extractor_reducible_contract<Index<Idx0...>, Index<Idx1...>> {
                typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type
       contract_impl(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b) {
 
-        static_assert(!is_reduction<Index<Idx0...>,Index<Idx1...>>::value,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
+        static_assert(!is_pair_reduction_v<Index<Idx0...>,Index<Idx1...>>,"REDUCTION TO SCALAR REQUESTED. USE REDUCTION FUNCTION INSTEAD");
 
         using OutTensor = typename contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
           typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>::type;
