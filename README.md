@@ -4,13 +4,13 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/romeric/fastor)
 
 # Fastor
-**Fastor** is a stack-based high performance tensor (fixed multi-dimensional array) library for modern C++. 
+**Fastor** is a high performance stack-based tensor (fixed multi-dimensional array) library for modern C++.
 
 Fastor offers:
 
 - **High-level interface** for manipulating multi-dimensional arrays in C++ that look and feel native to scientific programmers
 - **Bare metal performance** for small matrix/tensor multiplications, contractions and tensor factorisations [LU, QR etc]. Refer to [benchmarks](https://github.com/romeric/Fastor/wiki/Benchmarks) to see how Fastor delivers performance on par with MKL JIT's dedicated API
-- **Compile time operation minimisation** such as graph optimisation and nearly symbolic tensor algebraic manipulation to reduce the complexity of evaluation of BLAS or non-BLAS type expressions by orders of magnitude
+- **Compile time operation minimisation** such as graph optimisation, greedy matrix-chain products and nearly symbolic manipulations to reduce the complexity of evaluation of BLAS or non-BLAS type expressions by orders of magnitude
 - Explicit and configurable **SIMD vectorisation** supporting all numeric data types `float32`, `float64`, `complex float32` and `complex float64` as well as integral types
 - **Optional JIT backend** using Intel's [MKL-JIT](https://software.intel.com/en-us/articles/intel-math-kernel-library-improved-small-matrix-performance-using-just-in-time-jit-code) and [LIBXSMM](https://github.com/hfp/libxsmm) for performance portable code
 - Ability to **wrap existing data** and operate on them using Fastor's highly optimised kernels
@@ -73,7 +73,7 @@ int main() {
 
     // An example of tensor permutation
     Tensor<float,3,4,5,2> F; F.random();
-    auto G = permutation<Index<J,K,I,L>>(F);
+    auto G = permute<Index<J,K,I,L>>(F);
 
     // Output the results
     print("Our big tensors:",C,E,G);
@@ -226,7 +226,7 @@ none_of(A == B);                // is no element in A and B equal
 ~~~
 
 ### Interfacing with C arrays and external buffers
-Alernatively Fastor can be used as a pure wrapper over existing buffer. You can wrap C arrays or map any external piece of memory as Fastor tensors and operate on them just like you would on Fastor's tensors without making any copies, using the `Fastor::TensorMap` feature. For instance 
+Alernatively Fastor can be used as a pure wrapper over existing buffer. You can wrap C arrays or map any external piece of memory as Fastor tensors and operate on them just like you would on Fastor's tensors without making any copies, using the `Fastor::TensorMap` feature. For instance
 
 ~~~c++
 double c_array[4] = {1,2,3,4};

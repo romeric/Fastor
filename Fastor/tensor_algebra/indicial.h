@@ -19,15 +19,22 @@ constexpr FASTOR_INDEX Index<All...>::Size;
 template<FASTOR_INDEX ... All>
 constexpr std::array<FASTOR_INDEX,sizeof...(All)> Index<All...>::values;
 
+namespace internal {
+template<FASTOR_INDEX N, class seq>
+struct make_index_impl;
+template<FASTOR_INDEX N, size_t ... ss>
+struct make_index_impl<N,std_ext::index_sequence<ss...>> {
+    using type = Index<ss...>;
+};
+} // internal
 
 template<FASTOR_INDEX N>
-struct makeIndex {
-    using type = typename concat_<typename makeIndex<N-1>::type,Index<N-1>>::type;
+struct make_index {
+    using type = typename internal::make_index_impl<N,typename std_ext::make_index_sequence<N>::type>::type;
 };
-template<>
-struct makeIndex<0> {
-    using type = Index<0>;
-};
+
+template<FASTOR_INDEX N>
+using make_index_t = typename make_index<N>::type;
 
 
 template<FASTOR_INDEX ... All>
