@@ -20,7 +20,7 @@ struct RecursiveCartesianPerm<Index<Idx...>, Tensor<T,Rest...>, First, Lasts...>
     static constexpr int out_dim = sizeof...(Rest);
     static
     FASTOR_INLINE
-    void Do(const T *a_data, T *out_data, std::array<int,out_dim> &as, std::array<int,out_dim> &idx) {
+    void Do(const T *a_data, T *out_data, std::array<size_t,out_dim> &as, std::array<size_t,out_dim> &idx) {
         for (size_t i=0; i<First; ++i) {
             idx[sizeof...(Lasts)] = i;
             RecursiveCartesianPerm<Index<Idx...>, Tensor<T,Rest...>,Lasts...>::Do(a_data, out_data, as, idx);
@@ -31,20 +31,18 @@ struct RecursiveCartesianPerm<Index<Idx...>, Tensor<T,Rest...>, First, Lasts...>
 template<typename T, size_t Last, size_t ...Idx, size_t ...Rest>
 struct RecursiveCartesianPerm<Index<Idx...>, Tensor<T,Rest...>,Last>
 {
-    using OutTensor = typename permute_impl<Index<Idx...>, Tensor<T,Rest...>,
-        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::resulting_tensor;
+    using _permute_impl = permute_impl<Index<Idx...>, Tensor<T,Rest...>,
+        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>;
+    using resulting_tensor = typename _permute_impl::resulting_tensor;
+    using resulting_index  = typename _permute_impl::resulting_index;
     using maxes_out_type = typename permute_impl<Index<Idx...>, Tensor<T,Rest...>,
         typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type;
-    using index_type = typename permute_impl<Index<Idx...>, Tensor<T,Rest...>,
-        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::resulting_index;
-    static constexpr std::array<size_t,sizeof...(Rest)> maxes_idx = permute_impl<Index<Idx...>, Tensor<T,Rest...>,
-        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::index_type::values;
-    static constexpr std::array<size_t,sizeof...(Rest)> maxes_out = permute_impl<Index<Idx...>, Tensor<T,Rest...>,
-        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::maxes_out_type::values;
+    static constexpr std::array<size_t,sizeof...(Rest)> maxes_idx = resulting_index::values;
+    static constexpr std::array<size_t,sizeof...(Rest)> maxes_out = maxes_out_type::values;
 
     static constexpr int a_dim = sizeof...(Rest);
     static constexpr int out_dim = a_dim;
-    static constexpr std::array<int,a_dim> maxes_a = {Rest...};
+    static constexpr std::array<size_t,a_dim> maxes_a = {Rest...};
 
     static constexpr std::array<size_t,sizeof...(Rest)> products_a = nprods<Index<Rest...>,
         typename std_ext::make_index_sequence<a_dim>::type>::values;
@@ -53,19 +51,19 @@ struct RecursiveCartesianPerm<Index<Idx...>, Tensor<T,Rest...>,Last>
 
     static
     FASTOR_INLINE
-    void Do(const T *a_data, T *out_data, std::array<int,out_dim> &as, std::array<int,out_dim> &idx)
+    void Do(const T *a_data, T *out_data, std::array<size_t,out_dim> &as, std::array<size_t,out_dim> &idx)
     {
         constexpr size_t stride = 1;
         for (size_t i=0; i<Last; i+=stride) {
             idx[0] = i;
             std::reverse_copy(idx.begin(),idx.end(),as.begin());
 
-            int index_a = as[a_dim-1];
-            for(int it = 0; it< a_dim; it++) {
+            size_t index_a = as[a_dim-1];
+            for(size_t it = 0; it< a_dim; it++) {
                 index_a += products_a[it]*as[it];
             }
-            int index_out = as[maxes_idx[out_dim-1]];
-            for(int it = 0; it< out_dim-1; it++) {
+            size_t index_out = as[maxes_idx[out_dim-1]];
+            for(size_t it = 0; it< out_dim-1; it++) {
                 index_out += products_out[it]*as[maxes_idx[it]];
             }
 
@@ -148,10 +146,10 @@ struct RecursiveCartesianPermDispatcher;
 template<typename T, size_t ...Idx, size_t ...Rest, size_t ... Args>
 struct RecursiveCartesianPermDispatcher<Index<Idx...>, Tensor<T,Rest...>, Index<Args...> >
 {
-    static constexpr int out_dim =  sizeof...(Rest);
+    static constexpr size_t out_dim =  sizeof...(Rest);
 
     static FASTOR_INLINE void Do(const T *a_data, T *out_data,
-      std::array<int,out_dim> &as, std::array<int,out_dim> &idx) {
+      std::array<size_t,out_dim> &as, std::array<size_t,out_dim> &idx) {
       return RecursiveCartesianPerm<Index<Idx...>,Tensor<T,Rest...>, Args...>::Do(a_data, out_data, as, idx);
     }
 };
@@ -171,7 +169,7 @@ struct extractor_perm<Index<Idx...> > {
     static
     FASTOR_INLINE
         typename permute_impl<Index<Idx...>, Tensor<T,Rest...>,
-        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::type
+        typename std_ext::make_index_sequence<sizeof...(Idx)>::type>::resulting_tensor
     permutation_impl(const Tensor<T,Rest...> &a) {
 
         using _permute_impl = permute_impl<Index<Idx...>, Tensor<T,Rest...>,
@@ -234,15 +232,14 @@ struct extractor_perm<Index<Idx...> > {
 #else
 
         resulting_tensor out;
-        out.zeros();
 
-        T *a_data = a.data();
-        T *out_data = out.data();
+        const T *a_data = a.data();
+        T *out_data     = out.data();
 
-        constexpr int out_dim =  sizeof...(Rest);
+        constexpr size_t out_dim =  sizeof...(Rest);
 
-        std::array<int,out_dim> as = {};
-        std::array<int,out_dim> idx = {};
+        std::array<size_t,out_dim> as  = {};
+        std::array<size_t,out_dim> idx = {};
 
         using nloops = loop_setter<
                 Index<Idx...>,
@@ -343,7 +340,7 @@ typename internal::permute_impl<Index_I,
     typename Derived::result_type,
     typename std_ext::make_index_sequence<DIMS>::type>::resulting_tensor
 permutation(const AbstractTensor<Derived, DIMS> &a) {
-    return internal::extractor_perm<Index_I>::permutation_impl(a);
+    return internal::extractor_perm<Index_I>::permutation_impl(a.self());
 }
 
 template<class Index_I, typename Derived, size_t DIMS,
