@@ -658,7 +658,7 @@ struct is_generalised_matrix_matrix<Index<Idx0...>,Index<Idx1...> > {
 // A complete tensor contraction meta-engine
 //--------------------------------------------------------------------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------------//
-#if __cplusplus >= 201703L
+#if FASTOR_CXX_VERSION >= 2017
 template<size_t N>
 inline constexpr std::array<int,N> find_remaining(const std::array<size_t,N> &maxes_out, int total) {
     std::array<int,N> remainings = {};
