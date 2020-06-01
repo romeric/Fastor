@@ -389,7 +389,6 @@ public:
 #ifndef NDEBUG
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
-        T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {

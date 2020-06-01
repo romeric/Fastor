@@ -61,7 +61,7 @@ void _matmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTO
     __m128 out_row0 = ZEROPS;
     __m128 out_row1 = ZEROPS;
 
-    __m128 brow;
+    __m128 brow = ZEROPS;
     for (size_t i=0; i<K; i++) {
         // __m128 brow = _mm_loadu_ps(&b[i*2]);
         brow = _mm_loadl_pi(brow,(__m64*)&b[i*2]);
@@ -1127,7 +1127,7 @@ template<>
 FASTOR_INLINE void _matmul<float,2,2,1>(const float * FASTOR_RESTRICT a, const float * FASTOR_RESTRICT b, float * FASTOR_RESTRICT out) {
     // 11 OPS
     __m128 amm = _mm_loadu_ps(a);
-    __m128 bmm;
+    __m128 bmm = ZEROPS;
     bmm = _mm_loadl_pi(bmm, (__m64*)b);
 
     __m128 res   = _mm_mul_ps(amm,_mm_movelh_ps(bmm,bmm));
