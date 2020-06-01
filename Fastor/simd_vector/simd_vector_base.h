@@ -27,8 +27,8 @@ struct SIMDVector {
 
     FASTOR_INLINE SIMDVector() : value{} {}
     FASTOR_INLINE SIMDVector(T num) { std::fill(value, value+Size, num); }
-    FASTOR_INLINE SIMDVector(const SIMDVector<T,ABI> &a) { std::copy(a.value,a.value+a.Size,value); };
-    FASTOR_INLINE SIMDVector(const T *data, bool Aligned=true) { std::copy(data,data+Size,value);}
+    FASTOR_INLINE SIMDVector(const SIMDVector<T,ABI> &a) { std::copy(a.value,a.value+a.Size,value); }
+    FASTOR_INLINE SIMDVector(const T *data, bool Aligned=true) { std::copy(data,data+Size,value); unused(Aligned); }
 
     FASTOR_INLINE SIMDVector<T,ABI> operator=(T num) { std::fill(value, value+Size, num); return *this;}
     FASTOR_INLINE SIMDVector<T,ABI> operator=(const SIMDVector<T,ABI> &a) { std::copy(a.value,a.value+a.Size,value); return *this; };

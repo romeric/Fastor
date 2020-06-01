@@ -112,7 +112,7 @@ FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const t_type<T,M,N
         os << fmt._rowprefix;\
         if(width) os.width(width);\
         os << a(i, 0);\
-        for(int j = 1; j < N; ++j)\
+        for(size_t j = 1; j < N; ++j)\
         {\
             os << fmt._colsep;\
             if(width) os.width(width);\
@@ -151,7 +151,7 @@ FASTOR_HINT_INLINE std::ostream& operator<<(std::ostream &os, const t_type<T,Res
             if (dims)\
                 os << "\n";\
         }\
-        for(int i = 0; i < DimensionHolder[a.Dimension-2]; ++i)\
+        for(size_t i = 0; i < DimensionHolder[a.Dimension-2]; ++i)\
         {\
             os << fmt._rowprefix;\
             if(width) os.width(width);\

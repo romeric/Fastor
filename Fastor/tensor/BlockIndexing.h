@@ -24,20 +24,7 @@ FASTOR_INLINE Tensor<T,range_detector<F0,L0,S0>::value,range_detector<F1,L1,S1>:
         operator()(iseq<F0,L0,S0>, iseq<F1,L1,S1>)  {
 
     static_assert(2==dimension_t::value, "INDEXING TENSOR WITH INCORRECT NUMBER OF ARGUMENTS");
-#if CONTRACT_OPT==2 || defined(FASTOR_INTEL)
-    constexpr int N = get_value<2,Rest...>::value;
-    constexpr int size_0 = range_detector<F0,L0,S0>::value;
-    constexpr int size_1 = range_detector<F1,L1,S1>::value;
-    constexpr int size_ = size_0*size_1;
-    Tensor<T,size_0,size_1> out; T *out_data = out.data();
 
-    constexpr auto &idx = ravel_2d_indices<F0,L0,S0,F1,L1,S1,N,
-        typename std_ext::make_index_sequence<size_>::type>::idx;
-
-    for (int i=0; i<size_; ++i) {
-        out_data[i] = _data[idx[i]];
-    }
-#else
     Tensor<T,range_detector<F0,L0,S0>::value,range_detector<F1,L1,S1>::value> out;
     FASTOR_INDEX counter_i = 0;
     for (FASTOR_INDEX i=F0; i<L0; i+=S0) {
@@ -48,7 +35,6 @@ FASTOR_INLINE Tensor<T,range_detector<F0,L0,S0>::value,range_detector<F1,L1,S1>:
         }
         counter_i++;
     }
-#endif
 
     return out;
 }

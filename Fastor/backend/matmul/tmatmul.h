@@ -363,7 +363,7 @@ void interior_block_tmatmul_mask_impl(
 
         V c_ij[unrollOuterloop*numSIMDCols];
         // Loop over columns of a (rows of b)
-        for (size_t k = 0; k < K; ++k) {
+        for (size_t k = kfirst; k < klast; ++k) {
 
             bmm0.mask_load(&b[k*N+j],mask,false);
 
@@ -485,7 +485,7 @@ void _tmatmul_base(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T *
             const size_t klast  = find_klast <size_t,K,unrollOuterloop,1,LhsType,RhsType>(i,j);
 
             T c_ij[unrollOuterloop] = {};
-            for (size_t k = kfirst; k < K; ++k) {
+            for (size_t k = kfirst; k < klast; ++k) {
                 for (size_t n = 0; n < unrollOuterloop; ++n) {
                     c_ij[n] += a[(i + n)*K+k] * b[k*N+j];
                 }
@@ -638,7 +638,7 @@ void _tmatmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT
             const size_t klast  = find_klast <size_t,K,unrollOuterloop,V::Size,LhsType,RhsType>(i,j);
 
             V c_ij[unrollOuterloop];
-            for (size_t k = 0; k < K; ++k) {
+            for (size_t k = kfirst; k < klast; ++k) {
                 for (size_t n = 0; n < unrollOuterloop; ++n) {
                     c_ij[n] = fmadd(V(a[(i + n)*K+k]), V(&b[k*N+j],false), c_ij[n]);
                 }
@@ -655,7 +655,7 @@ void _tmatmul_base_masked(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT
             const size_t klast  = find_klast <size_t,K,unrollOuterloop,V::Size,LhsType,RhsType>(i,j);
 
             V c_ij[unrollOuterloop];
-            for (size_t k = 0; k < K; ++k) {
+            for (size_t k = kfirst; k < klast; ++k) {
                 for (size_t n = 0; n < unrollOuterloop; ++n) {
 #ifdef FASTOR_HAS_AVX512_MASKS
                     V bmm0; bmm0.mask_load(&b[k*N+j],mask);
@@ -770,9 +770,6 @@ template<typename T, size_t M, size_t K, size_t N, typename LhsType = UpLoType::
 FASTOR_INLINE
 void _tmatmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {
 
-    using nativeV = SIMDVector<T,DEFAULT_ABI>;
-    using V = choose_best_simd_t<nativeV,N>;
-
     // Non-primitive types
     FASTOR_IF_CONSTEXPR (!is_primitive_v_<T>) {
         internal::_tmatmul_base_non_primitive<T,M,K,N,LhsType,RhsType>(a,b,out);
@@ -781,6 +778,10 @@ void _tmatmul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FAST
 
     // Use specialised kernels
 #if defined(FASTOR_AVX2_IMPL) || defined(FASTOR_HAS_AVX512_MASKS)
+
+    using nativeV = SIMDVector<T,DEFAULT_ABI>;
+    using V = choose_best_simd_t<nativeV,N>;
+
     FASTOR_IF_CONSTEXPR(N % V::Size <= 1UL) {
         internal::_tmatmul_base<T,M,K,N,LhsType,RhsType>(a,b,out);
         return;

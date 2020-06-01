@@ -1,6 +1,7 @@
 #ifndef FASTOR_ALL_INCLUDE_H
 #define FASTOR_ALL_INCLUDE_H
 
+#if defined(_MSC_VER)
 // Disable MSVC warnings for macros
 #pragma warning (disable: 4003)
 // Disable MSVC warnings for conversion
@@ -9,6 +10,7 @@
 #pragma warning (disable: 4100)
 // Disable MSVC narrowing conversion
 #pragma warning (disable: 4267)
+#endif
 
 #include "commons/utils.h"
 #include "simd_vector/SIMDVector.h"
@@ -25,10 +27,12 @@
 #include "expressions/expressions.h"
 #include "backend/voigt.h"
 
+#if defined(_MSC_VER)
 #pragma warning (default: 4003)
 #pragma warning (default: 4244)
 #pragma warning (default: 4100)
 #pragma warning (default: 4267)
+#endif
 
 #endif // FASTOR_ALL_INCLUDE_H
 

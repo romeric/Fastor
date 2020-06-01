@@ -75,8 +75,6 @@ solve(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1> &rhs
 
     using lhs_type = typename TLhs::result_type;
     using rhs_type = typename TRhs::result_type;
-    constexpr FASTOR_INDEX lhs_rank = lhs_type::dimension_t::value;
-    constexpr FASTOR_INDEX rhs_rank = rhs_type::dimension_t::value;
     constexpr FASTOR_INDEX M = get_tensor_dimension_v<0,lhs_type>;
     constexpr FASTOR_INDEX N = get_tensor_dimension_v<1,lhs_type>;
     constexpr FASTOR_INDEX M_other = get_tensor_dimension_v<0,rhs_type>;
@@ -107,8 +105,6 @@ solve(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1> &rhs
 
     using lhs_type = typename TLhs::result_type;
     using rhs_type = typename TRhs::result_type;
-    constexpr FASTOR_INDEX lhs_rank = lhs_type::dimension_t::value;
-    constexpr FASTOR_INDEX rhs_rank = rhs_type::dimension_t::value;
     constexpr FASTOR_INDEX M = get_tensor_dimension_v<0,lhs_type>;
     constexpr FASTOR_INDEX N = get_tensor_dimension_v<1,lhs_type>;
     constexpr FASTOR_INDEX M_other = get_tensor_dimension_v<0,rhs_type>;
@@ -141,8 +137,6 @@ solve(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1> &rhs
 
     using lhs_type = typename TLhs::result_type;
     using rhs_type = typename TRhs::result_type;
-    constexpr FASTOR_INDEX lhs_rank = lhs_type::dimension_t::value;
-    constexpr FASTOR_INDEX rhs_rank = rhs_type::dimension_t::value;
     constexpr FASTOR_INDEX M = get_tensor_dimension_v<0,lhs_type>;
     constexpr FASTOR_INDEX N = get_tensor_dimension_v<1,lhs_type>;
     constexpr FASTOR_INDEX M_other = get_tensor_dimension_v<0,rhs_type>;
@@ -175,8 +169,6 @@ solve(const AbstractTensor<TLhs,DIM0> &lhs, const AbstractTensor<TRhs,DIM1> &rhs
 
     using lhs_type = typename TLhs::result_type;
     using rhs_type = typename TRhs::result_type;
-    constexpr FASTOR_INDEX lhs_rank = lhs_type::dimension_t::value;
-    constexpr FASTOR_INDEX rhs_rank = rhs_type::dimension_t::value;
     constexpr FASTOR_INDEX M = get_tensor_dimension_v<0,lhs_type>;
     constexpr FASTOR_INDEX N = get_tensor_dimension_v<1,lhs_type>;
     constexpr FASTOR_INDEX M_other = get_tensor_dimension_v<0,rhs_type>;

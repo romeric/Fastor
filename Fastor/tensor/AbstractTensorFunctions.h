@@ -157,7 +157,7 @@ FASTOR_INLINE typename Derived::scalar_type tril(const AbstractTensor<Derived,DI
     const Derived &src = _src.self();
     using result_type = typename Derived::result_type;
     const result_type out(src);
-    return tril(out);
+    return tril(out,k);
 }
 template<class Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE typename Derived::result_type tril(const AbstractTensor<Derived,DIMS> &_src, int k = 0) {
@@ -185,7 +185,7 @@ FASTOR_INLINE typename Derived::scalar_type triu(const AbstractTensor<Derived,DI
     const Derived &src = _src.self();
     using result_type = typename Derived::result_type;
     const result_type out(src);
-    return triu(out);
+    return triu(out,k);
 }
 template<class Derived, size_t DIMS, enable_if_t_<!requires_evaluation_v<Derived>,bool> = false>
 FASTOR_INLINE typename Derived::result_type triu(const AbstractTensor<Derived,DIMS> &_src, int k = 0) {
