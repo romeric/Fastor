@@ -525,7 +525,7 @@ constexpr double PRECI_TOL  = 1e-14;
 FASTOR_INLINE void FASTOR_EXIT_ASSERT(bool cond, const std::string &msg="") {
     if (cond==false) {
         throw std::runtime_error(msg);
-        exit(EXIT_FAILURE);
+        // exit(EXIT_FAILURE);
     }
 }
 

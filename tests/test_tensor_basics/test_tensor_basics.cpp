@@ -63,8 +63,8 @@ void test_basics() {
     }
 
     {
-        T number = 12.67;
-        Tensor<T> a0 = 12.67;
+        T number = T(12.67);
+        Tensor<T> a0 = T(12.67);
         FASTOR_EXIT_ASSERT(std::fabs(norm(a0)-number)<Tol);
 
         Tensor<T,4> a1 = 1;
