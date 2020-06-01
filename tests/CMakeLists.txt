@@ -25,7 +25,7 @@ add_subdirectory(test_tensor_basics)
 add_subdirectory(test_booleans)
 
 add_subdirectory(test_matmul)
-# This test checks over 30000 combination
+# This test checks over 30000 combinations of trmm
 # MSVC creates an excessively large obj for this
 if(NOT MSVC)
 add_subdirectory(test_tmatmul)
