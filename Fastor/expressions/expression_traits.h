@@ -3,8 +3,6 @@
 
 #include "Fastor/commons/commons.h"
 #include "Fastor/meta/meta.h"
-// #include "Fastor/expressions/unary_ops/unary_bool_ops.h"
-// #include "Fastor/expressions/binary_ops/binary_cmp_ops.h"
 #include <type_traits>
 
 namespace Fastor {
@@ -33,9 +31,9 @@ static constexpr bool is_expression_v = is_expression<Derived>::value;
 template<class T>
 struct expression_binder_type {
 #ifndef FASTOR_COPY_EXPR
-    using type = conditional_t_<is_arithmetic_v_<T>, const T, const T&>;
+    using type = conditional_t_<is_expression_v<T> || is_arithmetic_v_<T>, const T, const T&>;
 #else
-    using type = T;
+    using type = const T;
 #endif
 };
 
