@@ -290,7 +290,6 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
           using _contraction_impl = contraction_impl<Index<Idx0...,Idx1...>, Tensor<T,Rest0...,Rest1...>,
               typename std_ext::make_index_sequence<sizeof...(Rest0)+sizeof...(Rest1)>::type>;
           using resulting_tensor = typename _contraction_impl::type;
-          using resulting_index  = typename _contraction_impl::indices;
           // is reduction including permuted reduction
           constexpr bool _is_reduction = resulting_tensor::dimension_t::value == 0;
 
@@ -409,6 +408,7 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
 
 #elif CONTRACT_OPT==-1
 
+              using resulting_index  = typename _contraction_impl::indices;
               resulting_tensor out;
               out.zeros();
               const T *a_data = a.data();
@@ -561,6 +561,7 @@ struct extractor_contract_2<Index<Idx0...>, Index<Idx1...>,
           }
 #elif CONTRACT_OPT==1
 
+              using resulting_index  = typename _contraction_impl::indices;
               resulting_tensor out;
               out.zeros();
               const T *a_data = a.data();
