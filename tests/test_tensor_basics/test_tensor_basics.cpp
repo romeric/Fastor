@@ -12,9 +12,9 @@ void test_basics() {
 
     {
         // Check initialiser list constructors
-        Tensor<T,3> a0 = {1,2,3};
-        Tensor<T,3,1> a1 = {{1},{2},{3}};
-        Tensor<T,1,3> a2 = {{1,2,3}};
+        Tensor<T,3> a0     = {1,2,3};
+        Tensor<T,3,1> a1   = {{1},{2},{3}};
+        Tensor<T,1,3> a2   = {{1,2,3}};
         Tensor<T,1,2,3> a3 = {{{1,2,3},{4,5,6}}};
 
         // Basic scalar indexing
@@ -63,27 +63,27 @@ void test_basics() {
     }
 
     {
-        T number = T(12.67);
+        T number     = T(12.67);
         Tensor<T> a0 = T(12.67);
-        FASTOR_EXIT_ASSERT(std::fabs(norm(a0)-number)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(a0)-number)<Tol);
 
         Tensor<T,4> a1 = 1;
-        FASTOR_EXIT_ASSERT(std::fabs(norm(a1)-2)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(a1)-2)<Tol);
 
         Tensor<T,4,4> a2 = 1;
-        FASTOR_EXIT_ASSERT(std::fabs(norm(a2)-4)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(a2)-4)<Tol);
 
         Tensor<T,2,2,4> a3 = 1;
-        FASTOR_EXIT_ASSERT(std::fabs(norm(a3)-4)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(a3)-4)<Tol);
 
         Tensor<T,2,2,4,4> a4 = 1;
-        FASTOR_EXIT_ASSERT(std::fabs(norm(a4)-8)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(a4)-8)<Tol);
 
         Tensor<T,2,2,4,4,4> a5 = 2;
-        FASTOR_EXIT_ASSERT(std::fabs(norm(a5)-32)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(a5)-32)<Tol);
 
         Tensor<T,2,2,4,4,4,4> a6 = 2;
-        FASTOR_EXIT_ASSERT(std::fabs(norm(a6)-64)<Tol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(a6)-64)<Tol);
 
 
         Tensor<T,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2> t1;
@@ -142,6 +142,83 @@ void test_basics() {
         FASTOR_EXIT_ASSERT(std::abs(a0.sum()-36) < Tol);
         a0 /= 2;
         FASTOR_EXIT_ASSERT(std::abs(a0.sum()-18) < Tol);
+    }
+
+    // test eye
+    {
+        {
+            constexpr size_t M = 2;
+            Tensor<T,M,M> I0; I0.eye();
+            for (size_t i=0; i<M; ++i) {
+                FASTOR_EXIT_ASSERT(std::abs(I0(i,i) - T(1) ) < Tol);
+            }
+            Tensor<T,M,M> I1; I1.eye2();
+            for (size_t i=0; i<M; ++i) {
+                FASTOR_EXIT_ASSERT(std::abs(I1(i,i) - T(1) ) < Tol);
+            }
+        }
+
+        {
+            constexpr size_t M = 3;
+            Tensor<T,M,M> I0; I0.eye();
+            for (size_t i=0; i<M; ++i) {
+                FASTOR_EXIT_ASSERT(std::abs(I0(i,i) - T(1) ) < Tol);
+            }
+            Tensor<T,M,M> I1; I1.eye2();
+            for (size_t i=0; i<M; ++i) {
+                FASTOR_EXIT_ASSERT(std::abs(I1(i,i) - T(1) ) < Tol);
+            }
+        }
+
+        {
+            constexpr size_t M = 4;
+            Tensor<T,M,M> I0; I0.eye();
+            for (size_t i=0; i<M; ++i) {
+                FASTOR_EXIT_ASSERT(std::abs(I0(i,i) - T(1) ) < Tol);
+            }
+            Tensor<T,M,M> I1; I1.eye2();
+            for (size_t i=0; i<M; ++i) {
+                FASTOR_EXIT_ASSERT(std::abs(I1(i,i) - T(1) ) < Tol);
+            }
+        }
+
+        {
+            constexpr size_t M = 9;
+            Tensor<T,M,M> I0; I0.eye();
+            for (size_t i=0; i<M; ++i) {
+                FASTOR_EXIT_ASSERT(std::abs(I0(i,i) - T(1) ) < Tol);
+            }
+            FASTOR_EXIT_ASSERT(std::abs(I0(1,2) - T(0) ) < Tol);
+            Tensor<T,M,M> I1; I1.eye2();
+            for (size_t i=0; i<M; ++i) {
+                FASTOR_EXIT_ASSERT(std::abs(I1(i,i) - T(1) ) < Tol);
+            }
+            FASTOR_EXIT_ASSERT(std::abs(I1(1,2) - T(0) ) < Tol);
+        }
+    }
+
+    // Check expressions lifetime - [bug 95 - this bug may actually not be caught]
+    {
+        constexpr size_t M = 30;
+        T J      = T(0.98);
+        T lambda = T(2);
+        T mu     = T(2);
+        Tensor<T,M,M> I; I.eye2();
+        Tensor<T,M,M> b; b.eye2(); b *= T(2);
+        auto const sigma = [&I](T const J, auto const & b, T const lambda, T const mu) {
+            return (mu / J) * (b - I) + (lambda / J) * std::log(J) * I;
+        };
+        auto s = sigma(J, b, lambda, mu);
+        using expr_type   = decltype(s);
+        using result_type = typename expr_type::result_type;
+        result_type ss(s);
+        for (size_t i=0; i<M; ++i) {
+            for (size_t j=0; j<M; ++j) {
+                if (i==j) FASTOR_EXIT_ASSERT(std::abs(ss(i,j) - T(1.9995863115969) ) < 1e-7 );
+                else      FASTOR_EXIT_ASSERT(std::abs(ss(i,j) - T(0) )               < 1e-12);
+            }
+        }
+        unused(ss);
     }
 
     print(FGRN(BOLD("All tests passed successfully")));
