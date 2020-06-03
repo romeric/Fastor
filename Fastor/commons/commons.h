@@ -333,12 +333,12 @@ SOFTWARE.
 
 #if defined(__GNUC__) || defined(__GNUG__)
     #define FASTOR_ALIGN __attribute__((aligned(FASTOR_MEMORY_ALIGNMENT_VALUE)))
-    // FASTOR_ALIGN can't be turned off if asked but not FASTOR_ARCH_ALIGN as the
+    // FASTOR_ALIGN can be turned off if asked but not FASTOR_ARCH_ALIGN as the
     // latter is for internal alignment in certain kernels
     #define FASTOR_ARCH_ALIGN __attribute__((aligned(FASTOR_MEMORY_ALIGNMENT_VALUE)))
 #elif defined(_MSC_VER)
     #define FASTOR_ALIGN __declspec(align(FASTOR_MEMORY_ALIGNMENT_VALUE))
-    // FASTOR_ALIGN can't be turned off if asked but not FASTOR_ARCH_ALIGN as the
+    // FASTOR_ALIGN can be turned off if asked but not FASTOR_ARCH_ALIGN as the
     // latter is for internal alignment in certain kernels
     #define FASTOR_ARCH_ALIGN __declspec(align(FASTOR_MEMORY_ALIGNMENT_VALUE))
 #endif
