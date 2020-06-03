@@ -6,6 +6,13 @@
 #include "Fastor/simd_vector/SIMDVector.h"
 #include <cmath>
 
+// SHUT GCC6 -Wignored-attributes WARNINGS
+#ifdef __GNUC__
+#if __GNUC__==6
+#pragma GCC diagnostic ignored "-Wignored-attributes"
+#endif
+#endif
+
 namespace Fastor {
 
 // minimum
@@ -259,751 +266,20 @@ FASTOR_INLINE SIMDVector<double,simd_abi::avx> floor(const SIMDVector<double,sim
 
 
 
-// Boolean arithmetic
-// ! or not
-//----------------------------------------------------------------------------------------------------------//
+// remaining math functions from STL
+//----------------------------------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------//
 template<typename T, typename ABI>
-FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> operator!(const SIMDVector<T,ABI> &a) {
-    SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((bool*)&out)[i] = !(((T*)&a)[i]); }
-    return out;
-}
-//----------------------------------------------------------------------------------------------------------//
-
-
-// isinf/nan/finite
-//----------------------------------------------------------------------------------------------------------//
-template<typename T, typename ABI>
-FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> isinf(const SIMDVector<T,ABI> &a) {
-    SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((bool*)&out)[i] = std::isinf(((T*)&a)[i]); }
+FASTOR_INLINE SIMDVector<T,ABI> exp(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::exp(((T*)&a)[i]);}
     return out;
 }
 
 template<typename T, typename ABI>
-FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> isnan(const SIMDVector<T,ABI> &a) {
-    SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((bool*)&out)[i] = std::isnan(((T*)&a)[i]); }
-    return out;
-}
-
-template<typename T, typename ABI>
-FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> isfinite(const SIMDVector<T,ABI> &a) {
-    SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((bool*)&out)[i] = std::isfinite(((T*)&a)[i]); }
-    return out;
-}
-//----------------------------------------------------------------------------------------------------------//
-
-
-
-// vdt math functions
-//----------------------------------------------------------------------------------------------------------//
-#ifdef FASTOR_USE_VDT
-#include <vdt/vdtMath.h>
-
-#ifdef FASTOR_SSE2_IMPL
-inline __m128 internal_exp(__m128 a) {
-   __m128 out;
-   for (FASTOR_INDEX i=0; i<4UL; i++) {
-      ((float*)&out)[i] = vdt::fast_expf(((float*)&a)[i]);
-   }
-   return out;
-}
-inline __m128 internal_log(__m128 a) {
-   __m128 out;
-   for (FASTOR_INDEX i=0; i<4UL; i++) {
-      ((float*)&out)[i] = vdt::fast_logf(((float*)&a)[i]);
-   }
-   return out;
-}
-inline __m128 internal_sin(__m128 a) {
-   __m128 out;
-   for (FASTOR_INDEX i=0; i<4UL; i++) {
-       ((float*)&out)[i] = vdt::fast_sinf(((float*)&a)[i]);
-   }
-   return out;
-}
-inline __m128 internal_cos(__m128 a) {
-   __m128 out;
-   for (FASTOR_INDEX i=0; i<4UL; i++) {
-       ((float*)&out)[i] = vdt::fast_cosf(((float*)&a)[i]);
-   }
-   return out;
-}
-inline __m128 internal_tan(__m128 a) {
-   __m128 out;
-   for (FASTOR_INDEX i=0; i<4UL; i++) {
-       ((float*)&out)[i] = vdt::fast_tanf(((float*)&a)[i]);
-   }
-   return out;
-}
-inline __m128 internal_asin(__m128 a) {
-   __m128 out;
-   for (FASTOR_INDEX i=0; i<4UL; i++) {
-       ((float*)&out)[i] = vdt::fast_asinf(((float*)&a)[i]);
-   }
-   return out;
-}
-inline __m128 internal_acos(__m128 a) {
-   __m128 out;
-   for (FASTOR_INDEX i=0; i<4UL; i++) {
-       ((float*)&out)[i] = vdt::fast_acosf(((float*)&a)[i]);
-   }
-   return out;
-}
-inline __m128 internal_atan(__m128 a) {
-   __m128 out;
-   for (FASTOR_INDEX i=0; i<4UL; i++) {
-       ((float*)&out)[i] = vdt::fast_atanf(((float*)&a)[i]);
-   }
-   return out;
-}
-
-inline __m128d internal_exp(__m128d a) {
-   __m128d out;
-   for (FASTOR_INDEX i=0; i<2UL; i++) {
-      ((double*)&out)[i] = vdt::fast_exp(((double*)&a)[i]);
-   }
-   return out;
-}
-inline __m128d internal_log(__m128d a) {
-   __m128d out;
-   for (FASTOR_INDEX i=0; i<2UL; i++) {
-      ((double*)&out)[i] = vdt::fast_log(((double*)&a)[i]);
-   }
-   return out;
-}
-inline __m128d internal_sin(__m128d a) {
-   __m128d out;
-   for (FASTOR_INDEX i=0; i<2UL; i++) {
-       ((double*)&out)[i] = vdt::fast_sin(((double*)&a)[i]);
-   }
-   return out;
-}
-inline __m128d internal_cos(__m128d a) {
-   __m128d out;
-   for (FASTOR_INDEX i=0; i<2UL; i++) {
-       ((double*)&out)[i] = vdt::fast_cos(((double*)&a)[i]);
-   }
-   return out;
-}
-inline __m128d internal_tan(__m128d a) {
-   __m128d out;
-   for (FASTOR_INDEX i=0; i<2UL; i++) {
-       ((double*)&out)[i] = vdt::fast_tan(((double*)&a)[i]);
-   }
-   return out;
-}
-inline __m128d internal_asin(__m128d a) {
-   __m128d out;
-   for (FASTOR_INDEX i=0; i<2UL; i++) {
-       ((double*)&out)[i] = vdt::fast_asin(((double*)&a)[i]);
-   }
-   return out;
-}
-inline __m128d internal_acos(__m128d a) {
-   __m128d out;
-   for (FASTOR_INDEX i=0; i<2UL; i++) {
-       ((double*)&out)[i] = vdt::fast_acos(((double*)&a)[i]);
-   }
-   return out;
-}
-inline __m128d internal_atan(__m128d a) {
-   __m128d out;
-   for (FASTOR_INDEX i=0; i<2UL; i++) {
-       ((double*)&out)[i] = vdt::fast_atan(((double*)&a)[i]);
-   }
-   return out;
-}
-#endif
-
-#ifdef FASTOR_AVX_IMPL
-inline __m256 internal_exp(__m256 a) {
-   __m256 out;
-   for (FASTOR_INDEX i=0; i<8UL; i++) {
-       ((float*)&out)[i] = vdt::fast_expf(((float*)&a)[i]);
-   }
-   return out;
-}
-inline __m256 internal_log(__m256 a) {
-   __m256 out;
-   for (FASTOR_INDEX i=0; i<8UL; i++) {
-       ((float*)&out)[i] = vdt::fast_logf(((float*)&a)[i]);
-   }
-   return out;
-}
-// This can give inaccurate results
-//inline __m256 internal_pow(__m256 a, __m256 b) {
-//   __m256 out;
-//   for (FASTOR_INDEX i=0; i<8UL; i++) {
-//       out[i] = vdt::fast_expf(a[i]*vdt::fast_logf(b[i]));
-//   }
-//   return out;
-//}
-inline __m256 internal_sin(__m256 a) {
-   __m256 out;
-   for (FASTOR_INDEX i=0; i<8UL; i++) {
-       ((float*)&out)[i] = vdt::fast_sinf(((float*)&a)[i]);
-   }
-   return out;
-}
-inline __m256 internal_cos(__m256 a) {
-   __m256 out;
-   for (FASTOR_INDEX i=0; i<8UL; i++) {
-       ((float*)&out)[i] = vdt::fast_cosf(((float*)&a)[i]);
-   }
-   return out;
-}
-inline __m256 internal_tan(__m256 a) {
-   __m256 out;
-   for (FASTOR_INDEX i=0; i<8UL; i++) {
-       ((float*)&out)[i] = vdt::fast_tanf(((float*)&a)[i]);
-   }
-   return out;
-}
-inline __m256 internal_asin(__m256 a) {
-   __m256 out;
-   for (FASTOR_INDEX i=0; i<8UL; i++) {
-       ((float*)&out)[i] = vdt::fast_asinf(((float*)&a)[i]);
-   }
-   return out;
-}
-inline __m256 internal_acos(__m256 a) {
-   __m256 out;
-   for (FASTOR_INDEX i=0; i<8UL; i++) {
-       ((float*)&out)[i] = vdt::fast_acosf(((float*)&a)[i]);
-   }
-   return out;
-}
-inline __m256 internal_atan(__m256 a) {
-   __m256 out;
-   for (FASTOR_INDEX i=0; i<8UL; i++) {
-       ((float*)&out)[i] = vdt::fast_atanf(((float*)&a)[i]);
-   }
-   return out;
-}
-
-
-inline __m256d internal_exp(__m256d a) {
-   __m256d out;
-   for (FASTOR_INDEX i=0; i<4UL; i++) {
-       ((double*)&out)[i] = vdt::fast_exp(((double*)&a)[i]);
-   }
-   return out;
-}
-__m256d internal_log(__m256d a) {
-   __m256d out;
-   for (FASTOR_INDEX i=0; i<4UL; i++) {
-       ((double*)&out)[i] = vdt::fast_log(((double*)&a)[i]);
-   }
-   return out;
-}
-// This can give inaccurate results
-//inline __m256d internal_pow(__m256d a, __m256d b) {
-//   __m256d out;
-//   for (FASTOR_INDEX i=0; i<4UL; i++) {
-//       out[i] = vdt::fast_exp(a[i]*vdt::fast_log(b[i]));
-//   }
-//   return out;
-//}
-inline __m256d internal_sin(__m256d a) {
-   __m256d out;
-   for (FASTOR_INDEX i=0; i<4UL; i++) {
-       ((double*)&out)[i] = vdt::fast_sin(((double*)&a)[i]);
-   }
-   return out;
-}
-inline __m256d internal_cos(__m256d a) {
-   __m256d out;
-   for (FASTOR_INDEX i=0; i<4UL; i++) {
-       ((double*)&out)[i] = vdt::fast_cos(((double*)&a)[i]);
-   }
-   return out;
-}
-inline __m256d internal_tan(__m256d a) {
-   __m256d out;
-   for (FASTOR_INDEX i=0; i<4UL; i++) {
-       ((double*)&out)[i] = vdt::fast_tan(((double*)&a)[i]);
-   }
-   return out;
-}
-inline __m256d internal_asin(__m256d a) {
-   __m256d out;
-   for (FASTOR_INDEX i=0; i<4UL; i++) {
-       ((double*)&out)[i] = vdt::fast_asin(((double*)&a)[i]);
-   }
-   return out;
-}
-inline __m256d internal_acos(__m256d a) {
-   __m256d out;
-   for (FASTOR_INDEX i=0; i<4UL; i++) {
-       ((double*)&out)[i] = vdt::fast_acos(((double*)&a)[i]);
-   }
-   return out;
-}
-inline __m256d internal_atan(__m256d a) {
-   __m256d out;
-   for (FASTOR_INDEX i=0; i<4UL; i++) {
-       ((double*)&out)[i] = vdt::fast_atan(((double*)&a)[i]);
-   }
-   return out;
-}
-#endif
-//----------------------------------------------------------------------------------------------------------//
-
-#else
-
-//----------------------------------------------------------------------------------------------------------//
-// SHUT GCC6 -Wignored-attributes WARNINGS
-#ifdef __GNUC__
-#if __GNUC__==6
-#pragma GCC diagnostic ignored "-Wignored-attributes"
-#endif
-#endif
-
-template<typename T>
-inline T internal_exp(T a) {
-   T out;
-   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
-       out[i] = std::exp(a[i]);
-   }
-   return out;
-}
-
-template<typename T>
-inline T internal_log(T a) {
-   T out;
-   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
-       out[i] = std::log(a[i]);
-   }
-   return out;
-}
-
-template<typename T>
-inline T internal_sin(T a) {
-   T out;
-   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
-       out[i] = std::sin(a[i]);
-   }
-   return out;
-}
-
-template<typename T>
-inline T internal_cos(T a) {
-   T out;
-   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
-       out[i] = std::cos(a[i]);
-   }
-   return out;
-}
-
-template<typename T>
-inline T internal_tan(T a) {
-   T out;
-   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
-       out[i] = std::tan(a[i]);
-   }
-   return out;
-}
-
-template<typename T>
-inline T internal_asin(T a) {
-   T out;
-   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
-       out[i] = std::asin(a[i]);
-   }
-   return out;
-}
-
-template<typename T>
-inline T internal_acos(T a) {
-   T out;
-   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
-       out[i] = std::acos(a[i]);
-   }
-   return out;
-}
-
-template<typename T>
-inline T internal_atan(T a) {
-   T out;
-   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
-       out[i] = std::atan(a[i]);
-   }
-   return out;
-}
-
-#ifdef FASTOR_SSE2_IMPL
-template<>
-inline __m128 internal_exp(__m128 a) {
-   __m128 out;
-
-   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
-       ((float*)&out)[i] = std::exp(((float*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m128 internal_log(__m128 a) {
-   __m128 out;
-
-   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
-       ((float*)&out)[i] = std::log(((float*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m128 internal_sin(__m128 a) {
-   __m128 out;
-
-   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
-       ((float*)&out)[i] = std::sin(((float*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m128 internal_cos(__m128 a) {
-   __m128 out;
-
-   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
-       ((float*)&out)[i] = std::cos(((float*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m128 internal_tan(__m128 a) {
-   __m128 out;
-
-   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
-       ((float*)&out)[i] = std::tan(((float*)&a)[i]);
-   }
-   return out;
-}
-inline __m128 internal_asin(__m128 a) {
-   __m128 out;
-
-   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
-       ((float*)&out)[i] = std::asin(((float*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m128 internal_acos(__m128 a) {
-   __m128 out;
-
-   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
-       ((float*)&out)[i] = std::acos(((float*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m128 internal_atan(__m128 a) {
-   __m128 out;
-
-   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
-       ((float*)&out)[i] = std::atan(((float*)&a)[i]);
-   }
-   return out;
-}
-
-
-template<>
-inline __m128d internal_exp(__m128d a) {
-   __m128d out;
-
-   for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
-       ((double*)&out)[i] = std::exp(((double*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m128d internal_log(__m128d a) {
-   __m128d out;
-
-   for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
-       ((double*)&out)[i] = std::log(((double*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m128d internal_sin(__m128d a) {
-   __m128d out;
-
-   for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
-       ((double*)&out)[i] = std::sin(((double*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m128d internal_cos(__m128d a) {
-   __m128d out;
-
-   for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
-       ((double*)&out)[i] = std::cos(((double*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m128d internal_tan(__m128d a) {
-   __m128d out;
-
-   for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
-       ((double*)&out)[i] = std::tan(((double*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m128d internal_asin(__m128d a) {
-   __m128d out;
-
-   for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
-       ((double*)&out)[i] = std::asin(((double*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m128d internal_acos(__m128d a) {
-   __m128d out;
-
-   for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
-       ((double*)&out)[i] = std::acos(((double*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m128d internal_atan(__m128d a) {
-   __m128d out;
-
-   for (FASTOR_INDEX i=0UL; i<2UL; ++i) {
-       ((double*)&out)[i] = std::atan(((double*)&a)[i]);
-   }
-   return out;
-}
-#endif
-#ifdef FASTOR_AVX_IMPL
-template<>
-inline __m256 internal_exp(__m256 a) {
-   __m256 out;
-
-   for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
-       ((float*)&out)[i] = std::exp(((float*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m256 internal_log(__m256 a) {
-   __m256 out;
-
-   for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
-       ((float*)&out)[i] = std::log(((float*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m256 internal_sin(__m256 a) {
-   __m256 out;
-
-   for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
-       ((float*)&out)[i] = std::sin(((float*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m256 internal_cos(__m256 a) {
-   __m256 out;
-
-   for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
-       ((float*)&out)[i] = std::cos(((float*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m256 internal_tan(__m256 a) {
-   __m256 out;
-
-   for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
-       ((float*)&out)[i] = std::tan(((float*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m256 internal_asin(__m256 a) {
-   __m256 out;
-
-   for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
-       ((float*)&out)[i] = std::asin(((float*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m256 internal_acos(__m256 a) {
-   __m256 out;
-
-   for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
-       ((float*)&out)[i] = std::acos(((float*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m256 internal_atan(__m256 a) {
-   __m256 out;
-
-   for (FASTOR_INDEX i=0UL; i<8UL; ++i) {
-       ((float*)&out)[i] = std::atan(((float*)&a)[i]);
-   }
-   return out;
-}
-
-
-template<>
-inline __m256d internal_exp(__m256d a) {
-   __m256d out;
-
-   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
-       ((double*)&out)[i] = std::exp(((double*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m256d internal_log(__m256d a) {
-   __m256d out;
-
-   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
-       ((double*)&out)[i] = std::log(((double*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m256d internal_sin(__m256d a) {
-   __m256d out;
-
-   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
-       ((double*)&out)[i] = std::sin(((double*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m256d internal_cos(__m256d a) {
-   __m256d out;
-
-   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
-       ((double*)&out)[i] = std::cos(((double*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m256d internal_tan(__m256d a) {
-   __m256d out;
-
-   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
-       ((double*)&out)[i] = std::tan(((double*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m256d internal_asin(__m256d a) {
-   __m256d out;
-
-   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
-       ((double*)&out)[i] = std::asin(((double*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m256d internal_acos(__m256d a) {
-   __m256d out;
-
-   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
-       ((double*)&out)[i] = std::acos(((double*)&a)[i]);
-   }
-   return out;
-}
-template<>
-inline __m256d internal_atan(__m256d a) {
-   __m256d out;
-
-   for (FASTOR_INDEX i=0UL; i<4UL; ++i) {
-       ((double*)&out)[i] = std::atan(((double*)&a)[i]);
-   }
-   return out;
-}
-#endif
-#endif
-
-
-// not available in vdt
-template<typename T, typename U>
-inline T internal_pow(T a, U b) {
-   T out;
-   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
-       out[i] = std::pow(a[i],b[i]);
-   }
-   return out;
-}
-
-template<typename T>
-inline T internal_sinh(T a) {
-   T out;
-   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
-       out[i] = std::sinh(a[i]);
-   }
-   return out;
-}
-
-template<typename T>
-inline T internal_cosh(T a) {
-   T out;
-   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
-       out[i] = std::cosh(a[i]);
-   }
-   return out;
-}
-
-template<typename T>
-inline T internal_tanh(T a) {
-   T out;
-   for (FASTOR_INDEX i=0; i<simd_size_v<remove_all_t<decltype(a[0])>>; ++i) {
-       out[i] = std::tanh(a[i]);
-   }
-   return out;
-}
-//----------------------------------------------------------------------------------------------------------//
-
-//----------------------------------------------------------------------------------------------------------------------//
-//----------------------------------------------------------------------------------------------------------------------//
-
-
-
-
-
-
-// SIMDVector overloads with internal math types
-//----------------------------------------------------------------------------------------------------------------------//
-//----------------------------------------------------------------------------------------------------------------------//
-template<typename T, enable_if_t_<!is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> exp(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    out.value = internal_exp(a.value);
-    return out;
-}
-template<typename T, enable_if_t_<is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> exp(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::exp(a.value[i]);}
-    return out;
-}
-
-template<typename T, enable_if_t_<!is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> log(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    out.value = internal_log(a.value);
-    return out;
-}
-template<typename T, enable_if_t_<is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> log(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::log(a.value[i]);}
+FASTOR_INLINE SIMDVector<T,ABI> log(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::log(((T*)&a)[i]);}
     return out;
 }
 
@@ -1021,24 +297,10 @@ FASTOR_INLINE SIMDVector<T,ABI> log2(const SIMDVector<T,ABI> &a) {
     return out;
 }
 
-template<typename T, typename U>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> pow(const SIMDVector<T,DEFAULT_ABI> &a, const SIMDVector<U,DEFAULT_ABI> &b) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    out.value = internal_pow(a.value, b.value);
-    return out;
-}
-
-template<typename T, typename U, enable_if_t_<!is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> pow(const SIMDVector<T,DEFAULT_ABI> &a, U bb) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    SIMDVector<T,DEFAULT_ABI> b = static_cast<T>(bb);
-    out.value = internal_pow(a.value, b.value);
-    return out;
-}
-template<typename T, typename U, enable_if_t_<is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> pow(const SIMDVector<T,DEFAULT_ABI> &a, U bb) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::pow(a.value[i], bb);}
+template<typename T, typename ABI, typename U>
+FASTOR_INLINE SIMDVector<T,ABI> pow(const SIMDVector<T,ABI> &a, U bb) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i = 0; i < SIMDVector<T, ABI>::Size; i++) { ((T*)& out)[i] = std::pow(((T*)& a)[i], bb);}
     return out;
 }
 
@@ -1049,120 +311,66 @@ FASTOR_INLINE SIMDVector<T,ABI> cbrt(const SIMDVector<T,ABI> &a) {
     return out;
 }
 
-template<typename T, enable_if_t_<!is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> sin(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    out.value = internal_sin(a.value);
-    return out;
-}
-template<typename T, enable_if_t_<is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> sin(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::sin(a.value[i]);}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> sin(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::sin(((T*)&a)[i]);}
     return out;
 }
 
-template<typename T, enable_if_t_<!is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> cos(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    out.value = internal_cos(a.value);
-    return out;
-}
-template<typename T, enable_if_t_<is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> cos(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::cos(a.value[i]);}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> cos(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::cos(((T*)&a)[i]);}
     return out;
 }
 
-template<typename T, enable_if_t_<!is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> tan(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    out.value = internal_tan(a.value);
-    return out;
-}
-template<typename T, enable_if_t_<is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> tan(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::tan(a.value[i]);}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> tan(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::tan(((T*)&a)[i]);}
     return out;
 }
 
-template<typename T, enable_if_t_<!is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> asin(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    out.value = internal_asin(a.value);
-    return out;
-}
-template<typename T, enable_if_t_<is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> asin(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::asin(a.value[i]);}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> asin(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::asin(((T*)&a)[i]);}
     return out;
 }
 
-template<typename T, enable_if_t_<!is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> acos(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    out.value = internal_acos(a.value);
-    return out;
-}
-template<typename T, enable_if_t_<is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> acos(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::acos(a.value[i]);}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> acos(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::acos(((T*)&a)[i]);}
     return out;
 }
 
-template<typename T, enable_if_t_<!is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> atan(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    out.value = internal_atan(a.value);
-    return out;
-}
-template<typename T, enable_if_t_<is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> atan(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::atan(a.value[i]);}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> atan(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::atan(((T*)&a)[i]);}
     return out;
 }
 
-template<typename T, enable_if_t_<!is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> sinh(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    out.value = internal_sinh(a.value);
-    return out;
-}
-template<typename T, enable_if_t_<is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> sinh(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::sinh(a.value[i]);}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> sinh(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::sinh(((T*)&a)[i]);}
     return out;
 }
 
-template<typename T, enable_if_t_<!is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> cosh(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    out.value = internal_cosh(a.value);
-    return out;
-}
-template<typename T, enable_if_t_<is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> cosh(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::cosh(a.value[i]);}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> cosh(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::cosh(((T*)&a)[i]);}
     return out;
 }
 
-template<typename T, enable_if_t_<!is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> tanh(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    out.value = internal_tanh(a.value);
-    return out;
-}
-template<typename T, enable_if_t_<is_array_v_<typename SIMDVector<T,DEFAULT_ABI>::value_type>,bool> = false>
-FASTOR_INLINE SIMDVector<T,DEFAULT_ABI> tanh(const SIMDVector<T,DEFAULT_ABI> &a) {
-    SIMDVector<T,DEFAULT_ABI> out;
-    for (FASTOR_INDEX i=0; i<SIMDVector<T,DEFAULT_ABI>::Size; i++) { out.value[i] = std::tanh(a.value[i]);}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> tanh(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::tanh(((T*)&a)[i]);}
     return out;
 }
 
@@ -1216,6 +424,45 @@ FASTOR_INLINE SIMDVector<T,ABI> trunc(const SIMDVector<T,ABI> &a) {
 }
 //----------------------------------------------------------------------------------------------------------------------//
 //----------------------------------------------------------------------------------------------------------------------//
+
+
+
+// Boolean arithmetic
+// ! or not
+//----------------------------------------------------------------------------------------------------------//
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> operator!(const SIMDVector<T,ABI> &a) {
+    SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((bool*)&out)[i] = !(((T*)&a)[i]); }
+    return out;
+}
+//----------------------------------------------------------------------------------------------------------//
+
+
+// isinf/nan/finite
+//----------------------------------------------------------------------------------------------------------//
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> isinf(const SIMDVector<T,ABI> &a) {
+    SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((bool*)&out)[i] = std::isinf(((T*)&a)[i]); }
+    return out;
+}
+
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> isnan(const SIMDVector<T,ABI> &a) {
+    SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((bool*)&out)[i] = std::isnan(((T*)&a)[i]); }
+    return out;
+}
+
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> isfinite(const SIMDVector<T,ABI> &a) {
+    SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((bool*)&out)[i] = std::isfinite(((T*)&a)[i]); }
+    return out;
+}
+//----------------------------------------------------------------------------------------------------------//
+
 
 
 } // end of namespace Fastor
