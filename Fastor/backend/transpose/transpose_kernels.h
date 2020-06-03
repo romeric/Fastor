@@ -70,11 +70,11 @@ inline void _MM_TRANSPOSE8_PD(__m512d &row0, __m512d &row1, __m512d &row2, __m51
     __m512d __t0, __t1, __t2, __t3, __t4, __t5, __t6, __t7;
     __m512d __tt0, __tt1, __tt2, __tt3, __tt4, __tt5, __tt6, __tt7;
 
-    constexpr int64_t FASTOR_ARCH_ALIGN idx1[8] = {0, 8 , 1 , 9 , 4 , 12, 5 , 13};
-    constexpr int64_t FASTOR_ARCH_ALIGN idx2[8] = {2, 10, 3 , 11, 6 , 14, 7 , 15};
-    constexpr int64_t FASTOR_ARCH_ALIGN idx3[8] = {0, 1 , 8 , 9 , 4 , 5 , 12, 13};
-    constexpr int64_t FASTOR_ARCH_ALIGN idx4[8] = {2, 3 , 10, 11, 6 , 7 , 14, 15};
-    constexpr int64_t FASTOR_ARCH_ALIGN idx5[8] = {4, 5 , 6 , 7 , 12, 13, 14, 15};
+    FASTOR_ARCH_ALIGN constexpr int64_t idx1[8] = {0, 8 , 1 , 9 , 4 , 12, 5 , 13};
+    FASTOR_ARCH_ALIGN constexpr int64_t idx2[8] = {2, 10, 3 , 11, 6 , 14, 7 , 15};
+    FASTOR_ARCH_ALIGN constexpr int64_t idx3[8] = {0, 1 , 8 , 9 , 4 , 5 , 12, 13};
+    FASTOR_ARCH_ALIGN constexpr int64_t idx4[8] = {2, 3 , 10, 11, 6 , 7 , 14, 15};
+    FASTOR_ARCH_ALIGN constexpr int64_t idx5[8] = {4, 5 , 6 , 7 , 12, 13, 14, 15};
 
     __m512i vidx1 = _mm512_load_epi64(idx1);
     __m512i vidx2 = _mm512_load_epi64(idx2);
@@ -120,9 +120,9 @@ FASTOR_INLINE void _MM_TRANSPOSE16_PS(const float * FASTOR_RESTRICT mat, float *
       __m512 r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, ra, rb, rc, rd, re, rf;
 
     int mask;
-    constexpr int64_t FASTOR_ARCH_ALIGN idx1[8]  = {2, 3, 0, 1, 6, 7, 4, 5};
-    constexpr int64_t FASTOR_ARCH_ALIGN idx2[8]  = {1, 0, 3, 2, 5, 4, 7, 6};
-    constexpr int32_t FASTOR_ARCH_ALIGN idx3[16] = {1, 0, 3, 2, 5 ,4 ,7 ,6 ,9 ,8 , 11, 10, 13, 12 ,15, 14};
+    FASTOR_ARCH_ALIGN constexpr int64_t idx1[8]  = {2, 3, 0, 1, 6, 7, 4, 5};
+    FASTOR_ARCH_ALIGN constexpr int64_t idx2[8]  = {1, 0, 3, 2, 5, 4, 7, 6};
+    FASTOR_ARCH_ALIGN constexpr int32_t idx3[16] = {1, 0, 3, 2, 5 ,4 ,7 ,6 ,9 ,8 , 11, 10, 13, 12 ,15, 14};
     __m512i vidx1 = _mm512_load_epi64(idx1);
     __m512i vidx2 = _mm512_load_epi64(idx2);
     __m512i vidx3 = _mm512_load_epi32(idx3);
