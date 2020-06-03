@@ -40,13 +40,6 @@ using native = simd_abi::scalar;
 
 
 //--------------------------------------------------------------------------------------------------------------//
-// Forward declare
-template<size_t I, size_t J>
-struct is_less;
-template<size_t I, size_t J>
-struct is_greater;
-
-
 namespace internal {
 
 template<class __svec>
