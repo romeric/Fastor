@@ -24,9 +24,12 @@ SOFTWARE.
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <cstdlib>
 #include <cassert>
+#include <cstdint>
+#include <cstdlib>
+#include <iostream>
 #include <stdexcept>
+#include <string>
 
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------//
@@ -311,51 +314,6 @@ SOFTWARE.
 #endif
 
 
-#define FASTOR_AVX512_BITSIZE 512
-#define FASTOR_AVX_BITSIZE 256
-#define FASTOR_SSE_BITSIZE 128
-#define FASTOR_DOUBLE_BITSIZE (sizeof(double)*8)
-#define FASTOR_SINGLE_BITSIZE (sizeof(float)*8)
-#ifndef FASTOR_SCALAR_BITSIZE
-#define FASTOR_SCALAR_BITSIZE FASTOR_DOUBLE_SIZE
-#endif
-
-
-// Alignment
-//------------------------------------------------------------------------------------------------//
-#ifdef FASTOR_AVX512_IMPL
-#define FASTOR_MEMORY_ALIGNMENT_VALUE 0x40
-#elif defined(FASTOR_AVX_IMPL)
-#define FASTOR_MEMORY_ALIGNMENT_VALUE 0x20
-#else
-#define FASTOR_MEMORY_ALIGNMENT_VALUE 0x10
-#endif
-
-#if defined(__GNUC__) || defined(__GNUG__)
-    #define FASTOR_ALIGN __attribute__((aligned(FASTOR_MEMORY_ALIGNMENT_VALUE)))
-    // FASTOR_ALIGN can be turned off if asked but not FASTOR_ARCH_ALIGN as the
-    // latter is for internal alignment in certain kernels
-    #define FASTOR_ARCH_ALIGN __attribute__((aligned(FASTOR_MEMORY_ALIGNMENT_VALUE)))
-#elif defined(_MSC_VER)
-    #define FASTOR_ALIGN __declspec(align(FASTOR_MEMORY_ALIGNMENT_VALUE))
-    // FASTOR_ALIGN can be turned off if asked but not FASTOR_ARCH_ALIGN as the
-    // latter is for internal alignment in certain kernels
-    #define FASTOR_ARCH_ALIGN __declspec(align(FASTOR_MEMORY_ALIGNMENT_VALUE))
-#endif
-
-// Conservative alignment for SIMD
-#if defined(FASTOR_CONSERVATIVE_ALIGN) || defined(FASTOR_DONT_VECTORISE)
-    #define FASTOR_ALIGNED false
-#else
-    #define FASTOR_ALIGNED true
-#endif
-
-#define FASTOR_ISALIGNED(POINTER, BYTE_COUNT) \
-    (((uintptr_t)(const void *)(POINTER)) % (BYTE_COUNT) == 0)
-
-//------------------------------------------------------------------------------------------------//
-
-
 // Mask loading
 //------------------------------------------------------------------------------------------------//
 #if defined(FASTOR_AVX512F_IMPL) && defined(FASTOR_AVX512VL_IMPL)
@@ -390,130 +348,12 @@ SOFTWARE.
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------//
 
-
-
-
-// Fastor internal defines
-//------------------------------------------------------------------------------------------------//
-// Compiler version
-//------------------------------------------------------------------------------------------------//
-#define __FASTOR_MAJOR__ 0
-#define __FASTOR_MINOR__ 6
-#define __FASTOR_PATCHLEVEL__ 2
-#define __FASTOR__ (__FASTOR_MAJOR__ * 10000 + __FASTOR_MINOR__ * 100 + __FASTOR_PATCHLEVEL__)
-//------------------------------------------------------------------------------------------------//
-
-//------------------------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------//
-// ICC's default option is fast anyway (i.e. -fp-model fast=1)
-// but it does not define the __FAST_MATH__ macro
-#if defined(__FAST_MATH__)
-#define FASTOR_FAST_MATH
-// Use the following for unsafe math
-// Only for GCC & Clang, activates fast div/rcp
-//#define FASTOR_UNSAFE_MATH
-#endif
-
-// Bounds and shape checking - ON by default
-//------------------------------------------------------------------------------------------------//
-#ifndef NDEBUG
-#ifndef FASTOR_BOUNDS_CHECK
-#define FASTOR_BOUNDS_CHECK 1
-#endif
-#ifndef FASTOR_SHAPE_CHECK
-#define FASTOR_SHAPE_CHECK 1
-#endif
-#else
-#ifndef FASTOR_BOUNDS_CHECK
-#define FASTOR_BOUNDS_CHECK 0
-#endif
-#ifndef FASTOR_SHAPE_CHECK
-#define FASTOR_SHAPE_CHECK 0
-#endif
-#endif
-//------------------------------------------------------------------------------------------------//
-
-#ifndef FASTOR_NO_ALIAS
-#define FASTOR_NO_ALIAS 0
-#endif
-
-//#define FASTOR_DONT_VECTORISE
-//#define FASTOR_DONT_PERFORM_OP_MIN
-//#define FASTOR_USE_OLD_OUTER
-//#define FASTOR_USE_OLD_INTRINSICS
-//#define FASTOR_USE_HADD
-//#define FASTOR_USE_VECTORISED_EXPR_ASSIGN  // To use vectorised expression assignment
-//#define FASTOR_ZERO_INITIALISE
-//#define FASTOR_USE_OLD_NDVIEWS
-//#define FASTOR_DISPATCH_DIV_TO_MUL_EXPR // Change BINARY_DIV_OP to BINARY_MUL_OP for Expression/Number
-//#define FASTOR_DISABLE_SPECIALISED_CTR
-
-//FASTOR_MATMUL_OUTER_BLOCK_SIZE 2
-//FASTOR_MATMUL_INNER_BLOCK_SIZE 2
-
-//FASTOR_TRANS_OUTER_BLOCK_SIZE 2
-//FASTOR_TRANS_INNER_BLOCK_SIZE 2
-
-#ifndef FASTOR_BLAS_SWITCH_MATRIX_SIZE
-#define FASTOR_BLAS_SWITCH_MATRIX_SIZE 16
-#endif
-
-// This changes the behaviour of all expression templates (apart from views)
-#ifdef FASTOR_COPY_EXPR
-#define COPY_SMART_EXPR
-#endif
-
-
-//------------------------------------------------------------------------------------------------//
-
-
-
-
 //------------------------------------------------------------------------------------------------//
 #define ROUND_DOWN2(x, s) ((x) & ~((s)-1))
 #define ROUND_DOWN(x, s) ROUND_DOWN2(x,s)
-
-
-#define FASTOR_NIL 0
 //------------------------------------------------------------------------------------------------//
-
-// FASTOR CONSTRUCTS
-//------------------------------------------------------------------------------------------------//
-#include <iostream>
-#include <cstdint>
-#include <string>
 
 namespace Fastor {
-
-using FASTOR_INDEX = size_t;
-using Int64 = int64_t;
-using DEFAULT_FLOAT_TYPE = double;
-using DFT = DEFAULT_FLOAT_TYPE;
-using FASTOR_VINDEX = volatile size_t;
-
-constexpr int RowMajor = 0;
-constexpr int ColumnMajor = 1;
-
-
-constexpr int FASTOR_Symmetric = -100;
-constexpr int FASTOR_NonSymmetric = -101;
-constexpr int FASTOR_AntiSymmetric = -102;
-constexpr int FASTOR_Identity = -103;
-constexpr int FASTOR_One = -104;
-constexpr int FASTOR_Zero = -105;
-
-constexpr int FASTOR_ThreeD = -150;
-constexpr int FASTOR_TwoD = -151;
-constexpr int FASTOR_PlaneStrain = -152;
-constexpr int FASTOR_PlaneStress = -153;
-constexpr int FASTOR_Voigt = -106;
-
-constexpr int DepthFirst = -200;
-constexpr int NoDepthFirst = -201;
-
-constexpr double PRECI_TOL  = 1e-14;
-
 
 #ifndef NDEBUG
 #define FASTOR_ASSERT(COND, MESSAGE) assert(COND && MESSAGE)
@@ -592,5 +432,8 @@ template <typename T, typename ... U> void unused(T&& x, U&& ...y) { unused(x); 
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------//
 
+#include "Fastor/config/macros.h"
+
+//------------------------------------------------------------------------------------------------//
 
 #endif // CONFIG_H
