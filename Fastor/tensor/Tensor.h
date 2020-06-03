@@ -166,9 +166,9 @@ protected:
     //----------------------------------------------------------------------------------------------------------//
 private:
 #ifdef FASTOR_ZERO_INITIALISE
-    T FASTOR_ALIGN _data[pack_prod<Rest...>::value] = {};
+    FASTOR_ALIGN T _data[pack_prod<Rest...>::value] = {};
 #else
-    T FASTOR_ALIGN _data[pack_prod<Rest...>::value];
+    FASTOR_ALIGN T _data[pack_prod<Rest...>::value];
 #endif
     //----------------------------------------------------------------------------------------------------------//
 };

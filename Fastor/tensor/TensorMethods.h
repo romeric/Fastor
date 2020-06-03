@@ -104,7 +104,7 @@ FASTOR_INLINE void reverse() {
     // This requires copying the data to avoid aliasing
     // Despite that this method seems to be faster than
     // std::reverse for big _data both on GCC and Clang
-    T FASTOR_ALIGN tmp[size()];
+    FASTOR_ARCH_ALIGN T tmp[size()];
     std::copy(_data,_data+size(),tmp);
 
     // Although SSE register reversing is faster

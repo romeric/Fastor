@@ -43,8 +43,8 @@ FASTOR_INLINE void _transpose(const T * FASTOR_RESTRICT a, T * FASTOR_RESTRICT o
     constexpr size_t innerBlock = V::Size * numSIMDCols;
     constexpr size_t outerBlock = V::Size * numSIMDRows;
 
-    T FASTOR_ARCH_ALIGN pack_a[outerBlock*innerBlock];
-    T FASTOR_ARCH_ALIGN pack_out[outerBlock*innerBlock];
+    FASTOR_ARCH_ALIGN T pack_a[outerBlock*innerBlock];
+    FASTOR_ARCH_ALIGN T pack_out[outerBlock*innerBlock];
 
     constexpr size_t M0 = M / innerBlock * innerBlock;
     constexpr size_t N0 = N / outerBlock * outerBlock;

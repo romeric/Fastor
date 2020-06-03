@@ -216,7 +216,7 @@ struct SIMDVector {
         return out;
     }
 
-    T FASTOR_ALIGN value[Size];
+    FASTOR_ARCH_ALIGN T value[Size];
 };
 
 template <typename T, typename ABI>

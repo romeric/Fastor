@@ -73,7 +73,7 @@ template<typename T, size_t M, size_t K, size_t N>
 FASTOR_INLINE
 void _gemm(const T alpha, const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, const T beta, T * FASTOR_RESTRICT c) {
 
-    T FASTOR_ALIGN tmp[M*N];
+    FASTOR_ARCH_ALIGN T tmp[M*N];
     if (beta == 0) {
         // non-streaming
         _matmul<T,M,K,N>(a,b,tmp);
@@ -90,7 +90,7 @@ void _gemm(const T alpha, const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT
 template<typename T, size_t M, size_t K, size_t N>
 FASTOR_INLINE
 void _gemm_mul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
-    T FASTOR_ALIGN tmp[M*N];
+    FASTOR_ARCH_ALIGN T tmp[M*N];
     _matmul<T,M,K,N>(a,b,tmp);
     for (size_t i = 0; i<M*N; ++i)
         c[i] *= tmp[i];
@@ -98,7 +98,7 @@ void _gemm_mul(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FAS
 template<typename T, size_t M, size_t K, size_t N>
 FASTOR_INLINE
 void _gemm_div(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT c) {
-    T FASTOR_ALIGN tmp[M*N];
+    FASTOR_ARCH_ALIGN T tmp[M*N];
     _matmul<T,M,K,N>(a,b,tmp);
     for (size_t i = 0; i<M*N; ++i)
         c[i] /= tmp[i];

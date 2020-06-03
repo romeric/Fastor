@@ -774,7 +774,7 @@ FASTOR_INLINE __m256i _mm256_div_epi32x(__m256i _a, __m256i _b) {
     // YIELDS INCORRECT
     int *a_data = (int*) &_a;
     int *b_data = (int*) &_b;
-    int FASTOR_ALIGN out_data[8];
+    FASTOR_ARCH_ALIGN int out_data[8];
     for (int i=0; i<8; ++i)
         out_data[i] = a_data[i]/b_data[i];
     __m256i out = _mm256_setzero_si256();

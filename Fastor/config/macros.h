@@ -111,25 +111,22 @@ SOFTWARE.
 
 // Alignment
 //------------------------------------------------------------------------------------------------//
-#ifdef FASTOR_AVX512_IMPL
-#define FASTOR_MEMORY_ALIGNMENT_VALUE 0x40
+#ifndef FASTOR_MEMORY_ALIGNMENT_VALUE
+#if defined(FASTOR_AVX512_IMPL)
+#define FASTOR_MEMORY_ALIGNMENT_VALUE 64
 #elif defined(FASTOR_AVX_IMPL)
-#define FASTOR_MEMORY_ALIGNMENT_VALUE 0x20
+#define FASTOR_MEMORY_ALIGNMENT_VALUE 32
+#elif defined(FASTOR_SSE_IMPL)
+#define FASTOR_MEMORY_ALIGNMENT_VALUE 16
 #else
-#define FASTOR_MEMORY_ALIGNMENT_VALUE 0x10
+#define FASTOR_MEMORY_ALIGNMENT_VALUE 8
+#endif
 #endif
 
-#if defined(__GNUC__) || defined(__GNUG__)
-    #define FASTOR_ALIGN __attribute__((aligned(FASTOR_MEMORY_ALIGNMENT_VALUE)))
-    // FASTOR_ALIGN can be turned off if asked but not FASTOR_ARCH_ALIGN as the
-    // latter is for internal alignment in certain kernels
-    #define FASTOR_ARCH_ALIGN __attribute__((aligned(FASTOR_MEMORY_ALIGNMENT_VALUE)))
-#elif defined(_MSC_VER)
-    #define FASTOR_ALIGN __declspec(align(FASTOR_MEMORY_ALIGNMENT_VALUE))
-    // FASTOR_ALIGN can be turned off if asked but not FASTOR_ARCH_ALIGN as the
-    // latter is for internal alignment in certain kernels
-    #define FASTOR_ARCH_ALIGN __declspec(align(FASTOR_MEMORY_ALIGNMENT_VALUE))
-#endif
+/* User controllable alignment for Fastor containers */
+#define FASTOR_ALIGN alignas(FASTOR_MEMORY_ALIGNMENT_VALUE)
+/* Strict non-controllable alignment for Fastor's internal use */
+#define FASTOR_ARCH_ALIGN alignas(FASTOR_MEMORY_ALIGNMENT_VALUE)
 
 // Conservative alignment for SIMD
 #if defined(FASTOR_CONSERVATIVE_ALIGN) || defined(FASTOR_DONT_VECTORISE)

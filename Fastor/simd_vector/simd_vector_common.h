@@ -1089,12 +1089,12 @@ FASTOR_INLINE SIMDVector<std::complex<double>,simd_abi::avx512> fnmadd<std::comp
 template<typename T, typename ABI> \
 FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> operator OP(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b) { \
     constexpr FASTOR_INDEX Size = SIMDVector<T,ABI>::Size;\
-    T FASTOR_ALIGN val_a[Size];\
+    FASTOR_ARCH_ALIGN T val_a[Size];\
     a.store(val_a);\
-    T FASTOR_ALIGN val_b[Size];\
+    FASTOR_ARCH_ALIGN T val_b[Size];\
     b.store(val_b);\
     SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;\
-    bool FASTOR_ALIGN val_out[Size];\
+    FASTOR_ARCH_ALIGN bool val_out[Size];\
     out.store(val_out);\
     for (FASTOR_INDEX i=0; i<Size; ++i) {\
         val_out[i] = val_a[i] OP val_b[i];\
@@ -1117,10 +1117,10 @@ FASTOR_MAKE_BINARY_CMP_SIMDVECTORS_OPS_(||)
 template<typename T, typename U, typename ABI> \
 FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> operator OP(const SIMDVector<T,ABI> &a, U b) { \
     constexpr FASTOR_INDEX Size = SIMDVector<T,ABI>::Size;\
-    T FASTOR_ALIGN val_a[Size];\
+    FASTOR_ARCH_ALIGN T val_a[Size];\
     a.store(val_a);\
     SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;\
-    bool FASTOR_ALIGN val_out[Size];\
+    FASTOR_ARCH_ALIGN bool val_out[Size];\
     out.store(val_out);\
     for (FASTOR_INDEX i=0; i<Size; ++i) {\
         val_out[i] = val_a[i] OP T(b);\
@@ -1143,10 +1143,10 @@ FASTOR_MAKE_BINARY_CMP_SIMDVECTOR_SCALAR_OPS_(||)
 template<typename T, typename U, typename ABI> \
 FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> operator OP(U a, const SIMDVector<T,ABI> &b) { \
     constexpr FASTOR_INDEX Size = SIMDVector<T,ABI>::Size;\
-    T FASTOR_ALIGN val_b[Size];\
+    FASTOR_ARCH_ALIGN T val_b[Size];\
     b.store(val_b);\
     SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> out;\
-    bool FASTOR_ALIGN val_out[Size];\
+    FASTOR_ARCH_ALIGN bool val_out[Size];\
     out.store(val_out);\
     for (FASTOR_INDEX i=0; i<Size; ++i) {\
         val_out[i] = T(a) OP val_b[i];\
