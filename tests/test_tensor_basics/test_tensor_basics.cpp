@@ -110,18 +110,6 @@ void test_basics() {
         FASTOR_EXIT_ASSERT(std::abs(norm(t9) - 46.4758001)<BigTol);
         FASTOR_EXIT_ASSERT(std::abs(norm(t10) - 7.7459667)<BigTol);
 
-
-        Tensor<T,2,2,2,2> t11; t11.fill(16);
-        FASTOR_EXIT_ASSERT(std::abs(norm(sqrt(t11)) - 16)<BigTol);
-        FASTOR_EXIT_ASSERT(std::abs(norm(log(t11)) - 11.090354)<BigTol);
-        // FASTOR_EXIT_ASSERT(std::abs(norm(exp(t11)) - 3.55444208203e+07)<1e-05);
-        FASTOR_EXIT_ASSERT(std::abs(norm(sin(t11)) - 1.1516132)<BigTol);
-        FASTOR_EXIT_ASSERT(std::abs(norm(cos(t11)) - 3.8306379)<BigTol);
-        FASTOR_EXIT_ASSERT(std::abs(norm(tan(t11)) - 1.2025289)<BigTol);
-
-        Tensor<T,2,2,2,2> t12 = sqrt(t11 + t11 - 2*t11 + t11/2 + 16/t11);
-        FASTOR_EXIT_ASSERT(std::abs(norm(t12)- 12)<BigTol);
-
         Tensor<T,10> t13;
         t13.iota(1);
         FASTOR_EXIT_ASSERT(std::abs(t13.product() - 3628800) < Tol);

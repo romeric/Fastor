@@ -22,6 +22,8 @@ add_subdirectory(test_simd_vectors)
 
 add_subdirectory(test_tensor_basics)
 
+add_subdirectory(test_math_functions)
+
 add_subdirectory(test_booleans)
 
 add_subdirectory(test_matmul)
