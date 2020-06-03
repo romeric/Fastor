@@ -23,6 +23,14 @@ FASTOR_INLINE SIMDVector<T,ABI> min(const SIMDVector<T,ABI> &a, const SIMDVector
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::min(((T*)&a)[i],((T*)&b)[i]); }
     return out;
 }
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> min(const SIMDVector<T,ABI> &a, T b) {
+    return min(a,SIMDVector<T,ABI>(b));
+}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> min(T a, const SIMDVector<T,ABI> &b) {
+    return min(SIMDVector<T,ABI>(a),b);
+}
 #ifdef FASTOR_SSE2_IMPL
 #ifdef FASTOR_SSE4_1_IMPL
 template<>
@@ -95,6 +103,14 @@ FASTOR_INLINE SIMDVector<T,ABI> max(const SIMDVector<T,ABI> &a, const SIMDVector
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::max(((T*)&a)[i],((T*)&b)[i]); }
     return out;
+}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> max(const SIMDVector<T,ABI> &a, T b) {
+    return max(a,SIMDVector<T,ABI>(b));
+}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> max(T a, const SIMDVector<T,ABI> &b) {
+    return max(SIMDVector<T,ABI>(a),b);
 }
 #ifdef FASTOR_SSE2_IMPL
 #ifdef FASTOR_SSE4_1_IMPL
@@ -297,11 +313,19 @@ FASTOR_INLINE SIMDVector<T,ABI> log2(const SIMDVector<T,ABI> &a) {
     return out;
 }
 
-template<typename T, typename ABI, typename U>
-FASTOR_INLINE SIMDVector<T,ABI> pow(const SIMDVector<T,ABI> &a, U bb) {
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> pow(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b) {
     SIMDVector<T,ABI> out;
-    for (FASTOR_INDEX i = 0; i < SIMDVector<T, ABI>::Size; i++) { ((T*)& out)[i] = std::pow(((T*)& a)[i], bb);}
+    for (FASTOR_INDEX i = 0; i < SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::pow(((T*)&a)[i], ((T*)&b)[i]);}
     return out;
+}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> pow(const SIMDVector<T,ABI> &a, T b) {
+    return pow(a, SIMDVector<T,ABI>(b));
+}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> pow(T a, const SIMDVector<T,ABI> &b) {
+    return pow(SIMDVector<T,ABI>(a),b);
 }
 
 template<typename T, typename ABI>
