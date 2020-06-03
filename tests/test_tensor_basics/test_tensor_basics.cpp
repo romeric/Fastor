@@ -86,9 +86,9 @@ void test_basics() {
         FASTOR_EXIT_ASSERT(std::abs(norm(a6)-64)<Tol);
 
 
-        Tensor<T,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2> t1;
-        FASTOR_EXIT_ASSERT(t1.rank()==17);
-        FASTOR_EXIT_ASSERT(t1.size()==131072);
+        Tensor<T,2,2,2,2,2,2,2,2,2,2,2,2,2> t1;
+        FASTOR_EXIT_ASSERT(t1.rank()==13);
+        FASTOR_EXIT_ASSERT(t1.size()== 8192);
         FASTOR_EXIT_ASSERT(t1.dimension(10)==t1.dimension(0));
 
 
@@ -112,12 +112,12 @@ void test_basics() {
 
 
         Tensor<T,2,2,2,2> t11; t11.fill(16);
-        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<decltype(t11)>(sqrt(t11)))- 16)<BigTol);
-        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<decltype(t11)>(log(t11)))- 11.090354)<BigTol);
-        // FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<decltype(t11)>(exp(t11)))- 3.55444208203e+07)<1e-05);
-        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<decltype(t11)>(sin(t11)))- 1.1516132)<BigTol);
-        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<decltype(t11)>(cos(t11)))- 3.8306379)<BigTol);
-        FASTOR_EXIT_ASSERT(std::abs(norm(static_cast<decltype(t11)>(tan(t11)))- 1.2025289)<BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(sqrt(t11)) - 16)<BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(log(t11)) - 11.090354)<BigTol);
+        // FASTOR_EXIT_ASSERT(std::abs(norm(exp(t11)) - 3.55444208203e+07)<1e-05);
+        FASTOR_EXIT_ASSERT(std::abs(norm(sin(t11)) - 1.1516132)<BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(cos(t11)) - 3.8306379)<BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(norm(tan(t11)) - 1.2025289)<BigTol);
 
         Tensor<T,2,2,2,2> t12 = sqrt(t11 + t11 - 2*t11 + t11/2 + 16/t11);
         FASTOR_EXIT_ASSERT(std::abs(norm(t12)- 12)<BigTol);
