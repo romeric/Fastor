@@ -131,7 +131,6 @@ struct new_extractor_perm<Index<Idx...> > {
 
         using _permute_impl = new_permute_impl<Index<Idx...>, Tensor<T,Rest...>,
             typename std_ext::make_index_sequence<sizeof...(Idx)>::type>;
-        using resulting_index  = typename _permute_impl::resulting_index;
         using resulting_tensor = typename _permute_impl::resulting_tensor;
         constexpr bool requires_permutation = _permute_impl::requires_permutation;
         FASTOR_IF_CONSTEXPR(!requires_permutation) return a;
@@ -158,8 +157,6 @@ struct new_extractor_perm<Index<Idx...> > {
 
 #if FASTOR_CXX_VERSION >= 2017
         constexpr std::array<size_t,a_dim> maxes_out = maxes_out_type::values;
-        // Map to go from in to out
-        // constexpr auto& maxes_idx = resulting_index::values;
         // Map to go from out to in
         // Get the reverse map - this is to get contiguous memory writes
         using reverse_map = internal::permute_mapped_index_t<Index<Idx...>,make_index_t<a_dim>>;
@@ -192,6 +189,7 @@ struct new_extractor_perm<Index<Idx...> > {
                 break;
         }
 #else
+        using resulting_index  = typename _permute_impl::resulting_index;
         constexpr std::array<size_t,a_dim> maxes_a   = {Rest...};
         // Map to go from in to out
         constexpr auto& maxes_idx = resulting_index::values;
