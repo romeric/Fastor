@@ -1,7 +1,7 @@
 #ifndef INDICIAL_H
 #define INDICIAL_H
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/meta/einsum_meta.h"
 #include <array>
 

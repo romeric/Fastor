@@ -1,10 +1,9 @@
 #ifndef OUTER_H
 #define OUTER_H
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 
 namespace Fastor {
-
 
 template<typename T, size_t M0, size_t N0, size_t M1, size_t N1>
 FASTOR_HINT_INLINE void _outer(const T * FASTOR_RESTRICT a, const T * FASTOR_RESTRICT b, T * FASTOR_RESTRICT out) {

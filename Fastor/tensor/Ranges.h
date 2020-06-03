@@ -1,7 +1,7 @@
 #ifndef RANGES_H
 #define RANGES_H
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/meta/meta.h"
 #include <initializer_list>
 

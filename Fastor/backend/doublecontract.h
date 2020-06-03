@@ -1,7 +1,7 @@
 #ifndef DOUBLECONTRACT_H
 #define DOUBLECONTRACT_H
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/meta/meta.h"
 #include "Fastor/simd_vector/SIMDVector.h"
 

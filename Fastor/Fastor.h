@@ -12,7 +12,8 @@
 #pragma warning (disable: 4267)
 #endif
 
-#include "commons/utils.h"
+#include "config/config.h"
+#include "util/util.h"
 #include "simd_vector/SIMDVector.h"
 #include "simd_math/simd_math.h"
 #include "tensor/Tensor.h"

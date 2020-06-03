@@ -1,7 +1,7 @@
 #ifndef EXT_INTRIN_H
 #define EXT_INTRIN_H
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/meta/meta.h"
 #include <cmath>
 

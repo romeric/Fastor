@@ -2,7 +2,7 @@
 #define FASTOR_SIMD_VECTOR_ABI
 
 #include "Fastor/meta/meta.h"
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include <complex>
 #include <type_traits>
 

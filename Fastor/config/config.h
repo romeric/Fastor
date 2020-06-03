@@ -21,8 +21,8 @@ SOFTWARE.
 
 }}}*/
 
-#ifndef COMMONS_H
-#define COMMONS_H
+#ifndef CONFIG_H
+#define CONFIG_H
 
 #include <cstdlib>
 #include <cassert>
@@ -592,9 +592,5 @@ template <typename T, typename ... U> void unused(T&& x, U&& ...y) { unused(x); 
 //------------------------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------//
 
-#include "extended_algorithms.h"
 
-//------------------------------------------------------------------------------------------------//
-
-
-#endif // COMMONS_H
+#endif // CONFIG_H

@@ -18,7 +18,7 @@
 #include <intrin.h>
 #endif
 
-#include "Fastor/commons/cpuid.h"
+#include "Fastor/config/cpuid.h"
 
 
 #ifndef FASTOR_NO_COLOUR_PRINT

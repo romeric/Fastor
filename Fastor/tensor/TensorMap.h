@@ -1,7 +1,7 @@
 #ifndef TENSOR_MAP_H
 #define TENSOR_MAP_H
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/backend/backend.h"
 #include "Fastor/simd_vector/SIMDVector.h"
 #include "Fastor/tensor/AbstractTensor.h"

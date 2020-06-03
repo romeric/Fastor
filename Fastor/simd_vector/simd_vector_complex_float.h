@@ -1,7 +1,7 @@
 #ifndef SIMD_VECTOR_COMPLEX_FLOAT_H
 #define SIMD_VECTOR_COMPLEX_FLOAT_H
 
-#include "Fastor/commons/extended_algorithms.h"
+#include "Fastor/util/extended_algorithms.h"
 #include "Fastor/simd_vector/extintrin.h"
 #include "Fastor/simd_vector/simd_vector_base.h"
 #include "Fastor/simd_vector/simd_vector_float.h"

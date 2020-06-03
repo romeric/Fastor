@@ -1,7 +1,7 @@
 #ifndef CYCLIC_0_H
 #define CYCLIC_0_H
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/simd_vector/extintrin.h"
 
 namespace Fastor {

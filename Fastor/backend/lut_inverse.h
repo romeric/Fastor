@@ -1,7 +1,7 @@
 #ifndef LOWUNITRI_INVERSE_H
 #define LOWUNITRI_INVERSE_H
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/meta/meta.h"
 
 namespace Fastor {

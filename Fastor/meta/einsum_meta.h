@@ -2,7 +2,7 @@
 #define EINSUM_META_H
 
 #include "Fastor/meta/meta.h"
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/tensor/Tensor.h"
 #include <array>
 

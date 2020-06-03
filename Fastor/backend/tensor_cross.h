@@ -2,7 +2,7 @@
 #define TENSOR_CROSS_H
 
 #include "Fastor/meta/meta.h"
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 
 namespace Fastor {
 

@@ -1,7 +1,8 @@
 #ifndef TENSOR_H
 #define TENSOR_H
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
+#include "Fastor/util/util.h"
 #include "Fastor/backend/backend.h"
 #include "Fastor/simd_vector/SIMDVector.h"
 #include "Fastor/tensor/AbstractTensor.h"

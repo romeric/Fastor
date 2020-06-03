@@ -2,7 +2,7 @@
 #define SIMD_VECTOR_BASE_H
 
 #include "Fastor/meta/meta.h"
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/simd_vector/extintrin.h"
 #include "Fastor/simd_vector/simd_vector_abi.h"
 

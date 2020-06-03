@@ -1,7 +1,7 @@
 #ifndef TENSOR_META_H
 #define TENSOR_META_H
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/meta/meta.h"
 
 namespace Fastor {

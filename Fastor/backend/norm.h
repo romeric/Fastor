@@ -1,7 +1,7 @@
 #ifndef NORM_H
 #define NORM_H
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/meta/meta.h"
 #include "Fastor/simd_vector/extintrin.h"
 #include "Fastor/simd_vector/SIMDVector.h"

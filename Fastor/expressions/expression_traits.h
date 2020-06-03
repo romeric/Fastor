@@ -1,7 +1,7 @@
 #ifndef EXPRESSION_TRAITS_H
 #define EXPRESSION_TRAITS_H
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/meta/meta.h"
 #include <type_traits>
 

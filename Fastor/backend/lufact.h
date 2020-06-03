@@ -2,7 +2,7 @@
 #define LUFACT_H
 
 #include "Fastor/meta/meta.h"
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/simd_vector/extintrin.h"
 
 namespace Fastor {

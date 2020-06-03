@@ -1,7 +1,7 @@
 #ifndef TRANSPOSE_KERNELS_H
 #define TRANSPOSE_KERNELS_H
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/simd_vector/extintrin.h"
 
 namespace Fastor {

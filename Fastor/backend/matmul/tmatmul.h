@@ -2,7 +2,7 @@
 #define MATMUL_KERNELS2_H
 
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/simd_vector/extintrin.h"
 #include "Fastor/simd_vector/SIMDVector.h"
 #include "Fastor/meta/meta.h"

@@ -2,7 +2,7 @@
 #define TRANSPOSE_H
 
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/backend/transpose/transpose_kernels.h"
 #include "Fastor/simd_vector/extintrin.h"
 #include "Fastor/simd_vector/SIMDVector.h"

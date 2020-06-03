@@ -1,7 +1,7 @@
 #ifndef TENSORBASE_H
 #define TENSORBASE_H
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/meta/tensor_meta.h"
 
 

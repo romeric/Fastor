@@ -1,7 +1,7 @@
 #ifndef INVERSE_H
 #define INVERSE_H
 
-#include "Fastor/commons/commons.h"
+#include "Fastor/config/config.h"
 #include "Fastor/meta/meta.h"
 #include "Fastor/simd_vector/extintrin.h"
 
