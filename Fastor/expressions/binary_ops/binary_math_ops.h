@@ -215,12 +215,15 @@ OP_NAME(const AbstractTensor<TLhs,DIM0> &_lhs, const AbstractTensor<TRhs,DIM1> &
 FASTOR_MAKE_BINARY_MATH_OPS(min, min, std::min, Min, scalar_type)
 FASTOR_MAKE_BINARY_MATH_OPS(max, max, std::max, Max, scalar_type)
 FASTOR_MAKE_BINARY_MATH_OPS(pow, pow, std::pow, Pow, scalar_type)
+FASTOR_MAKE_BINARY_MATH_OPS(atan2, atan2, std::atan2, Atan2, scalar_type)
+FASTOR_MAKE_BINARY_MATH_OPS(hypot, hypot, std::hypot, Hypot, scalar_type)
 
 // Dispatch based on the type of tensor and not the expression
 // FASTOR_MAKE_BINARY_MATH_OPS(min, min, std::min, Min, U)
 // FASTOR_MAKE_BINARY_MATH_OPS(max, max, std::max, Max, U)
 // FASTOR_MAKE_BINARY_MATH_OPS(pow, pow, std::pow, Pow, U)
-
+// FASTOR_MAKE_BINARY_MATH_OPS(atan2, atan2, std::atan2, Atan2, U)
+// FASTOR_MAKE_BINARY_MATH_OPS(hypot, hypot, std::hypot, Hypot, U)
 
 
 // Create assignment for all binary math_ops
@@ -249,6 +252,8 @@ FASTOR_MAKE_BINARY_MATH_ASSIGNMENT(NAME, _div)\
 FASTOR_MAKE_BINARY_MATH_ASSIGNMENTS(Min)
 FASTOR_MAKE_BINARY_MATH_ASSIGNMENTS(Max)
 FASTOR_MAKE_BINARY_MATH_ASSIGNMENTS(Pow)
+FASTOR_MAKE_BINARY_MATH_ASSIGNMENTS(Atan2)
+FASTOR_MAKE_BINARY_MATH_ASSIGNMENTS(Hypot)
 
 }
 

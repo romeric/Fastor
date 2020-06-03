@@ -293,6 +293,20 @@ FASTOR_INLINE SIMDVector<T,ABI> exp(const SIMDVector<T,ABI> &a) {
 }
 
 template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> exp2(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::exp2(((T*)&a)[i]);}
+    return out;
+}
+
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> expm1(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::expm1(((T*)&a)[i]);}
+    return out;
+}
+
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> log(const SIMDVector<T,ABI> &a) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::log(((T*)&a)[i]);}
@@ -310,6 +324,13 @@ template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> log2(const SIMDVector<T,ABI> &a) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::log2(((T*)&a)[i]);}
+    return out;
+}
+
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> log1p(const SIMDVector<T,ABI> &a) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::log1p(((T*)&a)[i]);}
     return out;
 }
 
@@ -378,6 +399,21 @@ FASTOR_INLINE SIMDVector<T,ABI> atan(const SIMDVector<T,ABI> &a) {
 }
 
 template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> atan2(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i = 0; i < SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::atan2(((T*)&a)[i], ((T*)&b)[i]);}
+    return out;
+}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> atan2(const SIMDVector<T,ABI> &a, T b) {
+    return atan2(a, SIMDVector<T,ABI>(b));
+}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> atan2(T a, const SIMDVector<T,ABI> &b) {
+    return atan2(SIMDVector<T,ABI>(a),b);
+}
+
+template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> sinh(const SIMDVector<T,ABI> &a) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::sinh(((T*)&a)[i]);}
@@ -438,6 +474,21 @@ FASTOR_INLINE SIMDVector<T,ABI> lgamma(const SIMDVector<T,ABI> &a) {
     SIMDVector<T,ABI> out;
     for (FASTOR_INDEX i=0; i<SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::lgamma(((T*)&a)[i]);}
     return out;
+}
+
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> hypot(const SIMDVector<T,ABI> &a, const SIMDVector<T,ABI> &b) {
+    SIMDVector<T,ABI> out;
+    for (FASTOR_INDEX i = 0; i < SIMDVector<T,ABI>::Size; i++) { ((T*)&out)[i] = std::hypot(((T*)&a)[i], ((T*)&b)[i]);}
+    return out;
+}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> hypot(const SIMDVector<T,ABI> &a, T b) {
+    return hypot(a, SIMDVector<T,ABI>(b));
+}
+template<typename T, typename ABI>
+FASTOR_INLINE SIMDVector<T,ABI> hypot(T a, const SIMDVector<T,ABI> &b) {
+    return hypot(SIMDVector<T,ABI>(a),b);
 }
 
 template<typename T, typename ABI>
