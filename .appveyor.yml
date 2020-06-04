@@ -20,9 +20,9 @@ matrix:
   fast_finish: true
 
 before_build:
-  - "cd tests"
-  - "mkdir build"
-  - "cd build"
+  - echo %APPVEYOR_BUILD_FOLDER%
+  - mkdir "%APPVEYOR_BUILD_FOLDER%/build"
+  - cd "%APPVEYOR_BUILD_FOLDER%/build"
   - cmake --version
   - cmake .. -G %generator% -A %platform%
 
@@ -30,3 +30,7 @@ build:
   project: C:/projects/fastor/tests/build/test_fastor.sln
   verbosity: minimal
   parallel: true
+  
+test_script:
+  - cd "%APPVEYOR_BUILD_FOLDER%/build"
+  - ctest -V
