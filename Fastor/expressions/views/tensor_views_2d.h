@@ -245,6 +245,14 @@ public:
         }
 #endif
         T *FASTOR_RESTRICT _data = _expr.data();
+        FASTOR_IF_CONSTEXPR(is_boolean_expression_v<Derived>) {
+            for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
+                for (FASTOR_INDEX j = 0; j <_seq1.size(); j++) {
+                    _expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) = other_src.template eval_s<T>(i,j);
+                }
+            }
+            return;
+        }
         if (_seq1._step == 1) {
             for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
                 FASTOR_INDEX j;
@@ -561,6 +569,15 @@ public:
 #endif
         T *FASTOR_RESTRICT _data = _expr.data();
         FASTOR_INDEX counter = 0;
+        FASTOR_IF_CONSTEXPR(is_boolean_expression_v<Derived>) {
+            for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
+                for (FASTOR_INDEX j = 0; j <_seq1.size(); j++) {
+                    _expr(_seq0._step*i+_seq0._first,_seq1._step*j+_seq1._first) = other_src.template eval_s<T>(counter);
+                    counter++;
+                }
+            }
+            return;
+        }
         if (_seq1._step == 1) {
             for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
                 FASTOR_INDEX j;

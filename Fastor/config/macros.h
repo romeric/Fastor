@@ -177,5 +177,4 @@ constexpr double PRECI_TOL  = 1e-14;
 
 }
 
-
 #endif // FASTOR_MACROS_H

@@ -1,7 +1,5 @@
 language: cpp
 
-os: linux
-
 dist: bionic
 
 matrix:

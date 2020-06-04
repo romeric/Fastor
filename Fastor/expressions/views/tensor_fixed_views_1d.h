@@ -179,6 +179,12 @@ public:
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
         T *FASTOR_RESTRICT _data = _expr.data();
+        FASTOR_IF_CONSTEXPR(is_boolean_expression_v<Derived>) {
+            for (FASTOR_INDEX i = 0; i <size(); i++) {
+                _data[S0*i+F0] = other_src.template eval_s<T>(i);
+            }
+            return;
+        }
         FASTOR_IF_CONSTEXPR (S0 == 1) {
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {

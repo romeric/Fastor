@@ -147,10 +147,10 @@ static constexpr bool is_fixed_sequence_pack_v = is_fixed_sequence_pack<Ts...>::
 
 // Transform sequence with negative indices to positive indices;
 //----------------------------------------------------------------------------------------------------------//
-template<class Seq, size_t N>
+template<class Seq, int N>
 struct to_positive;
 
-template<int F, int L, int S, size_t N>
+template<int F, int L, int S, int N>
 struct to_positive<fseq<F,L,S>,N> {
     // Same logic as seq used in the constructor of dynamic tensor views
     static constexpr int _first = (L==0 && F==-1) ? N-1 : ( L < 0 && F < 0 ? F + N + 1 : F);
@@ -158,7 +158,7 @@ struct to_positive<fseq<F,L,S>,N> {
     using type = fseq<_first,_last,S>;
 };
 
-template<int F, int L, int S, size_t N>
+template<int F, int L, int S, int N>
 struct to_positive<iseq<F,L,S>,N> {
     // Same logic as seq used in the constructor of dynamic tensor views
     static constexpr int _first = (L==0 && F==-1) ? N-1 : ( L < 0 && F < 0 ? F + N + 1 : F);
@@ -166,7 +166,7 @@ struct to_positive<iseq<F,L,S>,N> {
     using type = iseq<_first,_last,S>;
 };
 
-template<class Seq, size_t N>
+template<class Seq, int N>
 using to_positive_t = typename to_positive<Seq,N>::type;
 //----------------------------------------------------------------------------------------------------------//
 

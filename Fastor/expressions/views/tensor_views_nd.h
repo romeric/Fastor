@@ -65,8 +65,8 @@ public:
         }
 
         for (FASTOR_INDEX i=0; i<DIMS; ++i) _dims[i] = dimension(i);
-        _is_vectorisable = _seqs[DIMS-1].size() % SIMDVector<T,simd_abi_type>::Size == 0 && (_seqs[DIMS-1]._step==1) ? true : false;
-        _is_strided_vectorisable = _seqs[DIMS-1].size() % SIMDVector<T,simd_abi_type>::Size == 0 && (_seqs[DIMS-1]._step!=1) ? true : false;
+        _is_vectorisable = !is_same_v_<T,bool> && _seqs[DIMS-1].size() % SIMDVector<T,simd_abi_type>::Size == 0 && (_seqs[DIMS-1]._step==1) ? true : false;
+        _is_strided_vectorisable = !is_same_v_<T,bool> && _seqs[DIMS-1].size() % SIMDVector<T,simd_abi_type>::Size == 0 && (_seqs[DIMS-1]._step!=1) ? true : false;
     }
 
 
@@ -273,8 +273,8 @@ public:
         }
 
         for (FASTOR_INDEX i=0; i<DIMS; ++i) _dims[i] = dimension(i);
-        _is_vectorisable = _seqs[DIMS-1].size() % SIMDVector<T,simd_abi_type>::Size == 0 && (_seqs[DIMS-1]._step==1) ? true : false;
-        _is_strided_vectorisable = _seqs[DIMS-1].size() % SIMDVector<T,simd_abi_type>::Size == 0 && (_seqs[DIMS-1]._step!=1) ? true : false;
+        _is_vectorisable = !is_same_v_<T,bool> && _seqs[DIMS-1].size() % SIMDVector<T,simd_abi_type>::Size == 0 && (_seqs[DIMS-1]._step==1) ? true : false;
+        _is_strided_vectorisable = !is_same_v_<T,bool> && _seqs[DIMS-1].size() % SIMDVector<T,simd_abi_type>::Size == 0 && (_seqs[DIMS-1]._step!=1) ? true : false;
     }
 
     // View evalution operators

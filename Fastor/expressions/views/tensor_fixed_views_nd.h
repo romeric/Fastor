@@ -43,8 +43,8 @@ public:
     constexpr const TensorType<T,Rest...>& expr() const {return _expr;}
 private:
     static constexpr std::array<int,sizeof...(Fseqs)> _dims = dimension_helper::dims;
-    static constexpr bool _is_vectorisable = _dims[DIMS-1] % V::Size == 0 && (get_nth_type<DIMS-1,Fseqs...>::_step==1) ? true : false;
-    static constexpr bool _is_strided_vectorisable = _dims[DIMS-1] % V::Size == 0 && (get_nth_type<DIMS-1,Fseqs...>::_step!=1) ? true : false;
+    static constexpr bool _is_vectorisable = !is_same_v_<T,bool> && _dims[DIMS-1] % V::Size == 0 && (get_nth_type<DIMS-1,Fseqs...>::_step==1) ? true : false;
+    static constexpr bool _is_strided_vectorisable = !is_same_v_<T,bool> && _dims[DIMS-1] % V::Size == 0 && (get_nth_type<DIMS-1,Fseqs...>::_step!=1) ? true : false;
 public:
 
     constexpr FASTOR_INLINE TensorConstFixedViewExprnD(const TensorType<T,Rest...> &_ex) : _expr(_ex) {}
@@ -252,8 +252,8 @@ public:
     constexpr const TensorType<T,Rest...>& expr() const {return _expr;}
 private:
     static constexpr std::array<int,sizeof...(Fseqs)> _dims = dimension_helper::dims;
-    static constexpr bool _is_vectorisable = _dims[DIMS-1] % V::Size == 0 && (get_nth_type<DIMS-1,Fseqs...>::_step==1) ? true : false;
-    static constexpr bool _is_strided_vectorisable = _dims[DIMS-1] % V::Size == 0 && (get_nth_type<DIMS-1,Fseqs...>::_step!=1) ? true : false;
+    static constexpr bool _is_vectorisable = !is_same_v_<T,bool> && _dims[DIMS-1] % V::Size == 0 && (get_nth_type<DIMS-1,Fseqs...>::_step==1) ? true : false;
+    static constexpr bool _is_strided_vectorisable = !is_same_v_<T,bool> && _dims[DIMS-1] % V::Size == 0 && (get_nth_type<DIMS-1,Fseqs...>::_step!=1) ? true : false;
 public:
 
     FASTOR_INLINE TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>& noalias() {

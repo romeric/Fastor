@@ -205,6 +205,14 @@ public:
         }
 #endif
         T *FASTOR_RESTRICT _data = _expr.data();
+        FASTOR_IF_CONSTEXPR(is_boolean_expression_v<Derived>) {
+            for (FASTOR_INDEX i = 0; i <range_detector<F0,L0,S0>::value; i++) {
+                for (FASTOR_INDEX j = 0; j <range_detector<F1,L1,S1>::value; j++) {
+                    _expr(S0*i+F0,S1*j+F1) = other_src.template eval_s<T>(i,j);
+                }
+            }
+            return;
+        }
         FASTOR_IF_CONSTEXPR (S1==1) {
             for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
                 FASTOR_INDEX j;
@@ -521,6 +529,15 @@ public:
 #endif
         T *FASTOR_RESTRICT _data = _expr.data();
         FASTOR_INDEX counter = 0;
+        FASTOR_IF_CONSTEXPR(is_boolean_expression_v<Derived>) {
+            for (FASTOR_INDEX i = 0; i <range_detector<F0,L0,S0>::value; i++) {
+                for (FASTOR_INDEX j = 0; j <range_detector<F1,L1,S1>::value; j++) {
+                    _expr(S0*i+F0,S1*j+F1) = other_src.template eval_s<T>(counter);
+                    counter++;
+                }
+            }
+            return;
+        }
         FASTOR_IF_CONSTEXPR (S1==1) {
             for (FASTOR_INDEX i = 0; i <dimension(0); i++) {
                 FASTOR_INDEX j;

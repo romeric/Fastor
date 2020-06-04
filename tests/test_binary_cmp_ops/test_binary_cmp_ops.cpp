@@ -323,4 +323,3 @@ int main() {
     print(FBLU(BOLD("Testing binary comparison operators: int 64")));
     run<Int64>();
 }
-
