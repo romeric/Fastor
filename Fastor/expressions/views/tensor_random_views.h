@@ -264,6 +264,12 @@ public:
         FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
 #endif
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
+        FASTOR_IF_CONSTEXPR(is_boolean_expression_v<Derived>) {
+            for (FASTOR_INDEX i = 0; i <size(); i++) {
+                _expr(it_expr(i)) = other_src.template eval_s<T>(i);
+            }
+            return;
+        }
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
             auto _vec_other = other_src.template eval<T>(i);
@@ -758,166 +764,6 @@ public:
 #endif
     }
 
-    void operator+=(const TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS> &other_src) {
-#if !(FASTOR_NO_ALIAS)
-        if (_does_alias) {
-            _does_alias = false;
-            // Evaluate this into a temporary
-            auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
-            // Assign other to temporary
-            tmp = other_src;
-            // assign temporary to this
-            this->operator+=(tmp);
-            return;
-        }
-#endif
-#ifndef NDEBUG
-        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
-#endif
-        T *_data = _expr.data();
-#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-            auto _vec_other = other_src.template eval<T>(i);
-            for (auto j=0; j<SIMDVector<T,simd_abi_type>::Size; ++j) {
-                _data[it_expr.data()[i+j]] += _vec_other[j];
-            }
-        }
-        for (; i <size(); i++) {
-            _data[it_expr.data()[i]] += other_src.template eval_s<T>(i);
-        }
-#else
-        for (FASTOR_INDEX i = 0; i <size(); i++) {
-            _data[it_expr.data()[i]] += other_src.template eval_s<T>(i);
-        }
-#endif
-    }
-
-    void operator-=(const TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS> &other_src) {
-#if !(FASTOR_NO_ALIAS)
-        if (_does_alias) {
-            _does_alias = false;
-            // Evaluate this into a temporary
-            auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
-            // Assign other to temporary
-            tmp = other_src;
-            // assign temporary to this
-            this->operator-=(tmp);
-            return;
-        }
-#endif
-#ifndef NDEBUG
-        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
-#endif
-        T *_data = _expr.data();
-#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-            auto _vec_other = other_src.template eval<T>(i);
-            for (auto j=0; j<SIMDVector<T,simd_abi_type>::Size; ++j) {
-                _data[it_expr.data()[i+j]] -= _vec_other[j];
-            }
-        }
-        for (; i <size(); i++) {
-            _data[it_expr.data()[i]] -= other_src.template eval_s<T>(i);
-        }
-#else
-        for (FASTOR_INDEX i = 0; i <size(); i++) {
-            _data[it_expr.data()[i]] -= other_src.template eval_s<T>(i);
-        }
-#endif
-    }
-
-    void operator*=(const TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS> &other_src) {
-#if !(FASTOR_NO_ALIAS)
-        if (_does_alias) {
-            _does_alias = false;
-            // Evaluate this into a temporary
-            auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
-            // Assign other to temporary
-            tmp = other_src;
-            // assign temporary to this
-            this->operator*=(tmp);
-            return;
-        }
-#endif
-#ifndef NDEBUG
-        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
-#endif
-        T *_data = _expr.data();
-#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-            auto _vec_other = other_src.template eval<T>(i);
-            for (auto j=0; j<SIMDVector<T,simd_abi_type>::Size; ++j) {
-                _data[it_expr.data()[i+j]] *= _vec_other[j];
-            }
-        }
-        for (; i <size(); i++) {
-            _data[it_expr.data()[i]] *= other_src.template eval_s<T>(i);
-        }
-#else
-        for (FASTOR_INDEX i = 0; i <size(); i++) {
-            _data[it_expr.data()[i]] *= other_src.template eval_s<T>(i);
-        }
-#endif
-    }
-
-    void operator/=(const TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS> &other_src) {
-#if !(FASTOR_NO_ALIAS)
-        if (_does_alias) {
-            _does_alias = false;
-            // Evaluate this into a temporary
-            auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorRandomViewExpr<Tensor<T,Rest...>,Tensor<Int,IterSizes...>,DIMS>(tmp_this_tensor,it_expr);
-            // Assign other to temporary
-            tmp = other_src;
-            // assign temporary to this
-            this->operator/=(tmp);
-            return;
-        }
-#endif
-#ifndef NDEBUG
-        FASTOR_ASSERT(other_src.size()==this->size(), "TENSOR SIZE MISMATCH");
-        // Check if shape of tensors match
-        for (FASTOR_INDEX i=0; i<Dimension; ++i) {
-            FASTOR_ASSERT(other_src.dimension(i)==dimension(i), "TENSOR SHAPE MISMATCH");
-        }
-#endif
-        T *_data = _expr.data();
-#ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
-        FASTOR_INDEX i;
-        for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-            auto _vec_other = other_src.template eval<T>(i);
-            for (auto j=0; j<SIMDVector<T,simd_abi_type>::Size; ++j) {
-                _data[it_expr.data()[i+j]] /= _vec_other[j];
-            }
-        }
-        for (; i <size(); i++) {
-            _data[it_expr.data()[i]] /= other_src.template eval_s<T>(i);
-        }
-#else
-        for (FASTOR_INDEX i = 0; i <size(); i++) {
-            _data[it_expr.data()[i]] /= other_src.template eval_s<T>(i);
-        }
-#endif
-    }
-
     // AbstractTensor overloads
     //------------------------------------------------------------------------------------//
     template<typename Derived, size_t OTHER_DIMS>
@@ -941,6 +787,12 @@ public:
 #endif
         T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
+        FASTOR_IF_CONSTEXPR(is_boolean_expression_v<Derived>) {
+            for (FASTOR_INDEX i = 0; i <size(); i++) {
+                _data[it_expr.data()[i]] = other_src.template eval_s<T>(i);
+            }
+            return;
+        }
         FASTOR_INDEX i;
         for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
             auto _vec_other = other_src.template eval<T>(i);

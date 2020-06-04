@@ -27,11 +27,8 @@ add_subdirectory(test_math_functions)
 add_subdirectory(test_booleans)
 
 add_subdirectory(test_matmul)
-# This test checks over 30000 combinations of trmm
-# MSVC creates an excessively large obj for this
-if(NOT MSVC)
+
 add_subdirectory(test_tmatmul)
-endif()
 
 add_subdirectory(test_transpose)
 
