@@ -21,13 +21,13 @@ matrix:
 
 before_build:
   - echo %APPVEYOR_BUILD_FOLDER%
-  - mkdir "%APPVEYOR_BUILD_FOLDER%/build"
-  - cd "%APPVEYOR_BUILD_FOLDER%/build"
+  - mkdir "%APPVEYOR_BUILD_FOLDER%/tests/build"
+  - cd "%APPVEYOR_BUILD_FOLDER%/tests/build"
   - cmake --version
   - cmake .. -G %generator% -A %platform%
 
 build:
-  project: C:/projects/fastor/tests/build/test_fastor.sln
+  project: "%APPVEYOR_BUILD_FOLDER%/tests/build/test_fastor.sln"
   verbosity: minimal
   parallel: true
   
