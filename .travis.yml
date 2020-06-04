@@ -15,7 +15,7 @@ matrix:
           packages:
             - g++-5
       env:
-         - COMPILER_ID=gcc GCC=5 BUILD_RELEASE=0
+         - COMPILER_ID=gcc GCC=5 BUILD_NATIVE=0
 
     - os: linux
       addons:
@@ -25,7 +25,7 @@ matrix:
           packages:
             - g++-6
       env:
-        - COMPILER_ID=gcc GCC=6 BUILD_RELEASE=0
+        - COMPILER_ID=gcc GCC=6 BUILD_NATIVE=0
 
     - os: linux
       addons:
@@ -35,7 +35,7 @@ matrix:
           packages:
             - g++-7
       env:
-        - COMPILER_ID=gcc GCC=7 BUILD_RELEASE=0
+        - COMPILER_ID=gcc GCC=7 BUILD_NATIVE=0
 
     - os: linux
       addons:
@@ -45,7 +45,7 @@ matrix:
           packages:
             - g++-7
       env:
-        - COMPILER_ID=gcc GCC=7 BUILD_RELEASE=1
+        - COMPILER_ID=gcc GCC=7 BUILD_NATIVE=1
 
     - os: linux
       addons:
@@ -55,7 +55,7 @@ matrix:
           packages:
             - g++-8
       env:
-        - COMPILER_ID=gcc GCC=8 BUILD_RELEASE=0
+        - COMPILER_ID=gcc GCC=8 BUILD_NATIVE=0
 
     - os: linux
       addons:
@@ -65,19 +65,29 @@ matrix:
           packages:
             - g++-9
       env:
-        - COMPILER_ID=gcc GCC=9 BUILD_RELEASE=1
+        - COMPILER_ID=gcc GCC=9 BUILD_NATIVE=0
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-9
+      env:
+        - COMPILER_ID=gcc GCC=9 BUILD_NATIVE=1
 
     - os: linux
       arch: amd64
       compiler: clang
       env:
-        - COMPILER_ID=clang BUILD_RELEASE=0
+        - COMPILER_ID=clang BUILD_NATIVE=0
 
     - os: linux
       arch: amd64
       compiler: clang
       env:
-        - COMPILER_ID=clang BUILD_RELEASE=1
+        - COMPILER_ID=clang BUILD_NATIVE=1
 
 
 before_install:
@@ -89,10 +99,13 @@ before_install:
 
 install:
   # build the tests
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      cat /proc/cpuinfo;
+    fi
   - cd ~
   - cd $FASTORPATH/tests
   - mkdir build && cd build
-  - if [[ "$BUILD_RELEASE" == 1 ]]; then
+  - if [[ "$BUILD_NATIVE" == 1 ]]; then
       cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_CXX_FLAGS="$(CMAKE_CXX_FLAGS) -march=native" ..;
     else
       cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ..;

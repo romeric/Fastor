@@ -14,45 +14,45 @@ void run() {
     {
         Tensor<T,4,5> a; a.iota(1);
         TensorMap<T,4,5> ma(a);
-        FASTOR_EXIT_ASSERT(abs(a.sum() - ma.sum()) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a.sum() - ma.sum()) < Tol);
 
         ma +=1;
-        FASTOR_EXIT_ASSERT(abs(a.sum() - ma.sum()) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a.sum() - ma.sum()) < Tol);
 
         ma(all,0) = 2;
-        FASTOR_EXIT_ASSERT(abs(a.sum() - ma.sum()) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a.sum() - ma.sum()) < Tol);
 
         ma(fall,fall) = 2;
-        FASTOR_EXIT_ASSERT(abs(a.sum() - ma.sum()) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a.sum() - ma.sum()) < Tol);
 
         ma = a - ma;
-        FASTOR_EXIT_ASSERT(abs(a.sum() - ma.sum()) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a.sum() - ma.sum()) < Tol);
 
         a.iota(1);
         ma *= a/ma + 2;
-        FASTOR_EXIT_ASSERT(abs(a.sum() - ma.sum()) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a.sum() - ma.sum()) < Tol);
     }
 
     {
         Tensor<T,2,4,5> a; a.iota(1);
         TensorMap<T,2,4,5> ma(a);
-        FASTOR_EXIT_ASSERT(abs(a.sum() - ma.sum()) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a.sum() - ma.sum()) < Tol);
 
         ma +=1;
-        FASTOR_EXIT_ASSERT(abs(a.sum() - ma.sum()) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a.sum() - ma.sum()) < Tol);
 
         ma(0,all,0) = 2;
-        FASTOR_EXIT_ASSERT(abs(a.sum() - ma.sum()) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a.sum() - ma.sum()) < Tol);
 
         ma(fseq<0,1>{},fall,fall) = 3;
-        FASTOR_EXIT_ASSERT(abs(a.sum() - ma.sum()) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a.sum() - ma.sum()) < Tol);
 
         ma = a - ma;
-        FASTOR_EXIT_ASSERT(abs(a.sum() - ma.sum()) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a.sum() - ma.sum()) < Tol);
 
         a.iota(1);
         ma *= a/ma + 2;
-        FASTOR_EXIT_ASSERT(abs(a.sum() - ma.sum()) < Tol);
+        FASTOR_EXIT_ASSERT(std::abs(a.sum() - ma.sum()) < Tol);
     }
 
     // Map a const array and copy-assign it to a non-const tensor.
