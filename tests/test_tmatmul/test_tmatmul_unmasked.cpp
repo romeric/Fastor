@@ -305,7 +305,13 @@ void test_tmatmul() {
 
     {
         constexpr size_t start_size = 1UL;
+#if 0
+        // covers all cases but demands a lot of stack which may not be
+        // available on CI platforms
         constexpr size_t end_size   = 13UL;
+#else
+        constexpr size_t end_size   = 9UL;
+#endif
 
         print(FBLU(BOLD("Testing triangular matmul: lower-General")));
         check_lhs_lt_N<start_size,end_size>::template Do<T,UpLoType::Lower,UpLoType::General>();

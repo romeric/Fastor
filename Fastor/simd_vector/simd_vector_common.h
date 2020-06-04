@@ -1,6 +1,7 @@
 #ifndef SIMD_VECTOR_COMMON_H
 #define SIMD_VECTOR_COMMON_H
 
+#include "Fastor/meta/meta.h"
 #include "Fastor/simd_vector/simd_vector_base.h"
 #include "Fastor/simd_vector/simd_vector_scalar.h"
 #include "Fastor/simd_vector/simd_vector_float.h"
@@ -20,8 +21,9 @@ namespace Fastor {
 // This is for generic use in tensor expressions that need a uniform simd type
 // between all of them
 //----------------------------------------------------------------------------------------------------------//
-template<typename T>
+template<typename TT>
 struct choose_best_simd_vector {
+    using T = remove_all_t<TT>;
     using type = typename std::conditional< std::is_same<T,float>::value                    ||
                                             std::is_same<T,double>::value                   ||
                                             std::is_same<T,std::complex<float>>::value      ||
