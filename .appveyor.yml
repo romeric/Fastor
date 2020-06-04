@@ -32,5 +32,5 @@ build:
   parallel: true
   
 test_script:
-  - cd "%APPVEYOR_BUILD_FOLDER%/build"
+  - cd "%APPVEYOR_BUILD_FOLDER%/tests/build"
   - ctest -V
