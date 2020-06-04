@@ -348,5 +348,11 @@ int main() {
     return 0;
 }
 
+#else
+
+int main() {
+    return 0;
+}
+
 #endif // CXX 2017
 
