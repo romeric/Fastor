@@ -4,7 +4,7 @@ project(test_tmatmul)
 set(CMAKE_CXX_STANDARD 14)
 
 if(MSVC)
-    add_compile_options("/W4" "$<$<CONFIG:RELEASE>:/Od>")
+    add_compile_options("/std:c++17" "/W2" "$<$<CONFIG:RELEASE>:/Od>")
 else()
     add_compile_options("$<$<CONFIG:RELEASE>:-O0>" "$<$<CONFIG:RELEASE>:-march=native>")
 endif()

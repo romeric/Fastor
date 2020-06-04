@@ -310,7 +310,11 @@ void test_tmatmul() {
         // available on CI platforms
         constexpr size_t end_size   = 13UL;
 #else
+#ifndef FASTOR_MSVC
         constexpr size_t end_size   = 9UL;
+#else
+        constexpr size_t end_size   = 5UL;
+#endif
 #endif
 
         print(FBLU(BOLD("Testing triangular matmul: lower-General")));
@@ -327,6 +331,7 @@ void test_tmatmul() {
         print(FGRN(BOLD("All tests passed successfully")));
     }
 
+#ifndef FASTOR_MSVC
     {
         constexpr size_t start_size = 1UL;
         constexpr size_t end_size   = 6UL;
@@ -344,7 +349,7 @@ void test_tmatmul() {
         check_lhs_lt_N<start_size,end_size>::template Do<T,UpLoType::Upper,UpLoType::Upper>();
         print(FGRN(BOLD("All tests passed successfully")));
     }
-
+#endif
 }
 
 int main() {
