@@ -9,7 +9,6 @@ platform:
 
 configuration:
   - Debug
-  - Release
 
 image:
   - Visual Studio 2019
