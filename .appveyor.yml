@@ -5,7 +5,6 @@ branches:
     - master
 
 platform:
-  - x86
   - x64
 
 configuration:
