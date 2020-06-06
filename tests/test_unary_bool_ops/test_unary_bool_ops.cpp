@@ -57,6 +57,12 @@ void run_fixed_size() {
         FASTOR_EXIT_ASSERT(all_of (ft::isfinite(trans(aa)) == true ) == true, "TEST FAILED");
         FASTOR_EXIT_ASSERT(any_of (ft::isfinite(trans(aa)) == true ) == true, "TEST FAILED");
         FASTOR_EXIT_ASSERT(none_of(ft::isfinite(trans(aa)) == true ) == true, "TEST FAILED");
+
+        // check nested expressions
+        FASTOR_EXIT_ASSERT(all_of (!ft::isnan(trans(aa)) == true     ) == true, "TEST FAILED");
+        FASTOR_EXIT_ASSERT(any_of (!ft::isinf(trans(aa)) == true     ) == true, "TEST FAILED");
+        FASTOR_EXIT_ASSERT(none_of(!ft::isfinite(trans(aa)) == false ) == true, "TEST FAILED");
+        FASTOR_EXIT_ASSERT(all_of (!(aa!=aa) == true     ) == true, "TEST FAILED");
     }
 
     {

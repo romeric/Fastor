@@ -22,6 +22,9 @@ public:\
     using simd_abi_type = typename simd_vector_type::abi_type;\
     using result_type = to_bool_tensor_t<typename Expr::result_type>;\
     using result_scalar_type = typename result_type::scalar_type;\
+    using result_simd_abi_type = typename result_type::simd_abi_type;\
+    using result_simd_vector_type = typename result_type::simd_vector_type;\
+    using UU = bool /*this needs to change to U once masks are implemented*/;\
     using ABI = simd_abi::fixed_size<SIMDVector<EVAL_TYPE,simd_abi_type>::Size>;\
     static constexpr FASTOR_INDEX Dimension = DIM0;\
     static constexpr FASTOR_INDEX rank() {return DIM0;}\
@@ -30,27 +33,27 @@ public:\
     Unary ##STRUCT_NAME ## Op(expression_t<Expr> inexpr) : _expr(inexpr) {}\
     FASTOR_INLINE expression_t<Expr> expr() const {return _expr;}\
     template<typename U=scalar_type>\
-    FASTOR_INLINE SIMDVector<U,ABI> eval(FASTOR_INDEX i) const {\
+    FASTOR_INLINE SIMDVector<UU,ABI> eval(FASTOR_INDEX i) const {\
         return SIMD_OP(_expr.template eval<EVAL_TYPE>(i));\
     }\
     template<typename U=scalar_type>\
-    FASTOR_INLINE U eval_s(FASTOR_INDEX i) const {\
+    FASTOR_INLINE UU eval_s(FASTOR_INDEX i) const {\
         return SCALAR_OP(_expr.template eval_s<EVAL_TYPE>(i));\
     }\
     template<typename U=scalar_type>\
-    FASTOR_INLINE SIMDVector<U,ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {\
+    FASTOR_INLINE SIMDVector<UU,ABI> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {\
         return SIMD_OP(_expr.template eval<EVAL_TYPE>(i,j));\
     }\
     template<typename U=scalar_type>\
-    FASTOR_INLINE U eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {\
+    FASTOR_INLINE UU eval_s(FASTOR_INDEX i, FASTOR_INDEX j) const {\
         return SCALAR_OP(_expr.template eval_s<EVAL_TYPE>(i,j));\
     }\
     template<typename U>\
-    FASTOR_INLINE SIMDVector<U,ABI> teval(const std::array<int,DIM0> &as) const {\
+    FASTOR_INLINE SIMDVector<UU,ABI> teval(const std::array<int,DIM0> &as) const {\
         return SIMD_OP(_expr.template teval<EVAL_TYPE>(as));\
     }\
     template<typename U>\
-    FASTOR_INLINE U teval_s(const std::array<int,DIM0> &as) const {\
+    FASTOR_INLINE UU teval_s(const std::array<int,DIM0> &as) const {\
         return SCALAR_OP(_expr.template teval_s<EVAL_TYPE>(as));\
     }\
 };\
