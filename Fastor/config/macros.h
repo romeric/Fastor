@@ -30,10 +30,10 @@ SOFTWARE.
 //------------------------------------------------------------------------------------------------//
 // Compiler version
 //------------------------------------------------------------------------------------------------//
-#define __FASTOR_MAJOR__ 0
-#define __FASTOR_MINOR__ 6
-#define __FASTOR_PATCHLEVEL__ 2
-#define __FASTOR__ (__FASTOR_MAJOR__ * 10000 + __FASTOR_MINOR__ * 100 + __FASTOR_PATCHLEVEL__)
+#define FASTOR_MAJOR 0
+#define FASTOR_MINOR 6
+#define FASTOR_PATCHLEVEL 3
+#define FASTOR_VERSION (FASTOR_MAJOR * 10000 + FASTOR_MINOR * 100 + FASTOR_PATCHLEVEL)
 //------------------------------------------------------------------------------------------------//
 
 //------------------------------------------------------------------------------------------------//
