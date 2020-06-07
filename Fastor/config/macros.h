@@ -32,7 +32,7 @@ SOFTWARE.
 //------------------------------------------------------------------------------------------------//
 #define FASTOR_MAJOR 0
 #define FASTOR_MINOR 6
-#define FASTOR_PATCHLEVEL 3
+#define FASTOR_PATCHLEVEL 4
 #define FASTOR_VERSION (FASTOR_MAJOR * 10000 + FASTOR_MINOR * 100 + FASTOR_PATCHLEVEL)
 //------------------------------------------------------------------------------------------------//
 
