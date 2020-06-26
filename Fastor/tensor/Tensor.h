@@ -10,6 +10,9 @@
 #include "Fastor/tensor/ForwardDeclare.h"
 #include "Fastor/expressions/linalg_ops/linalg_ops.h"
 
+#include <array>
+#include <vector>
+
 namespace Fastor {
 
 template<typename T, size_t ... Rest>
@@ -64,8 +67,15 @@ public:
         else
             *this = tocolumnmajor(*this);
     }
-    FASTOR_INLINE Tensor(const std::array<T,sizeof...(Rest)> &arr, int layout=RowMajor) {
-        std::copy(arr,arr+pack_prod<Rest...>::value,_data);
+    FASTOR_INLINE Tensor(const std::array<T,pack_prod<Rest...>::value> &arr, int layout=RowMajor) {
+        std::copy(arr.data(),arr.data()+pack_prod<Rest...>::value,_data);
+        if (layout == RowMajor)
+            return;
+        else
+            *this = tocolumnmajor(*this);
+    }
+    FASTOR_INLINE Tensor(const std::vector<T> &arr, int layout=RowMajor) {
+        std::copy(arr.data(),arr.data()+pack_prod<Rest...>::value,_data);
         if (layout == RowMajor)
             return;
         else
