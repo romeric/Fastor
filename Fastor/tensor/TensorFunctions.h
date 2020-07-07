@@ -3,10 +3,12 @@
 
 #include "Fastor/meta/meta.h"
 #include "Fastor/tensor/Tensor.h"
+#include "Fastor/tensor/TensorMap.h"
 #include "Fastor/tensor/TensorTraits.h"
 
 namespace Fastor {
 
+/* Turns a row-major tensor to column-major */
 template<template<typename,size_t...> class TensorType, typename T, size_t ... Rest>
 FASTOR_INLINE Tensor<T,Rest...> tocolumnmajor(const TensorType<T,Rest...> &a) {
     constexpr int Dimension = sizeof...(Rest);
@@ -64,6 +66,7 @@ FASTOR_INLINE Tensor<T,Rest...> tocolumnmajor(const TensorType<T,Rest...> &a) {
     }
 }
 
+/* Turns a column-major tensor to row-major */
 template<template<typename,size_t...> class TensorType, typename T, size_t ... Rest>
 FASTOR_INLINE Tensor<T,Rest...> torowmajor(const TensorType<T,Rest...> &a) {
     constexpr int Dimension = sizeof...(Rest);
@@ -120,6 +123,25 @@ FASTOR_INLINE Tensor<T,Rest...> torowmajor(const TensorType<T,Rest...> &a) {
         return out;
     }
 }
+
+/* Squeeze - removes dimenions of 1 from a tensor and returns a map
+    Note that you cannot use tensor expressions on squeeze as squeeze is
+    a view in to a concrete tensor type holding storage
+*/
+template<template <typename,size_t...> class TensorType, typename T, size_t ... Rest>
+FASTOR_INLINE
+index_to_tensor_map_t<T,filter_t<1,Rest...>>
+squeeze(const TensorType<T,Rest...> &a) {
+    return index_to_tensor_map_t<T,filter_t<1,Rest...>>(a.data());
+}
+
+
+
+
+
+
+
+
 
 
 #if FASTOR_NIL

@@ -270,6 +270,25 @@ constexpr std::array<size_t,sizeof...(ss)>
 last_matrix_extracter<Tensor<T,Rest...>,std_ext::index_sequence<ss...>>::values;
 //--------------------------------------------------------------------------------------------------------------------//
 
+
+//-----------------------------------------------------------------------------------------------------------//
+template <typename T, typename Idx> struct index_to_tensor;
+template <typename T, size_t ...Idx> struct index_to_tensor <T, Index<Idx...>> { using type = Tensor<T,Idx...>; };
+
+// helper
+template <typename T, typename Idx>
+using index_to_tensor_t = typename index_to_tensor<T,Idx>::type;
+
+template <typename T, typename Idx> struct index_to_tensor_map;
+template <typename T, size_t ...Idx> struct index_to_tensor_map <T, Index<Idx...>> { using type = TensorMap<T,Idx...>; };
+
+// helper
+template <typename T, typename Idx>
+using index_to_tensor_map_t = typename index_to_tensor_map<T,Idx>::type;
+
+//-----------------------------------------------------------------------------------------------------------//
+
+
 }
 
 #endif // TENSOR_POST_META_H

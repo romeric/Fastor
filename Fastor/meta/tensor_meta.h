@@ -87,29 +87,18 @@ using typelist_c = typelist<std::integral_constant<T, Vals>...>;
 
 template <class... > struct concat;
 template <> struct concat<> { using type = typelist<>; };
-
-template <class... Ts>
-struct concat<typelist<Ts...>> {
-    using type = typelist<Ts...>;
-};
-
+template <class... Ts> struct concat<typelist<Ts...>> { using type = typelist<Ts...>; };
 template <class... Ts, class... Us, class... Args>
-struct concat<typelist<Ts...>, typelist<Us...>, Args...>
-: concat<typelist<Ts..., Us...>, Args...>
-{ };
+struct concat<typelist<Ts...>, typelist<Us...>, Args...> : concat<typelist<Ts..., Us...>, Args...> { };
 
-template <class T, class TL>
-struct filter_out;
+template <class T, class TL> struct filter_out;
+template <class T, class... Ts> struct filter_out<T, typelist<Ts...>>
+    : concat< conditional_t_<is_same_v_<T, Ts>, typelist<>, typelist<Ts>>...> { };
 
 template <class T, class TL>
 using filter_out_t = typename filter_out<T, TL>::type;
 
-template <class T, class... Ts>
-struct filter_out<T, typelist<Ts...>>
-    : concat<
-        conditional_t_<std::is_same<T, Ts>::value, typelist<>, typelist<Ts>>...
-        >
-{ };
+
 
 template <class >
 struct uniq;

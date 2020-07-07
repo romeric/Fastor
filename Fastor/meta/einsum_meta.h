@@ -56,11 +56,13 @@ template<size_t... I1, size_t... I2, class... Inds>
 struct concat_<Index<I1...>, Index<I2...>, Inds...>
     :  concat_<Index<I1..., I2...>, Inds...> {};
 
-// filter out all instances of I from Is...,
-// return the rest as an Indices
 template<int I, int... Is>
 struct filter_
     :  concat_<typename std::conditional<Is == I, Index<>, Index<Is>>::type...> {};
+
+template <int I, int ...Is>
+using filter_t = typename filter_<I, Is...>::type;
+
 
 //Use them:
 template<class Ind, class Arr, class Seq>

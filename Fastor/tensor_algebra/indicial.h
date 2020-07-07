@@ -7,6 +7,7 @@
 
 namespace Fastor {
 
+//-----------------------------------------------------------------------------------------------------------//
 template <FASTOR_INDEX ... All>
 struct Index {
     static constexpr FASTOR_INDEX Size = sizeof...(All);
@@ -45,6 +46,7 @@ struct OIndex : public Index<All...> {
 
 template<FASTOR_INDEX ... All>
 constexpr FASTOR_INDEX OIndex<All...>::Size;
+//-----------------------------------------------------------------------------------------------------------//
 
 } // end of namespace Fastor
 
