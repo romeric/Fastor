@@ -22,6 +22,10 @@ add_subdirectory(test_simd_vectors)
 
 add_subdirectory(test_tensor_basics)
 
+add_subdirectory(test_tensormap)
+
+add_subdirectory(test_numerics)
+
 add_subdirectory(test_math_functions)
 
 add_subdirectory(test_booleans)
@@ -54,8 +58,6 @@ add_subdirectory(test_random_views)
 add_subdirectory(test_mixed_views)
 
 add_subdirectory(test_complex_expressions)
-
-add_subdirectory(test_tensormap)
 
 add_subdirectory(test_unary_bool_ops)
 

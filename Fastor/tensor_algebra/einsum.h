@@ -7,7 +7,6 @@
 #include "Fastor/tensor_algebra/indicial.h"
 #include "Fastor/backend/voigt.h"
 
-#include "Fastor/tensor_algebra/reshape.h"
 #include "Fastor/tensor_algebra/permutation.h"
 #include "Fastor/tensor_algebra/permute.h"
 #include "Fastor/tensor_algebra/innerproduct.h"

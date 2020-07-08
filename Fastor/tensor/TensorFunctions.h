@@ -124,8 +124,10 @@ FASTOR_INLINE Tensor<T,Rest...> torowmajor(const TensorType<T,Rest...> &a) {
     }
 }
 
-/* Squeeze - removes dimenions of 1 from a tensor and returns a map
-    Note that you cannot use tensor expressions on squeeze as squeeze is
+/* squeeze - removes dimenions of 1 from a tensor and returns a TensorMap
+    A TensorMap is a view in to an existing tensor so modifying the squeezed
+    tensor will modify the original tensor and vice versa
+    Note that you cannot call this function on tensor expressions as this is
     a view in to a concrete tensor type holding storage
 */
 template<template <typename,size_t...> class TensorType, typename T, size_t ... Rest>
@@ -135,7 +137,34 @@ squeeze(const TensorType<T,Rest...> &a) {
     return index_to_tensor_map_t<T,filter_t<1,Rest...>>(a.data());
 }
 
+/* reshape - reshapes a tensor to a tensor of different shape and returns a TensorMap
+    A TensorMap is a view in to an existing tensor so modifying the reshaped
+    tensor will modify the original tensor and vice versa
+    Note that you cannot call this function on tensor expressions as this is
+    a view in to a concrete tensor type holding storage
 
+    example:
+        auto b = reshape<shapes...>(a);
+*/
+template<size_t ... shapes,typename T, size_t ... Rest>
+FASTOR_INLINE TensorMap<T,shapes...> reshape(const Tensor<T,Rest...> &a) {
+    static_assert(pack_prod<shapes...>::value==pack_prod<Rest...>::value, "SIZE OF TENSOR SHOULD REMAIN THE SAME DURING RESHAPE");
+    return TensorMap<T,shapes...>(a.data());
+}
+
+/* flatten - creates a flattened 1D view of a tensor and returns a TensorMap
+    A TensorMap is a view in to an existing tensor so modifying the reshaped
+    tensor will modify the original tensor and vice versa
+    Note that you cannot call this function on tensor expressions as this is
+    a view in to a concrete tensor type holding storage
+
+    example:
+        auto b = flatten(a);
+*/
+template<typename T, size_t ... Rest>
+FASTOR_INLINE TensorMap<T,pack_prod<Rest...>::value> flatten(const Tensor<T,Rest...> &a) {
+    return TensorMap<T,pack_prod<Rest...>::value>(a.data());
+}
 
 
 

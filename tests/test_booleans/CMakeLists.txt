@@ -7,7 +7,7 @@ add_executable(test_booleans test_booleans.cpp)
 add_test(test_booleans test_booleans)
 
 if(MSVC)
-    add_compile_options(test_booleans PRIVATE "/W4" "$<$<CONFIG:RELEASE>:/O2>")
+    add_compile_options(test_booleans PRIVATE "/W2" "$<$<CONFIG:RELEASE>:/O2>")
 else()
     add_compile_options(test_booleans PRIVATE "$<$<CONFIG:RELEASE>:-O3>" "$<$<CONFIG:RELEASE>:-march=native>")
 endif()
