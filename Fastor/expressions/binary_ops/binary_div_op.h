@@ -31,14 +31,14 @@ public:
 
     FASTOR_INLINE FASTOR_INDEX size() const {return helper_size<TLhs,TRhs>();}
     template<class LExpr, class RExpr,
-             typename std::enable_if<std::is_arithmetic<LExpr>::value,bool>::type =0 >
+             typename std::enable_if<is_primitive_v_<LExpr>,bool>::type =0 >
     FASTOR_INLINE FASTOR_INDEX helper_size() const {return _rhs.size();}
     template<class LExpr, class RExpr,
-             typename std::enable_if<std::is_arithmetic<RExpr>::value,bool>::type =0 >
+             typename std::enable_if<is_primitive_v_<RExpr>,bool>::type =0 >
     FASTOR_INLINE FASTOR_INDEX helper_size() const {return _lhs.size();}
     template<class LExpr, class RExpr,
-             typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
-                                     !std::is_arithmetic<RExpr>::value,bool>::type =0 >
+             typename std::enable_if<!is_primitive_v_<LExpr> &&
+                                     !is_primitive_v_<RExpr>,bool>::type =0 >
     FASTOR_INLINE FASTOR_INDEX helper_size() const {
 #ifndef NDEBUG
         FASTOR_ASSERT(_rhs.size()==_lhs.size(),"EXPRESSION SIZE MISMATCH");
@@ -48,14 +48,14 @@ public:
 
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return helper_dimension<TLhs,TRhs>(i);}
     template<class LExpr, class RExpr,
-             typename std::enable_if<std::is_arithmetic<LExpr>::value,bool>::type =0 >
+             typename std::enable_if<is_primitive_v_<LExpr>,bool>::type =0 >
     FASTOR_INLINE FASTOR_INDEX helper_dimension(FASTOR_INDEX i) const {return _rhs.dimension(i);}
     template<class LExpr, class RExpr,
-             typename std::enable_if<std::is_arithmetic<RExpr>::value,bool>::type =0 >
+             typename std::enable_if<is_primitive_v_<RExpr>,bool>::type =0 >
     FASTOR_INLINE FASTOR_INDEX helper_dimension(FASTOR_INDEX i) const {return _lhs.dimension(i);}
     template<class LExpr, class RExpr,
-             typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
-                                     !std::is_arithmetic<RExpr>::value,bool>::type =0 >
+             typename std::enable_if<!is_primitive_v_<LExpr> &&
+                                     !is_primitive_v_<RExpr>,bool>::type =0 >
     FASTOR_INLINE FASTOR_INDEX helper_dimension(FASTOR_INDEX i) const {
 #ifndef NDEBUG
         FASTOR_ASSERT(_rhs.dimension(i)==_lhs.dimension(i),"EXPRESSION SHAPE MISMATCH");
@@ -71,8 +71,8 @@ public:
     }
 
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
-                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<!is_primitive_v_<LExpr> &&
+                                   !is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE SIMDVector<FASTOR_BD_OP_EVAL_TYPE,simd_abi_type> helper(FASTOR_INDEX i) const {
 #ifndef FASTOR_UNSAFE_MATH
         return _lhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i) / _rhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i);
@@ -81,8 +81,8 @@ public:
 #endif
     }
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<std::is_arithmetic<LExpr>::value &&
-                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<is_primitive_v_<LExpr> &&
+                                   !is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE SIMDVector<FASTOR_BD_OP_EVAL_TYPE,simd_abi_type> helper(FASTOR_INDEX i) const {
 #ifndef FASTOR_UNSAFE_MATH
         return (FASTOR_BD_OP_EVAL_TYPE)_lhs / _rhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i);
@@ -91,8 +91,8 @@ public:
 #endif
     }
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
-                                   std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<!is_primitive_v_<LExpr> &&
+                                   is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE SIMDVector<FASTOR_BD_OP_EVAL_TYPE,simd_abi_type> helper(FASTOR_INDEX i) const {
 #ifndef FASTOR_UNSAFE_MATH
         return _lhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i) / (FASTOR_BD_OP_EVAL_TYPE)_rhs;
@@ -108,20 +108,20 @@ public:
     }
 
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
-                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<!is_primitive_v_<LExpr> &&
+                                   !is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE FASTOR_BD_OP_EVAL_TYPE helper_s(FASTOR_INDEX i) const {
         return _lhs.template eval_s<FASTOR_BD_OP_EVAL_TYPE>(i) / _rhs.template eval_s<FASTOR_BD_OP_EVAL_TYPE>(i);
     }
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<std::is_arithmetic<LExpr>::value &&
-                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<is_primitive_v_<LExpr> &&
+                                   !is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE FASTOR_BD_OP_EVAL_TYPE helper_s(FASTOR_INDEX i) const {
         return (FASTOR_BD_OP_EVAL_TYPE)_lhs / _rhs.template eval_s<FASTOR_BD_OP_EVAL_TYPE>(i);
     }
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
-                                   std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<!is_primitive_v_<LExpr> &&
+                                   is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE FASTOR_BD_OP_EVAL_TYPE helper_s(FASTOR_INDEX i) const {
         return _lhs.template eval_s<FASTOR_BD_OP_EVAL_TYPE>(i) / (FASTOR_BD_OP_EVAL_TYPE)_rhs;
     }
@@ -133,8 +133,8 @@ public:
     }
 
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
-                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<!is_primitive_v_<LExpr> &&
+                                   !is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE SIMDVector<FASTOR_BD_OP_EVAL_TYPE,simd_abi_type> helper(FASTOR_INDEX i, FASTOR_INDEX j) const {
 #ifndef FASTOR_UNSAFE_MATH
         return _lhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i,j) / _rhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i,j);
@@ -143,8 +143,8 @@ public:
 #endif
     }
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<std::is_arithmetic<LExpr>::value &&
-                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<is_primitive_v_<LExpr> &&
+                                   !is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE SIMDVector<FASTOR_BD_OP_EVAL_TYPE,simd_abi_type> helper(FASTOR_INDEX i, FASTOR_INDEX j) const {
 #ifndef FASTOR_UNSAFE_MATH
         return (FASTOR_BD_OP_EVAL_TYPE)_lhs / _rhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i,j);
@@ -153,8 +153,8 @@ public:
 #endif
     }
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
-                                   std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<!is_primitive_v_<LExpr> &&
+                                   is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE SIMDVector<FASTOR_BD_OP_EVAL_TYPE,simd_abi_type> helper(FASTOR_INDEX i, FASTOR_INDEX j) const {
 #ifndef FASTOR_UNSAFE_MATH
         return _lhs.template eval<FASTOR_BD_OP_EVAL_TYPE>(i,j) / (FASTOR_BD_OP_EVAL_TYPE)_rhs;
@@ -170,20 +170,20 @@ public:
     }
 
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
-                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<!is_primitive_v_<LExpr> &&
+                                   !is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE FASTOR_BD_OP_EVAL_TYPE helper_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return _lhs.template eval_s<FASTOR_BD_OP_EVAL_TYPE>(i,j) / _rhs.template eval_s<FASTOR_BD_OP_EVAL_TYPE>(i,j);
     }
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<std::is_arithmetic<LExpr>::value &&
-                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<is_primitive_v_<LExpr> &&
+                                   !is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE FASTOR_BD_OP_EVAL_TYPE helper_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return (FASTOR_BD_OP_EVAL_TYPE)_lhs / _rhs.template eval_s<FASTOR_BD_OP_EVAL_TYPE>(i,j);
     }
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
-                                   std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<!is_primitive_v_<LExpr> &&
+                                   is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE FASTOR_BD_OP_EVAL_TYPE helper_s(FASTOR_INDEX i, FASTOR_INDEX j) const {
         return _lhs.template eval_s<FASTOR_BD_OP_EVAL_TYPE>(i,j) / (FASTOR_BD_OP_EVAL_TYPE)_rhs;
     }
@@ -195,20 +195,20 @@ public:
     }
 
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
-                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<!is_primitive_v_<LExpr> &&
+                                   !is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE SIMDVector<FASTOR_BD_OP_EVAL_TYPE,simd_abi_type> thelper(const std::array<int,DIM0> &as) const {
         return _lhs.template teval<FASTOR_BD_OP_EVAL_TYPE>(as) / _rhs.template teval<FASTOR_BD_OP_EVAL_TYPE>(as);
     }
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<std::is_arithmetic<LExpr>::value &&
-                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<is_primitive_v_<LExpr> &&
+                                   !is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE SIMDVector<FASTOR_BD_OP_EVAL_TYPE,simd_abi_type> thelper(const std::array<int,DIM0> &as) const {
         return (FASTOR_BD_OP_EVAL_TYPE)_lhs / _rhs.template teval<FASTOR_BD_OP_EVAL_TYPE>(as);
     }
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
-                                   std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<!is_primitive_v_<LExpr> &&
+                                   is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE SIMDVector<FASTOR_BD_OP_EVAL_TYPE,simd_abi_type> thelper(const std::array<int,DIM0> &as) const {
         return _lhs.template teval<FASTOR_BD_OP_EVAL_TYPE>(as) / (FASTOR_BD_OP_EVAL_TYPE)_rhs;
     }
@@ -220,57 +220,57 @@ public:
     }
 
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
-                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<!is_primitive_v_<LExpr> &&
+                                   !is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE FASTOR_BD_OP_EVAL_TYPE thelper_s(const std::array<int,DIM0> &as) const {
         return _lhs.template teval_s<FASTOR_BD_OP_EVAL_TYPE>(as) / _rhs.template teval_s<FASTOR_BD_OP_EVAL_TYPE>(as);
     }
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<std::is_arithmetic<LExpr>::value &&
-                                   !std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<is_primitive_v_<LExpr> &&
+                                   !is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE FASTOR_BD_OP_EVAL_TYPE thelper_s(const std::array<int,DIM0> &as) const {
         return (FASTOR_BD_OP_EVAL_TYPE)_lhs / _rhs.template teval_s<FASTOR_BD_OP_EVAL_TYPE>(as);
     }
     template<typename LExpr, typename RExpr, typename U,
-           typename std::enable_if<!std::is_arithmetic<LExpr>::value &&
-                                   std::is_arithmetic<RExpr>::value,bool>::type = 0>
+           typename std::enable_if<!is_primitive_v_<LExpr> &&
+                                   is_primitive_v_<RExpr>,bool>::type = 0>
     FASTOR_INLINE FASTOR_BD_OP_EVAL_TYPE thelper_s(const std::array<int,DIM0> &as) const {
         return _lhs.template teval_s<FASTOR_BD_OP_EVAL_TYPE>(as) / (FASTOR_BD_OP_EVAL_TYPE)_rhs;
     }
 };
 
 template<typename TLhs, typename TRhs, size_t DIM0,
-         typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
-                                 !std::is_arithmetic<TRhs>::value,bool>::type = 0 >
+         typename std::enable_if<!is_primitive_v_<TLhs> &&
+                                 !is_primitive_v_<TRhs>,bool>::type = 0 >
 FASTOR_INLINE BinaryDivOp<TLhs, TRhs, DIM0> operator/(const AbstractTensor<TLhs,DIM0> &_lhs, const AbstractTensor<TRhs,DIM0> &_rhs) {
   return BinaryDivOp<TLhs, TRhs, DIM0>(_lhs.self(), _rhs.self());
 }
 
 #ifndef FASTOR_DISPATCH_DIV_TO_MUL_EXPR
 template<typename TLhs, typename TRhs, size_t DIM0,
-         typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
-                                 std::is_arithmetic<TRhs>::value,bool>::type = 0 >
+         typename std::enable_if<!is_primitive_v_<TLhs> &&
+                                 is_primitive_v_<TRhs>,bool>::type = 0 >
 FASTOR_INLINE BinaryDivOp<TLhs, TRhs, DIM0> operator/(const AbstractTensor<TLhs,DIM0> &_lhs, TRhs bb) {
   return BinaryDivOp<TLhs, TRhs, DIM0>(_lhs.self(), bb);
 }
 template<typename TLhs, typename TRhs, size_t DIM0,
-         typename std::enable_if<std::is_arithmetic<TLhs>::value &&
-                                 !std::is_arithmetic<TRhs>::value,bool>::type = 0 >
+         typename std::enable_if<is_primitive_v_<TLhs> &&
+                                 !is_primitive_v_<TRhs>,bool>::type = 0 >
 FASTOR_INLINE BinaryDivOp<TLhs, TRhs, DIM0> operator/(TLhs bb, const AbstractTensor<TRhs,DIM0> &_rhs) {
   return BinaryDivOp<TLhs, TRhs, DIM0>(bb,_rhs.self());
 }
 #else
 template<typename TLhs, typename TRhs, size_t DIM0,
-         typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
-                                 std::is_arithmetic<TRhs>::value && !std::is_integral<TRhs>::value,bool>::type = 0 >
+         typename std::enable_if<!is_primitive_v_<TLhs> &&
+                                 is_primitive_v_<TRhs> && !std::is_integral<TRhs>::value,bool>::type = 0 >
 FASTOR_INLINE BinaryMulOp<TLhs, TRhs, DIM0> operator/(const AbstractTensor<TLhs,DIM0> &_lhs, TRhs bb) {
   return BinaryMulOp<TLhs, TRhs, DIM0>(
     _lhs.self(),
     static_cast<typename scalar_type_finder<TLhs>::type>(1)/static_cast<typename scalar_type_finder<TLhs>::type>(bb));
 }
 template<typename TLhs, typename TRhs, size_t DIM0,
-         typename std::enable_if<std::is_arithmetic<TLhs>::value && !std::is_integral<TRhs>::value &&
-                                 !std::is_arithmetic<TRhs>::value,bool>::type = 0 >
+         typename std::enable_if<is_primitive_v_<TLhs> && !std::is_integral<TRhs>::value &&
+                                 !is_primitive_v_<TRhs>,bool>::type = 0 >
 FASTOR_INLINE BinaryMulOp<TLhs, TRhs, DIM0> operator/(TLhs bb, const AbstractTensor<TRhs,DIM0> &_rhs) {
   return BinaryMulOp<TLhs, TRhs, DIM0>(
     static_cast<typename scalar_type_finder<TLhs>::type>(1)/static_cast<typename scalar_type_finder<TLhs>::type>(bb),
@@ -278,14 +278,14 @@ FASTOR_INLINE BinaryMulOp<TLhs, TRhs, DIM0> operator/(TLhs bb, const AbstractTen
 }
 // Special case for integral types
 template<typename TLhs, typename TRhs, size_t DIM0,
-         typename std::enable_if<!std::is_arithmetic<TLhs>::value &&
-                                 std::is_arithmetic<TRhs>::value  && std::is_integral<TRhs>::value,bool>::type = 0 >
+         typename std::enable_if<!is_primitive_v_<TLhs> &&
+                                 is_primitive_v_<TRhs>  && std::is_integral<TRhs>::value,bool>::type = 0 >
 FASTOR_INLINE BinaryDivOp<TLhs, TRhs, DIM0> operator/(const AbstractTensor<TLhs,DIM0> &_lhs, TRhs bb) {
   return BinaryDivOp<TLhs, TRhs, DIM0>(_lhs.self(), bb);
 }
 template<typename TLhs, typename TRhs, size_t DIM0,
-         typename std::enable_if<std::is_arithmetic<TLhs>::value && std::is_integral<TRhs>::value &&
-                                 !std::is_arithmetic<TRhs>::value,bool>::type = 0 >
+         typename std::enable_if<is_primitive_v_<TLhs> && std::is_integral<TRhs>::value &&
+                                 !is_primitive_v_<TRhs>,bool>::type = 0 >
 FASTOR_INLINE BinaryDivOp<TLhs, TRhs, DIM0> operator/(TLhs bb, const AbstractTensor<TRhs,DIM0> &_rhs) {
   return BinaryDivOp<TLhs, TRhs, DIM0>(bb,_rhs.self());
 }

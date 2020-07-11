@@ -964,7 +964,7 @@ public:
 
     // Scalar binders
     //------------------------------------------------------------------------------------//
-    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
     void operator=(U num) {
         T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -985,7 +985,7 @@ public:
 #endif
     }
 
-    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
     void operator+=(U num) {
         T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1006,7 +1006,7 @@ public:
 #endif
     }
 
-    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
     void operator-=(U num) {
         T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1027,7 +1027,7 @@ public:
 #endif
     }
 
-    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
     void operator*=(U num) {
         T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1048,7 +1048,7 @@ public:
 #endif
     }
 
-    template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && !is_integral_v_<U>,bool> = false>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U> && !is_integral_v_<U>,bool> = false>
     void operator/=(U num) {
         T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN
@@ -1070,7 +1070,7 @@ public:
         }
 #endif
     }
-    template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && is_integral_v_<U>,bool> = false>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U> && is_integral_v_<U>,bool> = false>
     void operator/=(U num) {
         T *_data = _expr.data();
 #ifdef FASTOR_USE_VECTORISED_EXPR_ASSIGN

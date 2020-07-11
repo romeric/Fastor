@@ -1189,7 +1189,7 @@ public:
 
     // scalar binders
     //----------------------------------------------------------------------------------//
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
     void operator=(U num) {
 
         T *_data = _expr.data();
@@ -1243,7 +1243,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
     void operator+=(U num) {
 
         T *_data = _expr.data();
@@ -1300,7 +1300,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
     void operator-=(U num) {
 
         T *_data = _expr.data();
@@ -1357,7 +1357,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
     void operator*=(U num) {
 
         T *_data = _expr.data();
@@ -1414,7 +1414,7 @@ public:
         }
     }
 
-    template<typename U=T, typename std::enable_if<std::is_arithmetic<U>::value,bool>::type=0>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
     void operator/=(U num) {
 
         T *_data = _expr.data();

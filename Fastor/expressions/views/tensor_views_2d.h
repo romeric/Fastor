@@ -881,7 +881,7 @@ public:
 
     // Scalar binders
     //----------------------------------------------------------------------------------//
-    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
     FASTOR_INLINE void operator=(U num) {
         T *_data = _expr.data();
         SIMDVector<T,simd_abi_type> _vec_other(static_cast<T>(num));
@@ -917,7 +917,7 @@ public:
         }
     }
 
-    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
     FASTOR_INLINE void operator+=(U num) {
         T *_data = _expr.data();
         SIMDVector<T,simd_abi_type> _vec_other(static_cast<T>(num));
@@ -955,7 +955,7 @@ public:
         }
     }
 
-    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
     FASTOR_INLINE void operator-=(U num) {
         T *_data = _expr.data();
         SIMDVector<T,simd_abi_type> _vec_other(static_cast<T>(num));
@@ -993,7 +993,7 @@ public:
         }
     }
 
-    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
     FASTOR_INLINE void operator*=(U num) {
         T *_data = _expr.data();
         SIMDVector<T,simd_abi_type> _vec_other(static_cast<T>(num));
@@ -1031,7 +1031,7 @@ public:
         }
     }
 
-    template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && !is_integral_v_<U>,bool> = false>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U> && !is_integral_v_<U>,bool> = false>
     FASTOR_INLINE void operator/=(U num) {
         T *_data = _expr.data();
         T inum = T(1.0)/T(num);
@@ -1071,7 +1071,7 @@ public:
         }
 #endif
     }
-    template<typename U=T, enable_if_t_<is_arithmetic_v_<U> && is_integral_v_<U>,bool> = false>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U> && is_integral_v_<U>,bool> = false>
     FASTOR_INLINE void operator/=(U num) {
         T *_data = _expr.data();
         SIMDVector<T,simd_abi_type> _vec_other(static_cast<T>(num));

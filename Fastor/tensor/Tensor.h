@@ -48,7 +48,7 @@ public:
     };
 
     // Constructor from a scalar
-    template<typename U=T, enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
     FASTOR_INLINE Tensor(U num) {
         assign(*this, num);
     }

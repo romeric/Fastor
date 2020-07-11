@@ -1019,7 +1019,7 @@ FASTOR_INLINE void arrange_for_store(__m512d &lo, __m512d &hi, __m512d value_r, 
 
 //----------------------------------------------------------------------------------------------------------------//
 // Additional math functions for scalars -> the name sqrts is to remove ambiguity with libm sqrt
-template<typename T, typename std::enable_if<std::is_arithmetic<T>::value,bool>::type=0>
+template<typename T, enable_if_t_<is_primitive_v_<T>,bool> = false>
 FASTOR_INLINE T sqrts(T a) {return std::sqrt(a);}
 #ifdef FASTOR_SSE2_IMPL
 template<>

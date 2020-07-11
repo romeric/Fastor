@@ -132,7 +132,7 @@ FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, const Ab
 
 //----------------------------------------------------------------------------------------------------------//
 template<typename Derived, size_t DIM, typename U,
-    enable_if_t_<is_arithmetic_v_<U>, bool> = false>
+    enable_if_t_<is_primitive_v_<U>, bool> = false>
 FASTOR_INLINE void trivial_assign(AbstractTensor<Derived,DIM> &dst, U num) {
     using T = typename Derived::scalar_type;
     using V = typename Derived::simd_vector_type;
@@ -149,7 +149,7 @@ FASTOR_INLINE void trivial_assign(AbstractTensor<Derived,DIM> &dst, U num) {
 }
 
 template<typename Derived, size_t DIM, typename U,
-    enable_if_t_<is_arithmetic_v_<U>, bool> = false>
+    enable_if_t_<is_primitive_v_<U>, bool> = false>
 FASTOR_INLINE void trivial_assign_add(AbstractTensor<Derived,DIM> &dst, U num) {
     using T = typename Derived::scalar_type;
     using V = typename Derived::simd_vector_type;
@@ -168,7 +168,7 @@ FASTOR_INLINE void trivial_assign_add(AbstractTensor<Derived,DIM> &dst, U num) {
 }
 
 template<typename Derived, size_t DIM, typename U,
-    enable_if_t_<is_arithmetic_v_<U>, bool> = false>
+    enable_if_t_<is_primitive_v_<U>, bool> = false>
 FASTOR_INLINE void trivial_assign_sub(AbstractTensor<Derived,DIM> &dst, U num) {
     using T = typename Derived::scalar_type;
     using V = typename Derived::simd_vector_type;
@@ -187,7 +187,7 @@ FASTOR_INLINE void trivial_assign_sub(AbstractTensor<Derived,DIM> &dst, U num) {
 }
 
 template<typename Derived, size_t DIM, typename U,
-    enable_if_t_<is_arithmetic_v_<U>, bool> = false>
+    enable_if_t_<is_primitive_v_<U>, bool> = false>
 FASTOR_INLINE void trivial_assign_mul(AbstractTensor<Derived,DIM> &dst, U num) {
     using T = typename Derived::scalar_type;
     using V = typename Derived::simd_vector_type;
@@ -206,7 +206,7 @@ FASTOR_INLINE void trivial_assign_mul(AbstractTensor<Derived,DIM> &dst, U num) {
 }
 
 template<typename Derived, size_t DIM, typename U,
-    enable_if_t_<is_arithmetic_v_<U> && !is_integral_v_<U>, bool> = false>
+    enable_if_t_<is_primitive_v_<U> && !is_integral_v_<U>, bool> = false>
 FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
     using T = typename Derived::scalar_type;
     using V = typename Derived::simd_vector_type;
@@ -224,7 +224,7 @@ FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
     }
 }
 template<typename Derived, size_t DIM, typename U,
-    enable_if_t_<is_arithmetic_v_<U> && is_integral_v_<U>, bool> = false>
+    enable_if_t_<is_primitive_v_<U> && is_integral_v_<U>, bool> = false>
 FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
     using T = typename Derived::scalar_type;
     using V = typename Derived::simd_vector_type;
@@ -267,27 +267,27 @@ FASTOR_INLINE void assign_div(AbstractTensor<Derived,DIM> &dst, const Tensor<T,R
 }
 
 template<typename Derived, size_t DIM, typename U,
-    enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    enable_if_t_<is_primitive_v_<U>,bool> = false>
 FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, U num) {
     trivial_assign(dst.self(),num);
 }
 template<typename Derived, size_t DIM, typename U,
-    enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    enable_if_t_<is_primitive_v_<U>,bool> = false>
 FASTOR_INLINE void assign_add(AbstractTensor<Derived,DIM> &dst, U num) {
     trivial_assign_add(dst.self(),num);
 }
 template<typename Derived, size_t DIM, typename U,
-    enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    enable_if_t_<is_primitive_v_<U>,bool> = false>
 FASTOR_INLINE void assign_sub(AbstractTensor<Derived,DIM> &dst, U num) {
     trivial_assign_sub(dst.self(),num);
 }
 template<typename Derived, size_t DIM, typename U,
-    enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    enable_if_t_<is_primitive_v_<U>,bool> = false>
 FASTOR_INLINE void assign_mul(AbstractTensor<Derived,DIM> &dst, U num) {
     trivial_assign_mul(dst.self(),num);
 }
 template<typename Derived, size_t DIM, typename U,
-    enable_if_t_<is_arithmetic_v_<U>,bool> = false>
+    enable_if_t_<is_primitive_v_<U>,bool> = false>
 FASTOR_INLINE void assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
     trivial_assign_div(dst.self(),num);
 }

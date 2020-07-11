@@ -23,7 +23,8 @@ FASTOR_INLINE size_t count_swaps(const Tensor<T,M,N>& A) {
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            if (A(i, j) > A(max_index, j))
+            // std::abs is necessary only for complex valued numbers
+            if (std::abs(A(i, j)) > std::abs(A(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -43,7 +44,8 @@ FASTOR_INLINE Tensor<T,M,N> pivot(const Tensor<T,M,N>& A) {
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            if (A(i, j) > A(max_index, j))
+            // std::abs is necessary only for complex valued numbers
+            if (std::abs(A(i, j)) > std::abs(A(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -63,7 +65,8 @@ FASTOR_INLINE Tensor<size_t,M> pivot(const Tensor<T,M,N>& A) {
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            if (A(i, j) > A(max_index, j))
+            // std::abs is necessary only for complex valued numbers
+            if (std::abs(A(i, j)) > std::abs(A(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -108,7 +111,8 @@ pivot(const AbstractTensor<Derived,DIM>& src) {
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            if (A.template eval_s<T>(i, j) > A.template eval_s<T>(max_index, j))
+            // std::abs is necessary only for complex valued numbers
+            if (std::abs(A.template eval_s<T>(i, j)) > std::abs(A.template eval_s<T>(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -152,7 +156,8 @@ pivot(const AbstractTensor<Derived,DIM>& src) {
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            if (A.template eval_s<T>(i, j) > A.template eval_s<T>(max_index, j))
+            // std::abs is necessary only for complex valued numbers
+            if (std::abs(A.template eval_s<T>(i, j)) > std::abs(A.template eval_s<T>(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -169,7 +174,8 @@ FASTOR_INLINE void pivot_inplace(const Tensor<T,M,N>& A, Tensor<size_t,M>& perm)
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            if (A(i, j) > A(max_index, j))
+            // std::abs is necessary only for complex valued numbers
+            if (std::abs(A(i, j)) > std::abs(A(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -184,7 +190,8 @@ FASTOR_INLINE void pivot_inplace(const Tensor<T,M,N>& A, Tensor<T,M,N> &P) {
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            if (A(i, j) > A(max_index, j))
+            // std::abs is necessary only for complex valued numbers
+            if (std::abs(A(i, j)) > std::abs(A(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -219,7 +226,8 @@ pivot_inplace(const AbstractTensor<Derived,DIM>& src, Tensor<size_t,M> &perm) {
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            if (A.template eval_s<T>(i, j) > A.template eval_s<T>(max_index, j))
+            // std::abs is necessary only for complex valued numbers
+            if (std::abs(A.template eval_s<T>(i, j)) > std::abs(A.template eval_s<T>(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -250,7 +258,8 @@ pivot_inplace(const AbstractTensor<Derived,DIM>& src, Tensor<T,M,N> &P) {
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            if (A.template eval_s<T>(i, j) > A.template eval_s<T>(max_index, j))
+            // std::abs is necessary only for complex valued numbers
+            if (std::abs(A.template eval_s<T>(i, j)) > std::abs(A.template eval_s<T>(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -283,7 +292,7 @@ FASTOR_INLINE Tensor<T,M,N> apply_pivot(const Tensor<T,M,N>& A, const Tensor<T,M
     // the call to matmul
     Tensor<T,M,N> copyA(A);
     for (size_t i=0; i< M; ++i) {
-        auto it = std::find(&P.data()[i*N],&P.data()[i*N+N],1);
+        auto it = std::find(&P.data()[i*N],&P.data()[i*N+N],T(1));
         size_t p = std::distance(&P.data()[i*N],it);
         // Swap row p and i
         if (p != i) {
@@ -308,7 +317,7 @@ FASTOR_INLINE void apply_pivot_inplace(Tensor<T,M,N>& A, const Tensor<T,M,N>& P)
     // the call to matmul
     Tensor<T,M,N> copyA(A);
     for (size_t i=0; i< M; ++i) {
-        auto it = std::find(&P.data()[i*N],&P.data()[i*N+N],1);
+        auto it = std::find(&P.data()[i*N],&P.data()[i*N+N],T(1));
         size_t p = std::distance(&P.data()[i*N],it);
         // Swap row p and i
         if (p != i) {
@@ -355,7 +364,7 @@ FASTOR_INLINE Tensor<T,M,N> reconstruct(const Tensor<T,M,N>& L, Tensor<T,M,N>& U
     Tensor<T,M,N> A = matmul(L,U);
     Tensor<T,M,N> copyA(A);
     for (size_t i=0; i< M; ++i) {
-        auto it = std::find(&P.data()[i*N],&P.data()[i*N+N],1);
+        auto it = std::find(&P.data()[i*N],&P.data()[i*N+N],T(1));
         size_t p = std::distance(&P.data()[i*N],it);
         if (p != i) {
             std::copy_n(&copyA.data()[i*N],N,&A.data()[p*N]);

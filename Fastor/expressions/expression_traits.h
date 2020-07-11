@@ -269,11 +269,11 @@ static constexpr bool has_tensor_fixed_view_nd_v = has_tensor_fixed_view_nd<Deri
 template<typename T, typename T2 = void>
 struct get_binary_arithmetic_result_type;
 template<typename T>
-struct get_binary_arithmetic_result_type<T, enable_if_t_<is_arithmetic_v_<T> > > {
+struct get_binary_arithmetic_result_type<T, enable_if_t_<is_primitive_v_<T> > > {
     using type = T;
 };
 template<typename T>
-struct get_binary_arithmetic_result_type<T, enable_if_t_<!is_arithmetic_v_<T> > > {
+struct get_binary_arithmetic_result_type<T, enable_if_t_<!is_primitive_v_<T> > > {
     using type = typename T::result_type;
 };
 
@@ -281,7 +281,7 @@ template<class Derived>
 struct binary_arithmetic_result_type;
 template<template<typename,typename,size_t> class BinaryExpr, typename TLhs, typename TRhs, size_t DIM0>
 struct binary_arithmetic_result_type< BinaryExpr<TLhs,TRhs,DIM0> > {
-    using type = conditional_t_<!is_arithmetic_v_<TLhs>,
+    using type = conditional_t_<!is_primitive_v_<TLhs>,
         typename get_binary_arithmetic_result_type<TLhs>::type,
         typename get_binary_arithmetic_result_type<TRhs>::type >;
 };
@@ -295,11 +295,11 @@ using binary_arithmetic_result_t = typename binary_arithmetic_result_type<Derive
 template<typename T, typename T2 = void>
 struct get_binary_op_simd_vector_type;
 template<typename T>
-struct get_binary_op_simd_vector_type<T, enable_if_t_<is_arithmetic_v_<T> > > {
+struct get_binary_op_simd_vector_type<T, enable_if_t_<is_primitive_v_<T> > > {
     using type = T;
 };
 template<typename T>
-struct get_binary_op_simd_vector_type<T, enable_if_t_<!is_arithmetic_v_<T> > > {
+struct get_binary_op_simd_vector_type<T, enable_if_t_<!is_primitive_v_<T> > > {
     using type = typename T::simd_vector_type;
 };
 
@@ -307,7 +307,7 @@ template<class Derived>
 struct binary_op_simd_vector_type;
 template<template<typename,typename,size_t> class BinaryExpr, typename TLhs, typename TRhs, size_t DIM0>
 struct binary_op_simd_vector_type< BinaryExpr<TLhs,TRhs,DIM0> > {
-    using type = conditional_t_<!is_arithmetic_v_<TLhs>,
+    using type = conditional_t_<!is_primitive_v_<TLhs>,
         typename get_binary_op_simd_vector_type<TLhs>::type,
         typename get_binary_op_simd_vector_type<TRhs>::type >;
 };

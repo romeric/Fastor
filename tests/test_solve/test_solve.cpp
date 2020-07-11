@@ -268,6 +268,35 @@ void test_solve() {
         FASTOR_EXIT_ASSERT(std::abs(sum(solve<SolveCompType::SimpleLUPiv>(A,b) - sol)) < BigTol);
     }
 
+    // complex valued solve
+    {
+        using TT = std::complex<double>;
+        constexpr size_t M = 3;
+        Tensor<size_t,M> p;
+        Tensor<T,M,M> L, U, P;
+
+        Tensor<TT,M,M> A;
+        for (int i = 0; i < M; ++i)
+        {
+            for (int j = 0; j < M; ++j) {
+                A(i, j) = TT(i,j);
+                if (i==j) A(i, j) *= 1000;
+            }
+        }
+
+        Tensor<TT,M> b(TT(0,0));
+        b(0) = TT(1,0);
+
+        // Tensor<TT,M>   x0 = solve<SolveCompType::SimpleInv>(A,b);
+        // FASTOR_EXIT_ASSERT(std::abs(std::abs(sum(x0)) - 471.404756493233) < BigTol);
+
+        Tensor<TT,M>   x1 = solve<SolveCompType::SimpleLUPiv>(A,b);
+        FASTOR_EXIT_ASSERT(std::abs(std::abs(sum(x1)) - 471.404756493233) < BigTol);
+
+        Tensor<TT,M>   x2 = solve<SolveCompType::BlockLUPiv>(A,b);
+        FASTOR_EXIT_ASSERT(std::abs(std::abs(sum(x2)) - 471.404756493233) < BigTol);
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 
 }

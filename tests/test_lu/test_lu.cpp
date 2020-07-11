@@ -311,6 +311,35 @@ void test_factorisation() {
             lu<LUCompType::SimpleLUPiv>(A, L, U, P);
             FASTOR_EXIT_ASSERT(std::abs(sum(A - reconstruct(L, U, P))) < BigTol);
         }
+
+        // LU 3x3 - std::complex LU
+        {
+            using TT = std::complex<double>;
+            constexpr size_t M = 3;
+            Tensor<size_t,M> p;
+            Tensor<TT,M,M> L, U, P;
+
+            Tensor<TT,M,M> A;
+            for (int i = 0; i < M; ++i)
+            {
+                for (int j = 0; j < M; ++j) {
+                    A(i, j) = TT(i,j);
+                    if (i==j) A(i, j) *= 1000;
+                }
+            }
+
+            lu<LUCompType::BlockLUPiv>(A, L, U, p);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - reconstruct(L, U, p))) < BigTol);
+
+            lu<LUCompType::BlockLUPiv>(A, L, U, P);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - reconstruct(L, U, P))) < BigTol);
+
+            lu<LUCompType::SimpleLUPiv>(A, L, U, p);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - reconstruct(L, U, p))) < BigTol);
+
+            lu<LUCompType::SimpleLUPiv>(A, L, U, P);
+            FASTOR_EXIT_ASSERT(std::abs(sum(A - reconstruct(L, U, P))) < BigTol);
+        }
     }
 
     print(FGRN(BOLD("All tests passed successfully")));
