@@ -387,6 +387,20 @@ FASTOR_INLINE Tensor<T,M,N> reconstruct(const Tensor<T,M,N>& A, const Tensor<siz
     return copyA;
 }
 
+/* Reconstructing the matrix back from a pivot only - column-wise or rather post multiplication
+    used for computing inverse
+*/
+template <typename T, size_t M, size_t N>
+FASTOR_INLINE Tensor<T,M,N> reconstruct_colwise(const Tensor<T,M,N>& A, const Tensor<size_t,M>& P) {
+    Tensor<T,M,N> copyA(A);
+    for (size_t i=0; i< M; ++i) {
+        if (P(i) != i) {
+            copyA(all,P(i)) = A(all,i);
+        }
+    }
+    return copyA;
+}
+
 
 
 } // end of namespace Fastor

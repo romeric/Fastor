@@ -585,19 +585,19 @@ template<InvCompType InvType = InvCompType::SimpleInv,
     typename T, size_t M, enable_if_t_<InvType == InvCompType::SimpleInvPiv,bool> = false>
 FASTOR_INLINE Tensor<T,M,M> inverse(const Tensor<T,M,M> &in) {
     Tensor<T,M,M> out;
-    /* // The followin won't work we need to post multiply - swap columns using row perm
+    // We need to post multiply - swap columns using row permutation vector
     Tensor<size_t,M> P;
     pivot_inplace(in,P);
     auto A(apply_pivot(in,P));
     internal::inverse_dispatcher(A,out);
-    return reconstruct(out,P);
-    */
+    return reconstruct_colwise(out,P);
 
-    Tensor<T,M,M> P;
-    pivot_inplace(in,P);
-    auto A(apply_pivot(in,P));
-    internal::inverse_dispatcher(A,out);
-    return matmul(out,P);
+    // // matrix version
+    // Tensor<T,M,M> P;
+    // pivot_inplace(in,P);
+    // auto A(apply_pivot(in,P));
+    // internal::inverse_dispatcher(A,out);
+    // return matmul(out,P);
 }
 
 // For high order tensors
