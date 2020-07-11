@@ -16,6 +16,18 @@
 
 namespace Fastor {
 
+// Implementation of STL iota to work on other types such as
+// std::complex. For std::complex iota_impl increments the real
+// part only
+template<class ForwardIt, class T>
+inline void iota_impl(ForwardIt first, ForwardIt last, T value)
+{
+    while(first != last) {
+        *first++ = value;
+        value += T(1);
+    }
+}
+
 template <typename T, size_t N>
 inline std::array<int,N> argsort(const std::array<T,N> &v) {
   std::array<int,N> idx;

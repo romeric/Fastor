@@ -12,11 +12,11 @@ FASTOR_INLINE void fill(T num0) {
 }
 
 FASTOR_INLINE void iota(T num0=0) {
-    std::iota(_data, &_data[size()], num0);
+    iota_impl(_data, &_data[size()], num0);
 }
 
 FASTOR_INLINE void arange(T num0=0) {
-    std::iota(_data, &_data[size()], num0);
+    iota_impl(_data, &_data[size()], num0);
     // T num = static_cast<T>(num0);
     // using V = SIMDVector<T,simd_abi_type>;
     // V _vec;
