@@ -277,9 +277,9 @@ These expressions are not treated as special cases but rather the **Einstein ind
 
 For tensor networks comprising of many higher rank tensors, a full generalisation of the above mathematical transformation can be performed through a constructive graph search optimisation. This typically involves finding the most optimal pattern of tensor contraction by studying the indices of contraction wherein tensor pairs are multiplied, summed over and factorised out in all possible combinations in order to come up with a cost model. Once again, knowing the dimensions of the tensor and the contraction pattern, Fastor performs this operation minimisation step at *compile time* and further checks the SIMD vectorisability of the tensor contraction loop nest (i.e. full/partial/strided vectorisation). In a nutshell, it not only minimises the the number of floating point operations but also generates the most optimal vectorisable loop nest for attaining theoretical peak for those remaining FLOPs. The following figures show the benefit of operation minimisation (FLOP optimal) over a single expression evaluation (Memory-optimal - as temporaries are not created) approach (for instance, NumPy's `einsum` uses the single expression evaluation technique where the whole expression in `einsum` is computed without being broken up in to smaller computations) in contracting a three-tensor-network fitting in `L1`, `L2` and `L3` caches, respectively
 <p align="left">
-  <img src="docs/imgs/05l1.png" width="280">
-  <img src="docs/imgs/05l2.png" width="280">
-  <img src="docs/imgs/05l3.png" width="280">
+  <img src="docs/imgs/05l1.png" width="250">
+  <img src="docs/imgs/05l2.png" width="250">
+  <img src="docs/imgs/05l3.png" width="250">
 </p>
 The x-axis shows the number FLOPS saved/reduced over single expression evaluation technique. Certainly, the bigger the size of tensors the more reduction in FLOPs is necessary to compensate for the temporaries created during by-pair (FLOP optimal) evaluation.
 
