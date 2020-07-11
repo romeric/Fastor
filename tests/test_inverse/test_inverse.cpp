@@ -86,6 +86,42 @@ void test_inverse() {
         FASTOR_EXIT_ASSERT(std::abs(sum(inverse<InvCompType::BlockLUPiv>(a0+0))   - 0.027748441684078293) < BigTol);
     }
 
+    // Check SimpleInvPiv - issue 110
+    {
+        using TT = double;
+        constexpr size_t M = 6;
+        Tensor<size_t,M> p;
+        Tensor<TT,M,M> L, U, P;
+
+        Tensor<TT,M,M> A;
+        for (int i = 0; i < M; ++i)
+        {
+            for (int j = 0; j < M; ++j) {
+                A(i, j) = TT(i+j);
+                if (i==j) A(i, j) *= 1000;
+            }
+        }
+
+        FASTOR_EXIT_ASSERT(std::abs(sum(inverse<InvCompType::SimpleInvPiv>(A))   - sum(inverse(A))) < BigTol);
+    }
+    {
+        using TT = std::complex<double>;
+        constexpr size_t M = 6;
+        Tensor<size_t,M> p;
+        Tensor<TT,M,M> L, U, P;
+
+        Tensor<TT,M,M> A;
+        for (int i = 0; i < M; ++i)
+        {
+            for (int j = 0; j < M; ++j) {
+                A(i, j) = TT(i,j);
+                if (i==j) A(i, j) *= 1000;
+            }
+        }
+
+        FASTOR_EXIT_ASSERT(std::abs(sum(inverse<InvCompType::SimpleInvPiv>(A))   - sum(inverse(A))) < BigTol);
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 
 }

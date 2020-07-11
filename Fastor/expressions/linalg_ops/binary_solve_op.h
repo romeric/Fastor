@@ -28,11 +28,18 @@ FASTOR_INLINE Tensor<T,I> solve(const Tensor<T,I,I> &A, const Tensor<T,I> &b) {
 template<SolveCompType SType = SolveCompType::SimpleInv, typename T, size_t I,
     enable_if_t_< SType == SolveCompType::SimpleInvPiv, bool> = false>
 FASTOR_INLINE Tensor<T,I> solve(const Tensor<T,I,I> &A, const Tensor<T,I> &b) {
+    /* // The followin won't work we need to post multiply - swap columns using row perm
     Tensor<size_t,I> p;
     pivot_inplace(A,p);
     auto tmp(apply_pivot(A,p));
     Tensor<T,I,I> invA = inverse<InvCompType::SimpleInv>(tmp);
     return matmul(reconstruct(invA,p),b);
+    */
+    Tensor<T,I,I> p;
+    pivot_inplace(A,p);
+    auto tmp(apply_pivot(A,p));
+    Tensor<T,I,I> invA = inverse<InvCompType::SimpleInv>(tmp);
+    return matmul(matmul(invA,p),b);
 }
 
 // Multiple right hand sides
