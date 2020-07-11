@@ -233,19 +233,22 @@ FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx,
 template<typename T, typename ABI,
          typename std::enable_if<sizeof(T)==16 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==128,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
-    vec.set(data[idx]);
+    vec.set(data[idx+general_stride],data[idx]);
 }
 // 16 word AVX
 template<typename T, typename ABI,
          typename std::enable_if<sizeof(T)==16 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==256,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
-    vec.set(data[idx+general_stride],data[idx]);
+    vec.set(data[idx+3*general_stride],data[idx+2*general_stride],
+            data[idx+general_stride],data[idx]);
 }
 // 16 word AVX 512
 template<typename T, typename ABI,
          typename std::enable_if<sizeof(T)==16 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==512,bool>::type=0>
 FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, int idx, int general_stride) {
-    vec.set(data[idx+3*general_stride],data[idx+2*general_stride],
+    vec.set(data[idx+7*general_stride],data[idx+6*general_stride],
+            data[idx+5*general_stride],data[idx+4*general_stride],
+            data[idx+3*general_stride],data[idx+2*general_stride],
             data[idx+general_stride],data[idx]);
 }
 //----------------------------------------------------------------------------------------------------------------
