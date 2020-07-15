@@ -159,7 +159,7 @@ FASTOR_INLINE int _mm_sum_epi32(__m128i a) {
     return _mm_cvtsi128_si32(d);
 }
 
-static int _mm_prod_epi32(__m128i a) {
+FASTOR_INLINE int _mm_prod_epi32(__m128i a) {
     // IVY 13 - HW 13 - SKY 12
     __m128i c = _mm_mul_epu32(a,_mm_shuffle_epi32(a,_MM_SHUFFLE(2,3,0,1)));
     __m128i d = _mm_mul_epu32(c,_mm_shuffle_epi32(c,_MM_SHUFFLE(2,2,2,2)));
