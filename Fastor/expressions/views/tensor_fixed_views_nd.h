@@ -267,7 +267,7 @@ public:
     // View evalution operators
     // Copy assignment operators [Needed in addition to generic AbstractTensor overload]
     //----------------------------------------------------------------------------------//
-    void operator=(const TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...> &other) {
+    FASTOR_HINT_INLINE void operator=(const TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...> &other) {
 #if !(FASTOR_NO_ALIAS)
         if (_does_alias) {
             _does_alias = false;
@@ -351,12 +351,12 @@ public:
     // AbstractTensor binders [equal order]
     //----------------------------------------------------------------------------------//
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && requires_evaluation_v<Derived>,bool> = false>
-    void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
         const typename Derived::result_type& tmp = evaluate(other.self());
         this->operator=(tmp);
     }
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && !requires_evaluation_v<Derived>,bool> = false>
-    void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
         if (_does_alias) {
             _does_alias = false;
@@ -467,12 +467,12 @@ public:
         }
     }
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && requires_evaluation_v<Derived>,bool> = false>
-    void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
         const typename Derived::result_type& tmp = evaluate(other.self());
         this->operator+=(tmp);
     }
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && !requires_evaluation_v<Derived>,bool> = false>
-    void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
         if (_does_alias) {
             _does_alias = false;
@@ -548,12 +548,12 @@ public:
 
 
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && requires_evaluation_v<Derived>,bool> = false>
-    void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
         const typename Derived::result_type& tmp = evaluate(other.self());
         this->operator-=(tmp);
     }
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && !requires_evaluation_v<Derived>,bool> = false>
-    void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
         if (_does_alias) {
             _does_alias = false;
@@ -628,12 +628,12 @@ public:
     }
 
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && requires_evaluation_v<Derived>,bool> = false>
-    void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
         const typename Derived::result_type& tmp = evaluate(other.self());
         this->operator*=(tmp);
     }
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && !requires_evaluation_v<Derived>,bool> = false>
-    void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
         if (_does_alias) {
             _does_alias = false;
@@ -708,12 +708,12 @@ public:
     }
 
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && requires_evaluation_v<Derived>,bool> = false>
-    void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
         const typename Derived::result_type& tmp = evaluate(other.self());
         this->operator/=(tmp);
     }
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS==DIMS && !requires_evaluation_v<Derived>,bool> = false>
-    void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
         if (_does_alias) {
             _does_alias = false;
@@ -792,12 +792,12 @@ public:
    // AbstractTensor binders [non-equal orders]
     //----------------------------------------------------------------------------------//
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && requires_evaluation_v<Derived>,bool> = false>
-    void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
         const typename Derived::result_type& tmp = evaluate(other.self());
         this->operator=(tmp);
     }
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && !requires_evaluation_v<Derived>,bool> = false>
-    void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
         if (_does_alias) {
             _does_alias = false;
@@ -869,12 +869,12 @@ public:
     }
 
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && requires_evaluation_v<Derived>,bool> = false>
-    void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
         const typename Derived::result_type& tmp = evaluate(other.self());
         this->operator+=(tmp);
     }
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && !requires_evaluation_v<Derived>,bool> = false>
-    void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator+=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
         if (_does_alias) {
             _does_alias = false;
@@ -949,12 +949,12 @@ public:
     }
 
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && requires_evaluation_v<Derived>,bool> = false>
-    void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
         const typename Derived::result_type& tmp = evaluate(other.self());
         this->operator-=(tmp);
     }
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && !requires_evaluation_v<Derived>,bool> = false>
-    void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator-=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
         if (_does_alias) {
             _does_alias = false;
@@ -1028,12 +1028,12 @@ public:
     }
 
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && requires_evaluation_v<Derived>,bool> = false>
-    void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
         const typename Derived::result_type& tmp = evaluate(other.self());
         this->operator*=(tmp);
     }
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && !requires_evaluation_v<Derived>,bool> = false>
-    void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator*=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
         if (_does_alias) {
             _does_alias = false;
@@ -1108,12 +1108,12 @@ public:
     }
 
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && requires_evaluation_v<Derived>,bool> = false>
-    void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
         const typename Derived::result_type& tmp = evaluate(other.self());
         this->operator/=(tmp);
     }
     template<typename Derived, size_t OTHER_DIMS, enable_if_t_<OTHER_DIMS!=DIMS && !requires_evaluation_v<Derived>,bool> = false>
-    void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
+    FASTOR_HINT_INLINE void operator/=(const AbstractTensor<Derived,OTHER_DIMS> &other) {
 #if !(FASTOR_NO_ALIAS)
         if (_does_alias) {
             _does_alias = false;
@@ -1190,7 +1190,7 @@ public:
     // scalar binders
     //----------------------------------------------------------------------------------//
     template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
-    void operator=(U num) {
+    FASTOR_HINT_INLINE void operator=(U num) {
 
         T *_data = _expr.data();
         std::array<int,DIMS> as = {};
@@ -1244,7 +1244,7 @@ public:
     }
 
     template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
-    void operator+=(U num) {
+    FASTOR_HINT_INLINE void operator+=(U num) {
 
         T *_data = _expr.data();
         std::array<int,DIMS> as = {};
@@ -1301,7 +1301,7 @@ public:
     }
 
     template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
-    void operator-=(U num) {
+    FASTOR_HINT_INLINE void operator-=(U num) {
 
         T *_data = _expr.data();
         std::array<int,DIMS> as = {};
@@ -1358,7 +1358,7 @@ public:
     }
 
     template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
-    void operator*=(U num) {
+    FASTOR_HINT_INLINE void operator*=(U num) {
 
         T *_data = _expr.data();
         std::array<int,DIMS> as = {};
@@ -1415,7 +1415,7 @@ public:
     }
 
     template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
-    void operator/=(U num) {
+    FASTOR_HINT_INLINE void operator/=(U num) {
 
         T *_data = _expr.data();
         std::array<int,DIMS> as = {};
