@@ -216,7 +216,11 @@ struct SIMDVector {
         return out;
     }
 
+#ifdef FASTOR_ZERO_INITIALISE
+    FASTOR_ARCH_ALIGN T value[Size] = {};
+#else
     FASTOR_ARCH_ALIGN T value[Size];
+#endif
 };
 
 template <typename T, typename ABI>
