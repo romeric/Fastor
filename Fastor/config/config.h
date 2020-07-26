@@ -107,6 +107,10 @@ SOFTWARE.
         #define FASTOR_CXX_VERSION 2014
     #elif _MSVC_LANG == 201703L
         #define FASTOR_CXX_VERSION 2017
+    #elif _MSVC_LANG > 201703L
+        #define FASTOR_CXX_VERSION 2020
+    #else
+        #error FASTOR REQUIRES AN ISO C++14 COMPLIANT COMPILER
     #endif
 #endif
 #else
@@ -119,6 +123,10 @@ SOFTWARE.
         #define FASTOR_CXX_VERSION 2014
     #elif __cplusplus == 201703L
         #define FASTOR_CXX_VERSION 2017
+    #elif __cplusplus > 201703L
+        #define FASTOR_CXX_VERSION 2020
+    #else
+        #error FASTOR REQUIRES AN ISO C++14 COMPLIANT COMPILER
     #endif
 #endif
 #endif

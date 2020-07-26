@@ -14,6 +14,7 @@
 
 namespace Fastor {
 
+#if FASTOR_CXX_VERSION >= 2014
 // The following set of functions implement by-pair as well as
 // network contraction/einsum for infinite number of expressions
 // the expressions are always evaluated so no aliasing occurs
@@ -24,10 +25,8 @@ namespace Fastor {
 //-------------------------------------------------------------------------------------------------
 template<class Index_I, typename Derived0, size_t DIM0,
     enable_if_t_<!is_tensor_v<Derived0>,bool> = false>
-typename contraction_impl<
-    Index_I,
-    typename Derived0::result_type,
-    typename std_ext::make_index_sequence<DIM0>::type>::type
+FASTOR_INLINE
+decltype(auto)
 contraction(const AbstractTensor<Derived0,DIM0> &a)
 {
     typename Derived0::result_type res_a(a);
@@ -39,10 +38,8 @@ contraction(const AbstractTensor<Derived0,DIM0> &a)
 //-------------------------------------------------------------------------------------------------
 template<class Index_I, typename Derived0, size_t DIM0,
     enable_if_t_<!is_tensor_v<Derived0>,bool> = false>
-typename contraction_impl<
-    Index_I,
-    typename Derived0::result_type,
-    typename std_ext::make_index_sequence<DIM0>::type>::type
+FASTOR_INLINE
+decltype(auto)
 einsum(const AbstractTensor<Derived0,DIM0> &a)
 {
     typename Derived0::result_type res_a(a);
@@ -55,10 +52,8 @@ einsum(const AbstractTensor<Derived0,DIM0> &a)
 //-------------------------------------------------------------------------------------------------
 template<class Index_I, class Index_J, typename Derived0, typename Derived1, size_t DIM0, size_t DIM1,
     enable_if_t_<!is_tensor_v<Derived0> && !is_tensor_v<Derived1>,bool> = false>
-typename contraction_impl<
-    concat_<Index_I,Index_J>,
-    typename concat_tensor<typename Derived0::result_type, typename Derived1::result_type>::type,
-    typename std_ext::make_index_sequence<DIM0+DIM1>::type>::type
+FASTOR_INLINE
+decltype(auto)
 contraction(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b)
 {
     typename Derived0::result_type res_a(a);
@@ -67,10 +62,8 @@ contraction(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived
 }
 template<class Index_I, class Index_J, typename Derived0, typename Derived1, size_t DIM0, size_t DIM1,
     enable_if_t_<is_tensor_v<Derived0> && !is_tensor_v<Derived1>,bool> = false>
-typename contraction_impl<
-    concat_<Index_I,Index_J>,
-    typename concat_tensor<typename Derived0::result_type, typename Derived1::result_type>::type,
-    typename std_ext::make_index_sequence<DIM0+DIM1>::type>::type
+FASTOR_INLINE
+decltype(auto)
 contraction(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b)
 {
     typename Derived1::result_type res_b(b);
@@ -78,10 +71,8 @@ contraction(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived
 }
 template<class Index_I, class Index_J, typename Derived0, typename Derived1, size_t DIM0, size_t DIM1,
     enable_if_t_<!is_tensor_v<Derived0> && is_tensor_v<Derived1>,bool> = false>
-typename contraction_impl<
-    concat_<Index_I,Index_J>,
-    typename concat_tensor<typename Derived0::result_type, typename Derived1::result_type>::type,
-    typename std_ext::make_index_sequence<DIM0+DIM1>::type>::type
+FASTOR_INLINE
+decltype(auto)
 contraction(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b)
 {
     typename Derived0::result_type res_a(a);
@@ -94,10 +85,8 @@ contraction(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived
 //-------------------------------------------------------------------------------------------------
 template<class Index_I, class Index_J, typename Derived0, typename Derived1, size_t DIM0, size_t DIM1,
     enable_if_t_<!is_tensor_v<Derived0> && !is_tensor_v<Derived1>,bool> = false>
-typename contraction_impl<
-    concat_<Index_I,Index_J>,
-    typename concat_tensor<typename Derived0::result_type, typename Derived1::result_type>::type,
-    typename std_ext::make_index_sequence<DIM0+DIM1>::type>::type
+FASTOR_INLINE
+decltype(auto)
 einsum(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b)
 {
     typename Derived0::result_type res_a(a);
@@ -106,10 +95,8 @@ einsum(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM
 }
 template<class Index_I, class Index_J, typename Derived0, typename Derived1, size_t DIM0, size_t DIM1,
     enable_if_t_<is_tensor_v<Derived0> && !is_tensor_v<Derived1>,bool> = false>
-typename contraction_impl<
-    concat_<Index_I,Index_J>,
-    typename concat_tensor<typename Derived0::result_type, typename Derived1::result_type>::type,
-    typename std_ext::make_index_sequence<DIM0+DIM1>::type>::type
+FASTOR_INLINE
+decltype(auto)
 einsum(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b)
 {
     typename Derived1::result_type res_b(b);
@@ -117,10 +104,8 @@ einsum(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM
 }
 template<class Index_I, class Index_J, typename Derived0, typename Derived1, size_t DIM0, size_t DIM1,
     enable_if_t_<!is_tensor_v<Derived0> && is_tensor_v<Derived1>,bool> = false>
-typename contraction_impl<
-    concat_<Index_I,Index_J>,
-    typename concat_tensor<typename Derived0::result_type, typename Derived1::result_type>::type,
-    typename std_ext::make_index_sequence<DIM0+DIM1>::type>::type
+FASTOR_INLINE
+decltype(auto)
 einsum(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM1> &b)
 {
     typename Derived0::result_type res_a(a);
@@ -133,7 +118,6 @@ einsum(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM
 // network contraction for expressions
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-#if FASTOR_CXX_VERSION >= 2014
 namespace internal {
 
 // helper functions to evaluate expression in to intermediate tensors
@@ -244,8 +228,6 @@ einsum(const AbstractTensorType0& a, const AbstractTensorType1& b, const Abstrac
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 
-
 } // end of namespace Fastor
 
-
-#endif
+#endif // ABSTRACT_CONTRACTION_H
