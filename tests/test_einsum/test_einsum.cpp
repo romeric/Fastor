@@ -376,6 +376,17 @@ void run() {
         FASTOR_EXIT_ASSERT( abs( einsum<Index<i,j>,Index<j,k>,Index<k,i>>(a,a,a).sum() - 4185 ) < Tol);
         FASTOR_EXIT_ASSERT( abs( einsum<Index<i,j>,Index<k,j>,Index<k,i>>(a,a,a).sum() - 4545 ) < Tol);
     }
+
+    // Bug 113 - const TensorMap einsum
+    {
+        using i = Fastor::Index<0>;
+        Tensor<T,3> a = {1, 2, 3};
+        const T constData[] = {1, 2, 3};
+        TensorMap<const T, 3> b(constData);
+
+        auto c = einsum<i,i>(a,b);
+        FASTOR_EXIT_ASSERT( abs( sum(c) - 14 ) < Tol);
+    }
 #endif
 
     print(FGRN(BOLD("All tests passed successfully")));

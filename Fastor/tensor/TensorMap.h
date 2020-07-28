@@ -19,7 +19,7 @@ public:
     using scalar_type      = T;
     using simd_vector_type = choose_best_simd_vector_t<T>;
     using simd_abi_type    = typename simd_vector_type::abi_type;
-    using result_type      = Tensor<T,Rest...>;
+    using result_type      = Tensor<remove_all_t<T>,Rest...>;
     using dimension_t      = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
     static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return sizeof...(Rest);}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return pack_prod<Rest...>::value;}
