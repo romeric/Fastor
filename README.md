@@ -4,7 +4,7 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/romeric/fastor)
 
 # Fastor
-**Fastor** is a high performance stack-based tensor (fixed multi-dimensional array) library for modern C++.
+**Fastor** is a high performance tensor (fixed multi-dimensional array) library for modern C++.
 
 Fastor offers:
 
