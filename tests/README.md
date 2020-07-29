@@ -1,7 +1,7 @@
 To run the tests do
 
 ~~~
-cd tests && mkdir build && cd build && cmake ../ && make && ctest
+cd tests && mkdir build && cd build && cmake .. && make -j 4 && ctest -V
 ~~~
 
 To control verbosity of cmake build and ctest run processes you can specify

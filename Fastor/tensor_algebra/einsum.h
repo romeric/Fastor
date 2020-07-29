@@ -25,7 +25,7 @@ FASTOR_INLINE
 auto einsum(const Tensor<T,Rest0...> &a)
 -> decltype(extractor_contract_1<Index_I>::contract_impl(a)) {
     static_assert(einsum_index_checker<Index_I>::value,
-                  "INDICES FOR EINSUM FUNCTION CANNOT APPEAR MORE THAN TWICE. USE CONTRACTION INSTEAD");
+                  "INDICES FOR EINSUM FUNCTION CANNOT APPEAR MORE THAN TWICE. USE INNER INSTEAD");
     return extractor_contract_1<Index_I>::contract_impl(a);
 }
 //-----------------------------------------------------------------------------------------------------------------------//
@@ -57,7 +57,7 @@ auto einsum(const Tensor<T,Rest0...> &a, const Tensor<T,Rest1...> &b)
 -> decltype(extractor_contract_2<Index_I,Index_J>::contract_impl(a,b)) {
 
     static_assert(einsum_index_checker<typename concat_<Index_I,Index_J>::type>::value,
-                  "INDICES FOR EINSUM FUNCTION CANNOT APPEAR MORE THAN TWICE. USE CONTRACTION INSTEAD");
+                  "INDICES FOR EINSUM FUNCTION CANNOT APPEAR MORE THAN TWICE. USE INNER INSTEAD");
 
     // // Dispatch to the right routine
     // using vectorisability = is_vectorisable<Index_I,Index_J,Tensor<T,Rest1...>>;
