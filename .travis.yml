@@ -83,6 +83,16 @@ matrix:
           packages:
             - g++-10
       env:
+        - COMPILER_ID=gcc GCC=10 BUILD_NATIVE=0
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-10
+      env:
         - COMPILER_ID=gcc GCC=10 BUILD_NATIVE=1
 
     - os: linux
