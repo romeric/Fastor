@@ -273,7 +273,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            auto tmp = TensorFixedViewExprnD<Tensor<T,Rest...>,Fseqs...>(tmp_this_tensor);
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -362,7 +362,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            auto tmp = TensorFixedViewExprnD<Tensor<T,Rest...>,Fseqs...>(tmp_this_tensor);
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -478,7 +478,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            auto tmp = TensorFixedViewExprnD<Tensor<T,Rest...>,Fseqs...>(tmp_this_tensor);
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -559,7 +559,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            auto tmp = TensorFixedViewExprnD<Tensor<T,Rest...>,Fseqs...>(tmp_this_tensor);
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -639,7 +639,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            auto tmp = TensorFixedViewExprnD<Tensor<T,Rest...>,Fseqs...>(tmp_this_tensor);
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -719,7 +719,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            auto tmp = TensorFixedViewExprnD<Tensor<T,Rest...>,Fseqs...>(tmp_this_tensor);
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -803,7 +803,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            auto tmp = TensorFixedViewExprnD<Tensor<T,Rest...>,Fseqs...>(tmp_this_tensor);
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -880,7 +880,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            auto tmp = TensorFixedViewExprnD<Tensor<T,Rest...>,Fseqs...>(tmp_this_tensor);
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -960,7 +960,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            auto tmp = TensorFixedViewExprnD<Tensor<T,Rest...>,Fseqs...>(tmp_this_tensor);
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -1039,7 +1039,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            auto tmp = TensorFixedViewExprnD<Tensor<T,Rest...>,Fseqs...>(tmp_this_tensor);
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -1119,7 +1119,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>(tmp_this_tensor);
+            auto tmp = TensorFixedViewExprnD<Tensor<T,Rest...>,Fseqs...>(tmp_this_tensor);
             // Assign other to temporary
             tmp = other;
             // assign temporary to this

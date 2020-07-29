@@ -374,7 +374,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -488,7 +488,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -573,7 +573,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -657,7 +657,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -741,7 +741,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -828,7 +828,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -909,7 +909,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -993,7 +993,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -1076,7 +1076,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this
@@ -1160,7 +1160,7 @@ public:
             _does_alias = false;
             // Evaluate this into a temporary
             auto tmp_this_tensor = get_tensor();
-            auto tmp = TensorViewExpr<TensorType<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
+            auto tmp = TensorViewExpr<Tensor<T,Rest...>,DIMS>(tmp_this_tensor,get_sequences());
             // Assign other to temporary
             tmp = other;
             // assign temporary to this

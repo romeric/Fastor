@@ -65,6 +65,16 @@ void run() {
         FASTOR_EXIT_ASSERT(all_of(tdata == check));
     }
 
+    // Bug 116
+    {
+        T data[4] = {1,2,3,4};
+        auto A = TensorMap<T,2,2>(data);
+        Tensor<T,2,1> b;
+        b = {{1},{1}};
+        A(fseq<0,2>(),fseq<1,2>()) = b;
+        FASTOR_EXIT_ASSERT(std::abs(sum(A) - 6) < Tol);
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 }
 
