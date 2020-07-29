@@ -130,7 +130,8 @@ innerproduct_chain_expression(const AbstractTensorType0& a, const AbstractTensor
 }
 } // internal
 
-template<typename AbstractTensorType0, typename AbstractTensorType1, typename ... AbstractTensorTypes>
+template<typename AbstractTensorType0, typename AbstractTensorType1, typename ... AbstractTensorTypes,
+    enable_if_t_<sizeof...(AbstractTensorTypes) >= 1,bool> = false>
 FASTOR_INLINE
 auto
 inner(const AbstractTensorType0& a, const AbstractTensorType1& b, const AbstractTensorTypes& ... rest)
