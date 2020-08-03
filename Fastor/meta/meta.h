@@ -91,12 +91,29 @@ static constexpr bool is_arithmetic_pack_v = is_arithmetic_pack<T...>::value;
 
 
 //----------------------------------------------------------------------------------------------------------//
-template<typename T> struct remove_all            { using type = T; };
-template<typename T> struct remove_all<const T>   { using type = typename remove_all<T>::type; };
-template<typename T> struct remove_all<T const&>  { using type = typename remove_all<T>::type; };
-template<typename T> struct remove_all<T&>        { using type = typename remove_all<T>::type; };
-template<typename T> struct remove_all<T const*>  { using type = typename remove_all<T>::type; };
-template<typename T> struct remove_all<T*>        { using type = typename remove_all<T>::type; };
+// Remove cv-qualified and their refs
+template<typename T> struct remove_cvref_               { using type = T; };
+template<typename T> struct remove_cvref_<const T>      { using type = typename remove_cvref_<T>::type; };
+template<typename T> struct remove_cvref_<T const&>     { using type = typename remove_cvref_<T>::type; };
+template<typename T> struct remove_cvref_<T&>           { using type = typename remove_cvref_<T>::type; };
+template<typename T> struct remove_cvref_<volatile T>   { using type = typename remove_cvref_<T>::type; };
+template<typename T> struct remove_cvref_<T volatile&>  { using type = typename remove_cvref_<T>::type; };
+
+template<typename T>
+using remove_cv_ref_t = typename remove_cvref_<T>::type;
+//----------------------------------------------------------------------------------------------------------//
+
+
+//----------------------------------------------------------------------------------------------------------//
+template<typename T> struct remove_all                  { using type = T; };
+template<typename T> struct remove_all<const T>         { using type = typename remove_all<T>::type; };
+template<typename T> struct remove_all<volatile T>      { using type = typename remove_all<T>::type; };
+template<typename T> struct remove_all<T&>              { using type = typename remove_all<T>::type; };
+template<typename T> struct remove_all<T const&>        { using type = typename remove_all<T>::type; };
+template<typename T> struct remove_all<T volatile&>     { using type = typename remove_all<T>::type; };
+template<typename T> struct remove_all<T*>              { using type = typename remove_all<T>::type; };
+template<typename T> struct remove_all<T const*>        { using type = typename remove_all<T>::type; };
+template<typename T> struct remove_all<T volatile*>     { using type = typename remove_all<T>::type; };
 
 template<typename T>
 using remove_all_t = typename remove_all<T>::type;

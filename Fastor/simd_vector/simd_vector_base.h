@@ -16,8 +16,9 @@ namespace Fastor {
 * if SIMD types are not available or if vectorisation is disallowed
 */
 //--------------------------------------------------------------------------------------------------------------------//
-template <typename T, typename ABI = simd_abi::native>
+template <typename CVT, typename ABI = simd_abi::native>
 struct SIMDVector {
+    using T = remove_cv_ref_t<CVT>;
     static constexpr FASTOR_INDEX Size = internal::get_simd_vector_size<SIMDVector<T,ABI>>::value;
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return internal::get_simd_vector_size<SIMDVector<T,ABI>>::value;}
     using vector_type = SIMDVector<T,ABI>;

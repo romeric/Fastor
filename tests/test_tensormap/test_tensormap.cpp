@@ -75,6 +75,19 @@ void run() {
         FASTOR_EXIT_ASSERT(std::abs(sum(A) - 6) < Tol);
     }
 
+    // Bug 117 - standard tensor arithmetic with const tensormap
+    {
+        const T dataA[] = {1,2,3};
+        const T dataB[] = {1,3,30};
+
+        TensorMap<const T,3,1> a ( dataA );
+        TensorMap<const T,3,1> b ( dataB );
+        const auto res0 = evaluate( a + b );
+        const auto res1 = evaluate( a - b );
+        const auto res2 = evaluate( a * b );
+        FASTOR_EXIT_ASSERT(std::abs(res1.sum() + 28 ) < Tol);
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 }
 

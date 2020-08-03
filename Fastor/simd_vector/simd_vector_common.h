@@ -23,7 +23,7 @@ namespace Fastor {
 //----------------------------------------------------------------------------------------------------------//
 template<typename TT>
 struct choose_best_simd_vector {
-    using T = remove_all_t<TT>;
+    using T = remove_cv_ref_t<TT>;
     using type = typename std::conditional< std::is_same<T,float>::value                    ||
                                             std::is_same<T,double>::value                   ||
                                             std::is_same<T,std::complex<float>>::value      ||

@@ -140,7 +140,7 @@ template<class __svec, size_t N>
 struct choose_best_simd_type;
 template<template<typename, typename> class __svec, typename TT, typename ABI, size_t N>
 struct choose_best_simd_type<__svec<TT,ABI>,N> {
-    using T = remove_all_t<TT>;
+    using T = remove_cv_ref_t<TT>;
     using actual_type = __svec<T,ABI>;
     static constexpr size_t _vec_size = get_simd_vector_size<__svec<T,ABI>>::value;
     // For exact fractions simd gets proper speed up for instance for matmul
