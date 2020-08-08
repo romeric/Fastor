@@ -105,7 +105,7 @@ SOFTWARE.
 #define FASTOR_DOUBLE_BITSIZE (sizeof(double)*8)
 #define FASTOR_SINGLE_BITSIZE (sizeof(float)*8)
 #ifndef FASTOR_SCALAR_BITSIZE
-#define FASTOR_SCALAR_BITSIZE FASTOR_DOUBLE_SIZE
+#define FASTOR_SCALAR_BITSIZE FASTOR_DOUBLE_BITSIZE
 #endif
 
 
@@ -124,12 +124,12 @@ SOFTWARE.
 #endif
 
 /* User controllable alignment for Fastor containers */
-#define FASTOR_ALIGN alignas(FASTOR_MEMORY_ALIGNMENT_VALUE)
+#define FASTOR_ALIGN alignas((FASTOR_MEMORY_ALIGNMENT_VALUE))
 /* Strict non-controllable alignment for Fastor's internal use */
-#define FASTOR_ARCH_ALIGN alignas(FASTOR_MEMORY_ALIGNMENT_VALUE)
+#define FASTOR_ARCH_ALIGN alignas((FASTOR_MEMORY_ALIGNMENT_VALUE))
 
 // Conservative alignment for SIMD
-#if defined(FASTOR_CONSERVATIVE_ALIGN) || defined(FASTOR_DONT_VECTORISE)
+#if defined(FASTOR_DONT_ALIGN) || defined(FASTOR_DONT_VECTORISE)
     #define FASTOR_ALIGNED false
 #else
     #define FASTOR_ALIGNED true
