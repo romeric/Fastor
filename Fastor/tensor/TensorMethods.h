@@ -23,7 +23,7 @@ FASTOR_INLINE void arange(T num0=0) {
     // FASTOR_INDEX i=0;
     // for (; i<ROUND_DOWN(size(),V::Size); i+=V::Size) {
     //     _vec.set_sequential(T(i)+num);
-    //     _vec.store(&_data[i]);
+    //     _vec.store(&_data[i],false);
     // }
     // for (; i<size(); ++i) _data[i] = T(i)+num;
 }
@@ -33,7 +33,7 @@ FASTOR_INLINE void zeros() {
     V _zeros;
     FASTOR_INDEX i=0;
     for (; i<ROUND_DOWN(size(),V::Size); i+=V::Size) {
-        _zeros.store(&_data[i]);
+        _zeros.store(&_data[i],false);
     }
     for (; i<size(); ++i) _data[i] = 0;
 }
