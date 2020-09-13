@@ -320,20 +320,21 @@ FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const st
 // 16 word scalar/SSE
 template<typename T, typename ABI,
          typename std::enable_if<sizeof(T)==16 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==128,bool>::type=0>
-FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,1> &a) {
-    vec.set(data[a[0]]);
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,2> &a) {
+    vec.set(data[a[1]],data[a[0]]);
 }
 // 16 word AVX
 template<typename T, typename ABI,
          typename std::enable_if<sizeof(T)==16 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==256,bool>::type=0>
-FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,2> a) {
-    vec.set(data[a[1]],data[a[0]]);
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,4> a) {
+    vec.set(data[a[3]],data[a[2]],data[a[1]],data[a[0]]);
 }
 // 16 word AVX 512
 template<typename T, typename ABI,
          typename std::enable_if<sizeof(T)==16 && internal::get_simd_vector_size<SIMDVector<T,ABI>>::bitsize==512,bool>::type=0>
-FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,4> a) {
-    vec.set(data[a[3]],data[a[2]],data[a[1]],data[a[0]]);
+FASTOR_INLINE void vector_setter(SIMDVector<T,ABI> &vec, const T *data, const std::array<int,8> a) {
+    vec.set(data[a[7]],data[a[6]],data[a[5]],data[a[4]],
+            data[a[3]],data[a[2]],data[a[1]],data[a[0]]);
 }
 //----------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------
