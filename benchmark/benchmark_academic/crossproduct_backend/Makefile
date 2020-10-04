@@ -1,69 +1,29 @@
 # DO NOT ALLOW THE COMPILER TO BREAK IEEE COMPLIANCE
-# ENSURE THE SCALAR CODE IS COMPILED AS REQUIRED BY THE BENCHMARK BY PASSING 
+# ENSURE THE SCALAR CODE IS COMPILED AS REQUIRED BY THE BENCHMARK BY PASSING
 # APPROPRIATE FLAGS
 
-GCC = g++ -fabi-version=6 -D_GLIBCXX_USE_CXX11_ABI=0 -fno-fast-math
-CLANG = clang++ -fno-fast-math
-ICC = icpc -fp-model=strict
 
-GCC_FLAGS_Fastor = -std=c++11 -O3 -mavx 
-CLANG_FLAGS_Fastor = -std=c++11 -O3 -mavx 
-ICC_FLAGS_Fastor = -std=c++11 -O3 -mavx 
+CXX_FLAGS = -std=c++14 -O3 -mavx -fno-fast-math
 
 INCLUDES = -I../../../
 
-all: bench_gcc bench_clang bench_icc
+all: bench
 
-bench_gcc:
-	$(GCC) benchmark_crossproduct_backend.cpp -o benchmark_crossproduct_gcc.exe $(GCC_FLAGS_Fastor) $(INCLUDES)
-	$(GCC) benchmark_crossproduct_vector_backend.cpp -o benchmark_crossproduct_vector_gcc.exe $(GCC_FLAGS_Fastor) $(INCLUDES)
-	$(GCC) benchmark_cofactor_backend.cpp -o benchmark_cofactor_gcc.exe $(GCC_FLAGS_Fastor) $(INCLUDES)
-	$(GCC) benchmark_crossproduct_3rd_backend.cpp -o benchmark_crossproduct_3rd_gcc.exe $(GCC_FLAGS_Fastor) $(INCLUDES)
-	$(GCC) benchmark_crossproduct_4th_backend.cpp -o benchmark_crossproduct_4th_gcc.exe $(GCC_FLAGS_Fastor) $(INCLUDES)
-
-bench_clang:
-	$(CLANG) benchmark_crossproduct_backend.cpp -o benchmark_crossproduct_clang.exe $(CLANG_FLAGS_Fastor) $(INCLUDES)
-	$(CLANG) benchmark_crossproduct_vector_backend.cpp -o benchmark_crossproduct_vector_clang.exe $(CLANG_FLAGS_Fastor) $(INCLUDES)
-	$(CLANG) benchmark_cofactor_backend.cpp -o benchmark_cofactor_clang.exe $(CLANG_FLAGS_Fastor) $(INCLUDES)
-	$(CLANG) benchmark_crossproduct_3rd_backend.cpp -o benchmark_crossproduct_3rd_clang.exe $(CLANG_FLAGS_Fastor) $(INCLUDES)
-	$(CLANG) benchmark_crossproduct_4th_backend.cpp -o benchmark_crossproduct_4th_clang.exe $(CLANG_FLAGS_Fastor) $(INCLUDES)
-
-bench_icc:
-	$(ICC) benchmark_crossproduct_backend.cpp -o benchmark_crossproduct_icc.exe $(ICC_FLAGS_Fastor) $(INCLUDES)
-	$(ICC) benchmark_crossproduct_vector_backend.cpp -o benchmark_crossproduct_vector_icc.exe $(ICC_FLAGS_Fastor) $(INCLUDES)
-	$(ICC) benchmark_cofactor_backend.cpp -o benchmark_cofactor_icc.exe $(ICC_FLAGS_Fastor) $(INCLUDES)
-	$(ICC) benchmark_crossproduct_3rd_backend.cpp -o benchmark_crossproduct_3rd_icc.exe $(ICC_FLAGS_Fastor) $(INCLUDES)
-	$(ICC) benchmark_crossproduct_4th_backend.cpp -o benchmark_crossproduct_4th_icc.exe $(ICC_FLAGS_Fastor) $(INCLUDES)
-
+bench:
+	$(CXX) benchmark_crossproduct_backend.cpp -o benchmark_crossproduct.exe $(CXX_FLAGS) $(INCLUDES)
+	$(CXX) benchmark_crossproduct_vector_backend.cpp -o benchmark_crossproduct_vector.exe $(CXX_FLAGS) $(INCLUDES)
+	$(CXX) benchmark_cofactor_backend.cpp -o benchmark_cofactor.exe $(CXX_FLAGS) $(INCLUDES)
+	$(CXX) benchmark_crossproduct_3rd_backend.cpp -o benchmark_crossproduct_3rd.exe $(CXX_FLAGS) $(INCLUDES)
+	$(CXX) benchmark_crossproduct_4th_backend.cpp -o benchmark_crossproduct_4th.exe $(CXX_FLAGS) $(INCLUDES)
 
 # run benchmarks through make
 run:
-	./benchmark_crossproduct_gcc.exe > gcc_res_cross
-	./benchmark_crossproduct_clang.exe > clang_res_cross
-	./benchmark_crossproduct_icc.exe > icc_res_cross
-	./benchmark_crossproduct_vector_gcc.exe > gcc_res_cross_vec
-	./benchmark_crossproduct_vector_clang.exe > clang_res_cross_vec
-	./benchmark_crossproduct_vector_icc.exe > icc_res_cross_vec
-	./benchmark_cofactor_gcc.exe > gcc_res_cof
-	./benchmark_cofactor_clang.exe > clang_res_cof
-	./benchmark_cofactor_icc.exe > icc_res_cof
-	./benchmark_crossproduct_3rd_gcc.exe > gcc_res_cross_3
-	./benchmark_crossproduct_3rd_clang.exe > clang_res_cross_3
-	./benchmark_crossproduct_3rd_icc.exe > icc_res_cross_3
-	./benchmark_crossproduct_4th_gcc.exe > gcc_res_cross_4
-	./benchmark_crossproduct_4th_clang.exe > clang_res_cross_4
-	./benchmark_crossproduct_4th_icc.exe > icc_res_cross_4
+	./benchmark_crossproduct.exe
+	./benchmark_crossproduct_vector.exe
+	./benchmark_cofactor.exe
+	./benchmark_crossproduct_3rd.exe
+	./benchmark_crossproduct_4th.exe
 
 
 clean:
-	rm -rf benchmark_crossproduct_gcc.exe benchmark_crossproduct_clang.exe benchmark_crossproduct_icc.exe \
-	benchmark_crossproduct_vector_gcc.exe benchmark_crossproduct_vector_clang.exe benchmark_crossproduct_vector_icc.exe \
-	benchmark_cofactor_gcc.exe benchmark_cofactor_clang.exe benchmark_cofactor_icc.exe \
-	gcc_res_cross gcc_res_cof clang_res_cross clang_res_cof icc_res_cross icc_res_cof \
-	gcc_res_cross_vec clang_res_cross_vec icc_res_cross_vec \
-	benchmark_crossproduct_3rd_gcc.exe gcc_res_cross_3 \
-	benchmark_crossproduct_3rd_clang.exe clang_res_cross_3 \
-	benchmark_crossproduct_3rd_icc.exe icc_res_cross_3 \
-	benchmark_crossproduct_4th_gcc.exe gcc_res_cross_4 \
-	benchmark_crossproduct_4th_clang.exe clang_res_cross_4 \
-	benchmark_crossproduct_4th_icc.exe icc_res_cross_4
+	rm -rf *.exe

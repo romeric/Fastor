@@ -8,29 +8,11 @@ template<typename T, size_t N>
 void iterate_over_classical(const T *FASTOR_RESTRICT a, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
-
-        // Dynamic version - not to be used
-        // T det = _det<T,N,N>(a);
-        // T *adj = static_cast<T*>(_mm_malloc(sizeof(T) * N*N, 32));
-        // _adjoint<T,N,N>(a,adj);
-        // T *trans = static_cast<T*>(_mm_malloc(sizeof(T) * N*N, 32));
-        // _transpose<T,N,N>(adj,trans);
-        // for (int i=0; i<N*N; ++i)
-        //     out[i] = trans[i]/det;
-
-        // _mm_free(adj);
-        // _mm_free(trans);
-
-        // unused(a); unused(out);
-
-        // // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct
-        // out[1] += out[2];
-
         // static version
         T det = _det<T,N,N>(a);
-        T FASTOR_ALIGN adj[N*N];
-        _adjoint<T,N,N>(a,adj);
-        T FASTOR_ALIGN trans[N*N];
+        FASTOR_ALIGN T adj[N*N];
+        _adjoint<T,N>(a,adj);
+        FASTOR_ALIGN T trans[N*N];
         _transpose<T,N,N>(adj,trans);
         for (int i=0; i<N*N; ++i)
             out[i] = trans[i]/det;
@@ -55,6 +37,7 @@ void iterate_over_fastor_cross(const T *FASTOR_RESTRICT a, T *FASTOR_RESTRICT ou
     }
 }
 
+#if 0
 template<typename T, size_t N,
     typename std::enable_if<N==2,bool>::type = 0>
 void iterate_over_fastor_cross(const T *FASTOR_RESTRICT a, T *FASTOR_RESTRICT out) {
@@ -67,12 +50,13 @@ void iterate_over_fastor_cross(const T *FASTOR_RESTRICT a, T *FASTOR_RESTRICT ou
         out[1] += out[2];
     }
 }
+#endif
 
 template<typename T, size_t N>
 void iterate_over_fastor_cof(const T *FASTOR_RESTRICT a, T *FASTOR_RESTRICT out) {
     size_t iter = 0;
     for (; iter<NITER; ++iter) {
-        _cofactor<T,N,N>(a,out);
+        _cofactor<T,N>(a,out);
         unused(a); unused(out);
 
         // further hack for gcc, seemingly  doesn't hurt performance of _crossproduct
@@ -92,7 +76,7 @@ void run() {
         std::iota(a,a+M*N,0);
     }
 
-    if (N==2 && N==2) {
+    if (M==2 && N==2) {
         std::iota(a,a+6,0);
         a[8]=1;
     }
@@ -113,10 +97,14 @@ void run() {
 int main() {
 
     print("Single precision benchmark");
+#if 0
     run<float,2,2>();
+#endif
     run<float,3,3>();
     print("Double precision benchmark");
+#if 0
     run<double,2,2>();
+#endif
     run<double,3,3>();
 
     return 0;

@@ -26,8 +26,8 @@ inline void crossproduct_scalar(const T *FASTOR_RESTRICT a, const T *FASTOR_REST
     constexpr T levi_civita[27] = { 0.,  0.,  0.,  0.,  0., -1.,  0.,  1.,  0.,  0.,  0.,  1.,  0.,  0.,
                                 0., -1.,  0.,  0.,  0., -1.,  0.,  1.,  0.,  0.,  0.,  0.,  0.};
 
-    T FASTOR_ALIGN a3d[9];
-    T FASTOR_ALIGN b3d[9];
+    FASTOR_ALIGN T a3d[9];
+    FASTOR_ALIGN T b3d[9];
     for (size_t i=0; i<4; ++i) {
         a3d[i] = a[i];
         a3d[i] = b[i];
@@ -37,8 +37,8 @@ inline void crossproduct_scalar(const T *FASTOR_RESTRICT a, const T *FASTOR_REST
         a3d[i] = 0;
         a3d[i] = 0;
     }
-    a3d[9] = 1;
-    b3d[9] = 1;
+    a3d[8] = 1;
+    b3d[8] = 1;
 
     constexpr size_t size = N;
     for (size_t i=0; i<N; ++i)

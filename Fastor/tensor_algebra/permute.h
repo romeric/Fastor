@@ -270,7 +270,6 @@ struct new_extractor_perm<Index<Idx...> > {
 
         using _permute_impl = new_permute_impl<Index<Idx...>, tensor_type,
             typename std_ext::make_index_sequence<sizeof...(Idx)>::type>;
-        using resulting_index  = typename _permute_impl::resulting_index;
         using resulting_tensor = typename _permute_impl::resulting_tensor;
         constexpr bool requires_permutation = _permute_impl::requires_permutation;
         FASTOR_IF_CONSTEXPR(!requires_permutation) return a;
@@ -327,6 +326,7 @@ struct new_extractor_perm<Index<Idx...> > {
 #else
         constexpr std::array<size_t,a_dim> maxes_a = get_tensor_dimensions<tensor_type>::dims;
         // Map to go from in to out
+        using resulting_index  = typename _permute_impl::resulting_index;
         constexpr auto& maxes_idx = resulting_index::values;
 
         while(true)

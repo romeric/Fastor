@@ -10,7 +10,7 @@
 #include <numeric>
 #include <cstring>
 
-#ifndef _WIN32
+#if defined(FASTOR_UNIX_OS)
 #include <sys/resource.h>
 #endif
 
@@ -46,7 +46,7 @@ inline std::string itoa(const std::array<T,N>& arr) {
 }
 
 
-#ifndef _WIN32
+#if defined(FASTOR_UNIX_OS)
 inline size_t set_stack_size(size_t size) {
     // If the function does not work, copy-paste it within
     // the body of the main
