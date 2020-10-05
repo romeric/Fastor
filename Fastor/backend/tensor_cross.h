@@ -29,49 +29,49 @@ FASTOR_INLINE void _vector_crossproduct(const T *FASTOR_RESTRICT a, const T *FAS
 template<typename T, size_t M, size_t K, size_t N,
     enable_if_t_<is_equal_v_<M,3> && is_equal_v_<K,3> && is_equal_v_<N,3>,bool> = false>
 FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
-    T A00        =  a[0];
-    T A01        =  a[1];
-    T A02        =  a[2];
-    T A10        =  a[3];
-    T A11        =  a[4];
-    T A12        =  a[5];
-    T A20        =  a[6];
-    T A21        =  a[7];
-    T A22        =  a[8];
+    T ___A00        =  a[0];
+    T ___A01        =  a[1];
+    T ___A02        =  a[2];
+    T ___A10        =  a[3];
+    T ___A11        =  a[4];
+    T ___A12        =  a[5];
+    T ___A20        =  a[6];
+    T ___A21        =  a[7];
+    T ___A22        =  a[8];
 
-    T B00        =  b[0];
-    T B01        =  b[1];
-    T B02        =  b[2];
-    T B10        =  b[3];
-    T B11        =  b[4];
-    T B12        =  b[5];
-    T B20        =  b[6];
-    T B21        =  b[7];
-    T B22        =  b[8];
+    T ___B00        =  b[0];
+    T ___B01        =  b[1];
+    T ___B02        =  b[2];
+    T ___B10        =  b[3];
+    T ___B11        =  b[4];
+    T ___B12        =  b[5];
+    T ___B20        =  b[6];
+    T ___B21        =  b[7];
+    T ___B22        =  b[8];
 
-    c[0]  =  A11*B22 - A12*B21 - A21*B12 + A22*B11;
-    c[1]  =  A12*B20 - A10*B22 + A20*B12 - A22*B10;
-    c[2]  =  A10*B21 - A11*B20 - A20*B11 + A21*B10;
-    c[3]  =  A02*B21 - A01*B22 + A21*B02 - A22*B01;
-    c[4]  =  A00*B22 - A02*B20 - A20*B02 + A22*B00;
-    c[5]  =  A01*B20 - A00*B21 + A20*B01 - A21*B00;
-    c[6]  =  A01*B12 - A02*B11 - A11*B02 + A12*B01;
-    c[7]  =  A02*B10 - A00*B12 + A10*B02 - A12*B00;
-    c[8]  =  A00*B11 - A01*B10 - A10*B01 + A11*B00;
+    c[0]  =  ___A11*___B22 - ___A12*___B21 - ___A21*___B12 + ___A22*___B11;
+    c[1]  =  ___A12*___B20 - ___A10*___B22 + ___A20*___B12 - ___A22*___B10;
+    c[2]  =  ___A10*___B21 - ___A11*___B20 - ___A20*___B11 + ___A21*___B10;
+    c[3]  =  ___A02*___B21 - ___A01*___B22 + ___A21*___B02 - ___A22*___B01;
+    c[4]  =  ___A00*___B22 - ___A02*___B20 - ___A20*___B02 + ___A22*___B00;
+    c[5]  =  ___A01*___B20 - ___A00*___B21 + ___A20*___B01 - ___A21*___B00;
+    c[6]  =  ___A01*___B12 - ___A02*___B11 - ___A11*___B02 + ___A12*___B01;
+    c[7]  =  ___A02*___B10 - ___A00*___B12 + ___A10*___B02 - ___A12*___B00;
+    c[8]  =  ___A00*___B11 - ___A01*___B10 - ___A10*___B01 + ___A11*___B00;
 }
 
 template<typename T, size_t M, size_t K, size_t N,
     enable_if_t_<is_equal_v_<M,2> && is_equal_v_<K,2> && is_equal_v_<N,2>,bool> = false>
 FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
-    T A00        =  a[0];
-    T A01        =  a[1];
-    T A10        =  a[3];
-    T A11        =  a[4];
+    T ___A00        =  a[0];
+    T ___A01        =  a[1];
+    T ___A10        =  a[3];
+    T ___A11        =  a[4];
 
-    T B00        =  b[0];
-    T B01        =  b[1];
-    T B10        =  b[3];
-    T B11        =  b[4];
+    T ___B00        =  b[0];
+    T ___B01        =  b[1];
+    T ___B10        =  b[3];
+    T ___B11        =  b[4];
 
     c[0]  =  0;
     c[1]  =  0;
@@ -81,7 +81,7 @@ FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RES
     c[5]  =  0;
     c[6]  =  0;
     c[7]  =  0;
-    c[8]  =  A00*B11 - A01*B10 - A10*B01 + A11*B00;
+    c[8]  =  ___A00*___B11 - ___A01*___B10 - ___A10*___B01 + ___A11*___B00;
 }
 
 // vectors and 2nd order tensors
@@ -90,9 +90,9 @@ template<typename T, size_t M, size_t K, size_t N,
     enable_if_t_<is_equal_v_<M,3> && is_equal_v_<K,1> && is_equal_v_<N,3>,bool> = false>
 FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
     // vector-tensor cross product - regitster based
-    T A1 = a[0];
-    T A2 = a[1];
-    T A3 = a[2];
+    T ___A1 = a[0];
+    T ___A2 = a[1];
+    T ___A3 = a[2];
 
     T B1_1 = b[0];
     T B1_2 = b[1];
@@ -104,15 +104,15 @@ FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RES
     T B3_2 = b[7];
     T B3_3 = b[8];
 
-    c[0] = A2*B3_1 - A3*B2_1;
-    c[1] = A2*B3_2 - A3*B2_2;
-    c[2] = A2*B3_3 - A3*B2_3;
-    c[3] = A3*B1_1 - A1*B3_1;
-    c[4] = A3*B1_2 - A1*B3_2;
-    c[5] = A3*B1_3 - A1*B3_3;
-    c[6] = A1*B2_1 - A2*B1_1;
-    c[7] = A1*B2_2 - A2*B1_2;
-    c[8] = A1*B2_3 - A2*B1_3;
+    c[0] = ___A2*B3_1 - ___A3*B2_1;
+    c[1] = ___A2*B3_2 - ___A3*B2_2;
+    c[2] = ___A2*B3_3 - ___A3*B2_3;
+    c[3] = ___A3*B1_1 - ___A1*B3_1;
+    c[4] = ___A3*B1_2 - ___A1*B3_2;
+    c[5] = ___A3*B1_3 - ___A1*B3_3;
+    c[6] = ___A1*B2_1 - ___A2*B1_1;
+    c[7] = ___A1*B2_2 - ___A2*B1_2;
+    c[8] = ___A1*B2_3 - ___A2*B1_3;
 
 //    [ A2*B3_1 - A3*B2_1, A2*B3_2 - A3*B2_2, A2*B3_3 - A3*B2_3]
 //    [ A3*B1_1 - A1*B3_1, A3*B1_2 - A1*B3_2, A3*B1_3 - A1*B3_3]
@@ -123,8 +123,8 @@ template<typename T, size_t M, size_t K, size_t N,
     enable_if_t_<is_equal_v_<M,2> && is_equal_v_<K,1> && is_equal_v_<N,2>,bool> = false>
 FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
     // vector-tensor cross product - regitster based
-    T A1 = a[0];
-    T A2 = a[1];
+    T ___A1 = a[0];
+    T ___A2 = a[1];
 
     T B1_1 = b[0];
     T B1_2 = b[1];
@@ -137,8 +137,8 @@ FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RES
     c[3] = 0;
     c[4] = 0;
     c[5] = 0;
-    c[6] = A1*B2_1 - A2*B1_1;
-    c[7] = A1*B2_2 - A2*B1_2;
+    c[6] = ___A1*B2_1 - ___A2*B1_1;
+    c[7] = ___A1*B2_2 - ___A2*B1_2;
     c[8] = 0;
 }
 
@@ -146,9 +146,9 @@ template<typename T, size_t M, size_t K, size_t N,
     enable_if_t_<is_equal_v_<M,3> && is_equal_v_<K,3> && is_equal_v_<N,1>,bool> = false>
 FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
     // tensor-vector cross product - regitster based
-    T B1 = b[0];
-    T B2 = b[1];
-    T B3 = b[2];
+    T ___B1 = b[0];
+    T ___B2 = b[1];
+    T ___B3 = b[2];
 
     T A1_1 = a[0];
     T A1_2 = a[1];
@@ -160,15 +160,15 @@ FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RES
     T A3_2 = a[7];
     T A3_3 = a[8];
 
-    c[0] = A1_2*B3 - A1_3*B2;
-    c[1] = A1_3*B1 - A1_1*B3;
-    c[2] = A1_1*B2 - A1_2*B1;
-    c[3] = A2_2*B3 - A2_3*B2;
-    c[4] = A2_3*B1 - A2_1*B3;
-    c[5] = A2_1*B2 - A2_2*B1;
-    c[6] = A3_2*B3 - A3_3*B2;
-    c[7] = A3_3*B1 - A3_1*B3;
-    c[8] = A3_1*B2 - A3_2*B1;
+    c[0] = A1_2*___B3 - A1_3*___B2;
+    c[1] = A1_3*___B1 - A1_1*___B3;
+    c[2] = A1_1*___B2 - A1_2*___B1;
+    c[3] = A2_2*___B3 - A2_3*___B2;
+    c[4] = A2_3*___B1 - A2_1*___B3;
+    c[5] = A2_1*___B2 - A2_2*___B1;
+    c[6] = A3_2*___B3 - A3_3*___B2;
+    c[7] = A3_3*___B1 - A3_1*___B3;
+    c[8] = A3_1*___B2 - A3_2*___B1;
 
 //    [ A1_2*B3 - A1_3*B2, A1_3*B1 - A1_1*B3, A1_1*B2 - A1_2*B1]
 //    [ A2_2*B3 - A2_3*B2, A2_3*B1 - A2_1*B3, A2_1*B2 - A2_2*B1]
@@ -179,8 +179,8 @@ template<typename T, size_t M, size_t K, size_t N,
     enable_if_t_<is_equal_v_<M,2> && is_equal_v_<K,2> && is_equal_v_<N,1>,bool> = false>
 FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FASTOR_RESTRICT c) {
     // tensor-vector cross product - regitster based
-    T B1 = b[0];
-    T B2 = b[1];
+    T ___B1 = b[0];
+    T ___B2 = b[1];
 
     T A1_1 = a[0];
     T A1_2 = a[1];
@@ -189,10 +189,10 @@ FASTOR_INLINE void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RES
 
     c[0] = 0;
     c[1] = 0;
-    c[2] = A1_1*B2 - A1_2*B1;
+    c[2] = A1_1*___B2 - A1_2*___B1;
     c[3] = 0;
     c[4] = 0;
-    c[5] = A2_1*B2 - A2_2*B1;
+    c[5] = A2_1*___B2 - A2_2*___B1;
     c[6] = 0;
     c[7] = 0;
     c[8] = 0;
@@ -210,31 +210,31 @@ void _crossproduct(const T *FASTOR_RESTRICT a, const T *FASTOR_RESTRICT b, T *FA
     // Note that in ultimate case you might not need the last row/column of the output matrix hence computing c22
     // and storing it is un-necessary, hence the (c) array should really be 2x2=4 in length
     // Load a data
-    T A00        =  a[0];
-    T A11        =  a[4];
-    T A22        =  a[8];
-    T A01        =  a[1];
-    T A02        =  a[2];
-    T A12        =  a[5];
-    T A10        =  a[3];
-    T A20        =  a[6];
-    T A21        =  a[7];
+    T ___A00        =  a[0];
+    T ___A11        =  a[4];
+    T ___A22        =  a[8];
+    T ___A01        =  a[1];
+    T ___A02        =  a[2];
+    T ___A12        =  a[5];
+    T ___A10        =  a[3];
+    T ___A20        =  a[6];
+    T ___A21        =  a[7];
 
-    T B00        =  b[0];
-    T B11        =  b[4];
-    T B22        =  b[8];
-    T B01        =  b[1];
-    T B02        =  b[2];
-    T B12        =  b[5];
-    T B10        =  b[3];
-    T B20        =  b[6];
-    T B21        =  b[7];
+    T ___B00        =  b[0];
+    T ___B11        =  b[4];
+    T ___B22        =  b[8];
+    T ___B01        =  b[1];
+    T ___B02        =  b[2];
+    T ___B12        =  b[5];
+    T ___B10        =  b[3];
+    T ___B20        =  b[6];
+    T ___B21        =  b[7];
 
-    c[0]  =  A11*B22 - A12*B21 - A21*B12 + A22*B11;
-    c[1]  =  A12*B20 - A10*B22 + A20*B12 - A22*B10;
+    c[0]  =  ___A11*___B22 - ___A12*___B21 - ___A21*___B12 + ___A22*___B11;
+    c[1]  =  ___A12*___B20 - ___A10*___B22 + ___A20*___B12 - ___A22*___B10;
     c[0]  =  0;
-    c[3]  =  A02*B21 - A01*B22 + A21*B02 - A22*B01;
-    c[4]  =  A00*B22 - A02*B20 - A20*B02 + A22*B00;
+    c[3]  =  ___A02*___B21 - ___A01*___B22 + ___A21*___B02 - ___A22*___B01;
+    c[4]  =  ___A00*___B22 - ___A02*___B20 - ___A20*___B02 + ___A22*___B00;
     c[5]  =  0;
     c[6]  =  0;
     c[7]  =  0;
