@@ -1,0 +1,31 @@
+{
+  "name": "Fastor",
+  "version": "0.6.3",
+  "description": "A light-weight high performance tensor algebra framework for modern C++",
+  "keywords": "tensors, tensor-contraction, multidimensional-arrays, simd, hpc, small-blas",
+  "homepage": "https://github.com/romeric/Fastor/blob/master/README.md",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/romeric/Fastor.git"
+  },
+  "authors":
+  [
+    {
+      "name": "Roman Poya",
+      "url": "https://github.com/romeric",
+      "maintainer": true
+    }
+  ],
+  "license": "MIT",
+  "frameworks": "*",
+  "platforms": "*",
+  "export":
+  {
+    "exclude":
+    [
+      "benchmark",
+      "docs"
+    ]
+  }
+}
