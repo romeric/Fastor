@@ -46,6 +46,18 @@ struct OIndex : public Index<All...> {
 
 template<FASTOR_INDEX ... All>
 constexpr FASTOR_INDEX OIndex<All...>::Size;
+
+template<class Idx>
+struct to_oindex;
+template<FASTOR_INDEX ... All>
+struct to_oindex<Index<All...>>
+{
+    using type = OIndex<All...>;
+};
+
+template<class Idx>
+using to_oindex_t = typename to_oindex<Idx>::type;
+
 //-----------------------------------------------------------------------------------------------------------//
 
 } // end of namespace Fastor
