@@ -286,6 +286,42 @@ FASTOR_INLINE SIMDVector<double,simd_abi::avx512> pow(const SIMDVector<double,si
 #endif
 //----------------------------------------------------------------------------------------------------------//
 
+
+// cbrt
+//----------------------------------------------------------------------------------------------------------//
+#ifdef FASTOR_SSE2_IMPL
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::sse> cbrt(const SIMDVector<float,simd_abi::sse> &a) {
+    return Sleef_cbrtf4_u10(a.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::sse> cbrt(const SIMDVector<double,simd_abi::sse> &a) {
+    return Sleef_cbrtd2_u10(a.value);
+}
+#endif
+#ifdef FASTOR_AVX_IMPL
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::avx> cbrt(const SIMDVector<float,simd_abi::avx> &a) {
+    return Sleef_cbrtf8_u10(a.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::avx> cbrt(const SIMDVector<double,simd_abi::avx> &a) {
+    return Sleef_cbrtd4_u10(a.value);
+}
+#endif
+#ifdef FASTOR_AVX512_IMPL
+template<>
+FASTOR_INLINE SIMDVector<float,simd_abi::avx512> cbrt(const SIMDVector<float,simd_abi::avx512> &a) {
+    return Sleef_cbrtf16_u10(a.value);
+}
+template<>
+FASTOR_INLINE SIMDVector<double,simd_abi::avx512> cbrt(const SIMDVector<double,simd_abi::avx512> &a) {
+    return Sleef_cbrtd8_u10(a.value);
+}
+#endif
+//----------------------------------------------------------------------------------------------------------//
+
+
 // sin
 //----------------------------------------------------------------------------------------------------------//
 #ifdef FASTOR_SSE2_IMPL
