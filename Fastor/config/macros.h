@@ -1,5 +1,5 @@
 /*  This file is part of the FASTOR library. {{{
-Copyright (c) 2016 Roman Poya
+Copyright (c) 2020 Roman Poya
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -74,11 +74,17 @@ SOFTWARE.
 #endif
 //------------------------------------------------------------------------------------------------//
 
+
+// Aliasing
+//------------------------------------------------------------------------------------------------//
 #ifndef FASTOR_NO_ALIAS
 #define FASTOR_NO_ALIAS 0
 #endif
+//------------------------------------------------------------------------------------------------//
 
-// this changes the behaviour of all expression templates (apart from views)
+
+// Macros used throughout Fastor
+//------------------------------------------------------------------------------------------------//
 //#define FASTOR_COPY_EXPR
 //#define FASTOR_DONT_VECTORISE
 //#define FASTOR_DONT_PERFORM_OP_MIN
@@ -101,11 +107,14 @@ SOFTWARE.
 #define FASTOR_BLAS_SWITCH_MATRIX_SIZE 16
 #endif
 
-
+// FASTOR_NIL
+//------------------------------------------------------------------------------------------------//
 #define FASTOR_NIL 0
 //------------------------------------------------------------------------------------------------//
 
 
+// Bit sizes
+//------------------------------------------------------------------------------------------------//
 #define FASTOR_AVX512_BITSIZE 512
 #define FASTOR_AVX_BITSIZE 256
 #define FASTOR_SSE_BITSIZE 128
@@ -114,6 +123,7 @@ SOFTWARE.
 #ifndef FASTOR_SCALAR_BITSIZE
 #define FASTOR_SCALAR_BITSIZE FASTOR_DOUBLE_BITSIZE
 #endif
+//------------------------------------------------------------------------------------------------//
 
 
 // Alignment
@@ -144,46 +154,38 @@ SOFTWARE.
 
 #define FASTOR_ISALIGNED(POINTER, BYTE_COUNT) \
     (((uintptr_t)(const void *)(POINTER)) % (BYTE_COUNT) == 0)
+//------------------------------------------------------------------------------------------------//
 
 
-// Asserts and warnings
+// Assertions
 //------------------------------------------------------------------------------------------------//
 namespace Fastor {
-
-// Strong assert under debug and release
+// Strong unconditional assert
 FASTOR_INLINE void FASTOR_EXIT_ASSERT(bool cond, const std::string &msg="") {
     if (cond==false) {
         throw std::runtime_error(msg);
     }
 }
 
-#if !FASTOR_ENABLE_RUNTIME_CHECKS
-// Standard assert - by default only turned on under debug
-#ifndef NDEBUG
-#define FASTOR_ASSERT(COND, MESSAGE) assert(COND && MESSAGE)
+#if !defined(NDEBUG) || FASTOR_ENABLE_RUNTIME_CHECKS
+#define FASTOR_ASSERT(COND, MESSAGE) FASTOR_EXIT_ASSERT(COND, MESSAGE)
 #else
 #define FASTOR_ASSERT(COND, MESSAGE)
 #endif
-#else
-// Otherwise if asked by the user turned on unconditionally
-#define FASTOR_ASSERT(COND, MESSAGE) FASTOR_EXIT_ASSERT(COND, MESSAGE)
-#endif
 
+// Warn
 FASTOR_INLINE void FASTOR_WARN(bool cond, const std::string &x) {
-    if (cond==true) {
-        return;
-    }
-    else {
+    if (cond==false) {
         std::cout << x << std::endl;
     }
 }
-
 } // end of namespace Fastor
-
-#define FASTOR_TOSTRING_(X) #X
-#define FASTOR_TOSTRING(X) FASTOR_TOSTRING_(X)
+//------------------------------------------------------------------------------------------------//
 
 
+// Warnings
+//------------------------------------------------------------------------------------------------//
+// Static warn
 #ifndef FASTOR_NO_STATIC_WARNING
 #if defined(__GNUC__)
     #define FASTOR_DEPRECATE(foo, msg) foo __attribute__((deprecated(msg)))
@@ -215,13 +217,24 @@ struct FASTOR_CAT(static_warning,__LINE__) { \
 
 } // end of namespace Fastor
 #endif // FASTOR_NO_STATIC_WARNING
+//------------------------------------------------------------------------------------------------//
 
+
+// Token to string
+//------------------------------------------------------------------------------------------------//
+#define FASTOR_TOSTRING_(X) #X
+#define FASTOR_TOSTRING(X) FASTOR_TOSTRING_(X)
+//------------------------------------------------------------------------------------------------//
 
 // asm comment
+//------------------------------------------------------------------------------------------------//
 #define FASTOR_ASM(STR) asm(STR ::)
+//------------------------------------------------------------------------------------------------//
 
+// unused
+//------------------------------------------------------------------------------------------------//
 namespace Fastor {
-//clobber
+// clobber
 template <typename T> void unused(T &&x) {
 #ifndef _WIN32
     asm("" ::"m"(x));
@@ -229,7 +242,6 @@ template <typename T> void unused(T &&x) {
 }
 template <typename T, typename ... U> void unused(T&& x, U&& ...y) { unused(x); unused(y...); }
 } // end of namespace Fastor
-//------------------------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------//
 
 
@@ -275,7 +287,6 @@ constexpr int NoDepthFirst = -201;
 constexpr double PRECI_TOL  = 1e-14;
 
 }
-
 //------------------------------------------------------------------------------------------------//
 
 #endif // FASTOR_MACROS_H
