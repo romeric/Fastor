@@ -15,6 +15,7 @@ Fastor offers:
 - Optional **SIMD backends** such as [sleef](https://github.com/shibatch/sleef), [Vc](https://github.com/VcDevel/Vc) or even [std::experimental::simd](https://en.cppreference.com/w/cpp/experimental/simd/simd)
 - **Optional JIT backend** using Intel's [MKL-JIT](https://software.intel.com/en-us/articles/intel-math-kernel-library-improved-small-matrix-performance-using-just-in-time-jit-code) and [LIBXSMM](https://github.com/hfp/libxsmm) for performance portable code
 - Ability to **wrap existing data** and operate on them using Fastor's highly optimised kernels
+- Suitable linear algebra library for **FPGAs, micro-controllers and embedded systems** due to absolutely no dynamic allocations and no RTTI
 - **Light weight header-only** library with no external dependencies offering **fast compilation times**
 - **Well-tested** on most compilers including GCC, Clang, Intel's ICC and MSVC
 
