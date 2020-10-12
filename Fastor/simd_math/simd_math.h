@@ -285,6 +285,7 @@ FASTOR_INLINE SIMDVector<double,simd_abi::avx> floor(const SIMDVector<double,sim
 // remaining math functions from STL
 //----------------------------------------------------------------------------------------------------------------------//
 //----------------------------------------------------------------------------------------------------------------------//
+
 template<typename T, typename ABI>
 FASTOR_INLINE SIMDVector<T,ABI> exp(const SIMDVector<T,ABI> &a) {
     SIMDVector<T,ABI> out;
@@ -539,8 +540,10 @@ FASTOR_INLINE SIMDVector<bool,simd_abi::fixed_size<SIMDVector<T,ABI>::Size>> isf
 //----------------------------------------------------------------------------------------------------------//
 
 
-
 } // end of namespace Fastor
 
-#endif // SIMD_MATH_H
 
+// Include all backends
+#include "Fastor/simd_math/sleef_backend.h"
+
+#endif // SIMD_MATH_H
