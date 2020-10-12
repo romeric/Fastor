@@ -21,7 +21,7 @@ public:
     static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return sizeof...(Rest);}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return pack_prod<Rest...>::value;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX dim) const {
-#ifndef NDEBUG
+#if FASTOR_SHAPE_CHECK
         FASTOR_ASSERT(dim>=0 && dim < sizeof...(Rest), "TENSOR SHAPE MISMATCH");
 #endif
         const FASTOR_INDEX DimensionHolder[sizeof...(Rest)] = {Rest...};

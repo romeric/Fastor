@@ -48,9 +48,16 @@ SOFTWARE.
 //#define FASTOR_UNSAFE_MATH
 #endif
 
-// Bounds and shape checking - ON by default
+// Runtime checks - off by default under release
 //------------------------------------------------------------------------------------------------//
-#ifndef NDEBUG
+#ifndef FASTOR_ENABLE_RUNTIME_CHECKS
+#define FASTOR_ENABLE_RUNTIME_CHECKS 0
+#endif
+//------------------------------------------------------------------------------------------------//
+
+// Bounds and shape checking - ON by default under debug
+//------------------------------------------------------------------------------------------------//
+#if !defined(NDEBUG) || FASTOR_ENABLE_RUNTIME_CHECKS
 #ifndef FASTOR_BOUNDS_CHECK
 #define FASTOR_BOUNDS_CHECK 1
 #endif
@@ -138,6 +145,98 @@ SOFTWARE.
 #define FASTOR_ISALIGNED(POINTER, BYTE_COUNT) \
     (((uintptr_t)(const void *)(POINTER)) % (BYTE_COUNT) == 0)
 
+
+// Asserts and warnings
+//------------------------------------------------------------------------------------------------//
+namespace Fastor {
+
+// Strong assert under debug and release
+FASTOR_INLINE void FASTOR_EXIT_ASSERT(bool cond, const std::string &msg="") {
+    if (cond==false) {
+        throw std::runtime_error(msg);
+    }
+}
+
+#if !FASTOR_ENABLE_RUNTIME_CHECKS
+// Standard assert - by default only turned on under debug
+#ifndef NDEBUG
+#define FASTOR_ASSERT(COND, MESSAGE) assert(COND && MESSAGE)
+#else
+#define FASTOR_ASSERT(COND, MESSAGE)
+#endif
+#else
+// Otherwise if asked by the user turned on unconditionally
+#define FASTOR_ASSERT(COND, MESSAGE) FASTOR_EXIT_ASSERT(COND, MESSAGE)
+#endif
+
+FASTOR_INLINE void FASTOR_WARN(bool cond, const std::string &x) {
+    if (cond==true) {
+        return;
+    }
+    else {
+        std::cout << x << std::endl;
+    }
+}
+
+} // end of namespace Fastor
+
+#define FASTOR_TOSTRING_(X) #X
+#define FASTOR_TOSTRING(X) FASTOR_TOSTRING_(X)
+
+
+#ifndef FASTOR_NO_STATIC_WARNING
+#if defined(__GNUC__)
+    #define FASTOR_DEPRECATE(foo, msg) foo __attribute__((deprecated(msg)))
+#elif defined(_MSC_VER)
+    #define FASTOR_DEPRECATE(foo, msg) __declspec(deprecated(msg)) foo
+#else
+    #error FASTOR STATIC WARNING DOES NOT SUPPORT THIS COMPILER
+#endif
+
+#define FASTOR_CAT(x,y) FASTOR_CAT1_(x,y)
+#define FASTOR_CAT1_(x,y) x##y
+
+
+namespace Fastor {
+namespace useless
+{
+    struct true_type {};
+    struct false_type {};
+    template <int test> struct converter : public true_type {};
+    template <> struct converter<0> : public false_type {};
+}
+
+#define FASTOR_STATIC_WARN(cond, msg) \
+struct FASTOR_CAT(static_warning,__LINE__) { \
+  FASTOR_DEPRECATE(void _(::useless::false_type const& ),msg) {}; \
+  void _(::useless::true_type const& ) {}; \
+  FASTOR_CAT(static_warning,__LINE__)() {_(::useless::converter<(cond)>());} \
+}
+
+} // end of namespace Fastor
+#endif // FASTOR_NO_STATIC_WARNING
+
+
+// asm comment
+#define FASTOR_ASM(STR) asm(STR ::)
+
+namespace Fastor {
+//clobber
+template <typename T> void unused(T &&x) {
+#ifndef _WIN32
+    asm("" ::"m"(x));
+#endif
+}
+template <typename T, typename ... U> void unused(T&& x, U&& ...y) { unused(x); unused(y...); }
+} // end of namespace Fastor
+//------------------------------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+
+
+// SIMD round-down
+//------------------------------------------------------------------------------------------------//
+#define ROUND_DOWN2(x, s) ((x) & ~((s)-1))
+#define ROUND_DOWN(x, s) ROUND_DOWN2(x,s)
 //------------------------------------------------------------------------------------------------//
 
 
@@ -176,5 +275,7 @@ constexpr int NoDepthFirst = -201;
 constexpr double PRECI_TOL  = 1e-14;
 
 }
+
+//------------------------------------------------------------------------------------------------//
 
 #endif // FASTOR_MACROS_H
