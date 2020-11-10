@@ -1,0 +1,10 @@
+prefix=@FASTOR_INSTALL_PREFIX@
+exec_prefix=${prefix}
+includedir=${prefix}/@FASTOR_INSTALL_INCLUDE_DIR@
+
+Name: Fastor
+Description: A light-weight high performance tensor algebra framework for modern C++
+URL: https://github.com/romeric/Fastor
+Version: @PROJECT_VERSION@
+Cflags: -I${includedir}
+
