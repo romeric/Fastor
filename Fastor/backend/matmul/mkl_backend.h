@@ -59,11 +59,9 @@ Tensor<T,M,N> matmul_mkl_jit_api(const Tensor<T,M,K> &a, const Tensor<T,K,N> &b)
 }
 #endif
 
-
-
 } // end of namespace blas
 } // end of namespace Fastor
 
-#endif // FASTOR_USE_LIBXSMM
+#endif // FASTOR_USE_MKL
 
 #endif // MKL_BACKEND_H
