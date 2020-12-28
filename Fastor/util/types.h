@@ -7,7 +7,7 @@
 namespace Fastor {
 namespace useless {
 class probe_type;
-void extract_type(std::string_view& name, std::string_view probe_type_name);
+inline void extract_type(std::string_view& name, std::string_view probe_type_name);
 } // useless
 
 template <typename T>
@@ -30,7 +30,7 @@ constexpr std::string_view type_name() {
 }
 
 namespace useless {
-void extract_type(std::string_view& name, std::string_view probe_type_name) {
+inline void extract_type(std::string_view& name, std::string_view probe_type_name) {
   if (name.find(probe_type_name) == std::string_view::npos) {
     //For known type probe_type get raw name and then prefix and suffix sizes
     const std::string_view probe_type_raw_name = type_name<probe_type> ();
