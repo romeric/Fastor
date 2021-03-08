@@ -36,13 +36,24 @@ template<typename T, size_t N>
 struct scalar_type_finder<Tensor<T,N>> {
     using type = T;
 };
+
+template<typename T, size_t ... Rest>
+struct scalar_type_finder<TensorMap<T,Rest...>> {
+    using type = T;
+};
+// This specific specialisation is needed to avoid ambiguity for vectors
+template<typename T, size_t N>
+struct scalar_type_finder<TensorMap<T,N>> {
+    using type = T;
+};
+
 template<template <class,size_t> class UnaryExpr, typename Expr, size_t DIMS>
 struct scalar_type_finder<UnaryExpr<Expr,DIMS>> {
     using type = typename scalar_type_finder<Expr>::type;
 };
 template<template <class,class,size_t> class Expr, typename TLhs, typename TRhs, size_t DIMS>
 struct scalar_type_finder<Expr<TLhs,TRhs,DIMS>> {
-    using type = typename std::conditional<std::is_arithmetic<TLhs>::value,
+    using type = typename std::conditional<is_primitive_v_<TLhs>,
         typename scalar_type_finder<TRhs>::type, typename scalar_type_finder<TLhs>::type>::type;
 };
 template<template<typename,typename,typename,size_t> class TensorFixedViewExpr,
@@ -56,11 +67,6 @@ struct scalar_type_finder<TensorConstFixedViewExprnD<TensorType<T,Rest...>,Fseqs
 };
 template<template<typename,size_t...> class TensorType, typename T, size_t ...Rest, typename ... Fseqs>
 struct scalar_type_finder<TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>> {
-    using type = T;
-};
-
-template<typename T, size_t ... Rest>
-struct scalar_type_finder<TensorMap<T,Rest...>> {
     using type = T;
 };
 //--------------------------------------------------------------------------------------------------------------------//
@@ -82,14 +88,24 @@ template<typename T, size_t N>
 struct tensor_type_finder<Tensor<T,N>> {
     using type = Tensor<T,N>;
 };
+
+template<typename T, size_t ... Rest>
+struct tensor_type_finder<TensorMap<T,Rest...>> {
+    using type = Tensor<T,Rest...>;
+};
+// This specific specialisation is needed to avoid ambiguity for vectors
+template<typename T, size_t N>
+struct tensor_type_finder<TensorMap<T,N>> {
+    using type = Tensor<T,N>;
+};
+
 template<template<typename,size_t> class UnaryExpr, typename Expr, size_t DIM>
 struct tensor_type_finder<UnaryExpr<Expr,DIM>> {
     using type = typename tensor_type_finder<Expr>::type;
 };
 template<template<class,class,size_t> class BinaryExpr, typename TLhs, typename TRhs, size_t DIMS>
 struct tensor_type_finder<BinaryExpr<TLhs,TRhs,DIMS>> {
-    // using type = typename tensor_type_finder<TLhs>::type;
-    using type = typename std::conditional<std::is_arithmetic<TLhs>::value,
+    using type = typename std::conditional<is_primitive_v_<TLhs>,
         typename tensor_type_finder<TRhs>::type, typename tensor_type_finder<TLhs>::type>::type;
 };
 template<template<typename,typename,typename,size_t> class TensorFixedViewExpr,
@@ -104,11 +120,6 @@ struct tensor_type_finder<TensorConstFixedViewExprnD<TensorType<T,Rest...>,Fseqs
 template<template<typename,size_t...> class TensorType, typename T, size_t ...Rest, typename ... Fseqs>
 struct tensor_type_finder<TensorFixedViewExprnD<TensorType<T,Rest...>,Fseqs...>> {
     using type = TensorType<T,Rest...>;
-};
-
-template<typename T, size_t ... Rest>
-struct tensor_type_finder<TensorMap<T,Rest...>> {
-    using type = Tensor<T,Rest...>;
 };
 //--------------------------------------------------------------------------------------------------------------------//
 
