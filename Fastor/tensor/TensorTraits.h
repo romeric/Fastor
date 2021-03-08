@@ -36,7 +36,6 @@ template<typename T, size_t N>
 struct scalar_type_finder<Tensor<T,N>> {
     using type = T;
 };
-
 template<typename T, size_t ... Rest>
 struct scalar_type_finder<TensorMap<T,Rest...>> {
     using type = T;
@@ -88,7 +87,6 @@ template<typename T, size_t N>
 struct tensor_type_finder<Tensor<T,N>> {
     using type = Tensor<T,N>;
 };
-
 template<typename T, size_t ... Rest>
 struct tensor_type_finder<TensorMap<T,Rest...>> {
     using type = Tensor<T,Rest...>;
