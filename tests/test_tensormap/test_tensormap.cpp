@@ -88,6 +88,21 @@ void run() {
         FASTOR_EXIT_ASSERT(std::abs(res1.sum() + 28 ) < Tol);
     }
 
+    // Bug 132 - add 1D tensormaps, outer tensormaps
+    {
+        std::array<double,3> a = {1,1,1};
+        TensorMap<double,3> at(a.data());
+
+        std::array<double,3> b = {2,2,2};
+        TensorMap<double,3> bt(b.data());
+
+        Tensor<double,3> ct = bt + at;
+        FASTOR_EXIT_ASSERT(std::abs(ct.sum() - 9 ) < Tol);
+
+        Tensor<double,3,3> dt = outer(at, bt);
+        FASTOR_EXIT_ASSERT(std::abs(dt.sum() - 18 ) < Tol);
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 }
 

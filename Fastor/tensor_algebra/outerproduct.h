@@ -97,7 +97,8 @@ dyadic(const AbstractTensor<Derived0,DIM0> &a, const AbstractTensor<Derived1,DIM
 //     return a;
 // }
 
-template<typename AbstractTensorType0, typename AbstractTensorType1, typename ... AbstractTensorTypes>
+template<typename AbstractTensorType0, typename AbstractTensorType1, typename ... AbstractTensorTypes,
+    enable_if_t_<is_greater_equal_v_<sizeof...(AbstractTensorTypes),1>,bool> >
 FASTOR_INLINE
 auto
 outer(const AbstractTensorType0& a, const AbstractTensorType1& b, const AbstractTensorTypes& ... rest)
@@ -106,7 +107,8 @@ outer(const AbstractTensorType0& a, const AbstractTensorType1& b, const Abstract
     return outer(res, rest...);
 }
 
-template<typename AbstractTensorType0, typename AbstractTensorType1, typename ... AbstractTensorTypes>
+template<typename AbstractTensorType0, typename AbstractTensorType1, typename ... AbstractTensorTypes,
+    enable_if_t_<is_greater_equal_v_<sizeof...(AbstractTensorTypes),1>,bool> >
 FASTOR_INLINE
 auto
 dyadic(const AbstractTensorType0& a, const AbstractTensorType1& b, const AbstractTensorTypes& ... rest)
