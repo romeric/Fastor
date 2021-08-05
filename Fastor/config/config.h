@@ -153,7 +153,7 @@ SOFTWARE.
 
 // C++17 [if constexpr] define
 //------------------------------------------------------------------------------------------------//
-#if FASTOR_CXX_VERSION == 2017
+#if FASTOR_CXX_VERSION >= 2017
     #define FASTOR_HAS_IF_CONSTEXPR 1
     #define FASTOR_IF_CONSTEXPR if constexpr
 #else
