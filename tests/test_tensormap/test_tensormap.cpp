@@ -55,6 +55,36 @@ void run() {
         FASTOR_EXIT_ASSERT(std::abs(a.sum() - ma.sum()) < Tol);
     }
 
+    // Compound assignment operators.
+    {
+        Tensor<T,4,5> src;
+        src = 3;
+        TensorMap<T,4,5> msrc(src);
+        Tensor<T,4,5> dst;
+        dst = 0;
+        Tensor<T,4,5> check;
+
+        // +=
+        check = 3;
+        dst += msrc;
+        FASTOR_EXIT_ASSERT(all_of(dst == check));
+
+        // *=
+        check = 9;
+        dst *= msrc;
+        FASTOR_EXIT_ASSERT(all_of(dst == check));
+
+        // -=
+        check = 6;
+        dst -= msrc;
+        FASTOR_EXIT_ASSERT(all_of(dst == check));
+
+        // /=
+        check = 2;
+        dst /= msrc;
+        FASTOR_EXIT_ASSERT(all_of(dst == check));
+    }
+
     // Map a const array and copy-assign it to a non-const tensor.
     {
         const T data[] = {1, 2, 3};
