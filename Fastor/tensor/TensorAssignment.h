@@ -245,50 +245,50 @@ FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
 
 //----------------------------------------------------------------------------------------------------------//
 template<typename Derived, size_t DIM, typename T, size_t ...Rest>
-FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
+constexpr FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
     if (dst.self().data()==src.data()) return;
     trivial_assign(dst.self(),src);
 }
 template<typename Derived, size_t DIM, typename T, size_t ...Rest>
-FASTOR_INLINE void assign_add(AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
+constexpr FASTOR_INLINE void assign_add(AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
     trivial_assign_add(dst.self(),src);
 }
 template<typename Derived, size_t DIM, typename T, size_t ...Rest>
-FASTOR_INLINE void assign_sub(AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
+constexpr FASTOR_INLINE void assign_sub(AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
     trivial_assign_sub(dst.self(),src);
 }
 template<typename Derived, size_t DIM, typename T, size_t ...Rest>
-FASTOR_INLINE void assign_mul(AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
+constexpr FASTOR_INLINE void assign_mul(AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
     trivial_assign_mul(dst.self(),src);
 }
 template<typename Derived, size_t DIM, typename T, size_t ...Rest>
-FASTOR_INLINE void assign_div(AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
+constexpr FASTOR_INLINE void assign_div(AbstractTensor<Derived,DIM> &dst, const Tensor<T,Rest...> &src) {
     trivial_assign_div(dst.self(),src);
 }
 
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_primitive_v_<U>,bool> = false>
-FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, U num) {
+constexpr FASTOR_INLINE void assign(AbstractTensor<Derived,DIM> &dst, U num) {
     trivial_assign(dst.self(),num);
 }
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_primitive_v_<U>,bool> = false>
-FASTOR_INLINE void assign_add(AbstractTensor<Derived,DIM> &dst, U num) {
+constexpr FASTOR_INLINE void assign_add(AbstractTensor<Derived,DIM> &dst, U num) {
     trivial_assign_add(dst.self(),num);
 }
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_primitive_v_<U>,bool> = false>
-FASTOR_INLINE void assign_sub(AbstractTensor<Derived,DIM> &dst, U num) {
+constexpr FASTOR_INLINE void assign_sub(AbstractTensor<Derived,DIM> &dst, U num) {
     trivial_assign_sub(dst.self(),num);
 }
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_primitive_v_<U>,bool> = false>
-FASTOR_INLINE void assign_mul(AbstractTensor<Derived,DIM> &dst, U num) {
+constexpr FASTOR_INLINE void assign_mul(AbstractTensor<Derived,DIM> &dst, U num) {
     trivial_assign_mul(dst.self(),num);
 }
 template<typename Derived, size_t DIM, typename U,
     enable_if_t_<is_primitive_v_<U>,bool> = false>
-FASTOR_INLINE void assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
+constexpr FASTOR_INLINE void assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
     trivial_assign_div(dst.self(),num);
 }
 //----------------------------------------------------------------------------------------------------------//

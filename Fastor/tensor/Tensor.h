@@ -49,8 +49,17 @@ public:
 
     // Constructor from a scalar
     template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false>
-    FASTOR_INLINE Tensor(U num) {
+    constexpr FASTOR_INLINE Tensor(U num) {
+#ifdef FASTOR_ZERO_INITIALISE
+        // This is for compile time initialisation, so it is fine
+        scalar_type cnum = (scalar_type)num;
+        FASTOR_INDEX i = 0;
+        for (; i<size(); ++i) {
+            _data[i] = cnum;
+        }
+#else
         assign(*this, num);
+#endif
     }
 
     // Initialiser list constructors

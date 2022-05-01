@@ -17,7 +17,7 @@ template<class Derived, FASTOR_INDEX Rank>
 class AbstractTensor {
 public:
     constexpr FASTOR_INLINE AbstractTensor() = default;
-    FASTOR_INLINE const Derived& self() const {return *static_cast<const Derived*>(this);}
+    constexpr FASTOR_INLINE const Derived& self() const {return *static_cast<const Derived*>(this);}
     FASTOR_INLINE Derived& self() {return *static_cast<Derived*>(this);}
 
     static constexpr FASTOR_INDEX Dimension = Rank;

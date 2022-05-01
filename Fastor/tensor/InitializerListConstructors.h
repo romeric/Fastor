@@ -4,9 +4,10 @@
 // Initialiser list constructors
 //----------------------------------------------------------------------------------------------------------//
     template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false >
+    constexpr
     FASTOR_INLINE Tensor(const std::initializer_list<U> &lst) {
         static_assert(sizeof...(Rest)==1,"TENSOR RANK MISMATCH WITH LIST-INITIALISER");
-#if FASTOR_BOUNDS_CHECK
+#if (!defined(NDEBUG) && !defined(FASTOR_ZERO_INITIALISE))
         FASTOR_ASSERT(pack_prod<Rest...>::value==lst.size(), "TENSOR SIZE MISMATCH WITH LIST-INITIALISER");
 #endif
         auto counter = 0;
@@ -14,9 +15,10 @@
     }
 
     template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false >
+    constexpr
     FASTOR_INLINE Tensor(const std::initializer_list<std::initializer_list<U>> &lst2d) {
         static_assert(sizeof...(Rest)==2,"TENSOR RANK MISMATCH WITH LIST-INITIALISER");
-#ifndef NDEBUG
+#if (!defined(NDEBUG) && !defined(FASTOR_ZERO_INITIALISE))
         constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
         constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
         auto size_ = 0;
@@ -38,9 +40,10 @@
     }
 
     template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false >
+    constexpr
     FASTOR_INLINE Tensor(const std::initializer_list<std::initializer_list<std::initializer_list<U>>> &lst3d) {
         static_assert(sizeof...(Rest)==3,"TENSOR RANK MISMATCH WITH LIST-INITIALISER");
-#ifndef NDEBUG
+#if (!defined(NDEBUG) && !defined(FASTOR_ZERO_INITIALISE))
         constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
         constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
         constexpr FASTOR_INDEX P = get_value<3,Rest...>::value;
@@ -68,9 +71,10 @@
     }
 
     template<typename U=T, enable_if_t_<is_primitive_v_<U>,bool> = false >
+    constexpr
     FASTOR_INLINE Tensor(const std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<U>>>> &lst4d) {
         static_assert(sizeof...(Rest)==4,"TENSOR RANK MISMATCH WITH LIST-INITIALISER");
-#ifndef NDEBUG
+#if (!defined(NDEBUG) && !defined(FASTOR_ZERO_INITIALISE))
         constexpr FASTOR_INDEX M = get_value<1,Rest...>::value;
         constexpr FASTOR_INDEX N = get_value<2,Rest...>::value;
         constexpr FASTOR_INDEX P = get_value<3,Rest...>::value;
