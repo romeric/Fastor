@@ -25,7 +25,7 @@ template<DetCompType DetType = DetCompType::Simple, typename T, size_t M,
     enable_if_t_<is_greater_v_<M,4UL>    && DetType == DetCompType::Simple,bool> = false>
 FASTOR_INLINE T determinant(const Tensor<T,M,M> &a) {
     // Dispatch to LU
-    determinant<DetCompType::LU>(a);
+    return determinant<DetCompType::LU>(a);
 }
 
 // For high order tensors
