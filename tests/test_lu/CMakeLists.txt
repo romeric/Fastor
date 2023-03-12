@@ -14,3 +14,4 @@ endif()
 
 target_include_directories(test_lu PRIVATE ${FASTOR_INCLUDE_DIR})
 target_include_directories(test_lu PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../)
+target_link_libraries(test_lu PRIVATE Fastor)

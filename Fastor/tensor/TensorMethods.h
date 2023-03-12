@@ -82,17 +82,48 @@ FASTOR_INLINE void eye() {
     }
 }
 
+#ifdef FASTOR_USE_CHRONO_RANDOM_SEED
+FASTOR_INLINE T rand_seed(T min, T max) {
+    std::chrono::time_point<std::chrono::system_clock> t = std::chrono::high_resolution_clock::now();
+
+    std::default_random_engine eng{static_cast<long unsigned int>(t.time_since_epoch().count())};
+
+    std::uniform_real_distribution<> distribution(min, max);
+    return distribution(eng);
+};
+#endif
+
 FASTOR_INLINE void random() {
+#ifndef FASTOR_USE_CHRONO_RANDOM_SEED
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> distrib(0, 1);
+#endif
+
     //! Populate tensor with random FP numbers
     for (FASTOR_INDEX i=0; i<size(); ++i) {
-        _data[get_mem_index(i)] = (T)rand()/RAND_MAX;
+#ifdef FASTOR_USE_CHRONO_RANDOM_SEED
+        _data[get_mem_index(i)] = (T)rand_seed(0, RAND_MAX)/RAND_MAX;
+#else
+        _data[get_mem_index(i)] = (T)distrib(gen);
+#endif
     }
 }
 
-FASTOR_INLINE void randint() {
+FASTOR_INLINE void randint(T min, T max) {
+#ifndef FASTOR_USE_CHRONO_RANDOM_SEED
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> distrib(min, max);
+#endif
+
     //! Populate tensor with random integer numbers
     for (FASTOR_INDEX i=0; i<size(); ++i) {
-        _data[get_mem_index(i)] = (T)rand();
+#ifdef FASTOR_USE_CHRONO_RANDOM_SEED
+        _data[get_mem_index(i)] = (T)rand_seed(min, max);
+#else
+        _data[get_mem_index(i)] = (T)distrib(gen);
+#endif
     }
 }
 

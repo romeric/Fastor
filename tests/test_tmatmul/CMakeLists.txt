@@ -22,3 +22,5 @@ add_test(test_tmatmul_masked test_tmatmul_masked)
 
 target_include_directories (test_tmatmul_masked PRIVATE ${FASTOR_INCLUDE_DIR})
 target_include_directories (test_tmatmul_masked PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../)
+target_link_libraries(test_tmatmul_unmasked PRIVATE Fastor)
+target_link_libraries(test_tmatmul_masked PRIVATE Fastor)

@@ -28,3 +28,5 @@ endif()
 
 target_include_directories(test_complex_expressions_2 PRIVATE ${FASTOR_INCLUDE_DIR})
 target_include_directories(test_complex_expressions_2 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../)
+target_link_libraries(test_complex_expressions_1 PRIVATE Fastor)
+target_link_libraries(test_complex_expressions_2 PRIVATE Fastor)

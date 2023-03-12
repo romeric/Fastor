@@ -27,3 +27,5 @@ endif()
 
 target_include_directories(test_views_nd_2 PRIVATE ${FASTOR_INCLUDE_DIR})
 target_include_directories(test_views_nd_2 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../)
+target_link_libraries(test_views_nd PRIVATE Fastor)
+target_link_libraries(test_views_nd_2 PRIVATE Fastor)

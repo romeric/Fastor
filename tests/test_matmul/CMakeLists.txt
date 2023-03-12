@@ -29,3 +29,6 @@ add_test(test_lazy_matmul test_lazy_matmul)
 
 target_include_directories (test_lazy_matmul PUBLIC ${FASTOR_INCLUDE_DIR})
 target_include_directories (test_lazy_matmul PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../)
+target_link_libraries(test_matmul PRIVATE Fastor)
+target_link_libraries(test_matmul_small PRIVATE Fastor)
+target_link_libraries(test_lazy_matmul PRIVATE Fastor)

@@ -12,6 +12,11 @@
 
 #include <array>
 #include <vector>
+#include <random>
+#ifdef FASTOR_USE_CHRONO_RANDOM_SEED
+#include <chrono>
+#endif
+#include <iostream>
 
 namespace Fastor {
 

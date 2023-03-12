@@ -28,3 +28,5 @@ endif()
 
 target_include_directories(test_fixed_views_2d_vec PRIVATE ${FASTOR_INCLUDE_DIR})
 target_include_directories(test_fixed_views_2d_vec PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../)
+target_link_libraries(test_fixed_views_2d PRIVATE Fastor)
+target_link_libraries(test_fixed_views_2d_vec PRIVATE Fastor)

@@ -31,3 +31,5 @@ endif()
 
 target_include_directories(test_simd_vectors_complex PRIVATE ${FASTOR_INCLUDE_DIR})
 target_include_directories(test_simd_vectors_complex PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../)
+target_link_libraries(test_simd_vectors PRIVATE Fastor)
+target_link_libraries(test_simd_vectors_complex PRIVATE Fastor)

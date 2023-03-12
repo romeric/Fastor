@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 project(fastor VERSION 0.6.4)
 
 option(BUILD_TESTING "Build the testing tree." ON)
+option(USE_CHRONO_RANDOM_SEED "Use std::chrono to generate seed in random generation functions" OFF)
 
 set(FASTOR_SOURCE_DIR "${fastor_SOURCE_DIR}")
 set(FASTOR_BINARY_DIR "${fastor_BINARY_DIR}")
@@ -9,12 +10,17 @@ set(FASTOR_INCLUDE_DIR "${fastor_SOURCE_DIR}")
 
 include(GNUInstallDirs)
 
+
 set(FASTOR_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 set(FASTOR_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_INCLUDEDIR}")
 set(FASTOR_INSTALL_CMAKE_DIR "${CMAKE_INSTALL_DATADIR}/cmake/Fastor")
 set(FASTOR_INSTALL_PKGCONFIG_DIR "${CMAKE_INSTALL_DATADIR}/pkgconfig")
 
 add_library(Fastor INTERFACE)
+
+if(USE_CHRONO_RANDOM_SEED)
+  target_compile_options(Fastor INTERFACE "-DFASTOR_USE_CHRONO_RANDOM_SEED")
+endif(USE_CHRONO_RANDOM_SEED)
 
 target_include_directories(
     Fastor INTERFACE
