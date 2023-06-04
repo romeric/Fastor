@@ -136,6 +136,18 @@ void test_linalg() {
 		FASTOR_EXIT_ASSERT(std::abs(determinant(M) - 216) < Tol);
 	}
 
+    // svd
+    {
+        Tensor<T,2,2> A; A = {{23.,3.},{3.5,56.}};
+        Tensor<T,2,2> U,S,V;
+        svd(A,U,S,V);
+        Tensor<T,2,2> rec = U % S % trans(V);
+        FASTOR_EXIT_ASSERT(std::abs(rec(0,0) - A(0,0)) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(rec(0,1) - A(0,1)) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(rec(1,0) - A(1,0)) < BigTol);
+        FASTOR_EXIT_ASSERT(std::abs(rec(1,1) - A(1,1)) < BigTol);
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 
 }

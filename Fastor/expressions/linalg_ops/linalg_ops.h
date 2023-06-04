@@ -16,6 +16,7 @@
 #include "Fastor/expressions/linalg_ops/unary_norm_op.h"
 #include "Fastor/expressions/linalg_ops/unary_qr_op.h"
 #include "Fastor/expressions/linalg_ops/unary_det_op.h"
+#include "Fastor/expressions/linalg_ops/unary_svd_op.h"
 #include "Fastor/expressions/linalg_ops/binary_cross_op.h"
 
 #include "Fastor/expressions/linalg_ops/linalg_traits.h"
