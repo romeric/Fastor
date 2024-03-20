@@ -16,4 +16,5 @@
 
 # misc
 *.DS_Store
+*.vscode
 *CMakeCache.txt

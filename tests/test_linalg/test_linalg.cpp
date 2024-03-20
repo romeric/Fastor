@@ -123,18 +123,18 @@ void test_linalg() {
         FASTOR_EXIT_ASSERT(std::abs(det<DetCompType::LU>(A)         - det(A)        ) < HugeTol);
     }
 
-	// big determinant
-	{
-		Tensor<T, 6, 6> M = {{1, 0, 3, 0, 0, 0},
-                             {0, -2, 4, 0, 5, 0},
-                             {0, 0, 3, 0, 0, 0},
-                             {0, 0, 0, 4, 0, 0},
-                             {0, 0, 0, 0, 9, 0},
+    // big determinant
+    {
+        Tensor<T, 6, 6> M = {{ 1,  0,  3,  0,  0,  0},
+                             { 0, -2,  4,  0,  5,  0},
+                             { 0,  0,  3,  0,  0,  0},
+                             { 0,  0,  0,  4,  0,  0},
+                             { 0,  0,  0,  0,  9,  0},
                              {-1, -1, -1, -1, -1, -1}
                              };
 
-		FASTOR_EXIT_ASSERT(std::abs(determinant(M) - 216) < Tol);
-	}
+        FASTOR_EXIT_ASSERT(std::abs(determinant(M) - 216) < Tol);
+    }
 
     // svd
     {

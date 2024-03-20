@@ -11,11 +11,22 @@
 #include "Fastor/expressions/linalg_ops/linalg_computation_types.h"
 
 #include <algorithm>
+#include <complex>
 
 
 namespace Fastor {
 
 namespace internal {
+
+template<typename T, enable_if_t_<is_complex_v_<T>, bool> = false>
+typename T::value_type cnorm(const T& num) {
+    return std::norm(num);
+}
+
+template<typename T, enable_if_t_<!is_complex_v_<T>, bool> = false>
+T cnorm(const T& num) {
+    return std::abs(num);
+}
 
 template<typename T, size_t M, size_t N>
 FASTOR_INLINE size_t count_swaps(const Tensor<T,M,N>& A) {
@@ -23,8 +34,9 @@ FASTOR_INLINE size_t count_swaps(const Tensor<T,M,N>& A) {
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            // std::abs is necessary only for complex valued numbers
-            if (std::abs(A(i, j)) > std::abs(A(max_index, j)))
+            // std::abs/norm is necessary only for complex valued numbers
+            // Switch to std::norm (norm = abs^2) to avoid taking sqrt
+            if (internal::cnorm(A(i, j)) > internal::cnorm(A(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -33,7 +45,7 @@ FASTOR_INLINE size_t count_swaps(const Tensor<T,M,N>& A) {
     return count;
 }
 
-}
+} // end of namespace internal
 
 
 template<PivType PType = PivType::V, typename T, size_t M, size_t N,
@@ -44,8 +56,9 @@ FASTOR_INLINE Tensor<T,M,N> pivot(const Tensor<T,M,N>& A) {
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            // std::abs is necessary only for complex valued numbers
-            if (std::abs(A(i, j)) > std::abs(A(max_index, j)))
+            // std::abs/norm is necessary only for complex valued numbers
+            // Switch to std::norm (norm = abs^2) to avoid taking sqrt
+            if (internal::cnorm(A(i, j)) > internal::cnorm(A(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -65,8 +78,9 @@ FASTOR_INLINE Tensor<size_t,M> pivot(const Tensor<T,M,N>& A) {
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            // std::abs is necessary only for complex valued numbers
-            if (std::abs(A(i, j)) > std::abs(A(max_index, j)))
+            // std::abs/norm is necessary only for complex valued numbers
+            // Switch to std::norm (norm = abs^2) to avoid taking sqrt
+            if (internal::cnorm(A(i, j)) > internal::cnorm(A(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -111,8 +125,9 @@ pivot(const AbstractTensor<Derived,DIM>& src) {
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            // std::abs is necessary only for complex valued numbers
-            if (std::abs(A.template eval_s<T>(i, j)) > std::abs(A.template eval_s<T>(max_index, j)))
+            // std::abs/norm is necessary only for complex valued numbers
+            // Switch to std::norm (norm = abs^2) to avoid taking sqrt
+            if (internal::cnorm(A.template eval_s<T>(i, j)) > internal::cnorm(A.template eval_s<T>(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -156,8 +171,9 @@ pivot(const AbstractTensor<Derived,DIM>& src) {
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            // std::abs is necessary only for complex valued numbers
-            if (std::abs(A.template eval_s<T>(i, j)) > std::abs(A.template eval_s<T>(max_index, j)))
+            // std::abs/norm is necessary only for complex valued numbers
+            // Switch to std::norm (norm = abs^2) to avoid taking sqrt
+            if (internal::cnorm(A.template eval_s<T>(i, j)) > internal::cnorm(A.template eval_s<T>(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -174,8 +190,9 @@ FASTOR_INLINE void pivot_inplace(const Tensor<T,M,N>& A, Tensor<size_t,M>& perm)
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            // std::abs is necessary only for complex valued numbers
-            if (std::abs(A(i, j)) > std::abs(A(max_index, j)))
+            // std::abs/norm is necessary only for complex valued numbers
+            // Switch to std::norm (norm = abs^2) to avoid taking sqrt
+            if (internal::cnorm(A(i, j)) > internal::cnorm(A(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -190,8 +207,9 @@ FASTOR_INLINE void pivot_inplace(const Tensor<T,M,N>& A, Tensor<T,M,N> &P) {
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            // std::abs is necessary only for complex valued numbers
-            if (std::abs(A(i, j)) > std::abs(A(max_index, j)))
+            // std::abs/norm is necessary only for complex valued numbers
+            // Switch to std::norm (norm = abs^2) to avoid taking sqrt
+            if (internal::cnorm(A(i, j)) > internal::cnorm(A(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -226,8 +244,9 @@ pivot_inplace(const AbstractTensor<Derived,DIM>& src, Tensor<size_t,M> &perm) {
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            // std::abs is necessary only for complex valued numbers
-            if (std::abs(A.template eval_s<T>(i, j)) > std::abs(A.template eval_s<T>(max_index, j)))
+            // std::abs/norm is necessary only for complex valued numbers
+            // Switch to std::norm (norm = abs^2) to avoid taking sqrt
+            if (internal::cnorm(A.template eval_s<T>(i, j)) > internal::cnorm(A.template eval_s<T>(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
@@ -258,8 +277,9 @@ pivot_inplace(const AbstractTensor<Derived,DIM>& src, Tensor<T,M,N> &P) {
     for (size_t j = 0; j < M; ++j) {
         size_t max_index = j;
         for (size_t i = j; i < M; ++i) {
-            // std::abs is necessary only for complex valued numbers
-            if (std::abs(A.template eval_s<T>(i, j)) > std::abs(A.template eval_s<T>(max_index, j)))
+            // std::abs/norm is necessary only for complex valued numbers
+            // Switch to std::norm (norm = abs^2) to avoid taking sqrt
+            if (internal::cnorm(A.template eval_s<T>(i, j)) > internal::cnorm(A.template eval_s<T>(max_index, j)))
                 max_index = i;
         }
         if (j != max_index)
