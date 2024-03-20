@@ -21,7 +21,7 @@ void run_permute_2d() {
         auto b0 = permute<Index<i,j>>(a);
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
-                FASTOR_EXIT_ASSERT( std::abs( a(ii,jj) - b0(ii,jj) ) < Tol );
+                FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj) - b0(ii,jj) ) < Tol );
             }
         }
 
@@ -29,12 +29,12 @@ void run_permute_2d() {
         auto b1 = permute<Index<j,i>>(a);
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
-                FASTOR_EXIT_ASSERT( std::abs( a(ii,jj) - b1(jj,ii) ) < Tol );
+                FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj) - b1(jj,ii) ) < Tol );
             }
         }
 
-        FASTOR_EXIT_ASSERT( std::abs( sum(b1 - transpose(a)) ) < Tol );
-        FASTOR_EXIT_ASSERT( std::abs( sum(b1 - trans(a))     ) < Tol );
+        FASTOR_DOES_CHECK_PASS( std::abs( sum(b1 - transpose(a)) ) < Tol );
+        FASTOR_DOES_CHECK_PASS( std::abs( sum(b1 - trans(a))     ) < Tol );
     }
 
     // 2D tensor expression permute
@@ -45,7 +45,7 @@ void run_permute_2d() {
         auto b0 = permute<Index<i,j>>(a+1-1);
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
-                FASTOR_EXIT_ASSERT( std::abs( a(ii,jj) - b0(ii,jj) ) < Tol );
+                FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj) - b0(ii,jj) ) < Tol );
             }
         }
 
@@ -53,12 +53,12 @@ void run_permute_2d() {
         auto b1 = permute<Index<j,i>>(trans(trans(a)+0));
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
-                FASTOR_EXIT_ASSERT( std::abs( a(ii,jj) - b1(jj,ii) ) < Tol );
+                FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj) - b1(jj,ii) ) < Tol );
             }
         }
 
-        FASTOR_EXIT_ASSERT( std::abs( sum(b1 - transpose(a)) ) < Tol );
-        FASTOR_EXIT_ASSERT( std::abs( sum(b1 - trans(a))     ) < Tol );
+        FASTOR_DOES_CHECK_PASS( std::abs( sum(b1 - transpose(a)) ) < Tol );
+        FASTOR_DOES_CHECK_PASS( std::abs( sum(b1 - trans(a))     ) < Tol );
     }
 
     print(FGRN(BOLD("All tests passed successfully")));
@@ -80,7 +80,7 @@ void run_permute_3d() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk) - b0(ii,jj,kk) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk) - b0(ii,jj,kk) ) < Tol );
                 }
             }
         }
@@ -89,7 +89,7 @@ void run_permute_3d() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk) - b1(ii,kk,jj) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk) - b1(ii,kk,jj) ) < Tol );
                 }
             }
         }
@@ -98,7 +98,7 @@ void run_permute_3d() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk) - b2(jj,ii,kk) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk) - b2(jj,ii,kk) ) < Tol );
                 }
             }
         }
@@ -107,7 +107,7 @@ void run_permute_3d() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk) - b3(jj,kk,ii) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk) - b3(jj,kk,ii) ) < Tol );
                 }
             }
         }
@@ -116,7 +116,7 @@ void run_permute_3d() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk) - b4(kk,ii,jj) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk) - b4(kk,ii,jj) ) < Tol );
                 }
             }
         }
@@ -125,7 +125,7 @@ void run_permute_3d() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk) - b5(kk,jj,ii) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk) - b5(kk,jj,ii) ) < Tol );
                 }
             }
         }
@@ -140,7 +140,7 @@ void run_permute_3d() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk) - b0(ii,jj,kk) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk) - b0(ii,jj,kk) ) < Tol );
                 }
             }
         }
@@ -149,7 +149,7 @@ void run_permute_3d() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk) - b1(ii,kk,jj) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk) - b1(ii,kk,jj) ) < Tol );
                 }
             }
         }
@@ -158,7 +158,7 @@ void run_permute_3d() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk) - b2(jj,ii,kk) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk) - b2(jj,ii,kk) ) < Tol );
                 }
             }
         }
@@ -167,7 +167,7 @@ void run_permute_3d() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk) - b3(jj,kk,ii) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk) - b3(jj,kk,ii) ) < Tol );
                 }
             }
         }
@@ -176,7 +176,7 @@ void run_permute_3d() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk) - b4(kk,ii,jj) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk) - b4(kk,ii,jj) ) < Tol );
                 }
             }
         }
@@ -185,7 +185,7 @@ void run_permute_3d() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk) - b5(kk,jj,ii) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk) - b5(kk,jj,ii) ) < Tol );
                 }
             }
         }
@@ -211,7 +211,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b0(ii,jj,kk,ll) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b0(ii,jj,kk,ll) ) < Tol );
                     }
                 }
             }
@@ -222,7 +222,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b00(ii,jj,ll,kk) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b00(ii,jj,ll,kk) ) < Tol );
                     }
                 }
             }
@@ -233,7 +233,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b1(ii,kk,jj,ll) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b1(ii,kk,jj,ll) ) < Tol );
                     }
                 }
             }
@@ -244,7 +244,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b2(ii,kk,ll,jj) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b2(ii,kk,ll,jj) ) < Tol );
                     }
                 }
             }
@@ -255,7 +255,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b3(ii,ll,kk,jj) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b3(ii,ll,kk,jj) ) < Tol );
                     }
                 }
             }
@@ -266,7 +266,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b4(ii,ll,jj,kk) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b4(ii,ll,jj,kk) ) < Tol );
                     }
                 }
             }
@@ -277,7 +277,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b5(jj,ll,ii,kk) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b5(jj,ll,ii,kk) ) < Tol );
                     }
                 }
             }
@@ -288,7 +288,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b6(jj,ll,kk,ii) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b6(jj,ll,kk,ii) ) < Tol );
                     }
                 }
             }
@@ -299,7 +299,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b7(kk,ll,ii,jj) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b7(kk,ll,ii,jj) ) < Tol );
                     }
                 }
             }
@@ -316,7 +316,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b0(ii,jj,kk,ll) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b0(ii,jj,kk,ll) ) < Tol );
                     }
                 }
             }
@@ -327,7 +327,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b00(ii,jj,ll,kk) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b00(ii,jj,ll,kk) ) < Tol );
                     }
                 }
             }
@@ -338,7 +338,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b1(ii,kk,jj,ll) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b1(ii,kk,jj,ll) ) < Tol );
                     }
                 }
             }
@@ -349,7 +349,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b2(ii,kk,ll,jj) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b2(ii,kk,ll,jj) ) < Tol );
                     }
                 }
             }
@@ -360,7 +360,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b3(ii,ll,kk,jj) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b3(ii,ll,kk,jj) ) < Tol );
                     }
                 }
             }
@@ -371,7 +371,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b4(ii,ll,jj,kk) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b4(ii,ll,jj,kk) ) < Tol );
                     }
                 }
             }
@@ -382,7 +382,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b5(jj,ll,ii,kk) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b5(jj,ll,ii,kk) ) < Tol );
                     }
                 }
             }
@@ -393,7 +393,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b6(jj,ll,kk,ii) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b6(jj,ll,kk,ii) ) < Tol );
                     }
                 }
             }
@@ -404,7 +404,7 @@ void run_permute_4d() {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
-                        FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll) - b7(kk,ll,ii,jj) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll) - b7(kk,ll,ii,jj) ) < Tol );
                     }
                 }
             }
@@ -432,7 +432,7 @@ void run_permute_5d() {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
                         for (size_t mm=0; mm<M; ++mm) {
-                            FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll,mm) - b0(ii,jj,kk,ll,mm) ) < Tol );
+                            FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll,mm) - b0(ii,jj,kk,ll,mm) ) < Tol );
                         }
                     }
                 }
@@ -445,7 +445,7 @@ void run_permute_5d() {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
                         for (size_t mm=0; mm<M; ++mm) {
-                            FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll,mm) - b1(ii,jj,mm,ll,kk) ) < Tol );
+                            FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll,mm) - b1(ii,jj,mm,ll,kk) ) < Tol );
                         }
                     }
                 }
@@ -458,7 +458,7 @@ void run_permute_5d() {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
                         for (size_t mm=0; mm<M; ++mm) {
-                            FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll,mm) - b2(ll,mm,jj,kk,ii) ) < Tol );
+                            FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll,mm) - b2(ll,mm,jj,kk,ii) ) < Tol );
                         }
                     }
                 }
@@ -478,7 +478,7 @@ void run_permute_5d() {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
                         for (size_t mm=0; mm<M; ++mm) {
-                            FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll,mm) - b0(ii,jj,kk,ll,mm) ) < Tol );
+                            FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll,mm) - b0(ii,jj,kk,ll,mm) ) < Tol );
                         }
                     }
                 }
@@ -491,7 +491,7 @@ void run_permute_5d() {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
                         for (size_t mm=0; mm<M; ++mm) {
-                            FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll,mm) - b1(ii,jj,mm,ll,kk) ) < Tol );
+                            FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll,mm) - b1(ii,jj,mm,ll,kk) ) < Tol );
                         }
                     }
                 }
@@ -504,7 +504,7 @@ void run_permute_5d() {
                 for (size_t kk=0; kk<K; ++kk) {
                     for (size_t ll=0; ll<L; ++ll) {
                         for (size_t mm=0; mm<M; ++mm) {
-                            FASTOR_EXIT_ASSERT( std::abs( a(ii,jj,kk,ll,mm) - b2(ll,mm,jj,kk,ii) ) < Tol );
+                            FASTOR_DOES_CHECK_PASS( std::abs( a(ii,jj,kk,ll,mm) - b2(ll,mm,jj,kk,ii) ) < Tol );
                         }
                     }
                 }

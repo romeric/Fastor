@@ -25,7 +25,7 @@ void run() {
 
         for (size_t ii=0; ii<2; ++ii) {
             for (size_t jj=0; jj<6; ++jj) {
-                FASTOR_EXIT_ASSERT( std::abs( b1(ii,jj) - b2(ii,jj) ) < Tol );
+                FASTOR_DOES_CHECK_PASS( std::abs( b1(ii,jj) - b2(ii,jj) ) < Tol );
             }
         }
     }
@@ -40,11 +40,11 @@ void run() {
 
         for (size_t ii=0; ii<2; ++ii) {
             for (size_t jj=0; jj<6; ++jj) {
-                FASTOR_EXIT_ASSERT( std::abs( b1(ii,jj) - b2(jj,ii) ) < Tol );
+                FASTOR_DOES_CHECK_PASS( std::abs( b1(ii,jj) - b2(jj,ii) ) < Tol );
             }
         }
 
-        FASTOR_EXIT_ASSERT( all_of(b1 == trans(b2)) );
+        FASTOR_DOES_CHECK_PASS( all_of(b1 == trans(b2)) );
     }
 
     {
@@ -59,7 +59,7 @@ void run() {
             for (size_t ii=0; ii<2; ++ii) {
                 for (size_t nn=0; nn<4; ++nn) {
                     for (size_t jj=0; jj<6; ++jj) {
-                        FASTOR_EXIT_ASSERT( std::abs( b1(mm,ii,nn,jj) - b2(mm,ii,nn,jj) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( b1(mm,ii,nn,jj) - b2(mm,ii,nn,jj) ) < Tol );
                     }
                 }
             }
@@ -77,7 +77,7 @@ void run() {
             for (size_t ii=0; ii<2; ++ii) {
                 for (size_t nn=0; nn<4; ++nn) {
                     for (size_t jj=0; jj<6; ++jj) {
-                        FASTOR_EXIT_ASSERT( std::abs( b1(mm,ii,nn,jj) - b2(ii,mm,nn,jj) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( b1(mm,ii,nn,jj) - b2(ii,mm,nn,jj) ) < Tol );
                     }
                 }
             }
@@ -95,7 +95,7 @@ void run() {
             for (size_t ii=0; ii<2; ++ii) {
                 for (size_t nn=0; nn<4; ++nn) {
                     for (size_t jj=0; jj<6; ++jj) {
-                        FASTOR_EXIT_ASSERT( std::abs( b1(mm,ii,nn,jj) - b2(ii,mm,jj,nn) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( b1(mm,ii,nn,jj) - b2(ii,mm,jj,nn) ) < Tol );
                     }
                 }
             }
@@ -113,7 +113,7 @@ void run() {
             for (size_t ii=0; ii<2; ++ii) {
                 for (size_t nn=0; nn<4; ++nn) {
                     for (size_t jj=0; jj<6; ++jj) {
-                        FASTOR_EXIT_ASSERT( std::abs( b1(mm,ii,nn,jj) - b2(ii,jj,mm,nn) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( b1(mm,ii,nn,jj) - b2(ii,jj,mm,nn) ) < Tol );
                     }
                 }
             }
@@ -131,7 +131,7 @@ void run() {
             for (size_t ii=0; ii<2; ++ii) {
                 for (size_t nn=0; nn<4; ++nn) {
                     for (size_t jj=0; jj<6; ++jj) {
-                        FASTOR_EXIT_ASSERT( std::abs( b1(mm,ii,nn,jj) - b2(nn,mm,jj,ii) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( b1(mm,ii,nn,jj) - b2(nn,mm,jj,ii) ) < Tol );
                     }
                 }
             }
@@ -149,7 +149,7 @@ void run() {
             for (size_t ii=0; ii<2; ++ii) {
                 for (size_t nn=0; nn<4; ++nn) {
                     for (size_t jj=0; jj<6; ++jj) {
-                        FASTOR_EXIT_ASSERT( std::abs( b1(mm,ii,nn,jj) - b2(nn,mm,jj,ii) ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( b1(mm,ii,nn,jj) - b2(nn,mm,jj,ii) ) < Tol );
                     }
                 }
             }
@@ -169,7 +169,7 @@ void run() {
         for (size_t ii=0; ii<2; ++ii) {
             for (size_t nn=0; nn<5; ++nn) {
                 for (size_t oo=0; oo<2; ++oo) {
-                    FASTOR_EXIT_ASSERT( std::abs( b1(ii,nn,oo) - b2(ii,nn,oo) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( b1(ii,nn,oo) - b2(ii,nn,oo) ) < Tol );
                 }
             }
         }
@@ -186,7 +186,7 @@ void run() {
         for (size_t ii=0; ii<2; ++ii) {
             for (size_t nn=0; nn<5; ++nn) {
                 for (size_t oo=0; oo<2; ++oo) {
-                    FASTOR_EXIT_ASSERT( std::abs( b1(ii,nn,oo) - b2(ii,oo,nn) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( b1(ii,nn,oo) - b2(ii,oo,nn) ) < Tol );
                 }
             }
         }
@@ -203,7 +203,7 @@ void run() {
         for (size_t ii=0; ii<2; ++ii) {
             for (size_t nn=0; nn<5; ++nn) {
                 for (size_t oo=0; oo<2; ++oo) {
-                    FASTOR_EXIT_ASSERT( std::abs( b1(ii,nn,oo) - b2(nn,ii,oo) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( b1(ii,nn,oo) - b2(nn,ii,oo) ) < Tol );
                 }
             }
         }
@@ -220,7 +220,7 @@ void run() {
         for (size_t ii=0; ii<2; ++ii) {
             for (size_t nn=0; nn<5; ++nn) {
                 for (size_t oo=0; oo<2; ++oo) {
-                    FASTOR_EXIT_ASSERT( std::abs( b1(ii,nn,oo) - b2(nn,ii,oo) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( b1(ii,nn,oo) - b2(nn,ii,oo) ) < Tol );
                 }
             }
         }
@@ -239,7 +239,7 @@ void run() {
 
         for (size_t nn=0; nn<5; ++nn) {
             for (size_t oo=0; oo<2; ++oo) {
-                FASTOR_EXIT_ASSERT( std::abs( b1(nn,oo) - b2(nn,oo) ) < Tol );
+                FASTOR_DOES_CHECK_PASS( std::abs( b1(nn,oo) - b2(nn,oo) ) < Tol );
             }
         }
     }
@@ -255,7 +255,7 @@ void run() {
 
         for (size_t nn=0; nn<5; ++nn) {
             for (size_t oo=0; oo<2; ++oo) {
-                FASTOR_EXIT_ASSERT( std::abs( b1(nn,oo) - b2(oo,nn) ) < Tol );
+                FASTOR_DOES_CHECK_PASS( std::abs( b1(nn,oo) - b2(oo,nn) ) < Tol );
             }
         }
     }
@@ -271,7 +271,7 @@ void run() {
 
         for (size_t nn=0; nn<5; ++nn) {
             for (size_t oo=0; oo<2; ++oo) {
-                FASTOR_EXIT_ASSERT( std::abs( b1(nn,oo) - b2(oo,nn) ) < Tol );
+                FASTOR_DOES_CHECK_PASS( std::abs( b1(nn,oo) - b2(oo,nn) ) < Tol );
             }
         }
     }
@@ -291,7 +291,7 @@ void run() {
         for (size_t nn=0; nn<5; ++nn) {
             for (size_t oo=0; oo<2; ++oo) {
                 for (size_t pp=0; pp<3; ++pp) {
-                    FASTOR_EXIT_ASSERT( std::abs( b1(nn,oo,pp) - b2(nn,oo,pp) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( b1(nn,oo,pp) - b2(nn,oo,pp) ) < Tol );
                 }
             }
         }
@@ -311,7 +311,7 @@ void run() {
         for (size_t nn=0; nn<5; ++nn) {
             for (size_t oo=0; oo<2; ++oo) {
                 for (size_t pp=0; pp<3; ++pp) {
-                    FASTOR_EXIT_ASSERT( std::abs( b1(nn,oo,pp) - b2(pp,nn,oo) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( b1(nn,oo,pp) - b2(pp,nn,oo) ) < Tol );
                 }
             }
         }
@@ -331,7 +331,7 @@ void run() {
         for (size_t nn=0; nn<5; ++nn) {
             for (size_t oo=0; oo<2; ++oo) {
                 for (size_t pp=0; pp<3; ++pp) {
-                    FASTOR_EXIT_ASSERT( std::abs( b1(nn,oo,pp) - b2(pp,nn,oo) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( b1(nn,oo,pp) - b2(pp,nn,oo) ) < Tol );
                 }
             }
         }

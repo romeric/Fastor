@@ -16,145 +16,145 @@ void run_vectorisable() {
     Tensor<T,2,2,2,16> b; b.iota(11);
     Tensor<T,3,2,2,16> c; c.iota(101);
 
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < Tol);
-    FASTOR_EXIT_ASSERT(std::abs(b.sum() - 9536) < Tol);
-    FASTOR_EXIT_ASSERT(std::abs(c.sum() - 37728) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(b.sum() - 9536) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(c.sum() - 37728) < Tol);
 
     // Assigning the same view to a view [check copy operators for views]
     a(sall,sall,sall,sall) = b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 9536) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 9536) < Tol);
     a.iota(1);
     a(sall,sall,sall,sall) += b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 17792) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 17792) < Tol);
     a(sall,sall,sall,sall) -= b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < Tol);
     a(sall,sall,sall,sall) *= b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 789824) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 789824) < Tol);
     a(sall,sall,sall,sall) /= b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < BigTol);
 
     // Assigning different view to a view [checks copy operators for abstract expressions]
     a(0,sall,sall,sall) = c(1,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 18752) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 18752) < Tol);
     a.iota(1);
     a(0,sall,sall,sall) += c(1,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 20832) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 20832) < Tol);
     a(0,sall,sall,sall) -= c(1,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < Tol);
     a(0,sall,sall,sall) *= c(1,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 436736) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 436736) < Tol);
     a(0,sall,sall,sall) /= c(1,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < BigTol);
 
     // Assigning different view to a view [checks copy operators for abstract expressions]
     a(0,sall,sall,sall) = c(1,sall,sall,sall)+1-1;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 18752) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 18752) < Tol);
     a.iota(1);
     a(0,sall,sall,sall) += c(1,sall,sall,sall)+1-1;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 20832) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 20832) < Tol);
     a(0,sall,sall,sall) -= c(1,sall,sall,sall)+1-1;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < Tol);
     a(0,sall,sall,sall) *= c(1,sall,sall,sall)+1-1;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 436736) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 436736) < Tol);
     a(0,sall,sall,sall) /= c(1,sall,sall,sall)+1-1;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < BigTol);
 
     // Assigning numbers to a view [checks copy operators for numbers]
     a(0,sall,1,sall) = 2;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7024) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7024) < Tol);
     a.iota(1);
     a(0,sall,1,sall) += 2;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8320) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8320) < Tol);
     a(0,sall,1,sall) -= 2;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < Tol);
     a(0,sall,1,sall) *= 2;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 9552) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 9552) < Tol);
     a(0,sall,1,sall) /= 2;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < BigTol);
 
     // Assigning different view to a view (non-equal order) [checks copy operators for abstract expressions]
     a.iota(1);
     Tensor<T,4,2,16> d; d.iota(1);
     a(0,0,sall,sall) = d(0,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < BigTol);
     a(0,0,sall,sall) += d(0,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8784) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8784) < BigTol);
     a(0,0,sall,sall) -= d(0,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < BigTol);
     a(0,0,sall,sall) *= d(0,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 19168) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 19168) < BigTol);
     a(0,0,sall,sall) /= d(0,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < BigTol);
 
     // Assigning different view to a view (non-equal order) [checks copy operators for abstract expressions]
     a.iota(1);
     a(0,0,sall,sall) = d(0,sall,sall) + 3 - 3;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < BigTol);
     a(0,0,sall,sall) += d(0,sall,sall) + 3 - 3;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8784) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8784) < BigTol);
     a(0,0,sall,sall) -= d(0,sall,sall) + 3 - 3;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < BigTol);
     a(0,0,sall,sall) *= d(0,sall,sall) + 3 - 3;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 19168) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 19168) < BigTol);
     a(0,0,sall,sall) /= d(0,sall,sall) + 3 - 3;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < BigTol);
 
     // Constructing tensor from a tensor view [checks specialised constructors]
     a.iota(1);
     a = a(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < BigTol);
     decltype(a) e = a(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 8256) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 8256) < BigTol);
     e += b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 17792) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 17792) < Tol);
     e -= b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 8256) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 8256) < Tol);
     e *= b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 789824) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 789824) < Tol);
     e /= b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 8256) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 8256) < BigTol);
 
     // Constructing tensor from an expression that has tensor view [checks specialised constructors]
     a.iota(1);
     a = a(sall,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8256) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8256) < BigTol);
     e = a(sall,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 8256) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 8256) < BigTol);
     e += b(sall,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 17792) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 17792) < Tol);
     e -= b(sall,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 8256) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 8256) < Tol);
     e *= b(sall,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 789824) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 789824) < Tol);
     e /= b(sall,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 8256) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 8256) < BigTol);
 
     // Constructing tensor from a tensor view (non-equal order)
     a.iota(1);
     Tensor<T,8> f = a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(f.sum() - 64) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(f.sum() - 64) < Tol);
     f += a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(f.sum() - 128) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(f.sum() - 128) < Tol);
     f -= a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(f.sum() - 64) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(f.sum() - 64) < Tol);
     f *= a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(f.sum() - 680) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(f.sum() - 680) < Tol);
     f /= a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(f.sum() - 64) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(f.sum() - 64) < BigTol);
 
     // Constructing tensor from a tensor view (equal order)
     a.iota(1);
     Tensor<T,1,1,1,8> g; g.zeros();
     g = a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(g.sum() - 64) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(g.sum() - 64) < Tol);
     g += a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(g.sum() - 128) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(g.sum() - 128) < Tol);
     g -= a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(g.sum() - 64) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(g.sum() - 64) < Tol);
     g *= a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(g.sum() - 680) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(g.sum() - 680) < Tol);
     g /= a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(g.sum() - 64) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(g.sum() - 64) < BigTol);
 
     print(FGRN(BOLD("All tests passed successfully")));
 }
@@ -167,145 +167,145 @@ void run_non_vectorisable() {
     Tensor<T,2,2,2,15> b; b.iota(11);
     Tensor<T,3,2,2,15> c; c.iota(101);
 
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < Tol);
-    FASTOR_EXIT_ASSERT(std::abs(b.sum() - 8460) < Tol);
-    FASTOR_EXIT_ASSERT(std::abs(c.sum() - 34290) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(b.sum() - 8460) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(c.sum() - 34290) < Tol);
 
     // Assigning the same view to a view [check copy operators for views]
     a(sall,sall,sall,sall) = b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8460) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8460) < Tol);
     a.iota(1);
     a(sall,sall,sall,sall) += b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 15720) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 15720) < Tol);
     a(sall,sall,sall,sall) -= b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < Tol);
     a(sall,sall,sall,sall) *= b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 655820) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 655820) < Tol);
     a(sall,sall,sall,sall) /= b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < BigTol);
 
     // Assigning different view to a view [checks copy operators for abstract expressions]
     a(0,sall,sall,sall) = c(1,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 16860) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 16860) < Tol);
     a.iota(1);
     a(0,sall,sall,sall) += c(1,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 18690) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 18690) < Tol);
     a(0,sall,sall,sall) -= c(1,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < Tol);
     a(0,sall,sall,sall) *= c(1,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 372040) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 372040) < Tol);
     a(0,sall,sall,sall) /= c(1,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < BigTol);
 
     // // Assigning different view to a view [checks copy operators for abstract expressions]
     a(0,sall,sall,sall) = c(1,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 16860) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 16860) < Tol);
     a.iota(1);
     a(0,sall,sall,sall) += c(1,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 18690) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 18690) < Tol);
     a(0,sall,sall,sall) -= c(1,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < Tol);
     a(0,sall,sall,sall) *= c(1,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 372040) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 372040) < Tol);
     a(0,sall,sall,sall) /= c(1,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < BigTol);
 
     // Assigning numbers to a view [checks copy operators for numbers]
     a(0,sall,1,sall) = 2;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 6180) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 6180) < Tol);
     a.iota(1);
     a(0,sall,1,sall) += 2;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7320) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7320) < Tol);
     a(0,sall,1,sall) -= 2;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < Tol);
     a(0,sall,1,sall) *= 2;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 8400) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 8400) < Tol);
     a(0,sall,1,sall) /= 2;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < BigTol);
 
     // Assigning different view to a view (non-equal order) [checks copy operators for abstract expressions]
     a.iota(1);
     Tensor<T,4,2,15> d; d.iota(1);
     a(0,0,sall,sall) = d(0,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < BigTol);
     a(0,0,sall,sall) += d(0,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7725) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7725) < BigTol);
     a(0,0,sall,sall) -= d(0,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < BigTol);
     a(0,0,sall,sall) *= d(0,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 16250) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 16250) < BigTol);
     a(0,0,sall,sall) /= d(0,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < BigTol);
 
     // Assigning different view to a view (non-equal order) [checks copy operators for abstract expressions]
     a.iota(1);
     a(0,0,sall,sall) = d(0,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < BigTol);
     a(0,0,sall,sall) += d(0,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7725) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7725) < BigTol);
     a(0,0,sall,sall) -= d(0,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < BigTol);
     a(0,0,sall,sall) *= d(0,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 16250) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 16250) < BigTol);
     a(0,0,sall,sall) /= d(0,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < BigTol);
 
     // Constructing tensor from a tensor view [checks specialised constructors]
     a.iota(1);
     a = a(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < BigTol);
     decltype(a) e = a(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 7260) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 7260) < BigTol);
     e += b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 15720) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 15720) < Tol);
     e -= b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 7260) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 7260) < Tol);
     e *= b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 655820) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 655820) < Tol);
     e /= b(sall,sall,sall,sall);
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 7260) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 7260) < BigTol);
 
     // Constructing tensor from an expression that has tensor view [checks specialised constructors]
     a.iota(1);
     a = a(sall,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(a.sum() - 7260) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(a.sum() - 7260) < BigTol);
     e = a(sall,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 7260) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 7260) < BigTol);
     e += b(sall,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 15720) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 15720) < Tol);
     e -= b(sall,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 7260) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 7260) < Tol);
     e *= b(sall,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 655820) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 655820) < Tol);
     e /= b(sall,sall,sall,sall) + 0;
-    FASTOR_EXIT_ASSERT(std::abs(e.sum() - 7260) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(e.sum() - 7260) < BigTol);
 
     // Constructing tensor from a tensor view (non-equal order)
     a.iota(1);
     Tensor<T,8> f = a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(f.sum() - 64) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(f.sum() - 64) < Tol);
     f += a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(f.sum() - 128) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(f.sum() - 128) < Tol);
     f -= a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(f.sum() - 64) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(f.sum() - 64) < Tol);
     f *= a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(f.sum() - 680) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(f.sum() - 680) < Tol);
     f /= a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(f.sum() - 64) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(f.sum() - 64) < BigTol);
 
     // Constructing tensor from a tensor view (equal order)
     a.iota(1);
     Tensor<T,1,1,1,8> g; g.zeros();
     g = a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(g.sum() - 64) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(g.sum() - 64) < Tol);
     g += a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(g.sum() - 128) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(g.sum() - 128) < Tol);
     g -= a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(g.sum() - 64) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(g.sum() - 64) < Tol);
     g *= a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(g.sum() - 680) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(g.sum() - 680) < Tol);
     g /= a(0,0,0,seq(0,last,2));
-    FASTOR_EXIT_ASSERT(std::abs(g.sum() - 64) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(g.sum() - 64) < BigTol);
 
     print(FGRN(BOLD("All tests passed successfully")));
 }

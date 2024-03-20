@@ -14,31 +14,31 @@ void run_fixed_size() {
 
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba1(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba1(i,j) == true, "TEST FAILED");
             }
         }
         Tensor<bool,mm,nn> ba2 = a != a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba2(i,j) == false, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba2(i,j) == false, "TEST FAILED");
             }
         }
         Tensor<bool,mm,nn> ba3 = a < a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba3(i,j) == false, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba3(i,j) == false, "TEST FAILED");
             }
         }
         Tensor<bool,mm,nn> ba4 = a >= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba4(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba4(i,j) == true, "TEST FAILED");
             }
         }
         Tensor<bool,mm,nn> ba5 = a <= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
 
@@ -46,37 +46,37 @@ void run_fixed_size() {
         ba5 = a + 1 == a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == false, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == false, "TEST FAILED");
             }
         }
         ba5 = a + 1 != a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
         ba5 = a + 1 > a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
         ba5 = a - 1 < a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
         ba5 = a * 1 <= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
         ba5 = a * 2 >= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
 
@@ -85,31 +85,31 @@ void run_fixed_size() {
         ba5(fall,fall) = a == a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
         ba5(fall,fall) = a < a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == false, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == false, "TEST FAILED");
             }
         }
         ba5(fall,fall) = a > a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == false, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == false, "TEST FAILED");
             }
         }
         ba5(fall,fall) = a <= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
         ba5(fall,fall) = a >= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
 
@@ -117,31 +117,31 @@ void run_fixed_size() {
         ba5(sall,sall) = a == a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
         ba5(sall,sall) = a < a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == false, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == false, "TEST FAILED");
             }
         }
         ba5(sall,sall) = a > a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == false, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == false, "TEST FAILED");
             }
         }
         ba5(sall,sall) = a <= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
         ba5(all,all) = a >= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
 
@@ -149,37 +149,37 @@ void run_fixed_size() {
         ba5(fall,fall) = a + 1 == a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == false, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == false, "TEST FAILED");
             }
         }
         ba5(fall,fall) = a + 1 != a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
         ba5(fall,fall) = a + 1 > a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
         ba5(fall,fall) = a - 1 < a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
         ba5(fall,fall) = a * 1 <= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
         ba5(fall,fall) = a * 2 >= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
 
@@ -187,37 +187,37 @@ void run_fixed_size() {
         ba5(sall,sall) = a + 1 == a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == false, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == false, "TEST FAILED");
             }
         }
         ba5(sall,sall) = a + 1 != a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
         ba5(sall,sall) = a + 1 > a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
         ba5(sall,sall) = a - 1 < a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
         ba5(sall,sall) = a * 1 <= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
         ba5(sall,sall) = a * 2 >= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba5(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba5(i,j) == true, "TEST FAILED");
             }
         }
     }
@@ -230,10 +230,10 @@ void run_fixed_size() {
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
                 if (i==1 && j==1) {
-                    FASTOR_EXIT_ASSERT(bab1(i,j) == false, "TEST FAILED");
+                    FASTOR_DOES_CHECK_PASS(bab1(i,j) == false, "TEST FAILED");
                 }
                 else {
-                    FASTOR_EXIT_ASSERT(bab1(i,j) == true, "TEST FAILED");
+                    FASTOR_DOES_CHECK_PASS(bab1(i,j) == true, "TEST FAILED");
                 }
             }
         }
@@ -241,10 +241,10 @@ void run_fixed_size() {
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
                 if (i==1 && j==1) {
-                    FASTOR_EXIT_ASSERT(bab1(i,j) == true, "TEST FAILED");
+                    FASTOR_DOES_CHECK_PASS(bab1(i,j) == true, "TEST FAILED");
                 }
                 else {
-                    FASTOR_EXIT_ASSERT(bab1(i,j) == false, "TEST FAILED");
+                    FASTOR_DOES_CHECK_PASS(bab1(i,j) == false, "TEST FAILED");
                 }
             }
         }
@@ -252,10 +252,10 @@ void run_fixed_size() {
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
                 if (i==1 && j==1) {
-                    FASTOR_EXIT_ASSERT(bab1(i,j) == true, "TEST FAILED");
+                    FASTOR_DOES_CHECK_PASS(bab1(i,j) == true, "TEST FAILED");
                 }
                 else {
-                    FASTOR_EXIT_ASSERT(bab1(i,j) == false, "TEST FAILED");
+                    FASTOR_DOES_CHECK_PASS(bab1(i,j) == false, "TEST FAILED");
                 }
             }
         }
@@ -263,23 +263,23 @@ void run_fixed_size() {
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
                 if (i==1 && j==1) {
-                    FASTOR_EXIT_ASSERT(bab1(i,j) == true, "TEST FAILED");
+                    FASTOR_DOES_CHECK_PASS(bab1(i,j) == true, "TEST FAILED");
                 }
                 else {
-                    FASTOR_EXIT_ASSERT(bab1(i,j) == false, "TEST FAILED");
+                    FASTOR_DOES_CHECK_PASS(bab1(i,j) == false, "TEST FAILED");
                 }
             }
         }
         bab1 = b >= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(bab1(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(bab1(i,j) == true, "TEST FAILED");
             }
         }
         bab1 = a <= a;
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(bab1(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(bab1(i,j) == true, "TEST FAILED");
             }
         }
     }
@@ -287,15 +287,15 @@ void run_fixed_size() {
     {
         Tensor<T> a(2);
         Tensor<bool> ba = a==2;
-        FASTOR_EXIT_ASSERT(ba.toscalar() == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba.toscalar() == true, "TEST FAILED");
         ba = a>2;
-        FASTOR_EXIT_ASSERT(ba.toscalar() == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba.toscalar() == false, "TEST FAILED");
         ba = a<2;
-        FASTOR_EXIT_ASSERT(ba.toscalar() == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba.toscalar() == false, "TEST FAILED");
         ba = a>=2;
-        FASTOR_EXIT_ASSERT(ba.toscalar() == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba.toscalar() == true, "TEST FAILED");
         ba = a<=2;
-        FASTOR_EXIT_ASSERT(ba.toscalar() == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba.toscalar() == true, "TEST FAILED");
     }
 }
 

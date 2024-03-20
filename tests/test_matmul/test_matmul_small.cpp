@@ -35,8 +35,8 @@ void test() {
     // print(c1,"\n",c3);
     // print(std::abs(sum(c1-c3)));
     // print(std::abs(sum(c1-c4)));
-    FASTOR_EXIT_ASSERT(std::abs(sum(c1-c3)) < BigTol);
-    FASTOR_EXIT_ASSERT(std::abs(sum(c1-c4)) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(sum(c1-c3)) < BigTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(sum(c1-c4)) < BigTol);
 }
 
 

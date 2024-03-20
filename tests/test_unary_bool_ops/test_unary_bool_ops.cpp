@@ -15,54 +15,54 @@ void run_fixed_size() {
         Tensor<bool,mm,nn> ba0 = ft::isnan(aa);
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba0(i,j) == false, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba0(i,j) == false, "TEST FAILED");
             }
         }
 
-        FASTOR_EXIT_ASSERT(all_of (ba0 == false) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(any_of (ba0 == false) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(none_of(ba0 == false) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(all_of (ba0 == false) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(any_of (ba0 == false) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(none_of(ba0 == false) == true, "TEST FAILED");
 
         Tensor<bool,mm,nn> ba1 = ft::isinf(aa);
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba1(i,j) == false, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba1(i,j) == false, "TEST FAILED");
             }
         }
 
-        FASTOR_EXIT_ASSERT(all_of (ba1 == false) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(any_of (ba1 == false) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(none_of(ba1 == false) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(all_of (ba1 == false) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(any_of (ba1 == false) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(none_of(ba1 == false) == true, "TEST FAILED");
 
         Tensor<bool,mm,nn> ba2 = ft::isfinite(aa);
         for (FASTOR_INDEX i=0; i<mm; ++i) {
             for (FASTOR_INDEX j=0; j<nn; ++j) {
-                FASTOR_EXIT_ASSERT(ba2(i,j) == true, "TEST FAILED");
+                FASTOR_DOES_CHECK_PASS(ba2(i,j) == true, "TEST FAILED");
             }
         }
 
-        FASTOR_EXIT_ASSERT(all_of (ba2 == true) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(any_of (ba2 == true) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(none_of(ba2 == true) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(all_of (ba2 == true) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(any_of (ba2 == true) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(none_of(ba2 == true) == true, "TEST FAILED");
 
         // requires evaluation
-        FASTOR_EXIT_ASSERT(all_of (ft::isinf(trans(aa)) == false ) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(any_of (ft::isinf(trans(aa)) == false ) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(none_of(ft::isinf(trans(aa)) == false ) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(all_of (ft::isinf(trans(aa)) == false ) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(any_of (ft::isinf(trans(aa)) == false ) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(none_of(ft::isinf(trans(aa)) == false ) == true, "TEST FAILED");
 
-        FASTOR_EXIT_ASSERT(all_of (ft::isnan(trans(aa)) == false ) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(any_of (ft::isnan(trans(aa)) == false ) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(none_of(ft::isnan(trans(aa)) == false ) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(all_of (ft::isnan(trans(aa)) == false ) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(any_of (ft::isnan(trans(aa)) == false ) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(none_of(ft::isnan(trans(aa)) == false ) == true, "TEST FAILED");
 
-        FASTOR_EXIT_ASSERT(all_of (ft::isfinite(trans(aa)) == true ) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(any_of (ft::isfinite(trans(aa)) == true ) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(none_of(ft::isfinite(trans(aa)) == true ) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(all_of (ft::isfinite(trans(aa)) == true ) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(any_of (ft::isfinite(trans(aa)) == true ) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(none_of(ft::isfinite(trans(aa)) == true ) == true, "TEST FAILED");
 
         // check nested expressions
-        FASTOR_EXIT_ASSERT(all_of (!ft::isnan(trans(aa)) == true     ) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(any_of (!ft::isinf(trans(aa)) == true     ) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(none_of(!ft::isfinite(trans(aa)) == false ) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(all_of (!(aa!=aa) == true     ) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(all_of (!ft::isnan(trans(aa)) == true     ) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(any_of (!ft::isinf(trans(aa)) == true     ) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(none_of(!ft::isfinite(trans(aa)) == false ) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(all_of (!(aa!=aa) == true     ) == true, "TEST FAILED");
     }
 
     {
@@ -71,31 +71,31 @@ void run_fixed_size() {
         aa(1,1) = INFINITY;
 
         Tensor<bool,mm,nn> ba0 = ft::isnan(aa);
-        FASTOR_EXIT_ASSERT(ba0(0,0) == false, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(ba0(0,1) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(ba0(1,1) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba0(0,0) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba0(0,1) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba0(1,1) == false, "TEST FAILED");
 
-        FASTOR_EXIT_ASSERT(all_of (ba0) == false, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(any_of (ba0) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(none_of(ba0) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(all_of (ba0) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(any_of (ba0) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(none_of(ba0) == true, "TEST FAILED");
 
         Tensor<bool,mm,nn> ba1 = ft::isinf(aa);
-        FASTOR_EXIT_ASSERT(ba1(0,0) == false, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(ba1(0,1) == false, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(ba1(1,1) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba1(0,0) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba1(0,1) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba1(1,1) == true, "TEST FAILED");
 
-        FASTOR_EXIT_ASSERT(all_of (ba1) == false, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(any_of (ba1) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(none_of(ba1) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(all_of (ba1) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(any_of (ba1) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(none_of(ba1) == true, "TEST FAILED");
 
         Tensor<bool,mm,nn> ba2 = ft::isfinite(aa);
-        FASTOR_EXIT_ASSERT(ba2(0,0) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(ba2(0,1) == false, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(ba2(1,1) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba2(0,0) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba2(0,1) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba2(1,1) == false, "TEST FAILED");
 
-        FASTOR_EXIT_ASSERT(all_of (ba2) == false, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(any_of (ba2) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(none_of(ba2) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(all_of (ba2) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(any_of (ba2) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(none_of(ba2) == true, "TEST FAILED");
     }
 
     // views
@@ -105,31 +105,31 @@ void run_fixed_size() {
         aa(1,1) = INFINITY;
 
         Tensor<bool,mm,nn> ba0 = ft::isnan(aa(sall,sall));
-        FASTOR_EXIT_ASSERT(ba0(0,0) == false, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(ba0(0,1) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(ba0(1,1) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba0(0,0) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba0(0,1) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba0(1,1) == false, "TEST FAILED");
 
-        FASTOR_EXIT_ASSERT(all_of (ba0) == false, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(any_of (ba0) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(none_of(ba0) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(all_of (ba0) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(any_of (ba0) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(none_of(ba0) == true, "TEST FAILED");
 
         Tensor<bool,mm,nn> ba1 = ft::isinf(aa(sall,sall));
-        FASTOR_EXIT_ASSERT(ba1(0,0) == false, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(ba1(0,1) == false, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(ba1(1,1) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba1(0,0) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba1(0,1) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba1(1,1) == true, "TEST FAILED");
 
-        FASTOR_EXIT_ASSERT(all_of (ba1) == false, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(any_of (ba1) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(none_of(ba1) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(all_of (ba1) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(any_of (ba1) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(none_of(ba1) == true, "TEST FAILED");
 
         Tensor<bool,mm,nn> ba2 = ft::isfinite(aa(sall,sall));
-        FASTOR_EXIT_ASSERT(ba2(0,0) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(ba2(0,1) == false, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(ba2(1,1) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba2(0,0) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba2(0,1) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(ba2(1,1) == false, "TEST FAILED");
 
-        FASTOR_EXIT_ASSERT(all_of (ba2) == false, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(any_of (ba2) == true, "TEST FAILED");
-        FASTOR_EXIT_ASSERT(none_of(ba2) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(all_of (ba2) == false, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(any_of (ba2) == true, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS(none_of(ba2) == true, "TEST FAILED");
     }
 
 

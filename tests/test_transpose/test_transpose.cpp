@@ -27,13 +27,13 @@ void TEST_TRANSPOSE(Tensor<T,M,N>& a) {
 
     for (size_t i=0; i<N; ++i) {
         for (size_t j=0; j<M; ++j) {
-            FASTOR_EXIT_ASSERT(std::abs(b1(i,j) - b2(i,j)) < Tol);
-            FASTOR_EXIT_ASSERT(std::abs(b1(i,j) - b3(i,j)) < Tol);
+            FASTOR_DOES_CHECK_PASS(std::abs(b1(i,j) - b2(i,j)) < Tol);
+            FASTOR_DOES_CHECK_PASS(std::abs(b1(i,j) - b3(i,j)) < Tol);
         }
     }
 
-    FASTOR_EXIT_ASSERT(std::abs(norm(transpose(a))-norm(a))< HugeTol);
-    FASTOR_EXIT_ASSERT(std::abs(norm(trans(a))-norm(a))< HugeTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(norm(transpose(a))-norm(a))< HugeTol);
+    FASTOR_DOES_CHECK_PASS(std::abs(norm(trans(a))-norm(a))< HugeTol);
 }
 
 
@@ -126,11 +126,11 @@ void test_transpose() {
     // transpose expressions
     {
         Tensor<T,2,3> t1; t1.iota(5);
-        FASTOR_EXIT_ASSERT(std::abs(sum(transpose(t1 + 0)) - sum(t1)) < BigTol);
-        FASTOR_EXIT_ASSERT(std::abs(sum(trans(t1 + 0))     - sum(t1)) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(sum(transpose(t1 + 0)) - sum(t1)) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(sum(trans(t1 + 0))     - sum(t1)) < BigTol);
 
-        FASTOR_EXIT_ASSERT(std::abs(sum(transpose(t1 + t1*2 - t1 - t1)) - sum(t1)) < BigTol);
-        FASTOR_EXIT_ASSERT(std::abs(sum(trans(t1 + t1*2 - t1 - t1))     - sum(t1)) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(sum(transpose(t1 + t1*2 - t1 - t1)) - sum(t1)) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(sum(trans(t1 + t1*2 - t1 - t1))     - sum(t1)) < BigTol);
     }
 
     print(FGRN(BOLD("All tests passed successfully")));

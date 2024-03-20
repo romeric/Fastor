@@ -23,265 +23,265 @@ void run() {
 
         Tensor<T,3,5> e0 = matmul(a,b);
         Tensor<T,3,5> e1 = a%b;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         // test matmul expression assigns
         e0 += matmul(a,b);
         e1 += a%b;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 -= matmul(a,b);
         e1 -= a%b;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 *= matmul(a,b);
         e1 *= a%b;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 /= matmul(a,b);
         e1 /= a%b;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
 
         // test binary_add expression assigns when matmul is present
         e0 = matmul(a,b) + 2;
         e1 = a%b + 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 += matmul(a,b) + 2;
         e1 += a%b + 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 -= matmul(a,b) + 2;
         e1 -= a%b + 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 *= matmul(a,b) + 2;
         e1 *= a%b + 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 /= matmul(a,b) + 2;
         e1 /= a%b + 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
 
         // test binary_sub expression assigns when matmul is present
         e0 = matmul(a,b) - 2;
         e1 = a%b - 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 += matmul(a,b) - 2;
         e1 += a%b - 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 -= matmul(a,b) - 2;
         e1 -= a%b - 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 *= matmul(a,b) - 2;
         e1 *= a%b - 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 /= matmul(a,b) - 2;
         e1 /= a%b - 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
 
         // test binary_mul expression assigns when matmul is present
         e0 = matmul(a,b) * 2;
         e1 = a%b * 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 += matmul(a,b) * 2;
         e1 += a%b * 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 -= matmul(a,b) * 2;
         e1 -= a%b * 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 *= matmul(a,b) * 2;
         e1 *= a%b * 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 /= matmul(a,b) * 2;
         e1 /= a%b * 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
 
         // test binary_div expression assigns when matmul is present
         e0 = matmul(a,b) / 2;
         e1 = a%b / 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 += matmul(a,b) / 2;
         e1 += a%b / 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 -= matmul(a,b) / 2;
         e1 -= a%b / 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 *= matmul(a,b) / 2;
         e1 *= a%b / 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 /= matmul(a,b) / 2;
         e1 /= a%b / 2;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
 
        // test binary_add expression assigns when matmul and aliasing is present
         e0 = matmul(a,b) + e0;
         e1 = a%b + e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 += matmul(a,b) + e0;
         e1 += a%b + e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 -= e0 * matmul(a,b) + e0;
         e1 -= e1 * (a%b) + e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 *= e0 / matmul(a,b) + e0;
         e1 *= e1 / (a%b) + e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 /= e0 * matmul(a,b) + e0;
         e1 /= e1 * (a%b) + e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
 
        // test binary_sub expression assigns when matmul and aliasing is present
         e0 = e0 - matmul(a,b) - e0;
         e1 = e1 - a%b - e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 += e0 - matmul(a,b) - e0;
         e1 += e1 - a%b - e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 -= e0 * matmul(a,b) - e0;
         e1 -= e1 * (a%b) - e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 *= e0 / matmul(a,b) - e0;
         e1 *= e1 / (a%b) - e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 /= matmul(a,b) - e0;
         e1 /= (a%b) - e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
 
         // test binary_mul expression assigns when matmul and aliasing is present
         e0 = matmul(a,b) * e0;
         e1 = (a%b) * e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 += matmul(a,b) * e0;
         e1 += (a%b) * e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 *= matmul(a,b) * e0;
         e1 *= (a%b) * e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 *= matmul(a,b) * e0;
         e1 *= (a%b) * e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 *= matmul(a,b) * e0;
         e1 *= (a%b) * e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
 
         // test binary_div expression assigns when matmul and aliasing is present
         e0 = matmul(a,b) / e0;
         e1 = (a%b) / e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 += matmul(a,b) / e0;
         e1 += (a%b) / e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 *= matmul(a,b) / e0;
         e1 *= (a%b) / e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 *= matmul(a,b) / e0;
         e1 *= (a%b) / e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
         e0 *= matmul(a,b) / e0;
         e1 *= (a%b) / e1;
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < Tol);
 
 
         // test unary ops
         e0 = sqrt(matmul(a,b));
         e1 = sqrt(a%b);
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < BigTol);
 
         e0 += sqrt(matmul(a,b));
         e1 += sqrt(a%b);
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < BigTol);
 
         e0 -= sqrt(matmul(a,b));
         e1 -= sqrt(a%b);
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < BigTol);
 
         e0 *= sqrt(matmul(a,b));
         e1 *= sqrt(a%b);
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < BigTol);
 
         e0 /= sqrt(matmul(a,b));
         e1 /= sqrt(a%b);
-        FASTOR_EXIT_ASSERT(std::abs(e0.sum() - e1.sum()) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e0.sum() - e1.sum()) < BigTol);
 
 
         // double matmul
         Tensor<T,3> e2 = matmul(matmul(a,b),d);
         Tensor<T,3> e3 = a % b % d;
-        FASTOR_EXIT_ASSERT(std::abs(e3.sum() - e2.sum()) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e3.sum() - e2.sum()) < BigTol);
 
         e2 += matmul(matmul(a,b),d);
         e3 += a % b % d;
-        FASTOR_EXIT_ASSERT(std::abs(e3.sum() - e2.sum()) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e3.sum() - e2.sum()) < BigTol);
 
         e2 -= matmul(matmul(a,b),d);
         e3 -= a % b % d;
-        FASTOR_EXIT_ASSERT(std::abs(e3.sum() - e2.sum()) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e3.sum() - e2.sum()) < BigTol);
 
         e2 *= matmul(matmul(a,b),d);
         e3 *= a % b % d;
-        FASTOR_EXIT_ASSERT(std::abs(e3.sum() - e2.sum()) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e3.sum() - e2.sum()) < BigTol);
 
         e2 /= matmul(matmul(a,b),d);
         e3 /= a % b % d;
-        FASTOR_EXIT_ASSERT(std::abs(e3.sum() - e2.sum()) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e3.sum() - e2.sum()) < BigTol);
 
         // double matmul expr
         e2 = 1 + matmul(matmul(a,b),d);
         e3 = 1 + a % b % d;
-        FASTOR_EXIT_ASSERT(std::abs(e3.sum() - e2.sum()) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e3.sum() - e2.sum()) < BigTol);
 
         e2 += matmul(matmul(a,b),d) - 3;
         e3 += a % b % d - 3;
-        FASTOR_EXIT_ASSERT(std::abs(e3.sum() - e2.sum()) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e3.sum() - e2.sum()) < BigTol);
 
         e2 -= matmul(matmul(a,b),d) * e2;
         e3 -= (a % b % d) * e3;
-        FASTOR_EXIT_ASSERT(std::abs(e3.sum() - e2.sum()) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e3.sum() - e2.sum()) < BigTol);
 
         e2 *= matmul(matmul(a,b),d) / e2;
         e3 *= (a % b % d) / e3;
-        FASTOR_EXIT_ASSERT(std::abs(e3.sum() - e2.sum()) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e3.sum() - e2.sum()) < BigTol);
 
         e2 /= 2*matmul(matmul(a,b),d) + 2*e2 + e2 + 1;
         e3 /= 2*(a % b % d) + 2*e3 + e3 + 1;
-        FASTOR_EXIT_ASSERT(std::abs(e3.sum() - e2.sum()) < BigTol);
+        FASTOR_DOES_CHECK_PASS(std::abs(e3.sum() - e2.sum()) < BigTol);
     }
 
 

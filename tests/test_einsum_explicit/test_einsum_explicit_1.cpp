@@ -21,7 +21,7 @@ void run() {
         // no permutation
         auto b2 = einsum<Index<i,k,j,k>,OIndex<i,j>>(a);
 
-        FASTOR_EXIT_ASSERT( isequal(b1, b2, Tol) );
+        FASTOR_DOES_CHECK_PASS( isequal(b1, b2, Tol) );
     }
 
     {
@@ -29,7 +29,7 @@ void run() {
         auto b1 = einsum<Index<i,k,j,k>>(a);
         auto b2 = einsum<Index<i,k,j,k>,OIndex<j,i>>(a);
 
-        FASTOR_EXIT_ASSERT( isequal(b1, transpose(b2), Tol) );
+        FASTOR_DOES_CHECK_PASS( isequal(b1, transpose(b2), Tol) );
     }
 
     {
@@ -37,7 +37,7 @@ void run() {
         auto b1 = einsum<Index<i,k,j,k>>(a);
         auto b2 = einsum<Index<i,k,j,k>,OIndex<j,i>>(a);
 
-        FASTOR_EXIT_ASSERT( isequal(b1, transpose(b2), Tol) );
+        FASTOR_DOES_CHECK_PASS( isequal(b1, transpose(b2), Tol) );
     }
 
     {
@@ -45,7 +45,7 @@ void run() {
         auto b1 = einsum<Index<i,k,j,k>>(a);
         auto b2 = einsum<Index<i,k,j,k>,OIndex<j,i>>(a);
 
-        FASTOR_EXIT_ASSERT( isequal(b1, transpose(b2), Tol) );
+        FASTOR_DOES_CHECK_PASS( isequal(b1, transpose(b2), Tol) );
     }
 
     {
@@ -53,7 +53,7 @@ void run() {
         auto b1 = einsum<Index<i,j,k,k>>(a);
         auto b2 = einsum<Index<i,j,k,k>,OIndex<j,i>>(a);
 
-        FASTOR_EXIT_ASSERT( isequal(b1, transpose(b2), Tol) );
+        FASTOR_DOES_CHECK_PASS( isequal(b1, transpose(b2), Tol) );
     }
 
     {
@@ -61,7 +61,7 @@ void run() {
         auto b1 = einsum<Index<l,i,k,l>>(a);
         auto b2 = einsum<Index<l,i,k,l>,OIndex<k,i>>(a);
 
-        FASTOR_EXIT_ASSERT( isequal(b1, transpose(b2), Tol) );
+        FASTOR_DOES_CHECK_PASS( isequal(b1, transpose(b2), Tol) );
     }
 
 
@@ -76,7 +76,7 @@ void run() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( b1(ii,kk,jj) - b2(ii,kk,jj) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( b1(ii,kk,jj) - b2(ii,kk,jj) ) < Tol );
                 }
             }
         }
@@ -91,7 +91,7 @@ void run() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( b1(ii,kk,jj) - b2(ii,jj,kk) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( b1(ii,kk,jj) - b2(ii,jj,kk) ) < Tol );
                 }
             }
         }
@@ -106,7 +106,7 @@ void run() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( b1(ii,kk,jj) - b2(kk,ii,jj) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( b1(ii,kk,jj) - b2(kk,ii,jj) ) < Tol );
                 }
             }
         }
@@ -121,7 +121,7 @@ void run() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( b1(ii,kk,jj) - b2(kk,jj,ii) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( b1(ii,kk,jj) - b2(kk,jj,ii) ) < Tol );
                 }
             }
         }
@@ -136,7 +136,7 @@ void run() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( b1(ii,kk,jj) - b2(jj,ii,kk) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( b1(ii,kk,jj) - b2(jj,ii,kk) ) < Tol );
                 }
             }
         }
@@ -151,7 +151,7 @@ void run() {
         for (size_t ii=0; ii<I; ++ii) {
             for (size_t jj=0; jj<J; ++jj) {
                 for (size_t kk=0; kk<K; ++kk) {
-                    FASTOR_EXIT_ASSERT( std::abs( b1(ii,kk,jj) - b2(jj,kk,ii) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( b1(ii,kk,jj) - b2(jj,kk,ii) ) < Tol );
                 }
             }
         }
@@ -169,7 +169,7 @@ void run() {
             for (size_t ii=0; ii<I; ++ii) {
                 for (size_t ll=0; ll<L; ++ll) {
                     for (size_t mm=0; mm<M; ++mm) {
-                        FASTOR_EXIT_ASSERT( std::abs( b1(kk,ii,mm,ll) - b2(kk,ii,mm,ll)  ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( b1(kk,ii,mm,ll) - b2(kk,ii,mm,ll)  ) < Tol );
                     }
                 }
             }
@@ -187,7 +187,7 @@ void run() {
             for (size_t ii=0; ii<I; ++ii) {
                 for (size_t ll=0; ll<L; ++ll) {
                     for (size_t mm=0; mm<M; ++mm) {
-                        FASTOR_EXIT_ASSERT( std::abs( b1(kk,ii,mm,ll) - b2(kk,ii,ll,mm)  ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( b1(kk,ii,mm,ll) - b2(kk,ii,ll,mm)  ) < Tol );
                     }
                 }
             }
@@ -204,7 +204,7 @@ void run() {
             for (size_t ii=0; ii<I; ++ii) {
                 for (size_t ll=0; ll<L; ++ll) {
                     for (size_t mm=0; mm<M; ++mm) {
-                        FASTOR_EXIT_ASSERT( std::abs( b1(kk,ii,mm,ll) - b2(kk,mm,ll,ii)  ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( b1(kk,ii,mm,ll) - b2(kk,mm,ll,ii)  ) < Tol );
                     }
                 }
             }
@@ -221,7 +221,7 @@ void run() {
             for (size_t ii=0; ii<I; ++ii) {
                 for (size_t ll=0; ll<L; ++ll) {
                     for (size_t mm=0; mm<M; ++mm) {
-                        FASTOR_EXIT_ASSERT( std::abs( b1(kk,ii,mm,ll) - b2(kk,mm,ii,ll)  ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( b1(kk,ii,mm,ll) - b2(kk,mm,ii,ll)  ) < Tol );
                     }
                 }
             }
@@ -238,7 +238,7 @@ void run() {
             for (size_t ii=0; ii<I; ++ii) {
                 for (size_t ll=0; ll<L; ++ll) {
                     for (size_t mm=0; mm<M; ++mm) {
-                        FASTOR_EXIT_ASSERT( std::abs( b1(kk,ii,mm,ll) - b2(mm,ii,ll,kk)  ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( b1(kk,ii,mm,ll) - b2(mm,ii,ll,kk)  ) < Tol );
                     }
                 }
             }
@@ -255,7 +255,7 @@ void run() {
             for (size_t ii=0; ii<I; ++ii) {
                 for (size_t ll=0; ll<L; ++ll) {
                     for (size_t mm=0; mm<M; ++mm) {
-                        FASTOR_EXIT_ASSERT( std::abs( b1(kk,ii,mm,ll) - b2(ii,mm,kk,ll)  ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( b1(kk,ii,mm,ll) - b2(ii,mm,kk,ll)  ) < Tol );
                     }
                 }
             }
@@ -272,7 +272,7 @@ void run() {
             for (size_t ii=0; ii<I; ++ii) {
                 for (size_t ll=0; ll<L; ++ll) {
                     for (size_t mm=0; mm<M; ++mm) {
-                        FASTOR_EXIT_ASSERT( std::abs( b1(kk,ii,mm,ll) - b2(ii,kk,ll,mm)  ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( b1(kk,ii,mm,ll) - b2(ii,kk,ll,mm)  ) < Tol );
                     }
                 }
             }
@@ -291,7 +291,7 @@ void run() {
         for (size_t kk=0; kk<K; ++kk) {
             for (size_t mm=0; mm<M; ++mm) {
                 for (size_t ii=0; ii<I; ++ii) {
-                    FASTOR_EXIT_ASSERT( std::abs( b1(kk,mm,ii) - b2(kk,mm,ii) ) < Tol );
+                    FASTOR_DOES_CHECK_PASS( std::abs( b1(kk,mm,ii) - b2(kk,mm,ii) ) < Tol );
                 }
             }
         }
@@ -310,7 +310,7 @@ void run() {
             for (size_t ii=0; ii<I; ++ii) {
                 for (size_t ll=0; ll<L; ++ll) {
                     for (size_t mm=0; mm<M; ++mm) {
-                        FASTOR_EXIT_ASSERT( std::abs( b1(kk,ii,mm,ll) - b2(ii,kk,ll,mm)  ) < Tol );
+                        FASTOR_DOES_CHECK_PASS( std::abs( b1(kk,ii,mm,ll) - b2(ii,kk,ll,mm)  ) < Tol );
                     }
                 }
             }

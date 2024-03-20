@@ -32,8 +32,8 @@ void SINGLE_TEST(const Tensor<T,M,K> &a, const Tensor<T,K,N> &b, T tol=Tol) {
     // print(c1,"\n",c2);
     // print(std::abs(sum(c1-c2)));
     // print(std::abs(sum(c1-c3)));
-    FASTOR_EXIT_ASSERT(std::abs(sum(c1-c2)) < tol);
-    FASTOR_EXIT_ASSERT(std::abs(sum(c1-c3)) < tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(sum(c1-c2)) < tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(sum(c1-c3)) < tol);
 }
 
 
@@ -45,8 +45,8 @@ void SINGLE_TEST(const Tensor<T,K> &a, const Tensor<T,K,N> &b) {
     Tensor<T,N> c3;
     internal::_matmul_base<T,1,K,N>(a.data(),b.data(),c3.data());
 
-    FASTOR_EXIT_ASSERT(std::abs(sum(c1-c2)) < Tol);
-    FASTOR_EXIT_ASSERT(std::abs(sum(c1-c3)) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(sum(c1-c2)) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(sum(c1-c3)) < Tol);
 }
 
 
@@ -58,8 +58,8 @@ void SINGLE_TEST(const Tensor<T,M,K> &a, const Tensor<T,K> &b) {
     Tensor<T,M,1> c3;
     internal::_matmul_base<T,M,K,1>(a.data(),b.data(),c3.data());
 
-    FASTOR_EXIT_ASSERT(std::abs(sum(c1-c2)) < Tol);
-    FASTOR_EXIT_ASSERT(std::abs(sum(c1-c3)) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(sum(c1-c2)) < Tol);
+    FASTOR_DOES_CHECK_PASS(std::abs(sum(c1-c3)) < Tol);
 }
 
 

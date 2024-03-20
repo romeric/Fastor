@@ -157,8 +157,8 @@ void test_simd_complex_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, st
 
         // Size
         {
-            FASTOR_EXIT_ASSERT( std::abs(int(V::Size)   - (int)N) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(int(V::size()) - (int)N) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(int(V::Size)   - (int)N) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(int(V::size()) - (int)N) < Tol, "TEST FAILED");
         }
 
         // Load/store
@@ -167,40 +167,40 @@ void test_simd_complex_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, st
             SIMDVector<TT,ABI> b(arr2.data(),false);
 
             diff = a.sum() - zsum(arr1);
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             diff = b.sum() - zsum(arr2);
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             a.load(arr1.data(),false);
             diff = a.sum() - zsum(arr1);
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             b.load(arr2.data(),false);
             diff = b.sum() - zsum(arr2);
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             a.store(arr1.data(),false);
             diff = a.sum() - zsum(arr1);
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             b.store(arr2.data(),false);
             diff = b.sum() - zsum(arr2);
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             diff = a.product() - zproduct(arr1);
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < BigTol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
             diff = b.product() - zproduct(arr2);
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < BigTol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < BigTol, "TEST FAILED");
         }
 
 
@@ -210,117 +210,117 @@ void test_simd_complex_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, st
         // vector-vector
         // addition
         diff = (a+b).sum() - zsum(zadd(arr1,arr2));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
         // subtraction
         diff = (a-b).sum() - zsum(zsub(arr1,arr2));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
         // multiplication
         diff = (a*b).sum() - zsum(zmul(arr1,arr2));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
         // division
         diff = (a/b).sum() - zsum(zdiv(arr1,arr2));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < BigTol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
         // vector-scalar
         // addition
         diff = (a+arr1[0]).sum() - zsum(zadd(arr1,arr3));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
         // subtraction
         diff = (a-arr1[0]).sum() - zsum(zsub(arr1,arr3));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
         // multiplication
         diff = (a*arr1[0]).sum() - zsum(zmul(arr1,arr3));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
         // division
         diff = (a/arr1[0]).sum() - zsum(zdiv(arr1,arr3));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < BigTol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
 
         // scalar-vector
         // addition
         diff = (arr1[0]+a).sum() - zsum(zadd(arr3,arr1));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
         // subtraction
         diff = (arr1[0]-a).sum() - zsum(zsub(arr3,arr1));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
         // multiplication
         diff = (arr1[0]*a).sum() - zsum(zmul(arr3,arr1));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
         // division
         diff = (arr1[0]/a).sum() - zsum(zdiv(arr3,arr1));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < BigTol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
 
         // In-place
         // with another vector
         a += b;
         diff = a.sum() - zsum(zadd(arr1,arr2));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
         a.load(arr1.data(),false);
         a -= b;
         diff = a.sum() - zsum(zsub(arr1,arr2));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
         a.load(arr1.data(),false);
         a *= b;
         diff = a.sum() - zsum(zmul(arr1,arr2));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
         a.load(arr1.data(),false);
         a /= b;
         diff = a.sum() - zsum(zdiv(arr1,arr2));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < BigTol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
         // with scalar
         a.load(arr1.data(),false);
         a += arr1[0];
         diff = a.sum() - zsum(zadd(arr1,arr3));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
         a.load(arr1.data(),false);
         a -= arr1[0];
         diff = a.sum() - zsum(zsub(arr1,arr3));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
         a.load(arr1.data(),false);
         a *= arr1[0];
         diff = a.sum() - zsum(zmul(arr1,arr3));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
         a.load(arr1.data(),false);
         a /= arr1[0];
         diff = a.sum() - zsum(zdiv(arr1,arr3));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < BigTol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
 #if defined(FASTOR_SSE2_IMPL) && defined(FASTOR_AVX_IMPL)
         // scaling with real numbers
@@ -329,60 +329,60 @@ void test_simd_complex_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, st
             a.load(arr1.data(),false);
             a += 5;
             diff = (a).sum() - zsum(zadd(arr1,T(5)));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             a.load(arr1.data(),false);
             a -= 5;
             diff = (a).sum() - zsum(zsub(arr1,T(5)));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             a.load(arr1.data(),false);
             a *= 5;
             diff = (a).sum() - zsum(zmul(arr1,T(5)));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             a.load(arr1.data(),false);
             a /= 5;
             diff = (a).sum() - zsum(zdiv(arr1,T(5)));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < BigTol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
             // binary
             a.load(arr1.data(),false);
             diff = (a+5).sum() - zsum(zadd(arr1,T(5)));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             diff = (5+a).sum() - zsum(zadd(T(5),arr1));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             diff = (a-5).sum() - zsum(zsub(arr1,T(5)));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             diff = (5-a).sum() - zsum(zsub(T(5),arr1));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             diff = (a*5).sum() - zsum(zmul(arr1,T(5)));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             diff = (5*a).sum() - zsum(zmul(T(5),arr1));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             diff = (a/5).sum() - zsum(zdiv(arr1,T(5)));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < BigTol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
             diff = (5/a).sum() - zsum(zdiv(T(5),arr1));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < BigTol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < BigTol, "TEST FAILED");
         }
 #endif
 
@@ -390,48 +390,48 @@ void test_simd_complex_impl(std::array<TT,N> & arr1, std::array<TT,N> & arr2, st
         {
             a.load(arr1.data(),false);
             diff = (a*b+a).sum() - zsum(zadd(zmul(arr1,arr2),arr1));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             diff = fmadd(a,b,a).sum() - zsum(zadd(zmul(arr1,arr2),arr1));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             diff = (a*b-a).sum() - zsum(zsub(zmul(arr1,arr2),arr1));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             diff = fmsub(a,b,a).sum() - zsum(zsub(zmul(arr1,arr2),arr1));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             diff = (a-a*b).sum() - zsum(zsub(arr1,zmul(arr1,arr2)));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
 
             diff = fnmadd(a,b,a).sum() - zsum(zsub(arr1,zmul(arr1,arr2)));
-            FASTOR_EXIT_ASSERT( std::abs(diff.real()) < Tol, "TEST FAILED");
-            FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < Tol, "TEST FAILED");
+            FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < Tol, "TEST FAILED");
         }
 
 
         // norm
         a.load(arr1.data(),false);
-        FASTOR_EXIT_ASSERT( std::abs( a.norm().sum() - zsum(znorm(arr1)) ) < BigTol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs( a.norm().sum() - zsum(znorm(arr1)) ) < BigTol, "TEST FAILED");
 
         // abs
         a.load(arr1.data(),false);
-        FASTOR_EXIT_ASSERT( std::abs( abs(a).real().sum() - zsum(zabs(arr1)) ) < BigTol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs( abs(a).real().sum() - zsum(zabs(arr1)) ) < BigTol, "TEST FAILED");
 
         // conj
         a.load(arr1.data(),false);
         diff = conj(a).sum() - zsum(zconj(arr1));
-        FASTOR_EXIT_ASSERT( std::abs(diff.real()) < BigTol, "TEST FAILED");
-        FASTOR_EXIT_ASSERT( std::abs(diff.imag()) < BigTol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.real()) < BigTol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs(diff.imag()) < BigTol, "TEST FAILED");
 
         // arg
         a.load(arr1.data(),false);
-        FASTOR_EXIT_ASSERT( std::abs( arg(a).real().sum() - zsum(zarg(arr1)) ) < BigTol, "TEST FAILED");
+        FASTOR_DOES_CHECK_PASS( std::abs( arg(a).real().sum() - zsum(zarg(arr1)) ) < BigTol, "TEST FAILED");
 
     }
 
@@ -549,60 +549,60 @@ void test_mask_loading_single() {
             int maska[4] = {-1,-1,-1,-1};
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 26 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() - 15 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() - 26 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() - 15 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 26 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() - 15 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() - 26 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() - 15 ) < Tol );
         }
         {
             int maska[4] = {0,-1,-1,-1};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 15 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  6 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() - 15 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() -  6 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 15 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  6 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() - 15 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() -  6 ) < Tol );
         }
         {
             int maska[4] = {0,0,-1,-1};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 10 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  8 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() - 10 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() -  8 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 10 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  8 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() - 10 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() -  8 ) < Tol );
         }
         {
             int maska[4] = {0,0,0,-1};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() -  3 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() +  4 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() -  3 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() +  4 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() -  3 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() +  4 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() -  3 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() +  4 ) < Tol );
         }
         {
             int maska[4] = {0,0,0,0};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() -  0 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  0 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() -  0 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() -  0 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() -  0 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  0 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() -  0 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() -  0 ) < Tol );
         }
     }
 
@@ -618,108 +618,108 @@ void test_mask_loading_single() {
             int maska[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 72 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() - 16 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() - 72 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() - 16 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 72 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() - 16 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() - 72 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() - 16 ) < Tol );
         }
         {
             int maska[8] = {0,-1,-1,-1,-1,-1,-1,-1};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 61 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() +  3 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() - 61 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() +  3 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 61 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() +  3 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() - 61 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() +  3 ) < Tol );
         }
         {
             int maska[8] = {0,0,-1,-1,-1,-1,-1,-1};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 46 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() +  1 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() - 46 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() +  1 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 46 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() +  1 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() - 46 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() +  1 ) < Tol );
         }
         {
             int maska[8] = {0,0,0,-1,-1,-1,-1,-1};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 39 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() - 11 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() - 39 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() - 11 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 39 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() - 11 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() - 39 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() - 11 ) < Tol );
         }
         {
             int maska[8] = {0,0,0,0,-1,-1,-1,-1};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 26 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() - 15 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() - 26 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() - 15 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 26 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() - 15 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() - 26 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() - 15 ) < Tol );
         }
         {
             int maska[8] = {0,0,0,0,0,-1,-1,-1};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 15 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  6 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() - 15 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() -  6 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 15 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  6 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() - 15 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() -  6 ) < Tol );
         }
         {
             int maska[8] = {0,0,0,0,0,0,-1,-1};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 10 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  8 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() - 10 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() -  8 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 10 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  8 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() - 10 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() -  8 ) < Tol );
         }
         {
             int maska[8] = {0,0,0,0,0,0,0,-1};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() -  3 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() +  4 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() -  3 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() +  4 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() -  3 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() +  4 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() -  3 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() +  4 ) < Tol );
         }
         {
             int maska[8] = {0,0,0,0,0,0,0,0};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() -  0 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  0 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() -  0 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() -  0 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() -  0 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  0 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() -  0 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() -  0 ) < Tol );
         }
     }
 
@@ -744,36 +744,36 @@ void test_mask_loading_double() {
             int maska[2] = {-1,-1};
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 10 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  8 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() - 10 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() -  8 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 10 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  8 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() - 10 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() -  8 ) < Tol );
         }
         {
             int maska[2] = {0,-1};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() -  3 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() +  4 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() -  3 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() +  4 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() -  3 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() +  4 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() -  3 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() +  4 ) < Tol );
         }
         {
             int maska[2] = {0,0};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() -  0 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  0 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() -  0 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() -  0 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() -  0 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  0 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() -  0 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() -  0 ) < Tol );
         }
     }
 
@@ -789,60 +789,60 @@ void test_mask_loading_double() {
             int maska[4] = {-1,-1,-1,-1};
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 26 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() - 15 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() - 26 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() - 15 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 26 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() - 15 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() - 26 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() - 15 ) < Tol );
         }
         {
             int maska[4] = {0,-1,-1,-1};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 15 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  6 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() - 15 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() -  6 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 15 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  6 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() - 15 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() -  6 ) < Tol );
         }
         {
             int maska[4] = {0,0,-1,-1};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() - 10 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  8 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() - 10 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() -  8 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() - 10 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  8 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() - 10 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() -  8 ) < Tol );
         }
         {
             int maska[4] = {0,0,0,-1};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() -  3 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() +  4 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() -  3 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() +  4 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() -  3 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() +  4 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() -  3 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() +  4 ) < Tol );
         }
         {
             int maska[4] = {0,0,0,0};
             std::fill(carr2.begin(),carr2.end(),0);
 
             a = maskload<V>(carr1.data(), maska);
-            FASTOR_EXIT_ASSERT( std::abs( a.real().sum() -  0 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( a.imag().sum() -  0 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.real().sum() -  0 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( a.imag().sum() -  0 ) < Tol );
 
             maskstore(carr2.data(),maska,a);
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).real() -  0 ) < Tol );
-            FASTOR_EXIT_ASSERT( std::abs( zsum(carr2).imag() -  0 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).real() -  0 ) < Tol );
+            FASTOR_DOES_CHECK_PASS( std::abs( zsum(carr2).imag() -  0 ) < Tol );
         }
     }
 

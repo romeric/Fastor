@@ -37,12 +37,20 @@ T matmul_check(const Tensor<T,M,N> &a, const Tensor<T,M,N> &b) {
 }
 
 
-// Register the matmul function to be tests
+// Register the matmul function to be tested
 template<typename LhsType = UpLoType::General, typename RhsType = UpLoType::General, typename T, size_t M, size_t K, size_t N>
 Tensor<T,M,N> matmul_registered_func(const Tensor<T,M,K> &am, const Tensor<T,K,N> &bm) {
     Tensor<T,M,N> outm; //outm.zeros();
     internal::_tmatmul_base_masked<T,M,K,N,LhsType,RhsType>(am.data(),bm.data(),outm.data());
     return outm;
+}
+
+// Apply check
+template<typename T>
+void APPLY_CHECK(T value, size_t from, size_t K, size_t N)
+{
+    FASTOR_DOES_CHECK_PASS(std::abs(value) < Tol,
+        std::string("FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N)).c_str());
 }
 
 
@@ -60,7 +68,7 @@ struct check_lhs_lt_M {
         Tensor<T,from,N> cm = matmul_registered_func<LhsType,RhsType>(am,bm);
         auto refm = matmul_ref(am,bm);
         T value = matmul_check(cm,refm);
-        FASTOR_EXIT_ASSERT(std::abs(value) < Tol, "FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N));
+        APPLY_CHECK(value, from, K, N);
         check_lhs_lt_M<from+1,to>::template Do<T,K,N,LhsType,RhsType>();
     }
 
@@ -73,7 +81,7 @@ struct check_lhs_lt_M {
         Tensor<T,from,N> cm = matmul_registered_func<LhsType,RhsType>(am,bm);
         auto refm = matmul_ref(am,bm);
         T value = matmul_check(cm,refm);
-        FASTOR_EXIT_ASSERT(std::abs(value) < Tol, "FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N));
+        APPLY_CHECK(value, from, K, N);
         check_lhs_lt_M<from+1,to>::template Do<T,K,N,LhsType,RhsType>();
     }
 
@@ -86,7 +94,7 @@ struct check_lhs_lt_M {
         Tensor<T,from,N> cm = matmul_registered_func<LhsType,RhsType>(am,bm);
         auto refm = matmul_ref(am,bm);
         T value = matmul_check(cm,refm);
-        FASTOR_EXIT_ASSERT(std::abs(value) < Tol, "FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N));
+        APPLY_CHECK(value, from, K, N);
         check_lhs_lt_M<from+1,to>::template Do<T,K,N,LhsType,RhsType>();
     }
 
@@ -99,7 +107,7 @@ struct check_lhs_lt_M {
         Tensor<T,from,N> cm = matmul_registered_func<LhsType,RhsType>(am,bm);
         auto refm = matmul_ref(am,bm);
         T value = matmul_check(cm,refm);
-        FASTOR_EXIT_ASSERT(std::abs(value) < Tol, "FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N));
+        APPLY_CHECK(value, from, K, N);
         check_lhs_lt_M<from+1,to>::template Do<T,K,N,LhsType,RhsType>();
     }
 
@@ -113,7 +121,7 @@ struct check_lhs_lt_M {
         Tensor<T,from,N> cm = matmul_registered_func<LhsType,RhsType>(am,bm);
         auto refm = matmul_ref(am,bm);
         T value = matmul_check(cm,refm);
-        FASTOR_EXIT_ASSERT(std::abs(value) < Tol, "FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N));
+        APPLY_CHECK(value, from, K, N);
         check_lhs_lt_M<from+1,to>::template Do<T,K,N,LhsType,RhsType>();
     }
 
@@ -127,7 +135,7 @@ struct check_lhs_lt_M {
         Tensor<T,from,N> cm = matmul_registered_func<LhsType,RhsType>(am,bm);
         auto refm = matmul_ref(am,bm);
         T value = matmul_check(cm,refm);
-        FASTOR_EXIT_ASSERT(std::abs(value) < Tol, "FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N));
+        APPLY_CHECK(value, from, K, N);
 
         check_lhs_lt_M<from+1,to>::template Do<T,K,N,LhsType,RhsType>();
     }
@@ -142,7 +150,7 @@ struct check_lhs_lt_M {
         Tensor<T,from,N> cm = matmul_registered_func<LhsType,RhsType>(am,bm);
         auto refm = matmul_ref(am,bm);
         T value = matmul_check(cm,refm);
-        FASTOR_EXIT_ASSERT(std::abs(value) < Tol, "FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N));
+        APPLY_CHECK(value, from, K, N);
 
         check_lhs_lt_M<from+1,to>::template Do<T,K,N,LhsType,RhsType>();
     }
@@ -157,7 +165,7 @@ struct check_lhs_lt_M {
         Tensor<T,from,N> cm = matmul_registered_func<LhsType,RhsType>(am,bm);
         auto refm = matmul_ref(am,bm);
         T value = matmul_check(cm,refm);
-        FASTOR_EXIT_ASSERT(std::abs(value) < Tol, "FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N));
+        APPLY_CHECK(value, from, K, N);
 
         check_lhs_lt_M<from+1,to>::template Do<T,K,N,LhsType,RhsType>();
     }
@@ -174,7 +182,7 @@ struct check_lhs_lt_M<from,from> {
         Tensor<T,from,N> cm = matmul_registered_func<LhsType,RhsType>(am,bm);
         auto refm = matmul_ref(am,bm);
         T value = matmul_check(cm,refm);
-        FASTOR_EXIT_ASSERT(std::abs(value) < Tol, "FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N));
+        APPLY_CHECK(value, from, K, N);
     }
 
     template<typename T, size_t K, size_t N, typename LhsType = UpLoType::General, typename RhsType = UpLoType::General,
@@ -186,7 +194,7 @@ struct check_lhs_lt_M<from,from> {
         Tensor<T,from,N> cm = matmul_registered_func<LhsType,RhsType>(am,bm);
         auto refm = matmul_ref(am,bm);
         T value = matmul_check(cm,refm);
-        FASTOR_EXIT_ASSERT(std::abs(value) < Tol, "FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N));
+        APPLY_CHECK(value, from, K, N);
     }
 
     template<typename T, size_t K, size_t N, typename LhsType = UpLoType::General, typename RhsType = UpLoType::General,
@@ -198,7 +206,7 @@ struct check_lhs_lt_M<from,from> {
         Tensor<T,from,N> cm = matmul_registered_func<LhsType,RhsType>(am,bm);
         auto refm = matmul_ref(am,bm);
         T value = matmul_check(cm,refm);
-        FASTOR_EXIT_ASSERT(std::abs(value) < Tol, "FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N));
+        APPLY_CHECK(value, from, K, N);
     }
 
     template<typename T, size_t K, size_t N, typename LhsType = UpLoType::General, typename RhsType = UpLoType::General,
@@ -210,7 +218,7 @@ struct check_lhs_lt_M<from,from> {
         Tensor<T,from,N> cm = matmul_registered_func<LhsType,RhsType>(am,bm);
         auto refm = matmul_ref(am,bm);
         T value = matmul_check(cm,refm);
-        FASTOR_EXIT_ASSERT(std::abs(value) < Tol, "FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N));
+        APPLY_CHECK(value, from, K, N);
     }
 
     template<typename T, size_t K, size_t N, typename LhsType = UpLoType::General, typename RhsType = UpLoType::General,
@@ -223,7 +231,7 @@ struct check_lhs_lt_M<from,from> {
         Tensor<T,from,N> cm = matmul_registered_func<LhsType,RhsType>(am,bm);
         auto refm = matmul_ref(am,bm);
         T value = matmul_check(cm,refm);
-        FASTOR_EXIT_ASSERT(std::abs(value) < Tol, "FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N));
+        APPLY_CHECK(value, from, K, N);
     }
 
     template<typename T, size_t K, size_t N, typename LhsType = UpLoType::General, typename RhsType = UpLoType::General,
@@ -236,7 +244,7 @@ struct check_lhs_lt_M<from,from> {
         Tensor<T,from,N> cm = matmul_registered_func<LhsType,RhsType>(am,bm);
         auto refm = matmul_ref(am,bm);
         T value = matmul_check(cm,refm);
-        FASTOR_EXIT_ASSERT(std::abs(value) < Tol, "FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N));
+        APPLY_CHECK(value, from, K, N);
     }
 
     template<typename T, size_t K, size_t N, typename LhsType = UpLoType::General, typename RhsType = UpLoType::General,
@@ -249,7 +257,7 @@ struct check_lhs_lt_M<from,from> {
         Tensor<T,from,N> cm = matmul_registered_func<LhsType,RhsType>(am,bm);
         auto refm = matmul_ref(am,bm);
         T value = matmul_check(cm,refm);
-        FASTOR_EXIT_ASSERT(std::abs(value) < Tol, "FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N));
+        APPLY_CHECK(value, from, K, N);
     }
 
     template<typename T, size_t K, size_t N, typename LhsType = UpLoType::General, typename RhsType = UpLoType::General,
@@ -262,7 +270,7 @@ struct check_lhs_lt_M<from,from> {
         Tensor<T,from,N> cm = matmul_registered_func<LhsType,RhsType>(am,bm);
         auto refm = matmul_ref(am,bm);
         T value = matmul_check(cm,refm);
-        FASTOR_EXIT_ASSERT(std::abs(value) < Tol, "FAILED AT " +  std::to_string(from) + " " + std::to_string(K)+ " " + std::to_string(N));
+        APPLY_CHECK(value, from, K, N);
 
     }
 };
