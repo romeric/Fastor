@@ -74,11 +74,11 @@ inline size_t set_stack_size(size_t size) {
 
 // Get sign of a number
 template <typename T>
-inline constexpr int signum(T x, [[gnu::unused]] std::false_type is_signed) {
+inline constexpr int signum(T x, FASTOR_MAYBE_UNUSED std::false_type is_signed) {
     return T(0) < x;
 }
 template <typename T>
-inline constexpr int signum(T x, [[gnu::unused]] std::true_type is_signed) {
+inline constexpr int signum(T x, FASTOR_MAYBE_UNUSED std::true_type is_signed) {
     return (T(0) < x) - (x < T(0));
 }
 template <typename T>

@@ -121,7 +121,7 @@ SOFTWARE.
         #define FASTOR_CXX_VERSION 2014
     #elif __cplusplus == 201703L
         #define FASTOR_CXX_VERSION 2017
-    #elif __cplusplus > 201703L
+    #elif __cplusplus > 202002L
         #define FASTOR_CXX_VERSION 2020
     #endif
 #endif
@@ -159,6 +159,18 @@ SOFTWARE.
 #else
     #define FASTOR_HAS_IF_CONSTEXPR 0
     #define FASTOR_IF_CONSTEXPR if
+#endif
+//------------------------------------------------------------------------------------------------//
+
+
+// C++17 [[maybe_unused]] define
+//------------------------------------------------------------------------------------------------//
+#if FASTOR_CXX_VERSION >= 2017
+    #define FASTOR_MAYBE_UNUSED [[maybe_unused]]
+#elif defined(__GNUC__) || defined(__clang__)
+    #define FASTOR_MAYBE_UNUSED [[gnu::unused]]
+#elif defined(_MSC_VER)
+#define FASTOR_MAYBE_UNUSED __declspec(maybe_unused)
 #endif
 //------------------------------------------------------------------------------------------------//
 
