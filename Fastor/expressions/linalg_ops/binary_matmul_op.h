@@ -27,6 +27,7 @@ struct BinaryMatMulOp: public AbstractTensor<BinaryMatMulOp<TLhs, TRhs, DIM0>,DI
     static constexpr FASTOR_INDEX K_other = get_tensor_dimension_v<0,rhs_type>;
     static constexpr FASTOR_INDEX flop_count = M*N*K;
     static constexpr FASTOR_INDEX Dimension = DIM0;
+    constexpr bool is_aligned() {return _lhs.is_aligned() && _rhs.is_aligned();}
     static constexpr FASTOR_INDEX rank() {return DIM0;}
     using scalar_type = typename scalar_type_finder<BinaryMatMulOp<TLhs, TRhs, DIM0>>::type;
     // does not matter which one as matmul bypasses this

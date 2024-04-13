@@ -133,6 +133,31 @@ void run() {
         FASTOR_DOES_CHECK_PASS(std::abs(dt.sum() - 18 ) < Tol);
     }
 
+    // Bug 139 - memory alignment issue in assignment operators
+    {
+        std::vector<std::array<T,3>> vec_arr(5,{1,2,3});
+
+        for(size_t i = 1; i< vec_arr.size(); ++i)
+        {
+            TensorMap<T,3> arr_tens_map_stat(vec_arr[0].data());
+            TensorMap<T,3> arr_tens_map_var(vec_arr[i].data());
+            Tensor<T,3> tens = {7,8,9};
+            arr_tens_map_stat -= tens;
+            arr_tens_map_var += tens;
+        }
+
+        FASTOR_DOES_CHECK_PASS(std::abs(vec_arr[0][0] + 27 ) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(vec_arr[0][1] + 30 ) < Tol);
+        FASTOR_DOES_CHECK_PASS(std::abs(vec_arr[0][2] + 33 ) < Tol);
+
+        for(size_t i = 1; i < vec_arr.size(); ++i)
+        {
+            FASTOR_DOES_CHECK_PASS(std::abs(vec_arr[i][0] -  8 ) < Tol);
+            FASTOR_DOES_CHECK_PASS(std::abs(vec_arr[i][1] - 10 ) < Tol);
+            FASTOR_DOES_CHECK_PASS(std::abs(vec_arr[i][2] - 12 ) < Tol);
+        }
+    }
+
     print(FGRN(BOLD("All tests passed successfully")));
 }
 

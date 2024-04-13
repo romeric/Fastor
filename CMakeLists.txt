@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.20)
 project(fastor VERSION 0.6.4)
 
 option(BUILD_TESTING "Build the testing tree." ON)

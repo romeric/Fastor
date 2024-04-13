@@ -25,6 +25,7 @@ public:
     using result_type = Tensor<T,N>;
     static constexpr FASTOR_INDEX Dimension = 1;
     static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
+    static constexpr FASTOR_INLINE bool is_aligned() { return false; };
     static constexpr FASTOR_INDEX rank() {return 1;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return _seq.size();}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX ) const {return _seq.size();}
@@ -103,6 +104,7 @@ public:
     using result_type = Tensor<T,N>;
     static constexpr FASTOR_INDEX Dimension = 1;
     static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
+    static constexpr FASTOR_INLINE bool is_aligned() { return false; };
     static constexpr FASTOR_INDEX rank() {return 1;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return _seq.size();}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX ) const {return _seq.size();}
@@ -147,7 +149,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = other.template eval<T>(i);
-                _vec.store(&_data[i+_seq._first],false);
+                _vec.store(&_data[i+_seq._first], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+_seq._first] = other.template eval_s<T>(i);
@@ -215,7 +217,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = other_src.template eval<T>(i);
-                _vec.store(&_data[i+_seq._first],false);
+                _vec.store(&_data[i+_seq._first], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+_seq._first] = other_src.template eval_s<T>(i);
@@ -273,7 +275,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) + other_src.template eval<T>(i);
-                _vec.store(&_data[i+_seq._first],false);
+                _vec.store(&_data[i+_seq._first], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+_seq._first] += other_src.template eval_s<T>(i);
@@ -331,7 +333,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) - other_src.template eval<T>(i);
-                _vec.store(&_data[i+_seq._first],false);
+                _vec.store(&_data[i+_seq._first], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+_seq._first] -= other_src.template eval_s<T>(i);
@@ -389,7 +391,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) * other_src.template eval<T>(i);
-                _vec.store(&_data[i+_seq._first],false);
+                _vec.store(&_data[i+_seq._first], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+_seq._first] *= other_src.template eval_s<T>(i);
@@ -447,7 +449,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) / other_src.template eval<T>(i);
-                _vec.store(&_data[i+_seq._first],false);
+                _vec.store(&_data[i+_seq._first], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+_seq._first] /= other_src.template eval_s<T>(i);
@@ -486,7 +488,7 @@ public:
         if (_seq._step == 1) {
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-                _vec_other.store(&_data[i+_seq._first],false);
+                _vec_other.store(&_data[i+_seq._first], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+_seq._first] = num;
@@ -522,7 +524,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) + _vec_other;
-                _vec.store(&_data[i+_seq._first],false);
+                _vec.store(&_data[i+_seq._first], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+_seq._first] += num;
@@ -558,7 +560,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) - _vec_other;
-                _vec.store(&_data[i+_seq._first],false);
+                _vec.store(&_data[i+_seq._first], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+_seq._first] -= num;
@@ -594,7 +596,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) * _vec_other;
-                _vec.store(&_data[i+_seq._first],false);
+                _vec.store(&_data[i+_seq._first], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+_seq._first] *= num;
@@ -631,7 +633,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) * _vec_other;
-                _vec.store(&_data[i+_seq._first],false);
+                _vec.store(&_data[i+_seq._first], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+_seq._first] *= inum;
@@ -666,7 +668,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) / _vec_other;
-                _vec.store(&_data[i+_seq._first],false);
+                _vec.store(&_data[i+_seq._first], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+_seq._first] /= num;

@@ -32,6 +32,8 @@ public:
 
     FASTOR_INLINE bool is_vectorisable() const {return _is_vectorisable;}
     FASTOR_INLINE bool is_strided_vectorisable() const {return _is_strided_vectorisable;}
+    static constexpr FASTOR_INLINE bool is_aligned() { return false; };
+    static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return sizeof...(Rest);}
     FASTOR_INLINE FASTOR_INDEX size() const {
         int sizer = 1;
         for (auto &_seq: _seqs) sizer *= _seq.size();
@@ -235,6 +237,8 @@ public:
 
     FASTOR_INLINE bool is_vectorisable() const {return _is_vectorisable;}
     FASTOR_INLINE bool is_strided_vectorisable() const {return _is_strided_vectorisable;}
+    static constexpr FASTOR_INLINE bool is_aligned() { return false; };
+    static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return sizeof...(Rest);}
     FASTOR_INLINE FASTOR_INDEX size() const {
         int sizer = 1;
         for (auto &_seq: _seqs) sizer *= _seq.size();
@@ -318,7 +322,7 @@ public:
                     ind += products_[it]*(as[it]*_seqs[it]._step + _seqs[it]._first);
                 }
                 _vec = other.template teval<T>(as);
-                _vec.store(&_data[ind],false);
+                _vec.store(&_data[ind], is_aligned());
 
                 counter+=V::Size;
                 for(jt = DIMS-1; jt>=0; jt--)
@@ -401,7 +405,7 @@ public:
                 }
                 // V _vec = other_src.template eval<T>(counter);
                 V _vec = other_src.template teval<T>(as);
-                _vec.store(&_data[ind],false);
+                _vec.store(&_data[ind], is_aligned());
 
                 counter+=V::Size;
                 for(jt = DIMS-1; jt>=0; jt--)
@@ -452,7 +456,7 @@ public:
             //     if (_dims[DIMS-1] - as[DIMS-1] % V::Size == 0) {
             //         // V _vec = other_src.template eval<T>(counter);
             //         V _vec = other_src.template teval<T>(as);
-            //         _vec.store(&_data[ind],false);
+            //         _vec.store(&_data[ind], is_aligned());
             //         counter+=V::Size;
             //     }
             //     else {
@@ -516,9 +520,9 @@ public:
                 }
                 // V _vec = other_src.template eval<T>(counter);
                 V _vec = other_src.template teval<T>(as);
-                _vec_out.load(&_data[ind],false);
+                _vec_out.load(&_data[ind], is_aligned());
                 _vec_out += _vec;
-                _vec_out.store(&_data[ind],false);
+                _vec_out.store(&_data[ind], is_aligned());
 
                 counter+=V::Size;
                 for(jt = DIMS-1; jt>=0; jt--)
@@ -601,9 +605,9 @@ public:
                 }
                 // V _vec = other_src.template eval<T>(counter);
                 V _vec = other_src.template teval<T>(as);
-                _vec_out.load(&_data[ind],false);
+                _vec_out.load(&_data[ind], is_aligned());
                 _vec_out -= _vec;
-                _vec_out.store(&_data[ind],false);
+                _vec_out.store(&_data[ind], is_aligned());
 
                 counter+=V::Size;
                 for(jt = DIMS-1; jt>=0; jt--)
@@ -685,9 +689,9 @@ public:
                 }
                 // V _vec = other_src.template eval<T>(counter);
                 V _vec = other_src.template teval<T>(as);
-                _vec_out.load(&_data[ind],false);
+                _vec_out.load(&_data[ind], is_aligned());
                 _vec_out *= _vec;
-                _vec_out.store(&_data[ind],false);
+                _vec_out.store(&_data[ind], is_aligned());
 
                 counter+=V::Size;
                 for(jt = DIMS-1; jt>=0; jt--)
@@ -769,9 +773,9 @@ public:
                 }
                 // V _vec = other_src.template eval<T>(counter);
                 V _vec = other_src.template teval<T>(as);
-                _vec_out.load(&_data[ind],false);
+                _vec_out.load(&_data[ind], is_aligned());
                 _vec_out /= _vec;
-                _vec_out.store(&_data[ind],false);
+                _vec_out.store(&_data[ind], is_aligned());
 
                 counter+=V::Size;
                 for(jt = DIMS-1; jt>=0; jt--)
@@ -855,7 +859,7 @@ public:
                 }
                 V _vec = other_src.template eval<T>(counter);
                 // V _vec = other_src.template teval<T>(as);
-                _vec.store(&_data[ind],false);
+                _vec.store(&_data[ind], is_aligned());
 
                 counter+=V::Size;
                 for(jt = DIMS-1; jt>=0; jt--)
@@ -938,9 +942,9 @@ public:
                 }
                 V _vec = other_src.template eval<T>(counter);
                 // V _vec = other_src.template teval<T>(as);
-                _vec_out.load(&_data[ind],false);
+                _vec_out.load(&_data[ind], is_aligned());
                 _vec_out += _vec;
-                _vec_out.store(&_data[ind],false);
+                _vec_out.store(&_data[ind], is_aligned());
 
                 counter+=V::Size;
                 for(jt = DIMS-1; jt>=0; jt--)
@@ -1021,9 +1025,9 @@ public:
                 }
                 V _vec = other_src.template eval<T>(counter);
                 // V _vec = other_src.template teval<T>(as);
-                _vec_out.load(&_data[ind],false);
+                _vec_out.load(&_data[ind], is_aligned());
                 _vec_out -= _vec;
-                _vec_out.store(&_data[ind],false);
+                _vec_out.store(&_data[ind], is_aligned());
 
                 counter+=V::Size;
                 for(jt = DIMS-1; jt>=0; jt--)
@@ -1105,9 +1109,9 @@ public:
                 }
                 V _vec = other_src.template eval<T>(counter);
                 // V _vec = other_src.template teval<T>(as);
-                _vec_out.load(&_data[ind],false);
+                _vec_out.load(&_data[ind], is_aligned());
                 _vec_out *= _vec;
-                _vec_out.store(&_data[ind],false);
+                _vec_out.store(&_data[ind], is_aligned());
 
                 counter+=V::Size;
                 for(jt = DIMS-1; jt>=0; jt--)
@@ -1189,9 +1193,9 @@ public:
                 }
                 V _vec = other_src.template eval<T>(counter);
                 // V _vec = other_src.template teval<T>(as);
-                _vec_out.load(&_data[ind],false);
+                _vec_out.load(&_data[ind], is_aligned());
                 _vec_out /= _vec;
-                _vec_out.store(&_data[ind],false);
+                _vec_out.store(&_data[ind], is_aligned());
 
                 counter+=V::Size;
                 for(jt = DIMS-1; jt>=0; jt--)
@@ -1252,7 +1256,7 @@ public:
                 for(int it = 0; it< DIMS; it++) {
                     ind += products_[it]*(as[it]*_seqs[it]._step + _seqs[it]._first);
                 }
-                _vec.store(&_data[ind],false);
+                _vec.store(&_data[ind], is_aligned());
 
                 counter++;
                 for(jt = DIMS-1; jt>=0; jt--)
@@ -1311,9 +1315,9 @@ public:
                 for(int it = 0; it< DIMS; it++) {
                     ind += products_[it]*(as[it]*_seqs[it]._step + _seqs[it]._first);
                 }
-                _vec_out.load(&_data[ind],false);
+                _vec_out.load(&_data[ind], is_aligned());
                 _vec_out += _vec;
-                _vec_out.store(&_data[ind],false);
+                _vec_out.store(&_data[ind], is_aligned());
 
                 counter++;
                 for(jt = DIMS-1; jt>=0; jt--)
@@ -1372,9 +1376,9 @@ public:
                 for(int it = 0; it< DIMS; it++) {
                     ind += products_[it]*(as[it]*_seqs[it]._step + _seqs[it]._first);
                 }
-                _vec_out.load(&_data[ind],false);
+                _vec_out.load(&_data[ind], is_aligned());
                 _vec_out -= _vec;
-                _vec_out.store(&_data[ind],false);
+                _vec_out.store(&_data[ind], is_aligned());
 
                 counter++;
                 for(jt = DIMS-1; jt>=0; jt--)
@@ -1433,9 +1437,9 @@ public:
                 for(int it = 0; it< DIMS; it++) {
                     ind += products_[it]*(as[it]*_seqs[it]._step + _seqs[it]._first);
                 }
-                _vec_out.load(&_data[ind],false);
+                _vec_out.load(&_data[ind], is_aligned());
                 _vec_out *= _vec;
-                _vec_out.store(&_data[ind],false);
+                _vec_out.store(&_data[ind], is_aligned());
 
                 counter++;
                 for(jt = DIMS-1; jt>=0; jt--)
@@ -1494,9 +1498,9 @@ public:
                 for(int it = 0; it< DIMS; it++) {
                     ind += products_[it]*(as[it]*_seqs[it]._step + _seqs[it]._first);
                 }
-                _vec_out.load(&_data[ind],false);
+                _vec_out.load(&_data[ind], is_aligned());
                 _vec_out /= _vec;
-                _vec_out.store(&_data[ind],false);
+                _vec_out.store(&_data[ind], is_aligned());
 
                 counter++;
                 for(jt = DIMS-1; jt>=0; jt--)

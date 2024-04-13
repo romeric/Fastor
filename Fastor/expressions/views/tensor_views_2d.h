@@ -24,6 +24,7 @@ public:
     using result_type = Tensor<T,M,N>;
     static constexpr FASTOR_INDEX Dimension = 2;
     static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
+    static constexpr FASTOR_INLINE bool is_aligned() { return false; };
     static constexpr FASTOR_INDEX rank() {return 2;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return _seq0.size()*_seq1.size();}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return i==0 ? _seq0.size() : _seq1.size();}
@@ -64,7 +65,7 @@ public:
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
         SIMDVector<U,simd_abi_type> _vec;
-        if (_seq1._step==1) _vec.load(_expr.data()+_seq0._step*i*N+j + _seq0._first*N + _seq1._first,false);
+        if (_seq1._step==1) _vec.load(_expr.data()+_seq0._step*i*N+j + _seq0._first*N + _seq1._first, is_aligned());
         else vector_setter(_vec,_expr.data(),_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,_seq1._step);
         return _vec;
     }
@@ -77,7 +78,7 @@ public:
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,simd_abi_type> teval(const std::array<int,2>& as) const {
         SIMDVector<U,simd_abi_type> _vec;
-        if (_seq1._step==1) _vec.load(_expr.data()+_seq0._step*as[0]*N+as[1] + _seq0._first*N + _seq1._first,false);
+        if (_seq1._step==1) _vec.load(_expr.data()+_seq0._step*as[0]*N+as[1] + _seq0._first*N + _seq1._first, is_aligned());
         else vector_setter(_vec,_expr.data(),_seq0._step*as[0]*N+_seq1._step*as[1] + _seq0._first*N + _seq1._first,_seq1._step);
         return _vec;
     }
@@ -118,6 +119,7 @@ public:
     using result_type = Tensor<T,M,N>;
     static constexpr FASTOR_INDEX Dimension = 2;
     static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
+    static constexpr FASTOR_INLINE bool is_aligned() { return false; };
     static constexpr FASTOR_INDEX rank() {return 2;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return _seq0.size()*_seq1.size();}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return i==0 ? _seq0.size() : _seq1.size();}
@@ -182,7 +184,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                     auto _vec = other_src.template eval<T>(i,j);
-                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                 }
                 for (; j <_seq1.size(); ++j) {
                     _expr(_seq0._step*i+_seq0._first,j+_seq1._first) = other_src.template eval_s<T>(i,j);
@@ -258,7 +260,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                     auto _vec = other_src.template eval<T>(i,j);
-                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                 }
                 for (; j <_seq1.size(); ++j) {
                     _expr(_seq0._step*i+_seq0._first,j+_seq1._first) = other_src.template eval_s<T>(i,j);
@@ -321,7 +323,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                     auto _vec =  this->template eval<T>(i,j) + other_src.template eval<T>(i,j);
-                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                 }
                 for (; j <_seq1.size(); ++j) {
                     _expr(_seq0._step*i+_seq0._first,j+_seq1._first) += other_src.template eval_s<T>(i,j);
@@ -384,7 +386,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                     auto _vec =  this->template eval<T>(i,j) - other_src.template eval<T>(i,j);
-                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                 }
                 for (; j <_seq1.size(); ++j) {
                     _expr(_seq0._step*i+_seq0._first,j+_seq1._first) -= other_src.template eval_s<T>(i,j);
@@ -447,7 +449,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                     auto _vec =  this->template eval<T>(i,j) * other_src.template eval<T>(i,j);
-                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                 }
                 for (; j <_seq1.size(); ++j) {
                     _expr(_seq0._step*i+_seq0._first,j+_seq1._first) *= other_src.template eval_s<T>(i,j);
@@ -510,7 +512,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                     auto _vec =  this->template eval<T>(i,j) / other_src.template eval<T>(i,j);
-                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                 }
                 for (; j <_seq1.size(); ++j) {
                     _expr(_seq0._step*i+_seq0._first,j+_seq1._first) /= other_src.template eval_s<T>(i,j);
@@ -583,7 +585,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                     auto _vec = other_src.template eval<T>(counter);
-                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                     counter+=Stride;
                 }
                 for (; j <_seq1.size(); ++j) {
@@ -648,7 +650,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                     auto _vec =  this->template eval<T>(i,j) + other_src.template eval<T>(counter);
-                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                     counter+=Stride;
                 }
                 for (; j <_seq1.size(); ++j) {
@@ -713,7 +715,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                     auto _vec =  this->template eval<T>(i,j) - other_src.template eval<T>(counter);
-                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                     counter+=Stride;
                 }
                 for (; j <_seq1.size(); ++j) {
@@ -778,7 +780,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                     auto _vec =  this->template eval<T>(i,j) * other_src.template eval<T>(counter);
-                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                     counter+=Stride;
                 }
                 for (; j <_seq1.size(); ++j) {
@@ -843,7 +845,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                     auto _vec =  this->template eval<T>(i,j) / other_src.template eval<T>(counter);
-                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                     counter+=Stride;
                 }
                 for (; j <_seq1.size(); ++j) {
@@ -889,7 +891,7 @@ public:
             for (FASTOR_INDEX i = 0; i <_seq0.size(); i++) {
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
-                    _vec_other.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec_other.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                 }
                 for (; j <_seq1.size(); ++j) {
                     _expr(_seq0._step*i+_seq0._first,j+_seq1._first) = num;
@@ -926,7 +928,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                     auto _vec =  this->template eval<T>(i,j) + _vec_other;
-                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                 }
                 for (; j <_seq1.size(); ++j) {
                     _expr(_seq0._step*i+_seq0._first,j+_seq1._first) += num;
@@ -964,7 +966,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                     auto _vec =  this->template eval<T>(i,j) - _vec_other;
-                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                 }
                 for (; j <_seq1.size(); ++j) {
                     _expr(_seq0._step*i+_seq0._first,j+_seq1._first) -= num;
@@ -1002,7 +1004,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                     auto _vec =  this->template eval<T>(i,j) * _vec_other;
-                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                 }
                 for (; j <_seq1.size(); ++j) {
                     _expr(_seq0._step*i+_seq0._first,j+_seq1._first) *= num;
@@ -1041,7 +1043,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                     auto _vec =  this->template eval<T>(i,j) * _vec_other;
-                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                 }
                 for (; j <_seq1.size(); ++j) {
                     _expr(_seq0._step*i+_seq0._first,j+_seq1._first) *= inum;
@@ -1080,7 +1082,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(_seq1.size(),Stride); j+=Stride) {
                     auto _vec =  this->template eval<T>(i,j) / _vec_other;
-                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first],false);
+                    _vec.store(&_data[(_seq0._step*i+_seq0._first)*N+j+_seq1._first], is_aligned());
                 }
                 for (; j <_seq1.size(); ++j) {
                     _expr(_seq0._step*i+_seq0._first,j+_seq1._first) /= num;
@@ -1132,7 +1134,7 @@ public:
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
         SIMDVector<U,simd_abi_type> _vec;
-        if (_seq1._step==1) _vec.load(_expr.data()+_seq0._step*i*N+j + _seq0._first*N + _seq1._first,false);
+        if (_seq1._step==1) _vec.load(_expr.data()+_seq0._step*i*N+j + _seq0._first*N + _seq1._first, is_aligned());
         else vector_setter(_vec,_expr.data(),_seq0._step*i*N+_seq1._step*j + _seq0._first*N + _seq1._first,_seq1._step);
         return _vec;
     }
@@ -1145,7 +1147,7 @@ public:
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,simd_abi_type> teval(const std::array<int,2>& as) const {
         SIMDVector<U,simd_abi_type> _vec;
-        if (_seq1._step==1) _vec.load(_expr.data()+_seq0._step*as[0]*N+as[1] + _seq0._first*N + _seq1._first,false);
+        if (_seq1._step==1) _vec.load(_expr.data()+_seq0._step*as[0]*N+as[1] + _seq0._first*N + _seq1._first, is_aligned());
         else vector_setter(_vec,_expr.data(),_seq0._step*as[0]*N+_seq1._step*as[1] + _seq0._first*N + _seq1._first,_seq1._step);
         return _vec;
     }

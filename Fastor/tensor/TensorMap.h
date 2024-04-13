@@ -21,6 +21,7 @@ public:
     using simd_abi_type    = typename simd_vector_type::abi_type;
     using result_type      = Tensor<remove_all_t<T>,Rest...>;
     using dimension_t      = std::integral_constant<FASTOR_INDEX, sizeof...(Rest)>;
+    static constexpr FASTOR_INLINE bool is_aligned() { return false; };
     static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return sizeof...(Rest);}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return pack_prod<Rest...>::value;}
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX dim) const {

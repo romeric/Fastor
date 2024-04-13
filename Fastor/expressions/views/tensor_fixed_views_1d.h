@@ -24,6 +24,8 @@ public:
     using result_type = Tensor<T,range_detector<F0,L0,S0>::value>;
     static constexpr FASTOR_INDEX Dimension = 1;
     static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
+    static constexpr FASTOR_INLINE bool is_aligned() { return false; };
+    static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return 1;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() { return range_detector<F0,L0,S0>::value;}
     static constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX ) {return range_detector<F0,L0,S0>::value;}
     constexpr const Tensor<T,N>& expr() const {return _expr;}
@@ -87,6 +89,8 @@ public:
     using result_type = Tensor<T,range_detector<F0,L0,S0>::value>;
     static constexpr FASTOR_INDEX Dimension = 1;
     static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
+    static constexpr FASTOR_INLINE bool is_aligned() { return false; };
+    static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return 1;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {return range_detector<F0,L0,S0>::value;}
     static constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) {return range_detector<F0,L0,S0>::value;}
     constexpr const Tensor<T,N>& expr() const {return _expr;}
@@ -126,7 +130,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec_other = other_src.template eval<T>(i);
-                _vec_other.store(&_data[i+F0],false);
+                _vec_other.store(&_data[i+F0], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+F0] = other_src.template eval_s<T>(i);
@@ -189,7 +193,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec_other = other_src.template eval<T>(i);
-                _vec_other.store(&_data[i+F0],false);
+                _vec_other.store(&_data[i+F0], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+F0] = other_src.template eval_s<T>(i);
@@ -244,7 +248,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) + other_src.template eval<T>(i);
-                _vec.store(&_data[i+F0],false);
+                _vec.store(&_data[i+F0], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+F0] += other_src.template eval_s<T>(i);
@@ -299,7 +303,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) - other_src.template eval<T>(i);
-                _vec.store(&_data[i+F0],false);
+                _vec.store(&_data[i+F0], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+F0] -= other_src.template eval_s<T>(i);
@@ -354,7 +358,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) * other_src.template eval<T>(i);
-                _vec.store(&_data[i+F0],false);
+                _vec.store(&_data[i+F0], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+F0] *= other_src.template eval_s<T>(i);
@@ -409,7 +413,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) / other_src.template eval<T>(i);
-                _vec.store(&_data[i+F0],false);
+                _vec.store(&_data[i+F0], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+F0] /= other_src.template eval_s<T>(i);
@@ -446,7 +450,7 @@ public:
         FASTOR_IF_CONSTEXPR (S0 == 1) {
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
-                _vec_other.store(&_data[i+F0],false);
+                _vec_other.store(&_data[i+F0], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+F0] = num;
@@ -479,7 +483,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) + _vec_other;
-                _vec.store(&_data[i+F0],false);
+                _vec.store(&_data[i+F0], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+F0] += num;
@@ -512,7 +516,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) - _vec_other;
-                _vec.store(&_data[i+F0],false);
+                _vec.store(&_data[i+F0], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+F0] -= num;
@@ -545,7 +549,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) * _vec_other;
-                _vec.store(&_data[i+F0],false);
+                _vec.store(&_data[i+F0], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+F0] *= num;
@@ -579,7 +583,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) * _vec_other;
-                _vec.store(&_data[i+F0],false);
+                _vec.store(&_data[i+F0], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+F0] *= inum;
@@ -611,7 +615,7 @@ public:
             FASTOR_INDEX i;
             for (i = 0; i <ROUND_DOWN(size(),Stride); i+=Stride) {
                 auto _vec = this->template eval<T>(i) / _vec_other;
-                _vec.store(&_data[i+F0],false);
+                _vec.store(&_data[i+F0], is_aligned());
             }
             for (; i <size(); i++) {
                 _data[i+F0] /= num;

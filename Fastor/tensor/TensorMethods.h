@@ -6,7 +6,7 @@ FASTOR_INLINE void fill(T num0) {
     using V = simd_vector_type;
     V _vec(num0);
     for (; i<ROUND_DOWN(size(),V::Size); i+=V::Size) {
-        _vec.store(&_data[i],false);
+        _vec.store(&_data[i], is_aligned());
     }
     for (; i<size(); ++i) _data[i] = num0;
 }
@@ -23,7 +23,7 @@ FASTOR_INLINE void arange(T num0=0) {
     // FASTOR_INDEX i=0;
     // for (; i<ROUND_DOWN(size(),V::Size); i+=V::Size) {
     //     _vec.set_sequential(T(i)+num);
-    //     _vec.store(&_data[i],false);
+    //     _vec.store(&_data[i], is_aligned());
     // }
     // for (; i<size(); ++i) _data[i] = T(i)+num;
 }
@@ -33,7 +33,7 @@ FASTOR_INLINE void zeros() {
     V _zeros;
     FASTOR_INDEX i=0;
     for (; i<ROUND_DOWN(size(),V::Size); i+=V::Size) {
-        _zeros.store(&_data[i],false);
+        _zeros.store(&_data[i], is_aligned());
     }
     for (; i<size(); ++i) _data[i] = 0;
 }
@@ -113,8 +113,8 @@ FASTOR_INLINE void reverse() {
     V vec;
     FASTOR_INDEX i = 0;
     for (; i< ROUND_DOWN(size(),V::Size); i+=V::Size) {
-        vec.load(&tmp[size() - i - V::Size],false);
-        vec.reverse().store(&_data[i],false);
+        vec.load(&tmp[size() - i - V::Size], is_aligned());
+        vec.reverse().store(&_data[i], is_aligned());
     }
     for (; i< size(); ++i) {
         _data[i] = tmp[size()-i-1];
@@ -135,7 +135,7 @@ FASTOR_INLINE T sum() const {
     V _vec_in;
     FASTOR_INDEX i = 0;
     for (; i<ROUND_DOWN(size(),V::Size); i+=V::Size) {
-        _vec_in.load(&_data[i],false);
+        _vec_in.load(&_data[i], is_aligned());
         vec += _vec_in;
     }
     T scalar = static_cast<T>(0);
@@ -154,7 +154,7 @@ FASTOR_INLINE T product() const {
 
     V vec = static_cast<T>(1);
     for (; i< ROUND_DOWN(size(),V::Size); i+=V::Size) {
-        vec *= V(&_data[i],false);
+        vec *= V(&_data[i], is_aligned());
     }
     T scalar = static_cast<T>(1);
     for (; i< size(); ++i) {

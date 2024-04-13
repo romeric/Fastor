@@ -27,6 +27,7 @@ public:\
     using UU = bool /*this needs to change to U once masks are implemented*/;\
     using ABI = simd_abi::fixed_size<SIMDVector<EVAL_TYPE,simd_abi_type>::Size>;\
     static constexpr FASTOR_INDEX Dimension = DIM0;\
+    static constexpr FASTOR_INLINE bool is_aligned() { return false; };\
     static constexpr FASTOR_INDEX rank() {return DIM0;}\
     FASTOR_INLINE FASTOR_INDEX size() const {return _expr.size();}\
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return _expr.dimension(i);}\

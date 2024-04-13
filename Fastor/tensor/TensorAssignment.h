@@ -16,7 +16,7 @@ FASTOR_INLINE void trivial_assign(AbstractTensor<Derived,DIM> &dst, const Abstra
     FASTOR_IF_CONSTEXPR(!is_boolean_expression_v<OtherDerived>) {
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
-            src.template eval<T>(i).store(&_data[i], FASTOR_ALIGNED);
+            src.template eval<T>(i).store(&_data[i], dst.self().is_aligned());
         }
         for (; i < src.size(); ++i) {
             _data[i] = src.template eval_s<T>(i);
@@ -40,8 +40,8 @@ FASTOR_INLINE void trivial_assign_add(AbstractTensor<Derived,DIM> &dst, const Ab
     FASTOR_IF_CONSTEXPR(!is_boolean_expression_v<OtherDerived>) {
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
-            V _vec = V(&_data[i], FASTOR_ALIGNED) + src.template eval<T>(i);
-            _vec.store(&_data[i], FASTOR_ALIGNED);
+            V _vec = V(&_data[i], dst.self().is_aligned()) + src.template eval<T>(i);
+            _vec.store(&_data[i], dst.self().is_aligned());
         }
         for (; i < src.size(); ++i) {
             _data[i] += src.template eval_s<T>(i);
@@ -65,8 +65,8 @@ FASTOR_INLINE void trivial_assign_sub(AbstractTensor<Derived,DIM> &dst, const Ab
     FASTOR_IF_CONSTEXPR(!is_boolean_expression_v<OtherDerived>) {
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
-            V _vec = V(&_data[i], FASTOR_ALIGNED) - src.template eval<T>(i);
-            _vec.store(&_data[i], FASTOR_ALIGNED);
+            V _vec = V(&_data[i], dst.self().is_aligned()) - src.template eval<T>(i);
+            _vec.store(&_data[i], dst.self().is_aligned());
         }
         for (; i < src.size(); ++i) {
             _data[i] -= src.template eval_s<T>(i);
@@ -90,8 +90,8 @@ FASTOR_INLINE void trivial_assign_mul(AbstractTensor<Derived,DIM> &dst, const Ab
     FASTOR_IF_CONSTEXPR(!is_boolean_expression_v<OtherDerived>) {
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
-            V _vec = V(&_data[i], FASTOR_ALIGNED) * src.template eval<T>(i);
-            _vec.store(&_data[i], FASTOR_ALIGNED);
+            V _vec = V(&_data[i], dst.self().is_aligned()) * src.template eval<T>(i);
+            _vec.store(&_data[i], dst.self().is_aligned());
         }
         for (; i < src.size(); ++i) {
             _data[i] *= src.template eval_s<T>(i);
@@ -115,8 +115,8 @@ FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, const Ab
     FASTOR_IF_CONSTEXPR(!is_boolean_expression_v<OtherDerived>) {
         FASTOR_INDEX i = 0;
         for (; i <ROUND_DOWN(src.size(),V::Size); i+=V::Size) {
-            V _vec = V(&_data[i], FASTOR_ALIGNED) / src.template eval<T>(i);
-            _vec.store(&_data[i], FASTOR_ALIGNED);
+            V _vec = V(&_data[i], dst.self().is_aligned()) / src.template eval<T>(i);
+            _vec.store(&_data[i], dst.self().is_aligned());
         }
         for (; i < src.size(); ++i) {
             _data[i] /= src.template eval_s<T>(i);
@@ -141,7 +141,7 @@ FASTOR_INLINE void trivial_assign(AbstractTensor<Derived,DIM> &dst, U num) {
     V _vec(cnum);
     FASTOR_INDEX i = 0;
     for (; i< ROUND_DOWN(dst.self().size(),V::Size); i+=V::Size) {
-        _vec.store(&_data[i], FASTOR_ALIGNED);
+        _vec.store(&_data[i], dst.self().is_aligned());
     }
     for (; i<dst.self().size(); ++i) {
         _data[i] = cnum;
@@ -158,9 +158,9 @@ FASTOR_INLINE void trivial_assign_add(AbstractTensor<Derived,DIM> &dst, U num) {
     V _vec(cnum);
     FASTOR_INDEX i = 0;
     for (; i< ROUND_DOWN(dst.self().size(),V::Size); i+=V::Size) {
-        V _vec_out(&_data[i], FASTOR_ALIGNED);
+        V _vec_out(&_data[i], dst.self().is_aligned());
         _vec_out += _vec;
-        _vec_out.store(&_data[i], FASTOR_ALIGNED);
+        _vec_out.store(&_data[i], dst.self().is_aligned());
     }
     for (; i<dst.self().size(); ++i) {
         _data[i] += cnum;
@@ -177,9 +177,9 @@ FASTOR_INLINE void trivial_assign_sub(AbstractTensor<Derived,DIM> &dst, U num) {
     V _vec(cnum);
     FASTOR_INDEX i = 0;
     for (; i< ROUND_DOWN(dst.self().size(),V::Size); i+=V::Size) {
-        V _vec_out(&_data[i], FASTOR_ALIGNED);
+        V _vec_out(&_data[i], dst.self().is_aligned());
         _vec_out -= _vec;
-        _vec_out.store(&_data[i], FASTOR_ALIGNED);
+        _vec_out.store(&_data[i], dst.self().is_aligned());
     }
     for (; i<dst.self().size(); ++i) {
         _data[i] -= cnum;
@@ -196,9 +196,9 @@ FASTOR_INLINE void trivial_assign_mul(AbstractTensor<Derived,DIM> &dst, U num) {
     V _vec(cnum);
     FASTOR_INDEX i = 0;
     for (; i< ROUND_DOWN(dst.self().size(),V::Size); i+=V::Size) {
-        V _vec_out(&_data[i], FASTOR_ALIGNED);
+        V _vec_out(&_data[i], dst.self().is_aligned());
         _vec_out *= _vec;
-        _vec_out.store(&_data[i], FASTOR_ALIGNED);
+        _vec_out.store(&_data[i], dst.self().is_aligned());
     }
     for (; i<dst.self().size(); ++i) {
         _data[i] *= cnum;
@@ -215,9 +215,9 @@ FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
     V _vec(cnum);
     FASTOR_INDEX i = 0;
     for (; i< ROUND_DOWN(dst.self().size(),V::Size); i+=V::Size) {
-        V _vec_out(&_data[i], FASTOR_ALIGNED);
+        V _vec_out(&_data[i], dst.self().is_aligned());
         _vec_out *= _vec;
-        _vec_out.store(&_data[i], FASTOR_ALIGNED);
+        _vec_out.store(&_data[i], dst.self().is_aligned());
     }
     for (; i<dst.self().size(); ++i) {
         _data[i] *= cnum;
@@ -233,9 +233,9 @@ FASTOR_INLINE void trivial_assign_div(AbstractTensor<Derived,DIM> &dst, U num) {
     V _vec(cnum);
     FASTOR_INDEX i = 0;
     for (; i< ROUND_DOWN(dst.self().size(),V::Size); i+=V::Size) {
-        V _vec_out(&_data[i], FASTOR_ALIGNED);
+        V _vec_out(&_data[i], dst.self().is_aligned());
         _vec_out /= _vec;
-        _vec_out.store(&_data[i], FASTOR_ALIGNED);
+        _vec_out.store(&_data[i], dst.self().is_aligned());
     }
     for (; i<dst.self().size(); ++i) {
         _data[i] /= cnum;

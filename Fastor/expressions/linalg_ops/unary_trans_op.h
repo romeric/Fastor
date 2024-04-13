@@ -20,6 +20,7 @@ struct UnaryTransOp: public AbstractTensor<UnaryTransOp<Expr, DIM0>,DIM0> {
     static constexpr FASTOR_INDEX M = get_tensor_dimension_v<0,typename Expr::result_type>;
     static constexpr FASTOR_INDEX N = get_tensor_dimension_v<1,typename Expr::result_type>;
     static constexpr FASTOR_INDEX Dimension = DIM0;
+    constexpr bool is_aligned() {return _expr.is_aligned();}
     static constexpr FASTOR_INDEX rank() {return DIM0;}
     using scalar_type = typename scalar_type_finder<UnaryTransOp<Expr, DIM0>>::type;
     using simd_vector_type = typename Expr::simd_vector_type;

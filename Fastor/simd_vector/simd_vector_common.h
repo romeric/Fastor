@@ -18,8 +18,8 @@ namespace Fastor {
 /* Common functions for all SIMDVector types
 */
 
-// This is for generic use in tensor expressions that need a uniform simd type
-// between all of them
+// Best SIMD vector chooser
+// This is for generic use in tensor expressions that need a uniform simd type between all of them
 //----------------------------------------------------------------------------------------------------------//
 template<typename TT>
 struct choose_best_simd_vector {
@@ -48,6 +48,31 @@ static constexpr size_t native_simd_size_v = internal::get_simd_vector_size<SIMD
 // Get Fastor supported size/width of the SIMDVector
 template<typename T>
 static constexpr size_t simd_size_v = internal::get_simd_vector_size<choose_best_simd_vector_t<T>>::value;
+//----------------------------------------------------------------------------------------------------------//
+
+
+// Alignment value for SIMD vectors
+// This is for generic use in tensor expressions that need a uniform simd type between all of them. An alignment
+// of zero implies that Fastor tensors don't own the data and no specific alignment can be assumed
+//----------------------------------------------------------------------------------------------------------//
+template<typename TT>
+struct memory_alignment_value {
+    using T = remove_cv_ref_t<TT>;
+#if defined(FASTOR_DONT_ALIGN) || defined(FASTOR_DONT_VECTORISE)
+    static constexpr size_t value = 0;
+#else
+    static constexpr size_t value = (std::is_same<T,float>::value                   ||
+                                    std::is_same<T,double>::value                   ||
+                                    std::is_same<T,std::complex<float>>::value      ||
+                                    std::is_same<T,std::complex<double>>::value     ||
+                                    std::is_same<T,int32_t>::value                  ||
+                                    std::is_same<T,int64_t>::value) ? FASTOR_MEMORY_ALIGNMENT_VALUE : 0;
+#endif
+};
+
+// helper function
+template<typename T>
+constexpr size_t memory_alignment_v = memory_alignment_value<T>::value;
 //----------------------------------------------------------------------------------------------------------//
 
 

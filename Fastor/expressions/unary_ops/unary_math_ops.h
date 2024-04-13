@@ -22,6 +22,7 @@ public:\
     using simd_abi_type = typename simd_vector_type::abi_type;\
     using result_type = typename Expr::result_type;\
     static constexpr FASTOR_INDEX Dimension = DIM0;\
+    constexpr FASTOR_INLINE bool is_aligned() { return _expr.is_aligned(); };\
     static constexpr FASTOR_INDEX rank() {return DIM0;}\
     FASTOR_INLINE FASTOR_INDEX size() const {return _expr.size();}\
     FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX i) const {return _expr.dimension(i);}\

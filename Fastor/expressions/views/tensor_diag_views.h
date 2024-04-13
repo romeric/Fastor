@@ -22,6 +22,7 @@ public:
     using V = SIMDVector<T,simd_abi_type>;
     static constexpr FASTOR_INDEX Dimension = 1;
     static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
+    static constexpr FASTOR_INLINE bool is_aligned() { return false; };
     static constexpr FASTOR_INDEX rank() {return 1;}
     constexpr FASTOR_INLINE FASTOR_INDEX size() const {return M;}
     constexpr FASTOR_INLINE FASTOR_INDEX dimension(FASTOR_INDEX ) const {return M;}

@@ -23,6 +23,8 @@ public:
     using result_type = Tensor<T, range_detector<F0,L0,S0>::value, range_detector<F1,L1,S1>::value>;
     static constexpr FASTOR_INDEX Dimension = 2;
     static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
+    static constexpr FASTOR_INLINE bool is_aligned() { return false; };
+    static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return 2;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {
         return range_detector<F0,L0,S0>::value*range_detector<F1,L1,S1>::value;
     }
@@ -56,7 +58,7 @@ public:
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
         SIMDVector<U,simd_abi_type> _vec;
-        FASTOR_IF_CONSTEXPR (S1==1) _vec.load(_expr.data()+S0*i*N+j + Padding, false);
+        FASTOR_IF_CONSTEXPR (S1==1) _vec.load(_expr.data()+S0*i*N+j + Padding, is_aligned());
         else vector_setter(_vec,_expr.data(),S0*i*N+S1*j + Padding,S1);
         return _vec;
     }
@@ -69,7 +71,7 @@ public:
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,simd_abi_type> teval(const std::array<int,2>& as) const {
         SIMDVector<U,simd_abi_type> _vec;
-        FASTOR_IF_CONSTEXPR (S1==1) _vec.load(_expr.data()+S0*as[0]*N+as[1] + Padding, false);
+        FASTOR_IF_CONSTEXPR (S1==1) _vec.load(_expr.data()+S0*as[0]*N+as[1] + Padding, is_aligned());
         else vector_setter(_vec,_expr.data(),S0*as[0]*N+S1*as[1] + Padding,S1);
         return _vec;
     }
@@ -101,6 +103,8 @@ public:
     using result_type = Tensor<T, range_detector<F0,L0,S0>::value, range_detector<F1,L1,S1>::value>;
     static constexpr FASTOR_INDEX Dimension = 2;
     static constexpr FASTOR_INDEX Stride = simd_vector_type::Size;
+    static constexpr FASTOR_INLINE bool is_aligned() { return false; };
+    static constexpr FASTOR_INLINE FASTOR_INDEX rank() {return 2;}
     static constexpr FASTOR_INLINE FASTOR_INDEX size() {
         return range_detector<F0,L0,S0>::value*range_detector<F1,L1,S1>::value;
     }
@@ -145,7 +149,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(dimension(1),Stride); j+=Stride) {
                     auto _vec = other_src.template eval<T>(i,j);
-                    _vec.store(&_data[S0*i*N+j+Padding],false);
+                    _vec.store(&_data[S0*i*N+j+Padding], is_aligned());
                 }
                 for (; j <dimension(1); ++j) {
                     _expr(S0*i+F0,j+F1) = other_src.template eval_s<T>(i,j);
@@ -218,7 +222,7 @@ public:
                 FASTOR_INDEX j;
                 for (j = 0; j <ROUND_DOWN(dimension(1),Stride); j+=Stride) {
                     auto _vec = other_src.template eval<T>(i,j);
-                    _vec.store(&_data[S0*i*N+j+Padding],false);
+                    _vec.store(&_data[S0*i*N+j+Padding], is_aligned());
                 }
                 for (; j <dimension(1); ++j) {
                     _expr(S0*i+F0,j+F1) = other_src.template eval_s<T>(i,j);
@@ -1090,7 +1094,7 @@ public:
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,simd_abi_type> eval(FASTOR_INDEX i, FASTOR_INDEX j) const {
         SIMDVector<U,simd_abi_type> _vec;
-        FASTOR_IF_CONSTEXPR (S1==1) _vec.load(_expr.data()+S0*i*N+j + Padding, false);
+        FASTOR_IF_CONSTEXPR (S1==1) _vec.load(_expr.data()+S0*i*N+j + Padding, is_aligned());
         else vector_setter(_vec,_expr.data(),S0*i*N+S1*j + Padding,S1);
         return _vec;
     }
@@ -1103,7 +1107,7 @@ public:
     template<typename U=T>
     FASTOR_INLINE SIMDVector<U,simd_abi_type> teval(const std::array<int,2>& as) const {
         SIMDVector<U,simd_abi_type> _vec;
-        FASTOR_IF_CONSTEXPR (S1==1) _vec.load(_expr.data()+S0*as[0]*N+as[1] + Padding, false);
+        FASTOR_IF_CONSTEXPR (S1==1) _vec.load(_expr.data()+S0*as[0]*N+as[1] + Padding, is_aligned());
         else vector_setter(_vec,_expr.data(),S0*as[0]*N+S1*as[1] + Padding,S1);
         return _vec;
     }

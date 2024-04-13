@@ -21,6 +21,19 @@ public:\
     using simd_abi_type = typename simd_vector_type::abi_type;\
     using result_type = binary_arithmetic_result_t< Binary ##NAME ## Op<TLhs, TRhs, DIM0> >;\
     FASTOR_INLINE Binary ##NAME ## Op(expression_t<TLhs> inlhs, expression_t<TRhs> inrhs) : _lhs(inlhs), _rhs(inrhs) {}\
+    FASTOR_INLINE bool is_aligned() const {return helper_is_aligned<TLhs,TRhs>();}\
+    template<class LExpr, class RExpr,\
+             typename std::enable_if<std::is_arithmetic<LExpr>::value,bool>::type =0 >\
+    FASTOR_INLINE bool helper_is_aligned() const {return _rhs.is_aligned();}\
+    template<class LExpr, class RExpr,\
+             typename std::enable_if<std::is_arithmetic<RExpr>::value,bool>::type =0 >\
+    FASTOR_INLINE bool helper_is_aligned() const {return _lhs.is_aligned();}\
+    template<class LExpr, class RExpr,\
+             typename std::enable_if<!std::is_arithmetic<LExpr>::value &&\
+                                     !std::is_arithmetic<RExpr>::value,bool>::type =0 >\
+    FASTOR_INLINE bool helper_is_aligned() const {\
+        return _rhs.is_aligned();\
+    }\
     FASTOR_INLINE FASTOR_INDEX size() const {return helper_size<TLhs,TRhs>();}\
     template<class LExpr, class RExpr,\
              typename std::enable_if<is_primitive_v_<LExpr>,bool>::type =0 >\
