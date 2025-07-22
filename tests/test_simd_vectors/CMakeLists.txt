@@ -1,10 +1,7 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.21)
 project(test_simd_vectors)
 
 set(CMAKE_CXX_STANDARD 14)
-
-enable_testing()
-
 
 add_executable(test_simd_vectors test_simd_vectors.cpp)
 add_test(test_simd_vectors test_simd_vectors)

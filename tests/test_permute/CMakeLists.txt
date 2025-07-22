@@ -1,9 +1,8 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.21)
 project(test_permute)
 
 set(CMAKE_CXX_STANDARD 14)
 
-enable_testing()
 
 # default recursive CXX14
 add_executable(test_permute_1 test_permute.cpp)

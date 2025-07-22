@@ -1,9 +1,7 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.21)
 project(test_einsum)
 
 set(CMAKE_CXX_STANDARD 14)
-
-enable_testing()
 
 # single einsum
 # MSVC gives superfluous errors
