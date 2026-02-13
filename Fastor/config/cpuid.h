@@ -43,11 +43,14 @@ public:
 #ifdef _WIN32
     __cpuid((int *)regs, (int)i);
 
-#else
+#elif defined(__x86_64__) || defined(__i386__)
     asm volatile
       ("cpuid" : "=a" (regs[0]), "=b" (regs[1]), "=c" (regs[2]), "=d" (regs[3])
        : "a" (i), "c" (0));
     // ECX is set to zero for CPUID function 4
+#else
+    (void)i;
+    regs[0] = regs[1] = regs[2] = regs[3] = 0;
 #endif
   }
 

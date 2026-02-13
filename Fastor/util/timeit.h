@@ -101,7 +101,7 @@ inline uint64_t rdtsc_end() {
     return __rdtsc();
 }
 //  Linux/GCC
-#else
+#elif defined(__x86_64__) || defined(__i386__)
 inline uint64_t rdtsc() {
     unsigned int lo, hi;
     // This does not clobber the register so rdtsc overwrites
@@ -158,6 +158,11 @@ inline uint64_t rdtsc_end() {
 inline uint64_t rdtsc_begin() { return rdtsc();}
 inline uint64_t rdtsc_end() { return rdtsc();}
 #endif
+#else
+// ARM/non-x86 stubs
+inline uint64_t rdtsc() { return 0; }
+inline uint64_t rdtsc_begin() { return 0; }
+inline uint64_t rdtsc_end() { return 0; }
 #endif
 
 
