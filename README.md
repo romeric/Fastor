@@ -85,6 +85,8 @@ int main() {
 ~~~
 You can compile this by providing the following flags to your compiler `-std=c++14 -O3 -march=native -DNDEBUG`.
 
+When targeting `riscv64`, use a toolchain and compiler flags for the target CPU rather than the build host. Fastor currently falls back to its scalar `SIMDVector` backend on RISC-V unless a dedicated backend is added.
+
 ### Tensor views: A powerful indexing, slicing and broadcasting mechanism
 Fastor provides powerful tensor views for block indexing, slicing and broadcasting familiar to scientific programmers. Consider the following examples
 ~~~c++
