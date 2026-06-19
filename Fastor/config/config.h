@@ -164,9 +164,29 @@ SOFTWARE.
 
 
 
+// Architecture define macros
+//------------------------------------------------------------------------------------------------//
+#if defined(__riscv)
+    #define FASTOR_ARCH_RISCV 1
+    #if defined(__riscv_xlen) && (__riscv_xlen == 64)
+        #define FASTOR_ARCH_RISCV64 1
+    #else
+        #define FASTOR_ARCH_RISCV32 1
+    #endif
+#elif defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(_M_IX86) || defined(__i386__) || defined(__i386)
+    #define FASTOR_ARCH_X86 1
+    #if defined(_M_X64) || defined(_M_AMD64) || defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
+        #define FASTOR_ARCH_X86_64 1
+    #else
+        #define FASTOR_ARCH_X86_32 1
+    #endif
+#endif
+//------------------------------------------------------------------------------------------------//
+
+
 // Intrinsics defines
 //------------------------------------------------------------------------------------------------//
-#ifdef FASTOR_MSVC
+#if defined(FASTOR_MSVC) && defined(FASTOR_ARCH_X86)
     #ifdef _M_IX86_FP
         #if _M_IX86_FP >= 1
             #ifndef __SSE__
@@ -188,51 +208,53 @@ SOFTWARE.
     #endif
 #endif
 
-#if defined(__MIC__)
-    #define FASTOR_MIC_IMPL 1
-#endif
-#if defined(__AVX512F__)
-    #define FASTOR_AVX512F_IMPL 1
-#endif
-#if defined(__AVX512CD__)
-    #define FASTOR_AVX512CD_IMPL 1
-#endif
-#if defined(__AVX512BW__)
-    #define FASTOR_AVX512BW_IMPL 1
-#endif
-#if defined(__AVX512DQ__)
-    #define FASTOR_AVX512DQ_IMPL 1
-#endif
-#if defined(__AVX512VL__)
-    #define FASTOR_AVX512VL_IMPL 1
-#endif
-#if defined(__AVX2__)
-    #define FASTOR_AVX2_IMPL 1
-#endif
-#if defined(__AVX__)
-    #define FASTOR_AVX_IMPL 1
-#endif
-#if defined(__SSE4_2__)
-    #define FASTOR_SSE4_2_IMPL 1
-#endif
-#if defined(__SSE4_1__)
-    #define FASTOR_SSE4_1_IMPL 1
-#endif
-#if defined(__SSE3__)
-    #define FASTOR_SSE3_IMPL 1
-#endif
-#if defined(__SSSE3__)
-    #define FASTOR_SSSE3_IMPL 1
-#endif
-#if defined(__SSE2__)
-    #define FASTOR_SSE2_IMPL 1
-#endif
+#if defined(FASTOR_ARCH_X86)
+    #if defined(__MIC__)
+        #define FASTOR_MIC_IMPL 1
+    #endif
+    #if defined(__AVX512F__)
+        #define FASTOR_AVX512F_IMPL 1
+    #endif
+    #if defined(__AVX512CD__)
+        #define FASTOR_AVX512CD_IMPL 1
+    #endif
+    #if defined(__AVX512BW__)
+        #define FASTOR_AVX512BW_IMPL 1
+    #endif
+    #if defined(__AVX512DQ__)
+        #define FASTOR_AVX512DQ_IMPL 1
+    #endif
+    #if defined(__AVX512VL__)
+        #define FASTOR_AVX512VL_IMPL 1
+    #endif
+    #if defined(__AVX2__)
+        #define FASTOR_AVX2_IMPL 1
+    #endif
+    #if defined(__AVX__)
+        #define FASTOR_AVX_IMPL 1
+    #endif
+    #if defined(__SSE4_2__)
+        #define FASTOR_SSE4_2_IMPL 1
+    #endif
+    #if defined(__SSE4_1__)
+        #define FASTOR_SSE4_1_IMPL 1
+    #endif
+    #if defined(__SSE3__)
+        #define FASTOR_SSE3_IMPL 1
+    #endif
+    #if defined(__SSSE3__)
+        #define FASTOR_SSSE3_IMPL 1
+    #endif
+    #if defined(__SSE2__)
+        #define FASTOR_SSE2_IMPL 1
+    #endif
 
-#if defined(__FMA4__)
-    #define FASTOR_FMA4_IMPL 1
-#endif
-#if defined(__FMA__)
-    #define FASTOR_FMA_IMPL 1
+    #if defined(__FMA4__)
+        #define FASTOR_FMA4_IMPL 1
+    #endif
+    #if defined(__FMA__)
+        #define FASTOR_FMA_IMPL 1
+    #endif
 #endif
 // #if !defined(__FMA__) && defined(__AVX2__)
 //     #define __FMA__ 1
